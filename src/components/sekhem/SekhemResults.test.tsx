@@ -59,6 +59,58 @@ const renderReports = (reports: AdmissionsEvaluationReport[]) => {
 };
 
 describe('API-only result rows', () => {
+  it.each([
+    { programId: 'tau_ee', institutionId: 'tau', threshold: undefined, capability: 'exact' },
+    {
+      programId: 'technion_medicine',
+      institutionId: 'technion',
+      threshold: null,
+      capability: 'score_only',
+    },
+  ] as const)(
+    'shows a neutral exact score without a threshold or verdict for $programId',
+    ({ programId, institutionId, threshold, capability }) => {
+      const source = report(institutionId, {
+        kind: 'exact',
+        capability,
+        decision: 'unknown',
+        score: 87.6,
+        threshold,
+      });
+      source.input.degreeId = source.program.id = programId;
+      render(
+        <SekhemResults
+          reports={[source]}
+          offerings={[
+            {
+              programId,
+              institutionId,
+              programName: 'תוכנית לדוגמה',
+              institutionName: institutionId,
+              programPath: `/programs/${programId}`,
+            },
+          ]}
+          onEnquiry={vi.fn()}
+        />,
+      );
+      const card = screen.getByTestId(`institution-${institutionId}`);
+      const row = screen.getByTestId(`result-${programId}-${institutionId}`);
+      expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('87.6');
+      expect(within(row).getByText('ציון הקבלה')).toBeTruthy();
+      expect(
+        within(card).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
+      ).toBe(`/programs/${programId}`);
+      expect(row.textContent).toBe('87.6ציון הקבלה');
+      expect(row.querySelectorAll('p, [data-result-reason], [data-result-verdict]')).toHaveLength(
+        0,
+      );
+      expect(card.textContent).not.toMatch(/עדיין לא מחשבים כאן|עומדים|נתונים|מתואם|סכם|מצרף/);
+      const classes = Array.from(card.querySelectorAll('[class]'), (node) =>
+        node.getAttribute('class'),
+      ).join(' ');
+      expect(classes).not.toMatch(/eligible|success|accepted|green|#206345/);
+    },
+  );
   it('renders the Haifa API no-calculation note once without an invented score', () => {
     render(
       <SekhemResults

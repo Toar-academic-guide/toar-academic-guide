@@ -722,3 +722,43 @@ test('Reichman CS below-route flags without scores never become an invented esti
   await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);
 });
+
+test('Technion medicine with an exact score and no cutoff has no verdict or success styling', async ({
+  page,
+  baseURL,
+}) => {
+  const mocks = await installMocks(page, baseURL, false, (row) =>
+    row.linkedInstitutionId === 'technion'
+      ? {
+          ...row,
+          kind: 'exact',
+          capability: 'score_only',
+          decision: 'unknown',
+          scoreAssessment: undefined,
+          score: 87.6,
+          threshold: null,
+        }
+      : row,
+  );
+  await page.goto('/sekhem-calculator?program=technion_medicine');
+  await fillProfile(page);
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  const card = page.getByTestId('institution-technion');
+  const row = page.getByTestId('result-technion_medicine-technion');
+  await expect(row.locator('[data-result-number="score"]')).toHaveText('87.6');
+  await expect(row.getByText('ציון הקבלה', { exact: true })).toBeVisible();
+  await expect(
+    card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
+  ).toHaveAttribute('href', '/programs/technion_medicine');
+  await expect(row).toHaveText('87.6ציון הקבלה');
+  await expect(row.locator('p, [data-result-reason], [data-result-verdict]')).toHaveCount(0);
+  await expect(card).not.toContainText(/עדיין לא מחשבים כאן|עומדים/);
+  const classes = (
+    await card
+      .locator('[class]')
+      .evaluateAll((nodes) => nodes.map((node) => node.getAttribute('class')))
+  ).join(' ');
+  expect(classes).not.toMatch(/eligible|success|accepted|green|#206345/);
+  await assertStudentCards(page);
+  expect(mocks.submissions).toHaveLength(0);
+});
