@@ -116,11 +116,26 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const header = page.locator('header');
+    const openMobileMenu = async () => {
+      if (width === 390) {
+        const hamburger = header.getByRole('button', { name: 'תפריט ניווט' });
+        if ((await hamburger.getAttribute('aria-expanded')) === 'false') await hamburger.click();
+      }
+    };
     const checkHeader = async () => {
       await expect(header).toHaveCount(1);
-      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
+      await openMobileMenu();
+      await expect(header.getByRole('link', { name: 'מה הסיכויים שלי?' })).toBeVisible();
       await expect(header.getByRole('link', { name: 'הרשימה שלי' })).toBeVisible();
-      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toHaveCount(0);
+      await expect(page.locator('footer').getByRole('link', { name: 'מי אנחנו' })).toHaveAttribute(
+        'href',
+        '/about',
+      );
+      const institutions = header.getByRole('button', { name: 'איפה ללמוד?' });
+      if ((await institutions.getAttribute('aria-expanded')) === 'false')
+        await institutions.click();
+      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
     };
     await checkHeader();
     await header.getByRole('link', { name: 'מוסדות לימוד' }).click();
@@ -142,6 +157,7 @@ for (const width of [1440, 390]) {
       window.location.hash = 'intent';
     });
     await expect(page).toHaveURL(/#intent$/);
+    await openMobileMenu();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
     await header.getByRole('link', { name: 'כניסה' }).click();
     await page.getByPlaceholder('you@example.com').waitFor();
@@ -157,6 +173,7 @@ for (const width of [1440, 390]) {
     await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
     await expect(page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' })).toBeVisible();
+    await openMobileMenu();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
     await expect(page).toHaveURL(/#saved$/);
     await header.getByRole('link', { name: 'כניסה' }).click();
