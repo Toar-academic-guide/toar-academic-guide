@@ -725,15 +725,15 @@ it.each(['biu', 'hit', 'afeka'])(
     };
     const onEnquiry = vi.fn();
     render(<SekhemResults reports={[source]} offerings={[offering]} onEnquiry={onEnquiry} />);
-    const card = screen.getByTestId(`institution-${id}`);
+    const card = screen.getByTestId(`programme-actions-${id}`);
     expect(within(card).getByText('פסיכולוגיה')).toBeTruthy();
     expect(
       within(card).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
     ).toBe('/programs/psychology');
-    const row = within(card).getByTestId(`result-psychology-${id}`);
-    expect(row.getAttribute('data-action-only')).toBe('true');
-    expect(row.textContent).toBe('');
-    expect(row.querySelectorAll('[data-result-number], [data-result-reason], p')).toHaveLength(0);
+    expect(within(card).getByRole('heading', { name: offering.institutionName })).toBeTruthy();
+    expect(card.hasAttribute('hidden')).toBe(false);
+    expect(card.querySelector('[data-testid^="result-"]')).toBeNull();
+    expect(card.querySelectorAll('[data-result-number], [data-result-reason]')).toHaveLength(0);
     expect(card.textContent).not.toMatch(/\d|עומדים|מתחת|חסרים|עדיין לא/);
     fireEvent.click(within(card).getByRole('button', { name: 'קבלת מידע על התוכנית' }));
     expect(onEnquiry).toHaveBeenCalledWith(offering, source);

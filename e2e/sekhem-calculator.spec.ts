@@ -781,14 +781,11 @@ for (const width of [1280, 390]) {
     await page.goto('/sekhem-calculator?program=biu_cs');
     await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
     await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
-    const card = page.getByTestId('institution-biu');
+    const card = page.getByTestId('programme-actions-biu');
     await expect(card).toBeVisible();
     await expect(card).toContainText('מדעי המחשב');
-    const row = card.getByTestId('result-biu_cs-biu');
-    await expect(row).toHaveCount(1);
-    await expect(row).toHaveAttribute('data-action-only', 'true');
-    await expect(row).toHaveText('');
-    await expect(row.locator('[data-result-number], [data-result-reason], p')).toHaveCount(0);
+    await expect(card.locator('[data-testid^="result-"]')).toHaveCount(0);
+    await expect(card.locator('[data-result-number], [data-result-reason]')).toHaveCount(0);
     await expect(card).not.toContainText(/\d|עומדים|מתחת|עדיין לא/);
     await expect(card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute(
       'href',
