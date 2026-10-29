@@ -78,9 +78,15 @@ describe('approved student result copy', () => {
       expect(resultLabel(result({ kind, score: 635.126 })).label).toBe('הסכם שלכם: 635.13');
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
       expect(resultLabel(result({ kind, score: 0 })).label).toBe('הסכם שלכם: 0');
-      for (const score of [undefined, NaN, Infinity]) {
-        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
-        expect(resultLabel(result({ kind, score })).label).toBe('ציון הקבלה שלכם מוכן');
+    },
+  );
+  it.each(['exact', 'estimated'] as const)(
+    'no-score case stays on main copy for %s results',
+    (kind) => {
+      for (const score of [undefined, null, NaN, Infinity, -Infinity]) {
+        // Include null scores returned by production responses.
+        const row = { ...result({ kind }), score } as AdmissionsEvaluationResult;
+        expect(resultLabel(row).label).toBe('אין הכרעת קבלה');
       }
     },
   );

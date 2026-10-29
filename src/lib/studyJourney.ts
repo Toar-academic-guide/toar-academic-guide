@@ -305,7 +305,7 @@ export function resultLabel(
     ? 'אין הכרעת קבלה'
     : typeof result?.score === 'number' && Number.isFinite(result.score)
       ? `הסכם שלכם: ${formatScore(result.score)}`
-      : 'ציון הקבלה שלכם מוכן';
+      : 'אין הכרעת קבלה';
   const labels: Partial<Record<AdmissionsEvaluationResult['kind'], string>> = {
     needs_input: 'השלימו פרטים וקבלו תשובה',
     manual_gate: 'השלב הבא: מיון במוסד',
