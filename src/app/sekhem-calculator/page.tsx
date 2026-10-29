@@ -2,9 +2,11 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
+import JsonLd from '@/components/seo/JsonLd';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
+import { sekhemCalculatorLd } from '@/lib/seo/jsonLd';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 
 const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
@@ -33,6 +35,9 @@ export default async function Page({
   searchParams: Promise<{ program?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
+  const institutionNames = [...new Set(offerings.map((o) => o.institutionName))].sort((a, b) =>
+    a.localeCompare(b, 'he'),
+  );
   const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
   const initialProgramId = offerings.some((row) => row.programId === requestedId)
     ? requestedId
@@ -50,6 +55,7 @@ export default async function Page({
         dir="rtl"
         className="sekhem-calculator mx-auto max-w-3xl px-4 pb-16 pt-8 text-right sm:px-6"
       >
+        <JsonLd data={sekhemCalculatorLd()} />
         <header className="mb-8 text-center">
           <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
             מחשבון סכם וסיכויי קבלה
@@ -80,18 +86,36 @@ export default async function Page({
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
-        <section className="mt-14 space-y-7 leading-7">
+        <section className="mt-14 space-y-7 leading-7" aria-labelledby="sekhem-faq-title">
+          <h2 id="sekhem-faq-title" className="sr-only">שאלות על מחשבון הסכם</h2>
           <div>
-            <h2 className="text-xl font-semibold">מה הסכם אומר?</h2>
+            <h2 className="text-xl font-semibold">מה זה סכם?</h2>
             <p className="mt-2 text-(--text-body)">
-              לכל מוסד נוסחה וסולם ציונים משלו. הסכם הוא חלק מתנאי הקבלה; בקישור לתוכנית אפשר לבדוק
-              את התנאים הנוספים.
+              סכם הוא ציון קבלה שמשלב את ממוצע הבגרות ואת הציון הפסיכומטרי. כל מוסד קובע נוסחה וסולם משלו,
+              ובחלק מהמוסדות הוא נקרא בשם אחר.
             </p>
           </div>
           <div>
-            <h2 className="text-xl font-semibold">יש גם דרכים אחרות להתקבל</h2>
+            <h2 className="text-xl font-semibold">איך מחשבים כאן?</h2>
             <p className="mt-2 text-(--text-body)">
-              בחלק מהתוכניות יש אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי בלבד או קבלה דרך מכינה.
+              בוחרים תוכנית, מזינים ציוני בגרות ופסיכומטרי, והמחשבון מציג הערכה לפי הנתונים שיש לנו לאותה
+              תוכנית. בקישור לתוכנית אפשר לבדוק את שאר תנאי הקבלה.
+            </p>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">באילו מוסדות ותוכניות אפשר לבדוק כאן?</h2>
+            <p className="mt-2 text-(--text-body)">
+              המחשבון כולל כרגע תוכניות במוסדות הבאים. מוסד או תוכנית שלא מופיעים כאן עוד לא נתמכים במחשבון.
+            </p>
+            <ul className="mt-2 list-disc pr-5 text-(--text-body)">
+              {institutionNames.map((name) => <li key={name}>{name}</li>)}
+            </ul>
+          </div>
+          <div>
+            <h2 className="text-xl font-semibold">האם התוצאה מבטיחה קבלה?</h2>
+            <p className="mt-2 text-(--text-body)">
+              לא. התוצאה היא הערכה בלבד, וההחלטה היא של המוסד. יש תנאים נוספים, כמו רמת אנגלית, מתמטיקה או
+              ראיון, ובחלק מהתוכניות יש גם אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי בלבד או קבלה דרך מכינה.
             </p>
           </div>
         </section>
