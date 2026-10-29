@@ -66,6 +66,11 @@ export default function BagrutSubjectRows({
                 </td>
                 <td>
                   <input
+                    className={
+                      fieldErrors?.[index]?.units
+                        ? 'aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
+                        : undefined
+                    }
                     aria-invalid={fieldErrors?.[index]?.units ? true : undefined}
                     aria-describedby={
                       fieldErrors?.[index]?.units
@@ -89,6 +94,11 @@ export default function BagrutSubjectRows({
                 </td>
                 <td>
                   <input
+                    className={
+                      fieldErrors?.[index]?.grade
+                        ? 'aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
+                        : undefined
+                    }
                     aria-invalid={fieldErrors?.[index]?.grade ? true : undefined}
                     aria-describedby={
                       fieldErrors?.[index]?.grade
