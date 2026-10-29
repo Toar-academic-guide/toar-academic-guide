@@ -144,14 +144,28 @@ export default function PublicNavBar({
       const target = event.target;
       if (!(target instanceof Node)) return;
       if (Object.values(triggerRefs.current).some((trigger) => trigger?.contains(target))) return;
+      const active = document.activeElement;
+      // Clicking non-interactive content can focus body or a heading with tabindex=-1.
+      // Preserve focus when the click instead focuses another control.
+      const restoreTriggerFocus =
+        !active ||
+        active === document.body ||
+        (active instanceof HTMLElement &&
+          active.tabIndex < 0 &&
+          !active.matches('a[href], button, input, select, textarea, summary, [contenteditable]'));
       if (!headerRef.current?.contains(target)) {
         closeDropdown();
         if (mobileOpen) closeMobile();
+        if (restoreTriggerFocus) {
+          if (mobileOpen) hamburgerRef.current?.focus();
+          else if (openDropdown) triggerRefs.current[openDropdown]?.focus();
+        }
       } else if (
         openDropdown &&
         !triggerRefs.current[openDropdown]?.parentElement?.contains(target)
       ) {
         closeDropdown();
+        if (restoreTriggerFocus) triggerRefs.current[openDropdown]?.focus();
       }
     };
     const onResize = () => {

@@ -1,6 +1,6 @@
 .header {
   position: relative;
-  z-index: 20;
+  z-index: 21;
   max-width: 1280px;
   margin-inline: auto;
   padding: 24px 32px;
@@ -221,6 +221,9 @@
   }
   .header[data-mobile-open='true'] .links {
     display: flex;
+  }
+  .header[data-mobile-open='true'] {
+    background: var(--way-page-background);
   }
   .header[data-mobile-open='true'] .saved {
     display: block;
