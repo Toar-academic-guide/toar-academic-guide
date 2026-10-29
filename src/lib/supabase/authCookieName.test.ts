@@ -3,10 +3,13 @@
 import type { CookieOptions } from '@supabase/ssr';
 import type { SupabaseClient } from '@supabase/supabase-js';
 import { execFile } from 'node:child_process';
+import { mkdtemp, readFile, rm } from 'node:fs/promises';
+import { tmpdir } from 'node:os';
 import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { JsonTestResults } from 'vitest/reporters';
 
 const COOKIE_NAME = 'sb-kfxcdbjeidczltkrjazk-auth-token';
 const DERIVED_CUSTOM_NAME = 'sb-auth-auth-token';
@@ -143,18 +146,44 @@ describe.each(['https://auth.findmyway.co.il', 'https://kfxcdbjeidczltkrjazk.sup
         // case a fresh process while keeping the real package and production factory.
         if (process.env.MYWAY_AUTH_COOKIE_BROWSER_CASE !== '1') {
           const pattern = `${supabaseUrl.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}.*chunked=${chunked}.*browser`;
-          const { stdout } = await promisify(execFile)(
-            process.execPath,
-            [
-              resolve('node_modules/vitest/vitest.mjs'),
-              'run',
-              'src/lib/supabase/authCookieName.test.ts',
-              '--testNamePattern',
-              pattern,
-            ],
-            { env: { ...process.env, MYWAY_AUTH_COOKIE_BROWSER_CASE: '1' }, timeout: 20000 },
-          );
-          expect(stdout).toContain('1 passed | 11 skipped');
+          const tempDir = await mkdtemp(resolve(tmpdir(), 'auth-cookie-name-'));
+          try {
+            const reportPath = resolve(tempDir, 'report.json');
+            await promisify(execFile)(
+              process.execPath,
+              [
+                resolve('node_modules/vitest/vitest.mjs'),
+                'run',
+                'src/lib/supabase/authCookieName.test.ts',
+                '--testNamePattern',
+                pattern,
+                '--coverage.enabled=false',
+                '--reporter=json',
+                `--outputFile=${reportPath}`,
+              ],
+              {
+                env: {
+                  ...process.env,
+                  MYWAY_AUTH_COOKIE_BROWSER_CASE: '1',
+                  NO_COLOR: '1',
+                  FORCE_COLOR: '0',
+                },
+                timeout: 20000,
+              },
+            );
+            const report: JsonTestResults = JSON.parse(await readFile(reportPath, 'utf8'));
+            expect(report.success).toBe(true);
+            expect(report.numPassedTests).toBe(1);
+            expect(report.numFailedTests).toBe(0);
+            const passedAssertions = report.testResults
+              .flatMap((result) => result.assertionResults)
+              .filter((assertion) => assertion.status === 'passed');
+            expect(passedAssertions.map((assertion) => assertion.fullName)).toEqual([
+              `Supabase auth cookie on ${supabaseUrl} chunked=${chunked} browser reads, refreshes and clears the pinned cookie with unchanged options`,
+            ]);
+          } finally {
+            await rm(tempDir, { recursive: true, force: true });
+          }
           return;
         }
         const { original, refreshed } = stubAuth();
