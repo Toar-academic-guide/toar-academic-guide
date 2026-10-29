@@ -75,3 +75,82 @@ for (const width of [375, 1280]) {
     await expect(trigger).toBeFocused();
   });
 }
+
+for (const viewport of [
+  { width: 375, height: 812 },
+  { width: 390, height: 844 },
+]) {
+  test(`open mobile menu has an opaque solid fill and bottom edge at ${viewport.width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await page.goto('/');
+    const header = page.locator('header');
+    await header.getByRole('button', { name: 'תפריט ניווט' }).click();
+    await expect(header).toHaveAttribute('data-mobile-open', 'true');
+
+    const styles = await header.evaluate((element) => {
+      const style = getComputedStyle(element);
+      const alpha = (color: string) =>
+        color.startsWith('rgba(')
+          ? Number(color.slice(5, -1).split(',')[3])
+          : color.startsWith('rgb(')
+            ? 1
+            : 0;
+      return {
+        backgroundImage: style.backgroundImage,
+        backgroundAlpha: alpha(style.backgroundColor),
+        hasBottomEdge:
+          (parseFloat(style.borderBottomWidth) >= 1 &&
+            alpha(style.borderBottomColor) > 0 &&
+            style.borderBottomStyle !== 'none') ||
+          style.boxShadow !== 'none',
+      };
+    });
+    expect.soft(styles.backgroundImage).toBe('none');
+    expect.soft(styles.backgroundAlpha).toBe(1);
+    expect.soft(styles.hasBottomEdge).toBe(true);
+  });
+}
+
+for (const width of [375, 1280]) {
+  test(`header surface stays unchanged ${width === 375 ? 'with mobile menu closed' : 'on desktop'}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 812 });
+    await page.goto('/');
+    const header = page.locator('header');
+    const trigger = header.getByRole('button', {
+      name: width === 375 ? 'תפריט ניווט' : 'מחשבונים',
+    });
+    const expectBaselineSurface = async () => {
+      const styles = await header.evaluate((element) => {
+        const style = getComputedStyle(element);
+        return {
+          backgroundImage: style.backgroundImage,
+          backgroundColor: style.backgroundColor,
+          borderBottomWidth: style.borderBottomWidth,
+          borderBottomStyle: style.borderBottomStyle,
+          borderBottomColor: style.borderBottomColor,
+          boxShadow: style.boxShadow,
+        };
+      });
+      // Captured from the pre-fix header at merge commit 2f716fc.
+      expect(styles).toEqual({
+        backgroundImage: 'none',
+        backgroundColor: 'rgba(0, 0, 0, 0)',
+        borderBottomWidth: '0px',
+        borderBottomStyle: 'solid',
+        borderBottomColor: 'rgb(18, 35, 74)',
+        boxShadow: 'none',
+      });
+    };
+    await expectBaselineSurface();
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'true');
+    if (width === 1280) await expectBaselineSurface();
+    await trigger.click();
+    await expect(trigger).toHaveAttribute('aria-expanded', 'false');
+    await expectBaselineSurface();
+  });
+}
