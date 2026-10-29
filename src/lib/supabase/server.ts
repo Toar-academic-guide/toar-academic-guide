@@ -2,7 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { cookies } from 'next/headers';
 import type { SupabaseClient } from '@supabase/supabase-js';
 
-import { getSupabaseEnv, isSupabaseConfigured } from './env';
+import { getSupabaseEnv, isSupabaseConfigured, SUPABASE_AUTH_COOKIE_NAME } from './env';
 
 export const isSupabaseServerConfigured = isSupabaseConfigured;
 
@@ -15,6 +15,7 @@ export async function createSupabaseServerClient(): Promise<SupabaseClient | nul
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
 
   return createServerClient(supabaseUrl!, supabasePublishableKey!, {
+    cookieOptions: { name: SUPABASE_AUTH_COOKIE_NAME },
     cookies: {
       getAll() {
         return cookieStore.getAll();
