@@ -36,11 +36,13 @@ export default function EnquiryForm({
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const [errors, setErrors] = useState({ name: false, phone: false });
   const institutionName = title.split(' · ').slice(1).join(' · ') || title;
-  const institutionLe = `ל${institutionName.replace(/^האוניברסיטה/, 'אוניברסיטה')}`;
+  // Absorb a definite article only on known nouns; preserve names such as הנדסאים.
+  const institutionLe = `ל${institutionName.replace(
+    /^ה(?=(?:אוניברסיטה|מכללה|קריה|טכניון|מרכז|מכון|אקדמיה|סטודיו|מכינה|יחידה|מינהל|אילוף)(?:\s|$))/,
+    '',
+  )}`;
   const institutionMe = `מ${institutionName}`;
-  const [actionStart, actionButton, actionEnd] = COPY.actionNotice
-    .replace('{institution_le}', institutionLe)
-    .split('״');
+  const actionNotice = COPY.actionNotice.replace('{institution_le}', institutionLe);
   const close = () => {
     setOpen(false);
     onBack?.();
@@ -263,20 +265,21 @@ export default function EnquiryForm({
                     />
                   </div>
                   <div className="pt-[10px]">
-                    <p id="action-consent" style={consentStyle}>
-                      {actionStart}
-                      <bdi dir="rtl">״{actionButton}״</bdi>
-                      {actionEnd}
-                    </p>
                     <label
                       id="consent-prep"
                       htmlFor={`${id}-prep`}
                       className="mt-1 block cursor-pointer"
                       style={consentStyle}
                     >
-                      {ENQUIRY_PREP_CONSENT.split('18')[0]}
-                      <bdi dir="ltr">18</bdi>
-                      {ENQUIRY_PREP_CONSENT.split('18')[1]}
+                      {ENQUIRY_PREP_CONSENT.split(/(18|SMS|WhatsApp)/).map((part, index) =>
+                        /^(18|SMS|WhatsApp)$/.test(part) ? (
+                          <bdi key={index} dir="ltr">
+                            {part}
+                          </bdi>
+                        ) : (
+                          part
+                        ),
+                      )}
                     </label>
                     <a
                       id="privacy-link"
@@ -296,6 +299,9 @@ export default function EnquiryForm({
                   {COPY.serverError}
                 </p>
               )}
+              <p id="action-consent" className="mb-3" style={consentStyle}>
+                {actionNotice}
+              </p>
               <button
                 type="submit"
                 aria-describedby="action-consent"

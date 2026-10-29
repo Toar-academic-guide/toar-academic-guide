@@ -5,7 +5,7 @@ export const ENQUIRY_CONSENT =
   'אני מסכימ/ה שצוות MyWay יקבל את שמי, מספר הטלפון והמסלול שבחרתי ויחזור אליי בנושא הפנייה.';
 
 export const ENQUIRY_PREP_CONSENT =
-  'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתחזור אליי בטלפון לגבי קורסים והטבות (לבני 18 ומעלה).';
+  'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתפנה אליי בטלפון, SMS או WhatsApp לגבי קורסים והטבות. אני מאשר/ת שגילי 18 ומעלה.';
 
 export const ENQUIRY_COPY = {
   button: 'שליחת פרטים',
@@ -14,8 +14,7 @@ export const ENQUIRY_COPY = {
   namePlaceholder: 'שם מלא',
   phonePlaceholder: 'מספר טלפון',
   requiredLegend: 'שדה חובה',
-  actionNotice:
-    'בלחיצה על ״שליחת פרטים״ פרטיך וטווח הציונים שלך יועברו {institution_le}, שיחזרו אליך בטלפון. אפשר לבטל בכל עת.',
+  actionNotice: 'בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי {institution_le} בלבד',
   privacyLink: 'מדיניות פרטיות',
   loadingLive: 'שולחים את הפנייה',
   loadingButton: 'שליחת פרטים',
