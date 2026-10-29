@@ -351,7 +351,9 @@ async function evaluateCapabilityEntries(args: {
 
     if (
       institution.id === 'haifa' &&
-      (args.haifaAverageIsProxy || input.extraInputs?.haifaBagrutAverage === undefined)
+      (args.haifaAverageIsProxy ||
+        input.extraInputs?.haifaBagrutAverage === undefined ||
+        ['psychology', 'haifa_psychology'].includes(program.id))
     ) {
       const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
         averageIsProxy: args.haifaAverageIsProxy,

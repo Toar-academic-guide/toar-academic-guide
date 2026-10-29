@@ -540,10 +540,10 @@ test('public metadata, crawl links and homepage placement use the calculator URL
     1,
   );
   await page.goto('/');
-  const primary = page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד', exact: true });
+  const primary = page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים', exact: true });
   const link = page.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה', exact: true });
   await expect(link).toHaveAttribute('href', '/sekhem-calculator');
-  expect(await primary.evaluate((button) => button.nextElementSibling?.textContent?.trim())).toBe(
+  expect(await primary.evaluate((el) => el.nextElementSibling?.textContent?.trim())).toBe(
     'מחשבון סכם וסיכויי קבלה',
   );
   const primaryBox = (await primary.boundingBox())!;

@@ -23,7 +23,7 @@ test('homepage browse links are in raw HTML inside a collapsed details', async (
   const response = await request.get('/');
   expect(response.status()).toBe(200);
   const html = await response.text();
-  expect(html).toContain('עזרו לי לבחור מה ללמוד');
+  expect(html).toContain('בדקו לאן אתם מתקבלים');
   const browse = html.split('aria-labelledby="browse-title"')[1] ?? '';
   const details = browse.slice(browse.indexOf('<details'), browse.indexOf('</details>'));
   expect(details.startsWith('<details>')).toBe(true);
@@ -164,7 +164,13 @@ for (const width of [320, 390, 768, 1024, 1440]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' })).toBeVisible();
+    await expect(
+      page
+        .locator('.journey-hero-copy')
+        .getByRole('link', { name: 'בדקו לאן אתם מתקבלים', exact: true }),
+    ).toHaveAttribute('href', '/app/calculator');
+    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toHaveCount(0);
     const browse = page.locator('section[aria-labelledby="browse-title"]');
     await expect(browse).toBeVisible();
     await expect(browse).toHaveCSS('text-align', 'right');
