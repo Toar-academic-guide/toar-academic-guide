@@ -141,9 +141,8 @@ const profiles: ProfileCase[] = [
       technionCapture.responses[0].body!,
       `<h2>סיכום אפשרויות הקבלה למסלולים בסמסטר חורף תשפ״ז</h2><table id="tablepress-485"><tbody>${technionCapture.responses[1].civilRows!.join('')}</tbody></table>`,
     ],
-    // The evaluator currently requests its additional language input even with a Hebrew row.
-    // This is Eitan's parallel fix: the page must preserve that verdict until it changes.
-    expected: { kind: 'needs_input', decision: 'unknown', score: 98.9, threshold: 87 },
+    // Main #318 fixes the Hebrew-row gate; retained official numerical values are unchanged.
+    expected: { kind: 'exact', decision: 'accepted', score: 98.9, threshold: 87 },
   },
   {
     name: 'Reichman direct route retains estimate attribution',
