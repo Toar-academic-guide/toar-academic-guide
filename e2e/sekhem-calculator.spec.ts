@@ -911,3 +911,57 @@ for (const width of [1280, 390]) {
     });
   });
 }
+
+for (const width of [1280, 390]) {
+  for (const [field, label, value, message] of [
+    ['grade', 'ציון 1', '130', 'ציון בין 0 ל-100'],
+    ['units', 'יחידות 1', '6', 'יחידות בין 1 ל-5'],
+  ] as const) {
+    test(`range message sits below an aligned subject row (${field}) at ${width}px`, async ({
+      page,
+      baseURL,
+    }) => {
+      await page.setViewportSize({ width, height: 900 });
+      const mocks = await installMocks(page, baseURL);
+      await page.goto('/sekhem-calculator');
+      await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+      const input = page.getByLabel(label, { exact: true });
+      await input.fill(value);
+      await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+      await expect(input).toBeFocused();
+      await expect(input).toBeInViewport();
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+      const id = await input.getAttribute('aria-describedby');
+      expect(id).toMatch(new RegExp(`-0-${field}-error$`));
+      const error = page.locator(`[id="${id}"]`);
+      await expect(error).toHaveText(message);
+      await expect(error).toBeVisible();
+      expect(await error.evaluate((node) => getComputedStyle(node).textAlign)).toBe('right');
+      // Stop the focus scroll before measuring the whole row in viewport coordinates.
+      await page.evaluate(() => window.scrollTo({ top: 0, behavior: 'instant' }));
+      const boxes = await Promise.all(
+        ['מקצוע 1', 'יחידות 1', 'ציון 1'].map((name) =>
+          page.getByLabel(name, { exact: true }).boundingBox(),
+        ),
+      );
+      expect(boxes.every((box) => box !== null)).toBe(true);
+      const tops = boxes.map((box) => box!.y);
+      const bottoms = boxes.map((box) => box!.y + box!.height);
+      expect(Math.max(...tops) - Math.min(...tops)).toBeLessThanOrEqual(1);
+      expect(Math.max(...bottoms) - Math.min(...bottoms)).toBeLessThanOrEqual(1);
+      const errorBox = (await error.boundingBox())!;
+      expect(errorBox.y).toBeGreaterThanOrEqual(Math.max(...bottoms));
+      const nextBoxes = await Promise.all(
+        ['מקצוע 2', 'יחידות 2', 'ציון 2'].map((name) =>
+          page.getByLabel(name, { exact: true }).boundingBox(),
+        ),
+      );
+      expect(errorBox.y + errorBox.height).toBeLessThanOrEqual(
+        Math.min(...nextBoxes.map((box) => box!.y)),
+      );
+      await expect(input).toBeFocused();
+      expect(mocks.batches).toHaveLength(0);
+      expect(mocks.submissions).toHaveLength(0);
+    });
+  }
+}

@@ -72,3 +72,33 @@ it('associates supplied field errors with their numeric inputs', () => {
   expect(screen.getByLabelText('ציון 1').hasAttribute('aria-invalid')).toBe(false);
   expect(screen.getByLabelText('יחידות 1').hasAttribute('aria-describedby')).toBe(false);
 });
+
+it('renders field messages in one full-width row after the invalid subject row', () => {
+  render(
+    <BagrutSubjectRows
+      rows={[
+        { label: 'מתמטיקה', units: 6, grade: 130, assessmentKind: 'exam' },
+        { label: 'אנגלית', units: 5, grade: 95, assessmentKind: 'exam' },
+      ]}
+      onChange={() => {}}
+      fieldErrors={[{ units: 'יחידות בין 1 ל-5', grade: 'ציון בין 0 ל-100' }]}
+    />,
+  );
+  const inputRow = screen.getByLabelText('מקצוע 1').closest('tr');
+  const unitsMessage = screen.getByText('יחידות בין 1 ל-5');
+  const gradeMessage = screen.getByText('ציון בין 0 ל-100');
+  const errorRow = unitsMessage.closest('tr');
+  expect(errorRow).not.toBe(inputRow);
+  expect(errorRow?.previousElementSibling).toBe(inputRow);
+  expect(errorRow?.nextElementSibling).toBe(screen.getByLabelText('מקצוע 2').closest('tr'));
+  expect(errorRow?.querySelectorAll('td')).toHaveLength(1);
+  expect(unitsMessage.closest('td')?.colSpan).toBe(4);
+  expect(gradeMessage.closest('tr')).toBe(errorRow);
+  for (const [label, message] of [
+    ['יחידות 1', unitsMessage],
+    ['ציון 1', gradeMessage],
+  ] as const) {
+    expect(screen.getByLabelText(label).getAttribute('aria-describedby')).toBe(message.id);
+    expect(screen.getByLabelText(label).getAttribute('aria-invalid')).toBe('true');
+  }
+});
