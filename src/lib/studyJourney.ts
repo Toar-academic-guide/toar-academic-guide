@@ -1,4 +1,5 @@
 import { institutionLink } from '@/lib/institutionLinks';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
@@ -363,6 +364,14 @@ export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institu
 }
 
 export { institutionLink as officialUrl } from '@/lib/institutionLinks';
+
+export function showsOfficialNoCalculationNote(result?: AdmissionsEvaluationResult): boolean {
+  return (
+    (result?.kind === 'tracked_missing_rule' || result?.kind === 'authority_unavailable') &&
+    result.explanation === HAIFA_NO_CALCULATION_NOTE &&
+    Boolean(result.officialUrls?.length && resultSourceLinks(result)?.length)
+  );
+}
 
 export function resultSourceLinks(result?: AdmissionsEvaluationResult, fallbackUrl?: string) {
   if (result?.kind !== 'tracked_missing_rule' && result?.kind !== 'authority_unavailable')

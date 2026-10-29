@@ -1,4 +1,5 @@
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import evidence from '@/data/admissions/haifaProgrammePolicies.json';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import type {
@@ -57,7 +58,7 @@ export function haifaMissingRuleResult(
     decision: 'unknown',
     confidence: 'low',
     sourceLabel: 'אין מספיק מידע',
-    explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    explanation: HAIFA_NO_CALCULATION_NOTE,
     nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
     officialUrls: [
       'https://admissions.haifa.ac.il/score-calculation/',

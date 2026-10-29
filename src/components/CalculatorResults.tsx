@@ -8,6 +8,7 @@ import {
   resultLabel,
   resultSourceLinks,
   resultExplanation,
+  showsOfficialNoCalculationNote,
 } from '@/lib/studyJourney';
 import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
@@ -935,12 +936,14 @@ export default function CalculatorResults({
                           ) : null}
                         </div>
                       </div>
-                      <span
-                        aria-label={`${institution.name}: ${statusLabel}`}
-                        className={`${statusBackground} shrink-0 self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold whitespace-nowrap text-black sm:self-center`}
-                      >
-                        {statusLabel}
-                      </span>
+                      {!showsOfficialNoCalculationNote(result) && (
+                        <span
+                          aria-label={`${institution.name}: ${statusLabel}`}
+                          className={`${statusBackground} shrink-0 self-start rounded-full border-2 border-black px-3 py-1 text-[10px] font-extrabold whitespace-nowrap text-black sm:self-center`}
+                        >
+                          {statusLabel}
+                        </span>
+                      )}
                     </div>
                   );
                 })}

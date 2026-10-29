@@ -175,6 +175,38 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 
 describe('CalculatorResults', () => {
   it.each([
+    ['haifa', 'authority_unavailable'],
+    ['haifa', 'tracked_missing_rule'],
+    ['bgu', 'tracked_missing_rule'],
+  ] as const)(
+    'H1 hides the no-calculation status chip only for Haifa (%s, %s)',
+    async (institutionId, kind) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const result = { ...captured, kind, capability: kind } as AdmissionsEvaluationResult;
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId={institutionId === 'haifa' ? 'haifa_psychology' : qaReplay.h1.bgu.programId}
+          programs={programs}
+          psychometric={700}
+          bagrut={86}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(result.explanation, { exact: true })).toBeTruthy();
+      expect(screen.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      if (institutionId === 'haifa') {
+        expect(screen.queryByLabelText(/^אוניברסיטת חיפה: /)).toBeNull();
+        expect(screen.queryByText('האימות טרם הושלם')).toBeNull();
+        expect(screen.queryByText('חסר אימות רשמי')).toBeNull();
+      } else {
+        expect(screen.getByLabelText(`${result.institution.name}: חסר אימות רשמי`)).toBeTruthy();
+        expect(screen.getByText('חסר אימות רשמי')).toBeTruthy();
+      }
+    },
+  );
+
+  it.each([
     ['haifa', 'authority_unavailable', true],
     ['haifa', 'tracked_missing_rule', true],
     ['bgu', 'authority_unavailable', true],

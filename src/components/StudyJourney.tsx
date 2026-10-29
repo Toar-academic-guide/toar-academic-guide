@@ -43,6 +43,7 @@ import {
   resultLabel,
   resultExplanation,
   resultSourceLinks,
+  showsOfficialNoCalculationNote,
   isTechnionMedicineScore,
   formatJourneyScore,
   officialUrl,
@@ -447,6 +448,7 @@ export default function StudyJourney({
     activeRow?.institution.id,
   );
   const activeSourceLinks = resultSourceLinks(activeRow?.result, activeOfficialUrl);
+  const activeShowsNoCalculationNote = showsOfficialNoCalculationNote(activeRow?.result);
   const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
@@ -761,11 +763,13 @@ export default function StudyJourney({
                 ? row.institution.name
                 : row.fieldName}
           </button>
-          <span
-            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
-          >
-            {status.label}
-          </span>
+          {!showsOfficialNoCalculationNote(row.result) && (
+            <span
+              className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+            >
+              {status.label}
+            </span>
+          )}
           {sourceLinks && (
             <>
               <p className="journey-result-explanation">
@@ -1450,14 +1454,20 @@ export default function StudyJourney({
                     </button>
                   </div>
                   {description && !isBatchCUnsupported && <p>{description}</p>}
-                  <span
-                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
-                  >
-                    {calculating && !activeRow.result && !activeRow.failed
-                      ? 'מחשבים התאמה…'
-                      : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id)
-                          .label}
-                  </span>
+                  {!activeShowsNoCalculationNote && (
+                    <span
+                      className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
+                    >
+                      {calculating && !activeRow.result && !activeRow.failed
+                        ? 'מחשבים התאמה…'
+                        : resultLabel(
+                            activeRow.result,
+                            activeRow.failed,
+                            false,
+                            activeRow.program.id,
+                          ).label}
+                    </span>
+                  )}
                   {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
                     <TechnionMedicineComparison score={activeRow.result.score} />
                   ) : biuFloorResult ? (
@@ -1538,11 +1548,13 @@ export default function StudyJourney({
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          <button onClick={() => go('missing')}>
-                            {activeRow.result?.scoreAssessment
-                              ? 'עדכון נתונים ותנאים נוספים'
-                              : 'השלמת נתונים לחישוב'}
-                          </button>
+                          {!activeShowsNoCalculationNote && (
+                            <button onClick={() => go('missing')}>
+                              {activeRow.result?.scoreAssessment
+                                ? 'עדכון נתונים ותנאים נוספים'
+                                : 'השלמת נתונים לחישוב'}
+                            </button>
+                          )}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}

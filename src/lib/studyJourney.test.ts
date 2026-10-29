@@ -8,6 +8,7 @@ import {
   toggleLocation,
   resultLabel,
   resultExplanation,
+  showsOfficialNoCalculationNote,
   groupJourneyRows,
   studyFields,
   matchesStudyField,
@@ -392,6 +393,54 @@ it('QA block 1: mon_12220708942_cs result detail retains published CS conditions
   for (const floor of ['75', '600', '115', '580']) expect(requirements.join(' ')).toContain(floor);
   expect(detail?.programUrl).toBe('https://w3.braude.ac.il/intrested/');
   expect(program).toEqual(braudeCsFixture.program);
+});
+
+describe('H1 showsOfficialNoCalculationNote', () => {
+  it.each(['tracked_missing_rule', 'authority_unavailable'] as const)(
+    'recognizes the Haifa note with official sources for %s only',
+    (kind) => {
+      const result = {
+        ...qaReplay.h1.result,
+        kind,
+        capability: kind,
+      } as AdmissionsEvaluationResult;
+      expect(showsOfficialNoCalculationNote(result)).toBe(true);
+      for (const explanation of [
+        'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        'סף המחשבון אינו תואם את הסף שפורסם למסלול.',
+      ]) {
+        expect(showsOfficialNoCalculationNote({ ...result, explanation })).toBe(false);
+      }
+      expect(
+        showsOfficialNoCalculationNote({
+          ...qaReplay.h1.bgu.result,
+          kind,
+          capability: kind,
+        } as AdmissionsEvaluationResult),
+      ).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: [] })).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: undefined })).toBe(false);
+    },
+  );
+
+  it.each([
+    'exact',
+    'estimated',
+    'needs_input',
+    'manual_gate',
+    'requirements_only',
+    'unsupported',
+    'degraded',
+    'open_admission',
+  ] as const)('does not hide the chip for %s even with the note and official sources', (kind) => {
+    expect(
+      showsOfficialNoCalculationNote({ ...qaReplay.h1.result, kind } as AdmissionsEvaluationResult),
+    ).toBe(false);
+  });
+
+  it('does not hide the chip before a result is available', () => {
+    expect(showsOfficialNoCalculationNote(undefined)).toBe(false);
+  });
 });
 
 // H1: keep the real captured API explanation instead of substituting generic copy.

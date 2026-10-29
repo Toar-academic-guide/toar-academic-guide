@@ -123,11 +123,24 @@ describe('account grades in the homepage journey', () => {
         }),
       );
       const { container } = render(<StudyJourney initialStep={surface} />);
-      await waitFor(() =>
-        expect(container.querySelector('.journey-status')?.textContent).toBe(
-          resultLabel(apiResult, false, false, programId).label,
-        ),
-      );
+      if (institutionId === 'haifa') {
+        // Approved test update, Jorje 2026-10-29
+        await waitFor(() => {
+          const noteScope = within(
+            container.querySelector(
+              surface === 'results' ? '.journey-result-row' : '.journey-narrow',
+            )!,
+          );
+          expect(noteScope.getByText(apiResult.explanation, { exact: true })).toBeTruthy();
+        });
+        expect(container.querySelector('.journey-status')).toBeNull();
+      } else {
+        await waitFor(() =>
+          expect(container.querySelector('.journey-status')?.textContent).toBe(
+            resultLabel(apiResult, false, false, programId).label,
+          ),
+        );
+      }
       const scope = within(
         container.querySelector(
           surface === 'results' ? '.journey-result-row' : '.journey-detail',
@@ -149,6 +162,95 @@ describe('account grades in the homepage journey', () => {
         expect(scope.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
           /^https:\/\//,
         );
+      }
+    },
+  );
+
+  it.each(
+    (['results', 'detail'] as const).flatMap((surface) =>
+      [
+        {
+          programId: 'haifa_psychology',
+          institutionId: 'haifa',
+          kind: 'authority_unavailable',
+          hide: true,
+        },
+        { programId: 'haifa_cs', institutionId: 'haifa', kind: 'tracked_missing_rule', hide: true },
+        {
+          programId: qaReplay.h1.bgu.programId,
+          institutionId: 'bgu',
+          kind: 'tracked_missing_rule',
+          hide: false,
+        },
+        {
+          programId: 'haifa_infosystems',
+          institutionId: 'haifa',
+          kind: 'tracked_missing_rule',
+          hide: false,
+          explanation:
+            'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        },
+        {
+          programId: 'haifa_cs',
+          institutionId: 'haifa',
+          kind: 'authority_unavailable',
+          hide: false,
+          explanation: 'סף המחשבון אינו תואם את הסף שפורסם למסלול.',
+        },
+      ].map((testCase) => ({ ...testCase, surface })),
+    ),
+  )(
+    'H1 $surface hides only the no-calculation chip and completion link for $programId ($kind, hide=$hide)',
+    async ({ surface, programId, institutionId, kind, hide, explanation }) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const apiResult = {
+        ...captured,
+        kind,
+        capability: kind,
+        explanation: explanation ?? captured.explanation,
+      } as AdmissionsEvaluationResult;
+      const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: { [programId]: { results: [apiResult] } },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [studyFields([program])[0].id],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: `${programId}:${institutionId}`,
+          scores: { bagrut: { weightedAverage: 86 }, psychometric: { overall: 700 } },
+        }),
+      );
+      const { container } = render(<StudyJourney initialStep={surface} />);
+      await waitFor(() =>
+        expect(screen.getByText(apiResult.explanation, { exact: true })).toBeTruthy(),
+      );
+      const scope = within(
+        container.querySelector(surface === 'results' ? '.journey-result-row' : '.journey-narrow')!,
+      );
+      expect(scope.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      if (hide) {
+        expect.soft(container.querySelector('.journey-status')).toBeNull();
+        expect.soft(scope.queryByText('הנתונים הרשמיים אינם זמינים')).toBeNull();
+        expect.soft(scope.queryByText('חסרים נתוני קבלה רשמיים')).toBeNull();
+      } else {
+        expect(container.querySelector('.journey-status')?.textContent).toBe(
+          resultLabel(apiResult).label,
+        );
+      }
+      if (surface === 'detail') {
+        if (hide) {
+          expect(scope.queryByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeNull();
+        } else {
+          expect(scope.getByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeTruthy();
+        }
+        expect(scope.getByRole('button', { name: 'עוד דרכי קבלה' })).toBeTruthy();
       }
     },
   );
