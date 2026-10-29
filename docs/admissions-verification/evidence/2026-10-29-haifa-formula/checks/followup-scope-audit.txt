@@ -1,0 +1,6 @@
+PASS: evaluator changes are exactly the allowed unused-import removal and Haifa enrichment early return. Protected student strings unchanged.
+PASS: mapping test changes only the two Haifa transport expectations; score806/threshold700 and failing verdict assertion untouched.
+PASS: ledger, coverage-retirement and data-health test changes are counts plus mandatory approval comments only.
+PASS: original611/606 approval comments remain unchanged.
+PASS: git diff --check.
+PASS: published-threshold edits only add the single psychology inventory member and41 count; SEO test only updates41 and the now-valid link.

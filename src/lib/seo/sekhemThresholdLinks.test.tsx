@@ -141,7 +141,8 @@ describe('published-threshold calculator links', () => {
       .sort();
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
-    expect(linked).toHaveLength(40);
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    expect(linked).toHaveLength(41);
     expect(linked).toEqual(
       expect.arrayContaining([
         'haifa_infosystems',
@@ -227,7 +228,8 @@ describe('published-threshold calculator links', () => {
     const link = heading.parentElement!.querySelector(
       'a[href="/sekhem-calculator?program=haifa_psychology"]',
     );
-    expect(link).toBeNull(); // This programme currently has no verified score or named gate.
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    expect(link).not.toBeNull();
     expect(heading.parentElement!.textContent).toContain('650');
   });
 });

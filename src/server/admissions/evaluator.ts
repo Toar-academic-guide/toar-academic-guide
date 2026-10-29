@@ -78,7 +78,6 @@ import {
   loadFreshnessStatesBySourceIds,
   type AdmissionsCapabilityEntry,
 } from './capabilityMatrix';
-import { runHaifaAdmissionsProof } from '@/server/ingestion/adapters/haifaAdmissions';
 import {
   evaluateHaifaProgrammePolicy,
   getHaifaProgrammePolicy,
@@ -282,6 +281,8 @@ function withVerifiedAdmissionInformation(
 ): AdmissionsEvaluationResult {
   if (entry?.formulaPairScope === 'excluded' || entry?.pairVerification?.state !== 'exact')
     return result;
+
+  if (result.linkedInstitutionId === 'haifa') return result;
 
   const artifact =
     input.degreeId === 'haifa_infosystems' && result.linkedInstitutionId === 'haifa'

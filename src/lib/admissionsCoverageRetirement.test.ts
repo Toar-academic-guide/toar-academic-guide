@@ -14,8 +14,10 @@ it('retains the pair-level verification baseline independently of the institutio
     formulaPairVerificationCompletion(inventory, FORMULA_BACKED_VERIFICATION_LEDGER),
   ).toMatchObject({
     total: 143,
-    exact: 123,
-    withheld: 19,
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    exact: 125,
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    withheld: 17,
     isComplete: false,
   });
 });

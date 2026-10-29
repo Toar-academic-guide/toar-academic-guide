@@ -21,7 +21,7 @@ import {
 
 vi.mock('server-only', () => ({}));
 
-it('A/F every Haifa programme has the exact honest official-source note and never asks for its average', async () => {
+it('A/F Haifa subject records reach programme gates without asking for an institutional average', async () => {
   const failures = [];
   for (const [catalogue, programs] of [
     ['static', gapPrograms],
@@ -29,20 +29,17 @@ it('A/F every Haifa programme has the exact honest official-source note and neve
   ] as const) {
     for (const program of programsFor('haifa', programs)) {
       const { result } = await gapEvaluate(program, 'haifa', gapApplicant());
-      const honest =
-        result.kind ===
-        (['psychology', 'haifa_psychology'].includes(program.id)
-          ? 'authority_unavailable'
-          : 'tracked_missing_rule');
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      const honest = result.kind === (program.id === 'haifa_engineering' ? 'unsupported' : 'needs_input');
       const officialLink = result.officialUrls?.some((url) => {
         const host = new URL(url).hostname;
         return host === 'admissions.haifa.ac.il' || host === 'applicants.haifa.ac.il';
       });
       if (
         !honest ||
-        !officialLink ||
-        // Approved test update, Jorje 2026-10-29
-        result.explanation !== 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה' ||
+        (result.kind !== 'needs_input' && !officialLink) ||
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+        result.score !== undefined ||
         result.explanation.includes('ממוצע בגרות רשמי של חיפה') ||
         result.requiredInputs?.includes('haifa_bagrut_average')
       )
@@ -71,10 +68,12 @@ it('uses student terminology in the three admission-copy strings introduced by P
     'haifa',
     gapApplicant(),
   );
-  expect(psychology.kind).toBe('authority_unavailable');
-  // Approved test update: Jorje 2026-10-29, option A, ledger-withheld Haifa psychology gets the Haifa note on saved and proxy paths; official-calculator results stay live.
-  expect(psychology.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
-  expect(haifa.explanation).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
+  // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved102-psychology.json
+  expect(psychology.kind).toBe('needs_input');
+  // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved102-psychology.json
+  expect(psychology.requiredInputs).toEqual(['haifa_hebrew_qualification', 'haifa_psychometric_month']);
+  // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+  expect(haifa.requiredInputs).toEqual(['haifa_hebrew_qualification']);
   expect(
     [medicine, psychology.explanation, haifa.explanation].filter((text) =>
       /מתואם|סכם|מצרף/.test(text),
@@ -199,7 +198,7 @@ function haifaAnswer(result: Awaited<ReturnType<typeof gapEvaluate>>['result']) 
 }
 
 it.each(['haifa_psychology', 'psychology'])(
-  'saved Haifa average gives the same honest note as a proxy for %s',
+  'saved %s reaches its missing-month gate while a proxy keeps the Haifa note',
   async (id) => {
     const { saved, proxy } = haifaAverageApplicants();
     expect(
@@ -211,25 +210,23 @@ it.each(['haifa_psychology', 'psychology'])(
     const program = gapPrograms.find((program) => program.id === id)!;
     const { result } = await gapEvaluate(program, 'haifa', saved);
     const { result: proxyResult } = await gapEvaluate(program, 'haifa', proxy);
-    expect(haifaAnswer(result)).toEqual(haifaAnswer(proxyResult));
-    expect(result).toMatchObject({
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-psychology.json
+    expect(result).toMatchObject({ kind: 'needs_input', requiredInputs: ['haifa_psychometric_month'] });
+    expect(haifaAnswer(proxyResult)).toMatchObject({
       kind: 'authority_unavailable',
       capability: 'authority_unavailable',
       explanation: HAIFA_NO_CALCULATION_NOTE,
       officialUrls: expect.arrayContaining(haifaSources),
     });
     for (const answer of [result, proxyResult]) {
-      expect(answer.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
-      expect(answer.officialUrls).toEqual(expect.arrayContaining(haifaSources));
       expect(JSON.stringify(answer)).not.toContain('650');
       expect(answer.degradationReason).toBeUndefined();
     }
+
   },
 );
 
-// Captured on origin/main 56b3a6a with gapApplicant({ haifaBagrutAverage: 104,
-// haifaHebrewQualification: 'hebrew_school' }), across both catalogues.
-// Only the approved Haifa terminology is changed in these literal expectations.
+// Saved Haifa average104, NITE590, Q115/V110/E120; independent gates remain in force.
 const mainSavedHaifaAnswers = [
   {
     ids: ['cs', 'haifa_cs'],
@@ -241,7 +238,8 @@ const mainSavedHaifaAnswers = [
       score: 611,
       threshold: 700,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3210'],
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/computer-information-science/program/3210'],
       explanation:
         'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
     },
@@ -274,14 +272,19 @@ const mainSavedHaifaAnswers = [
     ids: ['haifa_socialwork', 'social_work'],
     result: {
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
+      decision: 'eligible_to_apply',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
+      score: 620,
       threshold: 615,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3082'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3082', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/', 'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 580 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה עומד בסף 615 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     },
   },
   {
@@ -301,28 +304,38 @@ const mainSavedHaifaAnswers = [
     ids: ['communication', 'haifa_communication'],
     result: {
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      decision: 'eligible_to_apply',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      score: 620,
       threshold: 550,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/3229'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/social-sciences/program/3229', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     },
   },
   {
     ids: ['haifa_politicalscience', 'political_science'],
     result: {
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
+      decision: 'eligible_to_apply',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
+      score: 620,
       threshold: 580,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/3054'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/social-sciences/program/3054', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 520 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה עומד בסף 580 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     },
   },
   {
@@ -330,29 +343,36 @@ const mainSavedHaifaAnswers = [
     result: {
       capability: 'exact',
       kind: 'exact',
-      decision: 'below',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      decision: 'pending',
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       score: 611,
       threshold: 630,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3167'],
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/natural-sciences/program/3167', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/'],
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 600 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה נמצא בטווח ההמתנה 600–629; נדרשת החלטת החוג.',
     },
   },
   {
     ids: ['haifa_math'],
     result: {
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       score: 611,
       threshold: 610,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3161'],
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/natural-sciences/program/3161', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/'],
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 580 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה עומד בסף 610 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     },
   },
   {
@@ -372,14 +392,19 @@ const mainSavedHaifaAnswers = [
     ids: ['haifa_sociology'],
     result: {
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
+      decision: 'eligible_to_apply',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
+      score: 620,
       threshold: 540,
       requiredInputs: undefined,
-      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/2968'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
+      officialUrls: ['https://admissions.haifa.ac.il/score-calculation/', 'https://admissions.haifa.ac.il/social-sciences/program/2968', 'https://admissions.haifa.ac.il/hebrew-language-proficiency/', 'https://admissions.haifa.ac.il/english-language-proficiency/'],
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
       explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 520 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+        'ציון הקבלה עומד בסף 540 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     },
   },
   {
@@ -445,7 +470,7 @@ it.each([
   ['static', gapPrograms],
   ['saved_audit', savedGapPrograms],
 ] as const)(
-  'non-psychology saved Haifa results stay unchanged from main across the %s catalogue',
+  'saved Haifa formula results and programme gates agree across the %s catalogue',
   async (_catalogue, programs) => {
     const { saved } = haifaAverageApplicants();
     for (const program of programsFor('haifa', programs)) {
@@ -459,21 +484,25 @@ it.each([
 );
 
 it.each(['haifa_communication', 'communication'])(
-  'saved %s keeps its live exact score and uses student terminology',
+  'saved %s computes the official NITE score locally and uses student terminology',
   async (id) => {
     const { saved } = haifaAverageApplicants();
     const program = savedGapPrograms.find((program) => program.id === id)!;
     const { result, fetcher } = await gapEvaluate(program, 'haifa', saved);
     expect(result).toMatchObject({
       capability: 'exact',
-      kind: 'exact',
-      decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      kind: 'manual_gate',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      decision: 'eligible_to_apply',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      score: 620,
       threshold: 550,
-      explanation:
-        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+      explanation: 'ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
     });
-    expect(fetcher).toHaveBeenCalled();
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+    expect(fetcher).not.toHaveBeenCalled();
     expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף/);
   },
 );

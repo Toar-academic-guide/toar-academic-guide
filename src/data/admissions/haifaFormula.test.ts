@@ -1,3 +1,4 @@
+import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import vectors from '../../../docs/admissions-verification/evidence/2026-10-29-haifa-formula/test_vectors.json';
 import {
@@ -166,5 +167,64 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
     });
     expect(result).toMatchObject({ kind: 'unsupported', decision: 'unknown' });
     expect(result.institution.programUrl ?? result.officialUrls?.[0]).toBeTruthy();
+  });
+});
+
+describe("ruling (a): official NITE total and Haifa calculator PC siblings", () => {
+  it.each([
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
+    ['rulingsHaifaTau-saved-communication.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-nursing.json
+    ['rulingsHaifaTau-saved-nursing.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-occupational_therapy.json
+    ['rulingsHaifaTau-saved-occupational_therapy.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-physiotherapy.json
+    ['rulingsHaifaTau-saved-physiotherapy.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
+    ['rulingsHaifaTau-saved-political_science.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-psychology.json
+    ['rulingsHaifaTau-saved-psychology.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
+    ['rulingsHaifaTau-saved-social_work.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
+    ['rulingsHaifaTau-saved-sociology.json', 620],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-law.json
+    ['rulingsHaifaTau-saved-law.json', 626],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-communication.json
+    ['sekhemCalculatorGap-derived-communication.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-nursing.json
+    ['sekhemCalculatorGap-derived-nursing.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-occupational_therapy.json
+    ['sekhemCalculatorGap-derived-occupational_therapy.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-physiotherapy.json
+    ['sekhemCalculatorGap-derived-physiotherapy.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-political_science.json
+    ['sekhemCalculatorGap-derived-political_science.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-psychology.json
+    ['sekhemCalculatorGap-derived-psychology.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-social_work.json
+    ['sekhemCalculatorGap-derived-social_work.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-sociology.json
+    ['sekhemCalculatorGap-derived-sociology.json', 623],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/sekhemCalculatorGap-derived-law.json
+    ['sekhemCalculatorGap-derived-law.json', 629],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved102-psychology.json
+    ['rulingsHaifaTau-saved102-psychology.json', 615],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
+    ['rulingsHaifaTau-saved104-nite700-psychology.json', 703],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/bugsFirst-audit-psychology.json
+    ['bugsFirst-audit-psychology.json', 701],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/haifaProgramVerification-high-psychology.json
+    ['haifaProgramVerification-high-psychology.json', 818],
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/haifaProgramVerification-low-psychology.json
+    ['haifaProgramVerification-low-psychology.json', 493],
+  ] as const)('%s keeps the NITE score and reproduces the captured calculator with its own PC', (file, niteScore) => {
+    const capture = JSON.parse(readFileSync(`docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/${file}`, 'utf8'));
+    const content = capture.json.data[0].results[0].content as { label: string; value: string }[];
+    const calculatorPC = Number(content.find((row) => row.label === 'ציון הפסיכומטרי שלך')!.value);
+    const calculatorScore = Number(content.find((row) => row.label === 'הציון המשוקלל שלך')!.value);
+    expect(calculateHaifaAdmissionScore(capture.localInput)).toEqual({ kind: 'calculated', score: niteScore });
+    // Each case names its exact capture above; only this sibling substitutes the displayed calculator PC.
+    expect(calculateHaifaAdmissionScore({ ...capture.localInput, psychometric: calculatorPC })).toEqual({ kind: 'calculated', score: calculatorScore });
   });
 });

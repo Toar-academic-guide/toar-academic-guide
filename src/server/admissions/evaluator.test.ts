@@ -4874,7 +4874,8 @@ it.each([
     expect(report.results[0].estimationReason).toBeUndefined();
     return;
   }
-  expect(report.results[0].score).toBe(proxy ? 806 : 702);
+  // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+  expect(report.results[0].score).toBe(proxy ? 806 : defaulted ? 699 : 702);
   expect(report.results[0].estimated === true).toBe(defaulted);
   if (defaulted) {
     expect(report.results[0].estimationReason).toContain('שנת הבגרות');

@@ -66,8 +66,10 @@ describe('formula-backed verification ledger', () => {
     // Approved test update, Jorje 2026-10-28
     expect(completion).toMatchObject({
       total: 143,
-      exact: 123,
-      withheld: 19,
+      // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+      exact: 125,
+      // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+      withheld: 17,
       isComplete: false,
     });
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten withheld pairs.
@@ -76,7 +78,8 @@ describe('formula-backed verification ledger', () => {
       tau: { total: 33, exact: 29, withheld: 4, stale: 0, blocked: 0 },
       huji: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       bgu: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
-      haifa: { total: 27, exact: 24, withheld: 2, stale: 0, blocked: 1 },
+      // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+      haifa: { total: 27, exact: 26, withheld: 0, stale: 0, blocked: 1 },
       technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
       biu: { total: 12, exact: 0, withheld: 12, stale: 0, blocked: 0 },
@@ -86,7 +89,8 @@ describe('formula-backed verification ledger', () => {
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toHaveLength(123);
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    ).toHaveLength(125);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {
@@ -140,7 +144,8 @@ describe('formula-backed verification ledger', () => {
 
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three estimated pairs without exact formula proof.
     // Approved test update, Jorje 2026-10-28
-    expect(withheld).toHaveLength(19);
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    expect(withheld).toHaveLength(17);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(
