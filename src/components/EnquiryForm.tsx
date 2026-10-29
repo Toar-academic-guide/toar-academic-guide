@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
 import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
+import { getEnquiryOrigin } from '@/lib/leadAttribution';
 import { ENQUIRY_COPY as COPY, ENQUIRY_PREP_CONSENT, type EnquiryInput } from '@/lib/enquiries';
 
 const CONSENT_COLOR = '#666666';
@@ -104,7 +105,10 @@ export default function EnquiryForm({
       phone,
       programId,
       institutionId,
-      sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
+      sourcePath: (
+        (window.location.pathname === '/enquiry' && getEnquiryOrigin()) ||
+        window.location.pathname
+      ).slice(0, 300),
       consent: true,
       prepConsent: values.has('prepConsent'),
       attribution: getSessionAttribution(),

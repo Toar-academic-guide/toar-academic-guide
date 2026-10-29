@@ -1,7 +1,111 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { enquiryAttributionSchema } from './leadAttribution';
+import {
+  clearEnquiryOrigin,
+  enquiryAttributionSchema,
+  getEnquiryOrigin,
+  recordEnquiryOrigin,
+} from './leadAttribution';
 import { getSessionAttribution } from './sessionAttribution';
+
+describe('enquiry origin', () => {
+  const key = 'myway_enquiry_origin_v1';
+  beforeEach(() => {
+    sessionStorage.clear();
+    window.history.replaceState(null, '', '/psychometric-dates?private=value#private');
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue('');
+  });
+  afterEach(() => {
+    sessionStorage.clear();
+    window.history.replaceState(null, '', '/');
+  });
+
+  it('stores only the validated bare current path when navigating to enquiry', () => {
+    recordEnquiryOrigin('/enquiry?program=psychometric-preparation');
+    expect(sessionStorage.getItem(key)).toBe('/psychometric-dates');
+    expect(getEnquiryOrigin()).toBe('/psychometric-dates');
+    expect(getEnquiryOrigin()).toBe('/psychometric-dates');
+  });
+
+  it.each(['/not-a-page', '/enquiry-fake'])('does not turn unknown origin %s into /', (path) => {
+    window.history.replaceState(null, '', path);
+    recordEnquiryOrigin('/enquiry');
+    expect(sessionStorage.getItem(key)).toBeNull();
+    expect(getEnquiryOrigin()).toBeUndefined();
+  });
+
+  it.each([
+    '',
+    '/not-a-page',
+    '/enquiry-fake',
+    'garbage',
+    'https://evil.example/x',
+    '//evil.example/x',
+    '/\\evil.example/x',
+    '{invalid',
+  ])('ignores invalid stored origin %s', (value) => {
+    sessionStorage.setItem(key, value);
+    expect(getEnquiryOrigin()).toBeUndefined();
+  });
+
+  it.each(['/programs/cs?private=value', '/programs/cs#private', '/programs/cs?x=1#y'])(
+    'reduces stored origin %s to the bare path',
+    (value) => {
+      sessionStorage.setItem(key, value);
+      expect(getEnquiryOrigin()).toBe('/programs/cs');
+    },
+  );
+
+  it('falls back to an allowlisted same-origin referrer without query or hash', () => {
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue(
+      `${window.location.origin}/programs/cs?x=1#y`,
+    );
+    expect(getEnquiryOrigin()).toBe('/programs/cs');
+  });
+
+  it.each([
+    '',
+    'https://evil.example/programs/cs',
+    '//evil.example/programs/cs',
+    '/programs/cs',
+    'http://localhost.evil.example/programs/cs',
+    'http://localhost/not-a-page',
+    'http://user:password@localhost/programs/cs',
+  ])('ignores invalid referrer %s', (value) => {
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue(value);
+    expect(getEnquiryOrigin()).toBeUndefined();
+  });
+
+  it.each([
+    '/about',
+    '/enquiry-fake',
+    'https://evil.example/enquiry',
+    '//evil.example/enquiry',
+    'http://[',
+  ])('clears pending origin on a transition to %s', (destination) => {
+    recordEnquiryOrigin('/enquiry');
+    recordEnquiryOrigin(destination);
+    expect(sessionStorage.getItem(key)).toBeNull();
+  });
+
+  it('clears origin for a fresh document', () => {
+    recordEnquiryOrigin('/enquiry');
+    clearEnquiryOrigin();
+    expect(getEnquiryOrigin()).toBeUndefined();
+  });
+
+  it.each(['getItem', 'setItem', 'removeItem'] as const)(
+    'tolerates blocked storage %s',
+    (method) => {
+      vi.spyOn(Storage.prototype, method).mockImplementation(() => {
+        throw new Error('denied');
+      });
+      expect(() => recordEnquiryOrigin('/enquiry')).not.toThrow();
+      expect(() => clearEnquiryOrigin()).not.toThrow();
+      expect(() => getEnquiryOrigin()).not.toThrow();
+    },
+  );
+});
 
 describe('session first-touch attribution', () => {
   beforeEach(() => {
