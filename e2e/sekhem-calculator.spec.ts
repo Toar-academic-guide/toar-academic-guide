@@ -965,3 +965,57 @@ for (const width of [1280, 390]) {
     });
   }
 }
+
+for (const width of [1280, 390]) {
+  test(`invalid range fields keep danger borders and focus outline at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    const first = page.getByLabel('ציון 1', { exact: true });
+    const second = page.getByLabel('יחידות 2', { exact: true });
+    const valid = page.getByLabel('ציון 4', { exact: true });
+    await first.fill('130');
+    await second.fill('6');
+    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    await expect(first).toBeFocused();
+    await expect(second).not.toBeFocused();
+    const appearance = (input: Locator) =>
+      input.evaluate((node) => {
+        const style = getComputedStyle(node);
+        return {
+          borders: [
+            style.borderTopColor,
+            style.borderRightColor,
+            style.borderBottomColor,
+            style.borderLeftColor,
+          ],
+          outlineColour: style.outlineColor,
+          outlineWidth: parseFloat(style.outlineWidth),
+          outlineStyle: style.outlineStyle,
+        };
+      });
+    const danger = Array(4).fill('rgb(140, 36, 56)');
+    const normal = Array(4).fill('rgb(132, 148, 173)');
+    for (const input of [first, second]) {
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+      expect.soft((await appearance(input)).borders).toEqual(danger);
+    }
+    const focused = await appearance(first);
+    expect.soft(focused.outlineColour).toBe('rgb(140, 36, 56)');
+    expect(focused.outlineWidth).toBeGreaterThan(0);
+    expect(focused.outlineStyle).not.toBe('none');
+    expect((await appearance(valid)).borders).toEqual(normal);
+    expect(await valid.getAttribute('class')).toBeNull();
+    await page.getByLabel('ציון 3', { exact: true }).focus();
+    await expect(first).not.toBeFocused();
+    for (const input of [first, second])
+      expect.soft((await appearance(input)).borders).toEqual(danger);
+    expect((await appearance(valid)).borders).toEqual(normal);
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+}
