@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { psychometricDatesCheckedOn } from '@/data/psychometricDates';
 import { indexableInstitutionIds, indexableProgramIds } from '@/lib/seo/indexability';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import {
@@ -51,6 +52,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
   // Authored with the calculator page; never replace this with the build date.
   dates.set('/sekhem-calculator', '2026-10-28');
+  dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',
@@ -60,6 +62,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/',
     '/about',
     '/sekhem-calculator',
+    '/psychometric-dates',
     '/institutions',
     '/programs',
     ...(await indexableInstitutionIds(catalogue)).map(

@@ -3,17 +3,21 @@ import { psychometricDates } from '../src/data/psychometricDates';
 import { getSittingStatuses } from '../src/lib/psychometricDates';
 
 for (const width of [1280, 390]) {
-  test(`official psychometric dates and registration status at ${width}px`, async ({ page }) => {
-    await page.route('**/api/enquiries**', (route) => route.abort());
-    await page.route(/^https?:\/\/(?!localhost(?::|\/)|127\.0\.0\.1(?::|\/))/, (route) =>
-      route.abort(),
+  test(`official psychometric dates and registration status at ${width}px`, async ({
+    page,
+    baseURL,
+  }) => {
+    const origin = new URL(baseURL ?? 'http://localhost:3000').origin;
+    await page.route('**/*', (route) =>
+      new URL(route.request().url()).origin === origin ? route.continue() : route.abort(),
     );
+    await page.route('**/api/enquiries**', (route) => route.abort());
     await page.setViewportSize({ width, height: 900 });
     const before = new Date();
     await page.goto('/psychometric-dates');
     const main = page.getByRole('main');
     await expect(main.getByRole('heading', { level: 1 })).toHaveText('מועדי פסיכומטרי 2026–2027');
-    // Retry if a Jerusalem midnight crossed the request; never freeze only the browser clock.
+    // Accept either side if Jerusalem midnight crossed the request; the server clock stays real.
     const statuses = getSittingStatuses(psychometricDates, before);
     const afterStatuses = getSittingStatuses(psychometricDates, new Date());
     const rows = main.locator('tbody tr');

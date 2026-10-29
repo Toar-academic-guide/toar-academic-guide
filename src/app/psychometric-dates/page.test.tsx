@@ -32,7 +32,7 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   expect(rows[0].textContent).toContain('ההרשמה נסגרה');
   expect(rows[1].textContent).toContain('המועד הקרוב');
   expect(within(main).getAllByText('המועד הקרוב')).toHaveLength(1);
-  const ctas = within(main).getAllByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true });
+  const ctas = within(main).getAllByRole('link', { name: 'בדיקת סיכויי קבלה' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
   const stamp = within(main).getByText(/נבדק בתאריך/);
