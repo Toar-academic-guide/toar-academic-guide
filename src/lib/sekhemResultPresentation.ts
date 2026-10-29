@@ -106,6 +106,10 @@ const institutionNames: Record<string, string> = {
   hit: 'HIT',
 };
 
+export function institutionShortName(id: string, fallback: string): string {
+  return institutionNames[id] ?? fallback;
+}
+
 export function resultSourceReason(result: AdmissionsEvaluationResult): string {
   const institution = institutionNames[result.linkedInstitutionId ?? result.institution.id];
   return institution

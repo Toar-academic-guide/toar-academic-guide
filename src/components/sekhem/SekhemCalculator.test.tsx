@@ -45,6 +45,7 @@ const response = (requiredInputs: AdmissionsRequiredInput[] = []): AdmissionsBat
 });
 const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => {
+  sessionStorage.clear();
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockReset();
   fetchMock.mockImplementation(async (url) => {
@@ -354,4 +355,189 @@ it('keeps an HTTP service failure visible and retries the failed programmes', as
     ['haifa_cs'],
     ['haifa_cs'],
   ]);
+});
+
+it('qualifies programme options with institution names without changing values or order', () => {
+  const choices = [
+    offerings[0],
+    {
+      ...offerings[0],
+      programId: 'biu_cs',
+      institutionId: 'biu',
+      institutionName: 'אוניברסיטת בר-אילן',
+    },
+    { ...offerings[0], programId: 'other', institutionId: 'other', institutionName: 'מוסד אחר' },
+    offerings[0],
+  ];
+  render(<SekhemCalculator offerings={choices} />);
+  expect(
+    Array.from(screen.getByLabelText('תוכנית לימודים').querySelectorAll('option'), (option) => [
+      option.value,
+      option.textContent,
+    ]),
+  ).toEqual([
+    ['', 'כל התוכניות'],
+    ['haifa_cs', 'מדעי המחשב · חיפה'],
+    ['biu_cs', 'מדעי המחשב · בר־אילן'],
+    ['other', 'מדעי המחשב · מוסד אחר'],
+  ]);
+});
+
+it('restores the complete draft and last results after remount', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  const view = render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: '4' } });
+  fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+  fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+  fireEvent.change(screen.getByLabelText('תוכנית לימודים'), { target: { value: 'haifa_cs' } });
+  submit();
+  fireEvent.change(await screen.findByLabelText('ממוצע בגרות בחיפה'), { target: { value: '104' } });
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  submit();
+  await screen.findByTestId('institution-haifa');
+  act(() => window.dispatchEvent(new Event('pagehide')));
+  view.unmount();
+  render(<SekhemCalculator offerings={offerings} />);
+  expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '92');
+  expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '4');
+  expect(screen.getByLabelText('מגזר')).toHaveProperty('value', 'ערבי');
+  expect(screen.getByLabelText('סוג תעודה')).toHaveProperty('value', 'internal');
+  expect(screen.getByLabelText('תוכנית לימודים')).toHaveProperty('value', 'haifa_cs');
+  for (const [label, value] of [
+    ['מילולי', '130'],
+    ['כמותי', '140'],
+    ['אנגלית', '135'],
+    ['פסיכומטרי — ציון כללי', '700'],
+    ['ממוצע בגרות בחיפה', '104'],
+  ])
+    expect(
+      screen.getByLabelText(label, { exact: label !== 'פסיכומטרי — ציון כללי' }),
+    ).toHaveProperty('value', value);
+  expect(screen.getByTestId('institution-haifa')).toBeTruthy();
+  expect(fetchMock).toHaveBeenCalledTimes(2);
+});
+
+it('explicit programme prefill overrides an incompatible saved selection', async () => {
+  const choices = [...offerings, { ...offerings[0], programId: 'haifa_law' }];
+  const view = render(<SekhemCalculator offerings={choices} initialProgramId="haifa_cs" />);
+  examples();
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  view.unmount();
+  const next = render(<SekhemCalculator offerings={choices} initialProgramId="haifa_law" />);
+  expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '92');
+  expect(screen.getByLabelText('תוכנית לימודים')).toHaveProperty('value', 'haifa_law');
+  expect(screen.queryByTestId('institution-haifa')).toBeNull();
+  next.rerender(<SekhemCalculator offerings={choices} initialProgramId="haifa_cs" />);
+  expect(screen.getByLabelText('תוכנית לימודים')).toHaveProperty('value', 'haifa_cs');
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it('restored input edits clear persisted results', async () => {
+  const view = render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  view.unmount();
+  const next = render(<SekhemCalculator offerings={offerings} />);
+  expect(screen.getByText('הציונים עומדים בתנאי הקבלה')).toBeTruthy();
+  fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: '81' } });
+  expect(screen.queryByTestId('institution-haifa')).toBeNull();
+  next.unmount();
+  render(<SekhemCalculator offerings={offerings} />);
+  expect(screen.queryByTestId('institution-haifa')).toBeNull();
+  expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '81');
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it.each([
+  ['ציון 1', '-1'],
+  ['ציון 1', '101'],
+  ['יחידות 1', '0'],
+  ['יחידות 1', '6'],
+  ['ציון 1', '90.5'],
+  ['יחידות 1', '4.5'],
+])('focuses the first invalid grade or units field without evaluating (%s=%s)', (label, value) => {
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  fireEvent.change(screen.getByLabelText('ציון 2'), { target: { value: '101' } });
+  submit();
+  const input = screen.getByLabelText(label);
+  expect(document.activeElement).toBe(input);
+  expect(input.getAttribute('aria-invalid')).toBe('true');
+  expect(document.getElementById(input.getAttribute('aria-describedby')!)?.textContent).toBe(
+    label.startsWith('ציון') ? 'ציון בין 0 ל-100' : 'יחידות בין 1 ל-5',
+  );
+  expect(screen.getByLabelText('ציון 2').getAttribute('aria-invalid')).toBe('true');
+  expect(fetchMock).not.toHaveBeenCalled();
+  fireEvent.change(input, { target: { value: label.startsWith('ציון') ? '100' : '5' } });
+  expect(input.hasAttribute('aria-invalid')).toBe(false);
+});
+
+it('focuses units before grade when both fields in the first row are invalid', () => {
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  for (const label of ['יחידות 1', 'ציון 1'])
+    fireEvent.change(screen.getByLabelText(label), { target: { value: '150' } });
+  submit();
+  expect(document.activeElement).toBe(screen.getByLabelText('יחידות 1'));
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+it.each([
+  [0, 1],
+  [100, 5],
+])('evaluates valid grade/unit boundaries (%s/%s)', async (grade, units) => {
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: String(grade) } });
+  fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: String(units) } });
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it.each(['missing', 'duplicate'])('preserves the generic row error for %s rows', (kind) => {
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  fireEvent.change(screen.getByLabelText(kind === 'missing' ? 'ציון 1' : 'מקצוע 2'), {
+    target: { value: kind === 'missing' ? '' : 'מתמטיקה' },
+  });
+  submit();
+  expect(screen.getByRole('alert').textContent).toBe(
+    'יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.',
+  );
+  expect(fetchMock).not.toHaveBeenCalled();
+});
+
+it('keeps required fields and answers while persisting cleared results after a required-input edit', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  const view = render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(await screen.findByLabelText('ממוצע בגרות בחיפה'), { target: { value: '104' } });
+  expect(screen.queryByTestId('institution-haifa')).toBeNull();
+  view.unmount();
+  render(<SekhemCalculator offerings={offerings} />);
+  expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '104');
+  expect(screen.queryByTestId('institution-haifa')).toBeNull();
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+});
+
+it('restores failed programme IDs for an explicit retry without evaluating on mount', async () => {
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: { reports: {}, failedDegreeIds: ['haifa_cs'] } }),
+  );
+  const view = render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  await screen.findByRole('button', { name: 'לנסות שוב' });
+  view.unmount();
+  render(<SekhemCalculator offerings={offerings} />);
+  expect(fetchMock).toHaveBeenCalledTimes(1);
+  fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).degreeIds).toEqual(['haifa_cs']);
 });

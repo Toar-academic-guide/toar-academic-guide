@@ -709,3 +709,82 @@ describe('API-only result rows', () => {
     expect(screen.getByText('אומדן, עד לאישור המוסד')).toBeTruthy();
   });
 });
+
+it.each(['biu', 'hit', 'afeka'])(
+  'keeps programme and enquiry actions when every programme entry is filtered (%s)',
+  (id) => {
+    const source = report(id, {
+      score: undefined,
+      threshold: undefined,
+      decision: 'unknown',
+      kind: 'estimated',
+    });
+    const offering = {
+      ...offerings.find((item) => item.institutionId === id)!,
+      programPath: '/programs/psychology',
+    };
+    const onEnquiry = vi.fn();
+    render(<SekhemResults reports={[source]} offerings={[offering]} onEnquiry={onEnquiry} />);
+    const card = screen.getByTestId(`programme-actions-${id}`);
+    expect(within(card).getByText('פסיכולוגיה')).toBeTruthy();
+    expect(
+      within(card).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
+    ).toBe('/programs/psychology');
+    expect(within(card).getByRole('heading', { name: offering.institutionName })).toBeTruthy();
+    expect(card.hasAttribute('hidden')).toBe(false);
+    expect(card.querySelector('[data-testid^="result-"]')).toBeNull();
+    expect(card.querySelectorAll('[data-result-number], [data-result-reason]')).toHaveLength(0);
+    expect(card.textContent).not.toMatch(/\d|עומדים|מתחת|חסרים|עדיין לא/);
+    fireEvent.click(within(card).getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+    expect(onEnquiry).toHaveBeenCalledWith(offering, source);
+  },
+);
+
+it('keeps filtered entries hidden whenever at least one normal result survives', () => {
+  const normal = report('tau');
+  const filtered = report('biu', {
+    score: undefined,
+    threshold: undefined,
+    decision: 'unknown',
+    kind: 'estimated',
+  });
+  const { container } = render(
+    <SekhemResults reports={[normal, filtered]} offerings={offerings} onEnquiry={vi.fn()} />,
+  );
+  expect(screen.getByTestId('institution-tau')).toBeTruthy();
+  expect(screen.getByTestId('result-psychology-tau')).toBeTruthy();
+  expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
+  expect(screen.queryByTestId('institution-biu')).toBeNull();
+  expect(screen.queryByTestId('result-psychology-biu')).toBeNull();
+  expect(screen.getAllByRole('button', { name: 'קבלת מידע על התוכנית' })).toHaveLength(1);
+});
+
+it('does not mix filtered programmes into a surviving institution group', () => {
+  const normal = report('biu');
+  const filtered = report('biu', {
+    score: undefined,
+    threshold: undefined,
+    decision: 'unknown',
+    kind: 'estimated',
+  });
+  filtered.input.degreeId = filtered.program.id = 'filtered_programme';
+  const { container } = render(
+    <SekhemResults
+      reports={[normal, filtered]}
+      offerings={[
+        offerings.find((offering) => offering.institutionId === 'biu')!,
+        {
+          programId: 'filtered_programme',
+          programName: 'תוכנית מסוננת',
+          institutionId: 'biu',
+          institutionName: 'biu',
+        },
+      ]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByTestId('result-psychology-biu')).toBeTruthy();
+  expect(screen.queryByRole('combobox', { name: 'בחירת תוכנית' })).toBeNull();
+  expect(screen.queryByText('תוכנית מסוננת')).toBeNull();
+  expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
+});
