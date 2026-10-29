@@ -1105,6 +1105,9 @@ async function evaluateExactScores(args: {
         score: calculation.score,
         now,
       });
+      if (eligibility.kind === 'eligible' || eligibility.kind === 'below')
+        baseResult.scoreAssessment =
+          eligibility.kind === 'eligible' ? 'meets_threshold' : 'below_threshold';
       if (eligibility.kind === 'below')
         return {
           ...baseResult,
