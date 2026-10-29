@@ -59,6 +59,62 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: 'לחשב את הסכם' }));
 }
 
+it.each([true, false])(
+  'focuses a requested subject grade, adding its row when absent (existing=%s)',
+  async (existing) => {
+    const source = response(['physics_grade']).reports.haifa_cs;
+    const row = {
+      ...source.results[0],
+      institution: { id: 'tau', name: 'אוניברסיטת תל אביב', region: 'center' },
+      linkedInstitutionId: 'tau',
+      kind: 'needs_input',
+      capability: 'needs_input',
+      decision: 'accepted',
+      scoreAssessment: 'meets_threshold',
+      threshold: 600,
+    };
+    fetchMock.mockResolvedValueOnce(
+      Response.json({
+        data: {
+          reports: {
+            tau_ee: {
+              ...source,
+              input: { degreeId: 'tau_ee' },
+              program: { id: 'tau_ee', name: 'הנדסת חשמל' },
+              results: [row],
+            },
+          },
+          failedDegreeIds: [],
+        },
+      }),
+    );
+    render(
+      <SekhemCalculator
+        offerings={[
+          {
+            programId: 'tau_ee',
+            programName: 'הנדסת חשמל',
+            institutionId: 'tau',
+            institutionName: 'אוניברסיטת תל אביב',
+          },
+        ]}
+      />,
+    );
+    examples();
+    if (!existing)
+      fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 8', exact: true }));
+    submit();
+    fireEvent.click(await screen.findByRole('button', { name: 'פיזיקה', exact: true }));
+    const index = existing ? 8 : 9;
+    await waitFor(() =>
+      expect(document.activeElement).toBe(screen.getByLabelText(`ציון ${index}`)),
+    );
+    expect(screen.getByLabelText(`מקצוע ${index}`)).toHaveProperty('value', 'פיזיקה');
+    expect(screen.getAllByRole('button', { name: /^הסרת מקצוע / })).toHaveLength(9);
+    expect(fetchMock.mock.calls.every(([url]) => url === '/api/admissions/evaluate')).toBe(true);
+  },
+);
+
 it('fills a complete nine-subject example certificate and sends every raw subject and PET section', async () => {
   render(<SekhemCalculator offerings={offerings} />);
   examples();

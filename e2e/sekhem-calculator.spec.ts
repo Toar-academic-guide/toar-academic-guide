@@ -192,6 +192,12 @@ async function assertAlignedFields(root: Locator) {
   }
 }
 
+async function assertStudentCards(page: Page) {
+  for (const card of await page.locator('[data-testid^="institution-"]').all()) {
+    await expect(card).not.toContainText(/נתונים|מתואם|סכם|מצרף/);
+  }
+}
+
 async function assertNoCompositeInput(page: Page) {
   const inputNames = await page.locator('main input, main select').evaluateAll((inputs) =>
     inputs.map((node) => {
@@ -289,6 +295,7 @@ for (const width of [1280, 390]) {
       assertNoCompositePayload(batch);
     }
 
+    await assertStudentCards(page);
     await expect(page.getByText(noScoreLine, { exact: true })).toHaveCount(1);
     await expect(page.locator('[data-testid="institution-ariel"]')).toHaveCount(0);
     await expect(page.locator('main')).not.toContainText('אריאל');
@@ -340,6 +347,7 @@ for (const width of [1280, 390]) {
       await expect(row).toContainText(kidumText);
       await expect(row.locator('[data-result-number]')).toHaveCount(0);
       expect(await row.innerText()).not.toMatch(/\d/);
+      await assertStudentCards(page);
     });
 
     await test.step('every displayed institution has a real, selectable lead target', async () => {
@@ -350,7 +358,10 @@ for (const width of [1280, 390]) {
       });
       const groups = page.locator('[data-testid^="institution-"]');
       expect(await groups.count()).toBeGreaterThanOrEqual(6);
-      for (const group of await groups.all()) {
+      for (const id of await groups.evaluateAll((nodes) =>
+        nodes.map((node) => node.getAttribute('data-testid')!),
+      )) {
+        const group = page.getByTestId(id);
         const cta = group.getByRole('button', { name: 'קבלת מידע על התוכנית', exact: true });
         await expect(cta).toHaveCount(1);
         const select = group.getByRole('combobox');
@@ -358,6 +369,7 @@ for (const width of [1280, 390]) {
           const last = await select.locator('option').last().getAttribute('value');
           await select.selectOption(last!);
         }
+        await assertStudentCards(page);
         const resultId = await group
           .locator('[data-testid^="result-"]')
           .getAttribute('data-testid');
@@ -453,12 +465,10 @@ for (const width of [390, 360]) {
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
-    await test
-      .info()
-      .attach(`example-certificate-${width}`, {
-        body: await page.screenshot({ fullPage: true }),
-        contentType: 'image/png',
-      });
+    await test.info().attach(`example-certificate-${width}`, {
+      body: await page.screenshot({ fullPage: true }),
+      contentType: 'image/png',
+    });
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
   });
@@ -480,7 +490,7 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(hebrew).toBeVisible();
   await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
-    'עדיין לא מחשבים את הסכם של חיפה כאן',
+    'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
   ]);
   await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
   const haifa = page.getByTestId('institution-haifa');
@@ -488,7 +498,9 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await expect(
     haifa.getByRole('link', { name: 'לתנאי הקבלה של התוכנית', exact: true }),
   ).toHaveAttribute('href', `/programs/${selectedProgram}`);
-  await expect(page.getByTestId('institution-haifa')).toContainText('חסרים נתונים לחישוב');
+  await expect(page.getByTestId('institution-haifa')).toContainText(
+    'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+  );
   await average.fill('104');
   await hebrew.selectOption('hebrew_school');
   await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
@@ -566,6 +578,7 @@ test('numberless cards explain missing inputs and unavailable result states', as
     kind = state;
     await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
     await expect(page.getByRole('button', { name: 'לחשב את הסכם', exact: true })).toBeEnabled();
+    await assertStudentCards(page);
     const rows = page.locator('[data-testid^="result-"]');
     expect(await rows.count()).toBeGreaterThan(0);
     for (const row of await rows.all()) {
@@ -579,7 +592,7 @@ test('numberless cards explain missing inputs and unavailable result states', as
     }
     await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
     await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
-      'עדיין לא מחשבים את הסכם של חיפה כאן',
+      'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
     ]);
     for (const group of await page.locator('[data-testid^="institution-"]').all()) {
       await expect(
@@ -647,5 +660,64 @@ test('retry clears a transient service error and shows the requested programme r
   await expect(page.getByTestId('institution-tau')).toContainText('הציונים עומדים בתנאי הקבלה');
   await expect(error).toHaveCount(0);
   expect(mocks.batches.flatMap((batch) => batch.degreeIds)).toEqual(['tau_law']);
+  expect(mocks.submissions).toHaveLength(0);
+});
+
+test('a missing subject action adds its row and focuses its grade', async ({ page, baseURL }) => {
+  const mocks = await installMocks(page, baseURL, false, (row) =>
+    row.linkedInstitutionId === 'tau'
+      ? {
+          ...row,
+          kind: 'needs_input',
+          decision: 'accepted',
+          scoreAssessment: 'meets_threshold',
+          score: undefined,
+          threshold: 600,
+          requiredInputs: ['physics_grade'],
+        }
+      : row,
+  );
+  await page.goto('/sekhem-calculator?program=tau_ee');
+  await fillProfile(page);
+  await page.getByRole('button', { name: 'הסרת מקצוע 3', exact: true }).click();
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await assertStudentCards(page);
+  await page
+    .getByTestId('institution-tau')
+    .getByRole('button', { name: 'פיזיקה', exact: true })
+    .click();
+  await expect(page.getByLabel('מקצוע 4', { exact: true })).toHaveValue('פיזיקה');
+  const grade = page.getByLabel('ציון 4', { exact: true });
+  await expect(grade).toBeFocused();
+  await expect(grade).toBeInViewport();
+  expect(mocks.submissions).toHaveLength(0);
+});
+
+test('Reichman CS below-route flags without scores never become an invented estimate', async ({
+  page,
+  baseURL,
+}) => {
+  const mocks = await installMocks(page, baseURL, false, (row) =>
+    row.linkedInstitutionId === 'reichman'
+      ? {
+          ...row,
+          kind: 'estimated',
+          capability: 'estimated',
+          decision: 'below',
+          scoreAssessment: 'below_threshold',
+          score: undefined,
+          threshold: undefined,
+          requiredInputs: undefined,
+          explanation: 'תנאי מסלולי הקבלה הרגילים שנבדקו אינם מתקיימים.',
+        }
+      : row,
+  );
+  await page.goto('/sekhem-calculator?program=reichman_cs');
+  await fillProfile(page);
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  const row = page.getByTestId('result-reichman_cs-reichman');
+  await expect(row).toHaveText('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
+  await expect(row.locator('[data-result-number]')).toHaveCount(0);
+  await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);
 });

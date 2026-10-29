@@ -59,6 +59,150 @@ const renderReports = (reports: AdmissionsEvaluationReport[]) => {
 };
 
 describe('API-only result rows', () => {
+  it('renders the Haifa API no-calculation note once without an invented score', () => {
+    render(
+      <SekhemResults
+        reports={[
+          report('haifa', {
+            kind: 'needs_input',
+            capability: 'needs_input',
+            decision: 'unknown',
+            score: undefined,
+            threshold: undefined,
+            requiredInputs: ['haifa_bagrut_average'],
+            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+          }),
+        ]}
+        offerings={[
+          { ...offerings[0], institutionId: 'haifa', programPath: '/programs/psychology' },
+        ]}
+        onEnquiry={vi.fn()}
+      />,
+    );
+    const row = screen.getByTestId('result-psychology-haifa');
+    expect(row.textContent).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
+    expect(row.querySelector('[data-result-number]')).toBeNull();
+  });
+  it('names the institution when its score is not calculated here', () => {
+    renderReports([
+      report('tau', {
+        kind: 'unsupported',
+        decision: 'unknown',
+        score: undefined,
+        threshold: undefined,
+      }),
+    ]);
+    expect(screen.getByTestId('result-psychology-tau').textContent).toBe(
+      'עדיין לא מחשבים כאן את ציון הקבלה של תל אביב',
+    );
+  });
+  it('links a returned missing subject only when the API names required inputs', () => {
+    const focus = vi.fn();
+    render(
+      <SekhemResults
+        reports={[
+          report('tau', {
+            kind: 'needs_input',
+            decision: 'accepted',
+            scoreAssessment: 'meets_threshold',
+            score: undefined,
+            threshold: 600,
+            requiredInputs: ['physics_grade'],
+          }),
+        ]}
+        offerings={offerings}
+        onEnquiry={vi.fn()}
+        onInputFocus={focus}
+      />,
+    );
+    const row = screen.getByTestId('result-psychology-tau');
+    expect(row.textContent).toContain(
+      'עומדים בתנאי הסף. כדי לחשב את ציון הקבלה, הוסיפו ציון בפיזיקה',
+    );
+    fireEvent.click(within(row).getByRole('button', { name: 'פיזיקה', exact: true }));
+    expect(focus).toHaveBeenCalledWith({ subject: 'פיזיקה', field: 'grade' });
+  });
+  it('describes a passed published threshold without claiming a calculated score', () => {
+    renderReports([
+      report('tau', {
+        score: undefined,
+        threshold: 600,
+        decision: 'accepted',
+        scoreAssessment: 'meets_threshold',
+        requiredInputs: [],
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-tau');
+    expect(row.textContent).toContain(
+      'עומדים בתנאי הסף. לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו, ולכן מוצג רק סף הקבלה.',
+    );
+    expect(within(row).queryByRole('button')).toBeNull();
+    expect(row.querySelectorAll('[data-result-number]')).toHaveLength(1);
+  });
+  it.each(['afeka_cs', 'afeka_ee', 'afeka_softwareeng', 'afeka_biomedical', 'tau_law'])(
+    'gives accepted numberless %s one positive line and its conditions link',
+    (programId) => {
+      const id = programId.startsWith('afeka') ? 'afeka' : 'tau';
+      const source = report(id, {
+        kind: 'exact',
+        decision: 'accepted',
+        scoreAssessment: 'meets_threshold',
+        score: undefined,
+        threshold: undefined,
+      });
+      source.input.degreeId = source.program.id = programId;
+      render(
+        <SekhemResults
+          reports={[source]}
+          offerings={[
+            {
+              ...offerings[0],
+              institutionId: id,
+              programId,
+              programPath: `/programs/${programId}`,
+            },
+          ]}
+          onEnquiry={vi.fn()}
+        />,
+      );
+      const row = screen.getByTestId(`result-${programId}-${id}`);
+      expect(row.textContent).toBe('עומדים בתנאי הקבלה של התוכנית');
+      expect(
+        screen.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
+      ).toBe(`/programs/${programId}`);
+    },
+  );
+  it('shows a returned Reichman estimate next to the cutoff with one below verdict', () => {
+    renderReports([
+      report('reichman', {
+        kind: 'estimated',
+        decision: 'below',
+        scoreAssessment: 'below_threshold',
+        score: 635.7968000000001,
+        threshold: 650,
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-reichman');
+    expect(row.textContent).toContain('ציון הקבלה המשוער שלכם נמוך מהסף');
+    expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('636');
+    expect(row.querySelector('[data-result-number="threshold"]')?.textContent).toBe('650');
+    expect(row.textContent).not.toContain('עומדים');
+  });
+  it('does not invent a Reichman CS estimate from below-threshold flags without numbers', () => {
+    renderReports([
+      report('reichman', {
+        kind: 'estimated',
+        decision: 'below',
+        scoreAssessment: 'below_threshold',
+        score: undefined,
+        threshold: undefined,
+        explanation: 'תנאי מסלולי הקבלה הרגילים שנבדקו אינם מתקיימים.',
+      }),
+    ]);
+    const row = screen.getByTestId('result-psychology-reichman');
+    expect(row.textContent).toBe('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
+    expect(row.querySelector('[data-result-number]')).toBeNull();
+  });
   it('links each result card to its supplied canonical public programme page', () => {
     const publicOfferings = offerings.map((offering) => ({
       ...offering,
@@ -381,6 +525,9 @@ describe('API-only result rows', () => {
           expect(text?.trim()).toBeTruthy();
           expect(text).not.toMatch(/מקור חסום|ממוצע בגרות רשמי של חיפה|[a-z]+_[a-z_]+/i);
         }
+        expect(screen.getByTestId(`institution-${id}`).textContent).not.toMatch(
+          /נתונים|מתואם|סכם|מצרף/,
+        );
         if (id === 'haifa') expect(reasons).toEqual(['עדיין לא מחשבים את הסכם של חיפה כאן']);
       }
     },
