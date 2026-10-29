@@ -223,7 +223,8 @@
     display: flex;
   }
   .header[data-mobile-open='true'] {
-    background: var(--way-page-background);
+    background: var(--bg-page);
+    border-bottom: 1px solid #dce1ed;
   }
   .header[data-mobile-open='true'] .saved {
     display: block;
