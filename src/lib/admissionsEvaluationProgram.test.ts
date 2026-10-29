@@ -58,11 +58,9 @@ describe('withBatchCCatalogueFallback', () => {
     'ruppin_engineering',
     'tech_management_engineering',
     'kinneret_engineering',
-    'mon_12341114114_engineering',
-    'mon_12341134763_engineering',
   ];
 
-  it('pins the fallback allowlist to exactly the 13 approved engineering Batch C ids', () => {
+  it('pins the fallback allowlist to exactly the 11 approved engineering Batch C ids', () => {
     expect([...BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS].sort()).toEqual(
       [...expectedFallbackIds].sort(),
     );
@@ -72,12 +70,12 @@ describe('withBatchCCatalogueFallback', () => {
     }
   });
 
-  it('adds all 13 allowlisted programmes exactly once and nothing else to an empty DB list', () => {
+  it('adds all 11 allowlisted programmes exactly once and nothing else to an empty DB list', () => {
     const result = withBatchCCatalogueFallback([]);
 
     expect(result.map((program) => program.id).sort()).toEqual([...expectedFallbackIds].sort());
-    expect(result).toHaveLength(13);
-    expect(new Set(result.map((program) => program.id)).size).toBe(13);
+    expect(result).toHaveLength(11);
+    expect(new Set(result.map((program) => program.id)).size).toBe(11);
   });
 
   it.each([
@@ -87,6 +85,8 @@ describe('withBatchCCatalogueFallback', () => {
     'huji_prep',
     'telhai_general_academic',
     'mon_12220697934_certificate',
+    'mon_12341114114_engineering',
+    'mon_12341134763_engineering',
   ])('does not append non-allowlisted Batch C programme %s', (id) => {
     expect(Object.hasOwn(BATCH_C_UNSUPPORTED_PROGRAM_INSTITUTIONS, id)).toBe(true);
     expect(programs.some((program) => program.id === id)).toBe(true);

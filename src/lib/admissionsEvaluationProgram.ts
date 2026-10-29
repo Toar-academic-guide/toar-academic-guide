@@ -18,8 +18,6 @@ export const BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS = [
   'ruppin_engineering',
   'tech_management_engineering',
   'kinneret_engineering',
-  'mon_12341114114_engineering',
-  'mon_12341134763_engineering',
 ] as const;
 
 const catalogueFallbackProgramIds = new Set<string>(BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS);
