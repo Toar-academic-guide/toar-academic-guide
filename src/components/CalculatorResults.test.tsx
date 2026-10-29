@@ -445,8 +445,7 @@ describe('CalculatorResults', () => {
           onBack={() => {}}
         />,
       );
-      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
-      expect(await screen.findByText('השלב הבא: מיון במוסד', { exact: true })).toBeTruthy();
+      expect(await screen.findByText('נדרש מיון נוסף', { exact: true })).toBeTruthy();
       expect(screen.getByLabelText(`אוניברסיטת תל אביב: ${label}`)).toBeTruthy();
       expect(screen.getByText(/אוניברסיטת תל אביב מחליטה על הקבלה לאחריו/)).toBeTruthy();
       const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
@@ -604,8 +603,7 @@ describe('CalculatorResults', () => {
           onBack={() => {}}
         />,
       );
-      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
-      expect(await screen.findByText('השלב הבא: מיון במוסד', { exact: true })).toBeTruthy();
+      expect(await screen.findByText('נדרש מיון נוסף', { exact: true })).toBeTruthy();
       expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();
       expect(screen.queryByLabelText(/אפשר להגיש מועמדות/)).toBeNull();
       expect(screen.getByLabelText('אוניברסיטת תל אביב: נדרשים נתונים')).toBeTruthy();

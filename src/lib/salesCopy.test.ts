@@ -1,11 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { resultLabel, resultExplanation } from './studyJourney';
 import { resultVerdict } from './sekhemCalculator';
-import {
-  resultInputReasons,
-  resultPresentation,
-  resultSourceReason,
-} from './sekhemResultPresentation';
+import { resultInputReasons, resultSourceReason } from './sekhemResultPresentation';
 import { acceptedManualGateFootnote } from './acceptedManualGateFootnote';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import { academicPrograms } from '@/data/degrees/academicPrograms';
@@ -58,42 +54,22 @@ describe('approved student result copy', () => {
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
     expect(resultLabel(result({ decision: 'below', score, threshold })).label).toBe('עוד לא בסף');
   });
-  it.each([
-    ['tau', 650, 670, '20'],
-    ['huji', 21.12, 22.5, '1.38'],
-    ['reichman', 635.2, 650, '15'],
-  ])('uses existing %s precision for the sekhem gap', (id, score, threshold, gap) => {
-    const row = result({
-      linkedInstitutionId: String(id),
-      decision: 'below',
-      score: Number(score),
-      threshold: Number(threshold),
-    });
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(resultPresentation(row)).toEqual({
-      text: `חסרות לכם ${gap} נקודות לסף`,
-      tone: 'negative',
-    });
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(resultVerdict(row)).toBe(`חסרות לכם ${gap} נקודות לסף`);
-  });
-  it.each([
-    [undefined, 650],
-    [640, null],
-    [NaN, 650],
-    [640, Infinity],
-    [650, 650],
-    [651, 650],
-    [649.9, 650],
-  ])('uses the sekhem fallback for an uncomputable/rounded-away gap %s, %s', (score, threshold) => {
-    const row = result({ linkedInstitutionId: 'reichman', decision: 'below', score, threshold });
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(resultPresentation(row)).toEqual({
-      text: 'עוד לא בסף. בואו נמצא דרך.',
-      tone: 'negative',
-    });
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(resultVerdict(row)).toBe('עוד לא בסף. בואו נמצא דרך.');
+  it('uses the existing integer Reichman scale in journey gap and score labels', () => {
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+    expect(
+      resultLabel(
+        result({
+          linkedInstitutionId: 'reichman',
+          decision: 'below',
+          score: 635.2,
+          threshold: 650,
+        }),
+      ).label,
+    ).toBe('חסרות לכם 15 נקודות לסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    expect(resultLabel(result({ linkedInstitutionId: 'reichman', score: 635.7968 })).label).toBe(
+      'הסכם שלכם: 636',
+    );
   });
   it.each(['exact', 'estimated'] as const)(
     'renders the formatted %s score with no cutoff',
@@ -108,6 +84,11 @@ describe('approved student result copy', () => {
       }
     },
   );
+  it('preserves the existing pending-cutoff label outside row 7', () => {
+    expect(resultLabel(result({ score: 635, threshold: 650, decision: 'pending' })).label).toBe(
+      'אין הכרעת קבלה',
+    );
+  });
   it('states the approved green light while preserving the exact branch', () => {
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1, 8)
     expect(resultLabel(result({ scoreAssessment: 'meets_threshold' })).label).toBe(

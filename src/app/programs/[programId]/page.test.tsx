@@ -91,6 +91,22 @@ describe('ProgramPage', () => {
     expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
   });
 
+  it('omits the removed Ono note rather than rendering an empty list item', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_law' }) }),
+    );
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+    expect(
+      screen.queryByText(
+        'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
+      ),
+    ).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+    expect([...container.querySelectorAll('li')].every((item) => item.textContent?.trim())).toBe(
+      true,
+    );
+    expect(screen.getByText(/אפיק מעבר לאקדמיה:/)).toBeTruthy();
+  });
   it('renders public program content and links into app routes', async () => {
     const program = getStaticCataloguePrograms()[0];
 

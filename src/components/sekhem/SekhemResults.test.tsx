@@ -325,8 +325,7 @@ describe('API-only result rows', () => {
     const source = report('huji', { score: 21.12, threshold: 21.12, decision: 'below' });
     renderReports([source]);
     const row = screen.getByTestId('result-psychology-huji');
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(within(row).getByText('עוד לא בסף. בואו נמצא דרך.')).toBeTruthy();
+    expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
     expect(within(row).getByText('סף קבלה')).toBeTruthy();
     for (const number of row.querySelectorAll('[data-result-number]')) {
       const field = number.getAttribute('data-result-number') as 'score' | 'threshold';
@@ -346,14 +345,7 @@ describe('API-only result rows', () => {
       renderReports([source]);
       const row = screen.getByTestId(`result-psychology-${id}`);
       expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe(shown);
-      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-      expect(
-        within(row).getByText(
-          score < 636 && Math.round(636 - score) > 0
-            ? `חסרות לכם ${id === 'reichman' ? Math.round(636 - score) : Number((636 - score).toPrecision(12))} נקודות לסף`
-            : 'עוד לא בסף. בואו נמצא דרך.',
-        ),
-      ).toBeTruthy();
+      expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
       expect(source.results[0].score).toBe(score);
     },
   );
@@ -708,6 +700,25 @@ describe('API-only result rows', () => {
         .getByRole('button', { name: 'קבלו שיחה מהמוסד' })
         .classList.contains('way-button-primary'),
     ).toBe(true);
+  });
+  it('removes both result disclaimers without leaving paragraphs or wrappers', () => {
+    const { container } = renderReports([
+      report('reichman', { kind: 'estimated', score: 635, threshold: 650 }),
+      report('biu', {
+        kind: 'unsupported',
+        decision: 'unknown',
+        score: undefined,
+        threshold: undefined,
+      }),
+    ]);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    expect(
+      screen.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' }).nextElementSibling?.tagName,
+    ).toBe('SECTION');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    expect(screen.getByTestId('result-psychology-reichman').querySelectorAll('p')).toHaveLength(1);
   });
   it('offers an explicit enquiry for every verdict group and keeps Reichman attribution', () => {
     const { onEnquiry } = renderReports([

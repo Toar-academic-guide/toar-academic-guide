@@ -673,7 +673,8 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     const { container } = render(<StudyJourney initialStep="detail" />);
-    await screen.findByText(baselineLaw.badge);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+    await screen.findByText('עוד לא בסף');
     expect(screen.getByText(baselineLaw.explanation[0])).toBeTruthy();
     const details = screen.getByText('פרטים נוספים').closest('details')!;
     expect(details.open).toBe(false);
@@ -682,10 +683,14 @@ describe('account grades in the homepage journey', () => {
       expect(items.filter((text) => text === requirement)).toHaveLength(1);
     expect(screen.queryByText('התנאים מורכבים? בדקו את הסיכויים שלכם')).toBeNull();
     expect(container.querySelector('.journey-detail-actions')?.textContent).toBe(
-      baselineLaw.actions.replaceAll('\n', ''),
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      baselineLaw.actions.replace('יצירת קשר', 'קבלו שיחה מהמוסד').replaceAll('\n', ''),
     );
     expect(container.querySelector('.journey-links')?.textContent).toBe(
-      baselineLaw.links.replaceAll('\n', ''),
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+      baselineLaw.links
+        .replace('עדכון נתונים ותנאים נוספים', 'השלימו וקבלו תשובה')
+        .replaceAll('\n', ''),
     );
   });
 
@@ -694,7 +699,8 @@ describe('account grades in the homepage journey', () => {
       estimated: true,
       estimationReason: 'הממוצע הכללי 70 משמש אומדן לממוצע המוסדי.',
       expected:
-        'הערכה: חישבנו לפי הממוצע הכללי שהזנת, לא לפי ממוצע המוסד. להערכה מדויקת יותר, הזינו ציונים לפי מקצוע.',
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+        'רוצים תשובה מדויקת יותר? הזינו ציונים לפי מקצוע.',
     },
     { estimated: false, estimationReason: undefined, expected: undefined },
     { estimated: undefined, estimationReason: undefined, expected: undefined },

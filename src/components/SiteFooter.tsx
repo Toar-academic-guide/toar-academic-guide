@@ -25,7 +25,7 @@ export default function SiteFooter() {
               />{' '}
             </Link>
             <p className="mb-3 mt-2 max-w-[340px] md:max-w-none">
-              בדיקת סיכויי קבלה לתוכניות לימודים לתואר, לפי הנתונים שהזנת.{' '}
+              הציונים שלכם. התואר שלכם. הדרך שלכם.{' '}
             </p>
             <h2 className="font-semibold leading-[22px] text-[#f8fbff]">יצירת קשר</h2>{' '}
             <a
@@ -60,10 +60,7 @@ export default function SiteFooter() {
             </ul>
           </nav>
         </div>
-        <div className="flex flex-col items-start gap-3 border-t border-[#2b3d64] pb-6 pt-5 text-xs leading-[1.6] text-[#a9b5d1] md:flex-row md:items-center md:justify-between md:gap-6 md:py-4">
-          <p className="max-w-[330px] md:max-w-none">
-            התוצאות הן הערכה בלבד; ההחלטה על קבלה היא של המוסד{' '}
-          </p>
+        <div className="border-t border-[#2b3d64] pb-6 pt-5 text-xs leading-[1.6] text-[#a9b5d1] md:py-4">
           <p className="whitespace-nowrap">
             <bdi dir="ltr">© 2026 MyWay</bdi>{' '}
           </p>

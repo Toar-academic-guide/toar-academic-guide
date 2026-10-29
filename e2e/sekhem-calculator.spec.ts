@@ -739,8 +739,7 @@ test('Reichman CS below-route flags without scores never become an invented esti
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   const row = page.getByTestId('result-reichman_cs-reichman');
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-  await expect(row).toHaveText('עוד לא בסף. בואו נמצא דרך.');
+  await expect(row).toHaveText('הציונים אינם עומדים בתנאי הקבלה שנבדקו.');
   await expect(row.locator('[data-result-number]')).toHaveCount(0);
   await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);

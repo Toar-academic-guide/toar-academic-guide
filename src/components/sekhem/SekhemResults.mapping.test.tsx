@@ -283,14 +283,12 @@ describe('real evaluator → batch POST → calculator result rows', () => {
       }
       const expectedVerdict =
         profile.institutionId === 'biu'
-          ? // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-            'עוד לא בסף. בואו נמצא דרך.'
+          ? 'הציונים אינם עומדים בתנאי הקבלה שנבדקו.'
           : profile.institutionId === 'afeka'
             ? 'עומדים בתנאי הקבלה של התוכנית'
             : result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold'
               ? 'הציונים עומדים בתנאי הקבלה'
-              : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-                `חסרות לכם ${formatSekhemNumber(Number((result.threshold! - result.score!).toPrecision(12)), profile.institutionId)} נקודות לסף`;
+              : 'הציונים מתחת לסף';
       expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
       for (const gate of result.additionalConditions ?? [])

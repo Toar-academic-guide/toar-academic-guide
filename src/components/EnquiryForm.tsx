@@ -148,14 +148,14 @@ export default function EnquiryForm({
   return (
     <>
       <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
-        <h1 className="text-2xl font-bold">רוצה לשמוע עוד?</h1>
+        <h1 className="text-2xl font-bold">רוצים תשובות ישר מהמוסד?</h1>
         <p className="mt-2">{title}</p>
         <button
           type="button"
           className="way-button-primary mt-4 px-6 py-3"
           onClick={() => setOpen(true)}
         >
-          יצירת קשר
+          השאירו פרטים
         </button>
       </section>
       {open && (

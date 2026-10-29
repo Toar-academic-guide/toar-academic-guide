@@ -20,6 +20,9 @@ const inputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
   tau_physiotherapy_requirements: 'תנאי הקבלה לפיזיותרפיה',
   tau_management_requirements: 'תנאי הקבלה לניהול',
   psychometric_overall: 'ציון פסיכומטרי כללי',
+  psychometric_math: 'ציון החלק הכמותי',
+  psychometric_verbal: 'ציון החלק המילולי',
+  psychometric_english: 'ציון האנגלית',
   english_units: 'יחידות באנגלית',
   english_grade: 'ציון הבגרות באנגלית',
   physics_units: 'יחידות בפיזיקה',
@@ -113,14 +116,14 @@ export function institutionShortName(id: string, fallback: string): string {
 export function resultSourceReason(result: AdmissionsEvaluationResult): string {
   const institution = institutionNames[result.linkedInstitutionId ?? result.institution.id];
   return institution
-    ? `עדיין לא מחשבים כאן את ציון הקבלה של ${institution}`
-    : 'לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו.';
+    ? `${institution}: בדיקה אישית מול המוסד`
+    : `${result.institution.name}: בדיקה אישית מול המוסד`;
 }
 
 export function resultInputReasons(result: AdmissionsEvaluationResult): string[] {
   return [...new Set(result.requiredInputs ?? [])].flatMap((key) => {
     if (!inputLabels[key]) return [];
-    return [`כדי לחשב את ציון הקבלה, יש להשלים: ${inputLabels[key]}.`];
+    return [`הוסיפו את ${inputLabels[key]} וקבלו את ציון הקבלה`];
   });
 }
 
@@ -179,7 +182,7 @@ export function resultPresentation(result: AdmissionsEvaluationResult): CardPres
     }
     if (!score && threshold)
       return {
-        text: 'עומדים בתנאי הסף. לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו, ולכן מוצג רק סף הקבלה.',
+        text: 'עוברים את הסף ✓',
         tone: 'positive',
       };
     return {

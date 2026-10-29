@@ -83,7 +83,8 @@ describe('verified catalogue content repair', () => {
       'ono',
       'https://www.ono.ac.il/curriculum/llb/',
       '2ea5e02446f90bb3c34fd480df1b11084bdd1b45133cebc8941c7f98d2888e8e',
-      6,
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+      5,
     ],
     [
       'colmgmt_cs',

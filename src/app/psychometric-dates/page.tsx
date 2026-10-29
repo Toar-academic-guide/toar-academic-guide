@@ -105,7 +105,7 @@ export default async function Page() {
           </table>
           <div className={styles.ctaArea}>
             <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>
-              בדיקת סיכויי קבלה
+              יש לכם ציון? בדקו לאן אתם מתקבלים
               <svg
                 data-icon="iconoir-arrow-left"
                 viewBox="0 0 24 24"
@@ -144,7 +144,7 @@ export default async function Page() {
               <a href={psychometricDates[1].sourceUrl}>
                 לוח הבחינות הרשמי לשנת <bdi dir="ltr">2027</bdi>
               </a>
-              . המקור המחייב הוא מאל״ו.
+              .
             </p>
             <Link href="/institutions" prefetch={false}>
               מוסדות לימוד

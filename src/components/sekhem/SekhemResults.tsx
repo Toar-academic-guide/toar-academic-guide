@@ -185,9 +185,6 @@ function InstitutionGroup({
                 {gate}
               </p>
             ))}
-            {offering.institutionId === 'reichman' && !numberless && !scoreOnly && (
-              <p className="mt-2 text-sm text-(--text-body)">אומדן, עד לאישור המוסד</p>
-            )}
           </div>
         )}
       </div>
@@ -197,7 +194,7 @@ function InstitutionGroup({
           className="way-button-primary min-h-11 px-5 py-3"
           onClick={() => onEnquiry(offering, report)}
         >
-          קבלת מידע על התוכנית
+          קבלו שיחה מהמוסד
         </button>
         {numberless && offering.programPath && (
           <Link
@@ -227,7 +224,6 @@ export default function SekhemResults({
   const groups = new Map<string, Entry[]>();
   const normalEntries: Entry[] = [];
   const filteredEntries: Entry[] = [];
-  let uncomputable = false;
   let afeka = false;
   for (const offering of offerings) {
     if (offering.institutionId === 'ariel') continue;
@@ -242,7 +238,6 @@ export default function SekhemResults({
     if (!report || !result) continue;
     let actionOnly = false;
     if (noScoreInstitutions.has(offering.institutionId) && !hasNumber(result.score)) {
-      uncomputable = true;
       afeka ||= offering.institutionId === 'afeka';
       // Keep actionable floor verdicts and their explicit lead targets, without blank-score badges.
       actionOnly = !['accepted', 'below'].includes(result.decision) && !gateText(result).length;
@@ -260,9 +255,6 @@ export default function SekhemResults({
       <h2 id="sekhem-results-title" className="text-2xl font-semibold">
         הסכם לפי מוסד ותוכנית
       </h2>
-      {uncomputable && (
-        <p className="mt-4 text-(--text-body)">בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.</p>
-      )}
       {[...groups.entries()]
         .map(([id, entries]) => ({ id, entries, entry: groupEntry(entries, selectedPrograms[id]) }))
         .sort((a, b) => Number(hasResultNumber(b.entry)) - Number(hasResultNumber(a.entry)))

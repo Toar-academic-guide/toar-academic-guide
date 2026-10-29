@@ -172,7 +172,7 @@ export function sekhemCalculatorLd() {
     inLanguage: 'he',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-    featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
     publisher: { '@id': ORGANIZATION_ID },
     isPartOf: { '@id': WEBSITE_ID },
   };
