@@ -131,11 +131,49 @@ describe('compliance pages', () => {
     expect(text).not.toMatch(/\d{9}/);
   });
 
-  it('privacy contains the operator address without placeholders or an identity number', () => {
+  it('privacy identifies the operator by name and phone without an address or identity number', () => {
     const text = pageText(markup(<PrivacyPage />));
-    expect(text).toContain('שדרות יהודית 20, תל אביב 6701622');
+    // Approved test update, Jorje 2026-10-29 (consent wording item e)
+    expect(text).not.toContain('שדרות יהודית');
+    expect(text).not.toContain('6701622');
+    expect(text).not.toContain('כתובת:');
+    expect(text).toContain('עמית מליחי (עוסק פטור)');
+    expect(text).toContain('052-8464129');
     expect(text).not.toContain('[כתובת]');
     expect(text).not.toMatch(/\d{9}/);
+  });
+
+  it('privacy explains send consent, optional adult prep consent and grade ranges only', () => {
+    const container = markup(<PrivacyPage />);
+    const text = pageText(container);
+    expect(text).toContain('עדכון אחרון: 29.10.2026 · גרסה 1.1');
+    expect(text).toContain(
+      'הלחיצה על "שליחה" בטופס היא אישור 1 – הסכמתך להעביר את פרטיך למוסד שבחרת בלבד.',
+    );
+    expect(text).toContain('טלפון, SMS או WhatsApp');
+    expect(text).toContain('המוסד יחזור אליך בטלפון בלבד');
+    expect(text).toContain('אישור 2, שאינו חובה, ובו אישרת שגילך 18 ומעלה');
+    expect(text).toContain('אנחנו מעבירים למוסד ולחברות הכנה טווח ציונים בלבד');
+    expect(text).not.toContain('הציונים המדויקים');
+    expect(text).not.toContain('סימנת את אישור 1');
+    expect(text).not.toMatch(/מתואם|סכם|מצרף/);
+    for (const heading of ['1. מי אנחנו', '11. יצירת קשר']) {
+      const section = Array.from(container.querySelectorAll('h2')).find(
+        (node) => node.textContent === heading,
+      )!.nextElementSibling!;
+      expect(section.textContent).toContain('עמית מליחי (עוסק פטור)');
+      expect(section.textContent).toContain('052-8464129');
+      expect(section.querySelector('a[href="tel:+972528464129"] bdi[dir="ltr"]')?.textContent).toBe(
+        '052-8464129',
+      );
+      expect(section.textContent).not.toContain('info@findmyway.co.il');
+      expect(section.querySelector('a[href^="mailto:"]')).toBeNull();
+    }
+    const emailLinks = container.querySelectorAll('a[href="mailto:info@findmyway.co.il"]');
+    expect(emailLinks).toHaveLength(3);
+    for (const [index, prefix] of ['ב. חשבון משתמש', '4.2 חברות הכנה', 'איך:'].entries()) {
+      expect(emailLinks[index].closest('p')?.textContent).toMatch(new RegExp(`^${prefix}`));
+    }
   });
 
   it.each([

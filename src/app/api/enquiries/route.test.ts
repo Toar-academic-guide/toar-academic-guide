@@ -579,6 +579,21 @@ describe('separate prep consent at the API boundary', () => {
       expect(saved.prepConsentAt?.getFullYear()).not.toBe(2000);
     },
   );
+  it('defaults omitted prep consent to false with no stored prep evidence', async () => {
+    expect((await POST(request())).status).toBe(201);
+    expect(backup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prepConsent: false,
+        prepConsentText: null,
+        prepConsentAt: null,
+      }),
+    );
+  });
+  it.each([1, 'on'])('rejects non-boolean prep consent %s before storage', async (prepConsent) => {
+    expect((await POST(request({ prepConsent }))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('rejects non-boolean prep consent before delivery', async () => {
     expect((await POST(request({ prepConsent: 'true' }))).status).toBe(400);
     expect(backup).not.toHaveBeenCalled();
