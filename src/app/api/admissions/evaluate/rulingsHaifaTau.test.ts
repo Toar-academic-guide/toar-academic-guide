@@ -1,3 +1,6 @@
+import { BATCH_C_PROGRAMS } from '@/server/admissions/batchCUnsupportedPathEvaluation';
+import qa from '../../../../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
+import { normalizeEvaluationInputs } from '@/server/admissions/evaluationInputs';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import TechnionMedicineComparison from '@/components/TechnionMedicineComparison';
@@ -166,5 +169,81 @@ it.each([
       .soft(request.variables.scoresData)
       .toMatchObject({ bagrut: '109.14', psicho: '700', reali10 });
     expect.soft(result.score).toBe(score);
+  },
+);
+
+const haifaNotice = 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה';
+const haifaSources = [
+  'https://admissions.haifa.ac.il/score-calculation/',
+  'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+];
+
+it.each(['1280', '390', '1280-retry', '390-retry'])(
+  'H2 uses the real %s average-only CS UI request without asking for inputs',
+  async () => {
+    // All four QA captures carry this same body; project only the per-degree server input.
+    const { degreeIds, ...profile } = qa.h2.csRequest;
+    expect(degreeIds).toContain('haifa_cs');
+    expect(profile).toEqual({ bagrut: 98, psychometric: 600 });
+    const normalized = normalizeEvaluationInputs({ degreeId: 'haifa_cs', ...profile });
+    expect(normalized.input.extraInputs?.haifaBagrutAverage).toBe(98);
+    expect(normalized.proxyInstitutions.has('haifa')).toBe(true);
+    const { result, fetcher } = await gapEvaluate(
+      gapPrograms.find((program) => program.id === 'haifa_cs')!,
+      'haifa',
+      JSON.parse(JSON.stringify(profile)),
+    );
+    expect(result).toMatchObject({
+      kind: 'tracked_missing_rule',
+      capability: 'tracked_missing_rule',
+      explanation: haifaNotice,
+      officialUrls: expect.arrayContaining(haifaSources),
+    });
+    expect(result.requiredInputs ?? []).toEqual([]);
+    expect(fetcher).not.toHaveBeenCalled();
+  },
+);
+
+it.each(qa.h2.allRequest.degreeIds)(
+  'H2 returns the honest note for captured average-only Haifa programme %s',
+  async (id) => {
+    const { degreeIds: _ids, ...profile } = qa.h2.allRequest;
+    const kind = ['psychology', 'haifa_psychology'].includes(id)
+      ? 'authority_unavailable'
+      : 'tracked_missing_rule';
+    const program = gapPrograms.find((program) => program.id === id)!;
+    expect(program).toBeDefined();
+    const { result, fetcher } = await gapEvaluate(
+      program,
+      'haifa',
+      JSON.parse(JSON.stringify(profile)),
+    );
+    if (id === 'haifa_infosystems') {
+      // Approved test update, Jorje 2026-10-29
+      expect(result).toMatchObject({
+        kind: 'tracked_missing_rule',
+        capability: 'blocked',
+        explanation:
+          'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+      });
+    } else if (id === 'haifa_engineering') {
+      // Approved test update, Jorje 2026-10-29
+      expect(result).toMatchObject({
+        kind: 'unsupported',
+        capability: 'unsupported',
+        explanation: BATCH_C_PROGRAMS.haifa_engineering.explanationHe,
+        nextAction: BATCH_C_PROGRAMS.haifa_engineering.nextActionHe,
+      });
+    } else {
+      expect(result).toMatchObject({
+        kind,
+        capability: kind,
+        explanation: haifaNotice,
+        officialUrls: expect.arrayContaining(haifaSources),
+      });
+    }
+    expect(result.requiredInputs ?? []).toEqual([]);
+    expect(fetcher).not.toHaveBeenCalled();
   },
 );

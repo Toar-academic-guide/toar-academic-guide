@@ -1,10 +1,16 @@
 // @vitest-environment jsdom
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { AcademicScores } from '@/types';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import baselineLaw from '../../docs/ui-verification/2026-10-23-requirement-tiles/baseline-law_low.json';
-import { resultLabel } from '@/lib/studyJourney';
+import qaReplay from '../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
+import type {
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
+import { resultLabel, studyFields } from '@/lib/studyJourney';
 
 const state = vi.hoisted(() => ({
   user: null as null | { id: string },
@@ -37,6 +43,8 @@ vi.mock('@/lib/catalogueClient', () => ({
   fetchCatalogueInstitutions: state.fetchInstitutions,
 }));
 vi.mock('@/lib/admissionsEvaluationClient', () => ({ fetchAdmissionsBatch: state.evaluate }));
+vi.mock('server-only', () => ({}));
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import StudyJourney from './StudyJourney';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 
@@ -68,6 +76,174 @@ describe('account grades in the homepage journey', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  // Replay the synthetic profile/result captured by QA on PR #318 at 7e84aff.
+  it.each(
+    (['results', 'detail'] as const).flatMap((surface) =>
+      (
+        [
+          ['haifa', 'authority_unavailable', true],
+          ['haifa', 'tracked_missing_rule', true],
+          ['bgu', 'authority_unavailable', true],
+          ['bgu', 'tracked_missing_rule', true],
+          ['bgu', 'authority_unavailable', false],
+          ['bgu', 'tracked_missing_rule', false],
+        ] as const
+      ).map(([institutionId, kind, hasSources]) => ({ surface, institutionId, kind, hasSources })),
+    ),
+  )(
+    'H1 $surface preserves $institutionId $kind explanation and links (sources=$hasSources)',
+    async ({ surface, institutionId, kind, hasSources }) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const apiResult = {
+        ...captured,
+        kind,
+        capability: kind,
+        officialUrls: hasSources ? captured.officialUrls : [],
+      } as AdmissionsEvaluationResult;
+      const programId = institutionId === 'haifa' ? 'haifa_psychology' : qaReplay.h1.bgu.programId;
+      const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: { [programId]: { results: [apiResult] } },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [studyFields([program])[0].id],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: `${programId}:${institutionId}`,
+          scores: {
+            bagrut: { weightedAverage: qaReplay.h1.request.bagrut },
+            psychometric: { overall: 700 },
+          },
+        }),
+      );
+      const { container } = render(<StudyJourney initialStep={surface} />);
+      await waitFor(() =>
+        expect(container.querySelector('.journey-status')?.textContent).toBe(
+          resultLabel(apiResult, false, false, programId).label,
+        ),
+      );
+      const scope = within(
+        container.querySelector(
+          surface === 'results' ? '.journey-result-row' : '.journey-detail',
+        ) ?? container,
+      );
+      expect(scope.getByText(apiResult.explanation, { exact: true })).toBeTruthy();
+      if (hasSources) {
+        for (const source of captured.officialUrls) {
+          const expected = new URL(source);
+          const link = scope.getAllByRole('link').find((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          });
+          expect(link, source).toBeTruthy();
+          expect(new URL(link!.getAttribute('href')!).searchParams.get('utm_source')).toBe('myway');
+        }
+        expect(scope.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+      } else {
+        expect(scope.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
+          /^https:\/\//,
+        );
+      }
+    },
+  );
+
+  it.each(
+    (['results', 'detail'] as const).flatMap((surface) =>
+      (
+        [
+          ['medicine', 'tau', 'authority_unavailable'],
+          ['tau_medicine', 'tau', 'authority_unavailable'],
+          ['physiotherapy', 'tau', 'authority_unavailable'],
+          ['colmgmt_cs', 'colman', 'authority_unavailable'],
+          ['colmgmt_cs', 'colman', 'tracked_missing_rule'],
+        ] as const
+      ).map(([programId, institutionId, kind]) => ({ surface, programId, institutionId, kind })),
+    ),
+  )(
+    'H1 Latin fallback on $surface for $programId ($kind) retains official links',
+    async ({ surface, programId, institutionId, kind }) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+      const evaluation = await evaluateAdmissionsForProgram({
+        program: { ...program, linkedInstitutionIds: [institutionId] },
+        institutions: [institution],
+        input: {
+          ...qaReplay.h1.request,
+          degreeId: programId,
+        } as unknown as AdmissionsEvaluationRequest,
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockRejectedValue(new Error('No live requests in H1 regression')),
+        now: new Date('2026-10-29T00:00:00Z'),
+      });
+      // The named routes currently hit earlier Hebrew requirements/policy gates.
+      // Retain the evaluator's result shape and real links; replay the existing English
+      // ledger note as an unavailable API result, without inventing prose or live evidence.
+      const apiResult: AdmissionsEvaluationResult = {
+        ...evaluation.results[0],
+        kind,
+        capability: kind,
+        degradationReason: undefined,
+        officialUrls: evaluation.results[0].officialUrls ?? [
+          FORMULA_BACKED_VERIFICATION_LEDGER.find(
+            (row) => row.pairId === `${programId}__${institutionId}`,
+          )!.sourceUrl,
+        ],
+        explanation: FORMULA_BACKED_VERIFICATION_LEDGER.find(
+          (row) => row.pairId === `${programId}__${institutionId}`,
+        )!.reason,
+      };
+      expect(apiResult.kind).toBe(kind);
+      expect(apiResult.explanation).toMatch(/[a-zA-Z]/);
+      expect(apiResult.officialUrls?.length).toBeGreaterThan(0);
+      const generic =
+        kind === 'authority_unavailable'
+          ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+          : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: { [programId]: { results: [apiResult] } },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [studyFields([program])[0].id],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: `${programId}:${institutionId}`,
+          scores: { bagrut: { weightedAverage: 86 }, psychometric: { overall: 700 } },
+        }),
+      );
+      const { container } = render(<StudyJourney initialStep={surface} />);
+      await waitFor(() =>
+        expect(container.querySelector('.journey-status')?.textContent).toBe(
+          resultLabel(apiResult, false, false, programId).label,
+        ),
+      );
+      expect(screen.getByText(generic, { exact: true })).toBeTruthy();
+      expect(screen.queryByText(apiResult.explanation, { exact: true })).toBeNull();
+      for (const source of apiResult.officialUrls!) {
+        const expected = new URL(source);
+        expect(
+          screen.getAllByRole('link').some((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          }),
+          source,
+        ).toBe(true);
+      }
+    },
+  );
   it('keeps the entered average when completing subject grades', async () => {
     render(<StudyJourney initialStep="grades-exact" />);
     await screen.findByLabelText('סוג תעודה');

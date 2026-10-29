@@ -1,0 +1,246 @@
+{
+  "sources": [
+    {
+      "file": "P-ab-psychology-1280-evaluate.json",
+      "sha256": "bfb47a9d57eaa691baab02ffeb1dd60b38e6d4b9dd40a67af7ef14cec0d5a4cf"
+    },
+    {
+      "file": "P-ab-psychology-390-retry-evaluate.json",
+      "sha256": "09912770e8c7ff07efacf1d03724fc0733b4fed08377325f19050fa01712dfac"
+    },
+    {
+      "file": "P-a-haifa-cs-1280-evaluate.json",
+      "sha256": "ffb9633fae1b8bc4438895ac13ef65591bd678cc15dba0845f010d3672036b17"
+    },
+    {
+      "file": "P-a-haifa-cs-390-retry-evaluate.json",
+      "sha256": "59264cda307eb839b33edf2960d6d1ceb2ca394b18d78fb85c20e3a1aff682c9"
+    },
+    {
+      "file": "P-a-all-haifa.json",
+      "sha256": "863a8a6f53dfebc8a5c338a0db3289d9ec3282c6b016f2358ab11e4c36678ec4"
+    },
+    {
+      "file": "P-a-all-haifa-retry.json",
+      "sha256": "d4405d981792373ebf395a0acb6e84a389944d8a94a7006d92f640b724c4de3b"
+    }
+  ],
+  "h1": {
+    "request": {
+      "degreeIds": [
+        "bgu_psychology",
+        "haifa_psychology",
+        "biu_psychology",
+        "huji_psychology",
+        "ariel_psychology",
+        "reichman_psychology",
+        "ono_psychology",
+        "tau_psychology"
+      ],
+      "psychometric": 700,
+      "bagrut": 86,
+      "extraInputs": {
+        "psychometricMath": 140,
+        "psychometricVerbal": 130,
+        "psychometricEnglish": 135,
+        "bagrutSubjectRecord": {
+          "schemaVersion": 2,
+          "sector": "jewish",
+          "certificateType": "external_1977_or_later",
+          "complete": true,
+          "subjects": [
+            {
+              "subjectId": "bible",
+              "units": 2,
+              "grade": 80,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "civics",
+              "units": 2,
+              "grade": 85,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "computer_science",
+              "units": 5,
+              "grade": 95,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "english",
+              "units": 5,
+              "grade": 85,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "hebrew_expression",
+              "units": 2,
+              "grade": 85,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "history",
+              "units": 2,
+              "grade": 80,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "literature",
+              "units": 2,
+              "grade": 85,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "mathematics",
+              "units": 5,
+              "grade": 90,
+              "assessmentKind": "exam"
+            },
+            {
+              "subjectId": "physics",
+              "units": 5,
+              "grade": 80,
+              "assessmentKind": "exam"
+            }
+          ]
+        },
+        "bagrutProfileSchemaVersion": 2,
+        "bagrutSector": "jewish",
+        "mathUnits": 5,
+        "mathGrade": 90,
+        "englishUnits": 5,
+        "englishGrade": 85,
+        "physicsUnits": 5,
+        "physicsGrade": 80,
+        "csUnits": 5,
+        "csGrade": 95
+      },
+      "bagrutAverageEstimated": true
+    },
+    "result": {
+      "institution": {
+        "id": "haifa",
+        "name": "אוניברסיטת חיפה",
+        "region": "north",
+        "domain": "haifa.ac.il",
+        "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/e/e1/University_of_Haifa_logo.svg",
+        "programUrl": "https://www.haifa.ac.il/ba_programs/",
+        "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+        "universityId": "haifa"
+      },
+      "linkedInstitutionId": "haifa",
+      "capability": "authority_unavailable",
+      "kind": "authority_unavailable",
+      "decision": "unknown",
+      "confidence": "low",
+      "sourceLabel": "אין מספיק מידע",
+      "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה",
+      "nextAction": "בדקו במחשבון הרשמי של אוניברסיטת חיפה.",
+      "officialUrls": [
+        "https://admissions.haifa.ac.il/score-calculation/",
+        "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+      ],
+      "snapshot": {
+        "evaluatorVersion": "admissions-evaluator-v2",
+        "ruleVersion": "admissions-evaluator-v2:haifa:authority_unavailable",
+        "ruleFingerprint": "sha256:ae688b949778465fd883981939e04c0a047db19b241150e302c66c257e70591d",
+        "inputDigest": "sha256:754f8a89f1f0d35d815bf344382aa95a1362b027788ed998a137b6cbd71a1e2f",
+        "evaluationDigest": "sha256:25447113a56720118d79626c0fd1279cc243a5af6406fb0cdce3f82f66480ab1"
+      }
+    },
+    "bgu": {
+      "programId": "economics",
+      "result": {
+        "institution": {
+          "id": "bgu",
+          "name": "אוניברסיטת בן-גוריון בנגב",
+          "region": "south",
+          "domain": "bgu.ac.il",
+          "logoUrl": "https://upload.wikimedia.org/wikipedia/commons/1/12/Ben-Gurion_University_of_the_Negev_logo.svg",
+          "programUrl": "https://in.bgu.ac.il/Pages/default.aspx",
+          "calculatorUrl": "https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html",
+          "universityId": "bgu"
+        },
+        "linkedInstitutionId": "bgu",
+        "capability": "authority_unavailable",
+        "kind": "authority_unavailable",
+        "decision": "unknown",
+        "confidence": "low",
+        "sourceLabel": "האימות הרשמי טרם הושלם",
+        "explanation": "תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה. סף הקבלה השמור למסלול הוא 620 בציון המוסדי. נתוני הבסיס אומתו ב־27.9.2026, למחזור 2026-2027.",
+        "nextAction": "המידע השמור זמין לעיון, אך אין כרגע החלטת קבלה עדכנית. בדקו באתר המוסד את הסף ואת יתר תנאי הקבלה.",
+        "officialUrls": ["https://bgu4u.bgu.ac.il/orion/calc/calc_sec.html"],
+        "degradationReason": "pair_verification_incomplete",
+        "snapshot": {
+          "evaluatorVersion": "admissions-evaluator-v2",
+          "ruleVersion": "admissions-evaluator-v2:bgu:authority_unavailable",
+          "ruleFingerprint": "sha256:b1b8d9d1bf94e3f4e06b9757afc1309f6ab120116fc9edf09bebb8793910a33f",
+          "inputDigest": "sha256:6bb9957337f8ff0c4f87cde67f079bf15eca94333488da13b72bef7603d4f2a0",
+          "evaluationDigest": "sha256:ebc9b20b4c45faec71bd757670ef22c49bc4c4c57bb333ebeb83999977f9dbe5"
+        }
+      }
+    }
+  },
+  "h2": {
+    "csRequest": {
+      "degreeIds": [
+        "bgu_cs",
+        "haifa_cs",
+        "biu_cs",
+        "ariel_cs",
+        "huji_cs",
+        "reichman_cs",
+        "telhai_cs",
+        "afeka_cs",
+        "tlvyaffo_cs",
+        "colmgmt_cs",
+        "ono_cs",
+        "tau_cs",
+        "technion_cs",
+        "mon_12220708942_cs",
+        "hit_cs",
+        "mon_12220708940_cs",
+        "mon_12220708941_cs",
+        "ruppin_cs",
+        "mon_12220697668_cs",
+        "mon_12220685569_cs",
+        "mon_12341101519_cs",
+        "mon_12341088622_cs"
+      ],
+      "psychometric": 600,
+      "bagrut": 98
+    },
+    "allRequest": {
+      "degreeIds": [
+        "cs",
+        "psychology",
+        "law",
+        "economics",
+        "haifa_cs",
+        "haifa_psychology",
+        "haifa_law",
+        "haifa_economics",
+        "haifa_biology",
+        "haifa_socialwork",
+        "haifa_nursing",
+        "haifa_accounting",
+        "haifa_communication",
+        "haifa_politicalscience",
+        "haifa_statistics",
+        "haifa_math",
+        "haifa_infosystems",
+        "haifa_physiotherapy",
+        "haifa_sociology",
+        "haifa_engineering"
+      ],
+      "bagrut": 98,
+      "psychometric": 590,
+      "extraInputs": {
+        "psychometricMath": 115,
+        "psychometricVerbal": 110,
+        "psychometricEnglish": 120
+      }
+    }
+  }
+}

@@ -3,7 +3,12 @@
 import AdmissionEstimate from './AdmissionEstimate';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import TechnionMedicineComparison from './TechnionMedicineComparison';
-import { isTechnionMedicineScore, resultLabel } from '@/lib/studyJourney';
+import {
+  isTechnionMedicineScore,
+  resultLabel,
+  resultSourceLinks,
+  resultExplanation,
+} from '@/lib/studyJourney';
 import AdmissionConditions from './AdmissionConditions';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
@@ -844,6 +849,7 @@ export default function CalculatorResults({
                     : config.label;
                   const institutionType = getInstitutionType(institution);
                   const sourceUrl = institutionLink(result.officialUrls?.[0], institution.id);
+                  const sourceLinks = resultSourceLinks(result, institution.programUrl);
 
                   return (
                     <div
@@ -873,7 +879,9 @@ export default function CalculatorResults({
                                 {result.sourceLabel}
                               </p>
                               <p className="mt-1 text-xs leading-relaxed text-slate-500 [overflow-wrap:anywhere]">
-                                {result.explanation}
+                                {sourceLinks
+                                  ? resultExplanation(result, degreeId)
+                                  : result.explanation}
                               </p>
                             </>
                           )}
@@ -902,7 +910,19 @@ export default function CalculatorResults({
                           {!footnote && (
                             <AdmissionConditions conditions={result.additionalConditions} />
                           )}
-                          {sourceUrl && !result.floorChecks ? (
+                          {sourceLinks ? (
+                            sourceLinks.map(({ href, label }) => (
+                              <a
+                                key={href}
+                                href={href}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="mt-1 mr-3 inline-block max-w-full truncate text-right text-[11px] font-semibold text-[#4f46e5] underline decoration-[#a5b4fc] underline-offset-2 hover:text-[#3730a3]"
+                              >
+                                {label}
+                              </a>
+                            ))
+                          ) : sourceUrl && !result.floorChecks ? (
                             <a
                               href={sourceUrl}
                               target="_blank"

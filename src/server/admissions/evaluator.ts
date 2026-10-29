@@ -198,6 +198,7 @@ export async function evaluateAdmissionsForProgram(args: {
 
   const results = await evaluateCapabilityEntries({
     input: evaluationInput,
+    haifaAverageIsProxy: normalized.proxyInstitutions.has('haifa'),
     program,
     institutions,
     capabilityEntries,
@@ -331,6 +332,7 @@ function withVerifiedAdmissionInformation(
 
 async function evaluateCapabilityEntries(args: {
   input: AdmissionsEvaluationRequest;
+  haifaAverageIsProxy: boolean;
   program: CatalogueProgram;
   institutions: CatalogueInstitution[];
   capabilityEntries: AdmissionsCapabilityEntry[];
@@ -347,9 +349,19 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (institution.id === 'haifa' && input.extraInputs?.haifaBagrutAverage === undefined) {
-      results[index] = haifaMissingRuleResult(program.id, publicInstitutionShape(institution));
-      continue;
+    if (
+      institution.id === 'haifa' &&
+      (args.haifaAverageIsProxy || input.extraInputs?.haifaBagrutAverage === undefined)
+    ) {
+      const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
+        averageIsProxy: args.haifaAverageIsProxy,
+        capability: entry.capability,
+        input,
+      });
+      if (missingRule) {
+        results[index] = missingRule;
+        continue;
+      }
     }
 
     if (isBiuPublishedRoutePair(program.id, institution.id)) {

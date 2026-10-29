@@ -1,4 +1,5 @@
 // @vitest-environment jsdom
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 
 import { fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
@@ -11,6 +12,11 @@ import { evaluateOnoPublishedRoutes } from '@/server/admissions/onoPublishedRout
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { evaluateColmanBagrutResult } from '@/server/admissions/colmanBagrutEvaluation';
+import qaReplay from '../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
+import type {
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import { getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
@@ -168,6 +174,127 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it.each([
+    ['haifa', 'authority_unavailable', true],
+    ['haifa', 'tracked_missing_rule', true],
+    ['bgu', 'authority_unavailable', true],
+    ['bgu', 'tracked_missing_rule', true],
+    ['bgu', 'authority_unavailable', false],
+    ['bgu', 'tracked_missing_rule', false],
+  ] as const)(
+    'H1 shows %s %s API explanation and all links (sources=%s)',
+    async (institutionId, kind, hasSources) => {
+      const captured = institutionId === 'haifa' ? qaReplay.h1.result : qaReplay.h1.bgu.result;
+      const result = {
+        ...captured,
+        kind,
+        capability: kind,
+        officialUrls: hasSources ? captured.officialUrls : [],
+      } as AdmissionsEvaluationResult;
+      const degreeId = institutionId === 'haifa' ? 'haifa_psychology' : qaReplay.h1.bgu.programId;
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+      render(
+        <CalculatorResults
+          degreeId={degreeId}
+          programs={programs}
+          psychometric={700}
+          bagrut={qaReplay.h1.request.bagrut}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(result.explanation, { exact: true })).toBeTruthy();
+      if (hasSources) {
+        for (const source of captured.officialUrls) {
+          const expected = new URL(source);
+          const link = screen.getAllByRole('link').find((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          });
+          expect(link, source).toBeTruthy();
+          expect(new URL(link!.getAttribute('href')!).searchParams.get('utm_source')).toBe('myway');
+        }
+        expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+      } else {
+        expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
+          /^https:\/\//,
+        );
+      }
+    },
+  );
+
+  it.each([
+    ['medicine', 'tau', 'authority_unavailable'],
+    ['tau_medicine', 'tau', 'authority_unavailable'],
+    ['physiotherapy', 'tau', 'authority_unavailable'],
+    ['colmgmt_cs', 'colman', 'authority_unavailable'],
+    ['colmgmt_cs', 'colman', 'tracked_missing_rule'],
+  ] as const)(
+    'H1 Latin fallback on CalculatorResults for %s at %s (%s) retains official links',
+    async (programId, institutionId, kind) => {
+      const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+      const evaluation = await evaluateAdmissionsForProgram({
+        program: { ...program, linkedInstitutionIds: [institutionId] },
+        institutions: [institution],
+        input: {
+          ...qaReplay.h1.request,
+          degreeId: programId,
+        } as unknown as AdmissionsEvaluationRequest,
+        freshnessStatesBySourceId: new Map(),
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockRejectedValue(new Error('No live requests in H1 regression')),
+        now: new Date('2026-10-29T00:00:00Z'),
+      });
+      // The named routes currently hit earlier Hebrew requirements/policy gates.
+      // Retain the evaluator's result shape and real links; replay the existing English
+      // ledger note as an unavailable API result, without inventing prose or live evidence.
+      const apiResult: AdmissionsEvaluationResult = {
+        ...evaluation.results[0],
+        kind,
+        capability: kind,
+        degradationReason: undefined,
+        officialUrls: evaluation.results[0].officialUrls ?? [
+          FORMULA_BACKED_VERIFICATION_LEDGER.find(
+            (row) => row.pairId === `${programId}__${institutionId}`,
+          )!.sourceUrl,
+        ],
+        explanation: FORMULA_BACKED_VERIFICATION_LEDGER.find(
+          (row) => row.pairId === `${programId}__${institutionId}`,
+        )!.reason,
+      };
+      expect(apiResult.kind).toBe(kind);
+      expect(apiResult.explanation).toMatch(/[a-zA-Z]/);
+      expect(apiResult.officialUrls?.length).toBeGreaterThan(0);
+      const generic =
+        kind === 'authority_unavailable'
+          ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+          : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+
+      hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([apiResult]));
+      render(
+        <CalculatorResults
+          degreeId={programId}
+          programs={programs}
+          psychometric={700}
+          bagrut={86}
+          onBack={() => {}}
+        />,
+      );
+      expect(await screen.findByText(generic, { exact: true })).toBeTruthy();
+      expect(screen.queryByText(apiResult.explanation, { exact: true })).toBeNull();
+      for (const source of apiResult.officialUrls!) {
+        const expected = new URL(source);
+        expect(
+          screen.getAllByRole('link').some((element) => {
+            const actual = new URL(element.getAttribute('href')!, window.location.origin);
+            return actual.origin === expected.origin && actual.pathname === expected.pathname;
+          }),
+          source,
+        ).toBe(true);
+      }
+    },
+  );
   it.each([
     [85, 'הציונים עומדים בסף'],
     [84.99, 'הציונים מתחת לסף'],

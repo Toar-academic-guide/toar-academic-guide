@@ -42,6 +42,7 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  resultSourceLinks,
   isTechnionMedicineScore,
   formatJourneyScore,
   officialUrl,
@@ -445,6 +446,7 @@ export default function StudyJourney({
       activeRow?.institution.programUrl,
     activeRow?.institution.id,
   );
+  const activeSourceLinks = resultSourceLinks(activeRow?.result, activeOfficialUrl);
   const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
@@ -748,6 +750,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
@@ -763,6 +766,28 @@ export default function StudyJourney({
           >
             {status.label}
           </span>
+          {sourceLinks && (
+            <>
+              <p className="journey-result-explanation">
+                {resultExplanation(row.result, row.program.id)}
+              </p>
+              <div className="journey-links">
+                {sourceLinks.map(({ href, label }) => (
+                  <ProgramTrackedLink
+                    key={href}
+                    event="institution_site_clicked"
+                    programId={row.program.id}
+                    institutionId={row.institution.id}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={href}
+                  >
+                    {label}
+                  </ProgramTrackedLink>
+                ))}
+              </div>
+            </>
+          )}
           {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
             <TechnionMedicineComparison score={row.result.score} />
           )}
@@ -1521,18 +1546,32 @@ export default function StudyJourney({
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
-                    {activeOfficialUrl && (
-                      <ProgramTrackedLink
-                        event="institution_site_clicked"
-                        programId={activeRow.program.id}
-                        institutionId={activeRow.institution.id}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={activeOfficialUrl}
-                      >
-                        לאתר המוסד
-                      </ProgramTrackedLink>
-                    )}
+                    {activeSourceLinks
+                      ? activeSourceLinks.map(({ href, label }) => (
+                          <ProgramTrackedLink
+                            key={href}
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={href}
+                          >
+                            {label}
+                          </ProgramTrackedLink>
+                        ))
+                      : activeOfficialUrl && (
+                          <ProgramTrackedLink
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={activeOfficialUrl}
+                          >
+                            לאתר המוסד
+                          </ProgramTrackedLink>
+                        )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}
