@@ -101,7 +101,8 @@ describe('BIU journey detail verdict', () => {
     const { summary, result, container } = await detail(700);
     expect(summary.textContent).toBe('עומד/ת בכל תנאי הסף');
     expect(result.decision).toBe('unknown');
-    expect(container.querySelector('.journey-status')?.textContent).toBe('אין הכרעת קבלה');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    expect(container.querySelector('.journey-status')?.textContent).toBe('ציון הקבלה שלכם מוכן');
     expect(screen.queryByText(reservist)).toBeNull();
   });
 

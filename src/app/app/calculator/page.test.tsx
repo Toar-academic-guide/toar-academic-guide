@@ -20,7 +20,10 @@ describe('calculator programme query', () => {
 describe('calculator metadata', () => {
   it('describes admission chances without institutional composite terminology', () => {
     expect(metadata.title).toContain('מחשבון סיכויי קבלה');
-    expect(metadata.description).toContain('מחשבון סיכויי קבלה');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 33)
+    expect(metadata.description).toBe(
+      'מזינים בגרות ופסיכומטרי, ורואים לאן אתם מתקבלים. חינם, בלי הרשמה, מול תנאי הקבלה הרשמיים.',
+    );
     expect(metadata.title).not.toContain('סכם');
     expect(metadata.description).not.toContain('סכם');
   });

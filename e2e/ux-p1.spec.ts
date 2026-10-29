@@ -100,7 +100,8 @@ for (const width of [1280, 390]) {
       page,
     }) => {
       await page.goto('/programs/tau_cs');
-      await page.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }).click();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+      await page.getByRole('link', { name: 'בדקו אם אתם מתקבלים', exact: true }).click();
       await expect(page).toHaveURL(/\/app\/calculator\?program=tau_cs$/);
       await expect(next(page)).toBeEnabled();
       await expect(

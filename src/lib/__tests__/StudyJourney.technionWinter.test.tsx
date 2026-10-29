@@ -98,7 +98,8 @@ describe.each(['detail', 'compare'] as const)('Technion no-score %s requirements
       if (view === 'detail') {
         await screen.findByText(explanation);
         expect(screen.getByRole('heading', { name })).toBeTruthy();
-        expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
         expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
         scope = container.querySelector('.journey-narrow')!;
       } else {

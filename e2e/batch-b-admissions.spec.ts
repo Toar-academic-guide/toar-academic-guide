@@ -77,7 +77,8 @@ for (const width of [390, 1440]) {
           expect.objectContaining({ id: 'admissions_committee', status: 'unconfirmed' }),
         );
         await expect(page.locator('.journey-status')).toHaveText('מתקבלים');
-        const footnote = page.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.', {
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 11)
+        const footnote = page.getByText('השלב הבא: ריאיון קבלה.', {
           exact: true,
         });
         await expect(footnote).toBeVisible();
@@ -98,7 +99,10 @@ for (const width of [390, 1440]) {
       expect(result.requiredInputs).toBeUndefined();
       await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);
       const main = page.getByRole('main');
-      await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(
+        main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+      ).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       await expect(main.getByRole('textbox', { name: /מתואם|סכם|מצרף|ציון קבלה/ })).toHaveCount(0);
       expect(

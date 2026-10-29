@@ -47,11 +47,13 @@ it.each(absentEvaluatorIds)(
     vi.stubGlobal('fetch', fetcher);
     try {
       render(await Page({ searchParams: Promise.resolve({ program }) }));
-      expect(screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
+      expect(screen.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.')).toBeTruthy();
       expect(
         screen.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
       ).toBe(`/programs/${program}`);
-      expect(screen.queryByRole('button', { name: 'לחשב את הסכם' })).toBeNull();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+      expect(screen.queryByRole('button', { name: 'חשבו את הסכם שלי' })).toBeNull();
       expect(screen.queryByText('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.')).toBeNull();
       expect(fetcher).not.toHaveBeenCalled();
     } finally {
@@ -62,13 +64,15 @@ it.each(absentEvaluatorIds)(
 
 it('does not link an unknown unavailable programme to a nonexistent public page', async () => {
   render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
-  expect(screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.')).toBeTruthy();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
+  expect(screen.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.')).toBeTruthy();
   expect(screen.queryByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toBeNull();
   expect(screen.getByRole('link', { name: 'יצירת קשר' }).getAttribute('href')).toBe('/contact');
   expect(screen.getByRole('link', { name: 'לחישוב תוכנית אחרת' }).getAttribute('href')).toBe(
     '/sekhem-calculator',
   );
-  expect(screen.queryByRole('button', { name: 'לחשב את הסכם' })).toBeNull();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  expect(screen.queryByRole('button', { name: 'חשבו את הסכם שלי' })).toBeNull();
 });
 
 it('offers only programmes in the runtime evaluator catalogue and refreshes membership on the next render', async () => {
@@ -100,7 +104,8 @@ it('renders an indexable public calculator with absolute title and canonical met
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
     // Approved test update, Jorje 2026-10-29: meta no-overclaim
-    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.',
   );
 });
 it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
@@ -213,10 +218,12 @@ it('sends only active supported programmes in a full nine-subject run without a 
         ),
         { target: { value: String(value) } },
       );
-    fireEvent.click(screen.getByRole('button', { name: 'לחשב את הסכם' }));
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+    fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
     await waitFor(() => expect(sent.length).toBeGreaterThan(0));
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'לחשב את הסכם' })).toHaveProperty(
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+      expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' })).toHaveProperty(
         'disabled',
         false,
       ),
@@ -230,7 +237,12 @@ it('sends only active supported programmes in a full nine-subject run without a 
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
-const answerHeadings = ['מה זה סכם?', 'איך מחשבים כאן?', 'באילו מוסדות ותוכניות אפשר לבדוק כאן?'];
+// Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
+const answerHeadings = [
+  'הסכם: המפתח לקבלה',
+  'איך מחשבים כאן?',
+  'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+];
 
 it.each(answerHeadings)('renders the answer heading %s', async (name) => {
   render(await Page({ searchParams: Promise.resolve({}) }));
@@ -333,7 +345,8 @@ it('keeps the answer section free of numbers and unsupported admission promises'
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 it('renders all three answers below the unavailable block for an unknown programme', async () => {
   render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
-  const unavailable = screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
+  const unavailable = screen.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.');
   for (const name of answerHeadings) {
     const heading = screen.getByRole('heading', { level: 2, name });
     expect(unavailable.compareDocumentPosition(heading) & Node.DOCUMENT_POSITION_FOLLOWING).toBe(
@@ -415,7 +428,8 @@ it('describes the calculator application with canonical site relationships and n
     inLanguage: 'he',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-    featureList: ['חישוב סכם לפי תוכנית', 'הערכת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+    featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
     publisher: { '@id': 'https://findmyway.co.il/#organization' },
     isPartOf: { '@id': 'https://findmyway.co.il/#website' },
   });
@@ -436,4 +450,22 @@ it('preserves the complete homepage WebApplication node', () => {
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
     featureList: ['שאלון התאמה ללימודים', 'קטלוג מוסדות ומסלולי לימוד', 'בדיקת סיכויי קבלה אישית'],
   });
+});
+
+it('uses the sell-first description for every social snippet', () => {
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+  expect(metadata.twitter).toMatchObject({ description: metadata.description });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
+  expect(metadata.description).not.toContain('ומקבלים הערכה');
+});
+it('renders the approved subtitle and explanation in the existing FAQ slot', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 29)
+  expect(screen.getByText('מזינים בגרות ופסיכומטרי, ורואים מה הסכם שלכם פותח.')).toBeTruthy();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
+  const heading = screen.getByRole('heading', { name: 'הסכם: המפתח לקבלה' });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
+  expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.',
+  );
 });

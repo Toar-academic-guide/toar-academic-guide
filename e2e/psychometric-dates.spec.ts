@@ -32,7 +32,8 @@ for (const width of [1280, 390]) {
       );
     expect(matches(statuses) || matches(afterStatuses)).toBe(true);
     await expect(
-      main.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }),
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
+      main.getByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים', exact: true }),
     ).toHaveAttribute('href', '/sekhem-calculator');
     await expect(page.locator('header nav a[href="/psychometric-dates"]')).toHaveCount(0);
     await expect(main).not.toContainText('סכם');

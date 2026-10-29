@@ -60,7 +60,8 @@ it('never labels TAU architecture "אפשר להגיש מועמדות" when a fl
       expect(result.decision).toBe('unknown');
       expect(result.floorChecks).toHaveLength(3);
       expect(result.floorChecks!.every((floor) => floor.status === 'pass')).toBe(true);
-      expect(label).toBe('נדרש מיון נוסף');
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+      expect(label).toBe('השלב הבא: מיון במוסד');
     }
   }
 });
@@ -94,7 +95,8 @@ it.each([
     expect(result.floorChecks?.find((floor) => floor.label === floorLabel)?.status).toBe('missing');
     const { label } = resultLabel(result, false, false, 'architecture');
     expect(label).not.toBe('אפשר להגיש מועמדות');
-    expect(label).toBe('נדרש מיון נוסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+    expect(label).toBe('השלב הבא: מיון במוסד');
   },
 );
 
@@ -114,14 +116,17 @@ it.each(['exact', 'estimated'] as const)(
       nextAction: 'בדקו באתר המוסד',
     };
     expect(resultLabel(result, false, false, 'haifa_sociology')).toEqual({
-      label: 'אין הכרעת קבלה',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      label: 'הסכם שלכם: 520',
       group: 'explore',
     });
     expect(
       resultLabel({ ...result, linkedInstitutionId: 'technion' }, false, false, 'technion_cs'),
-    ).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    ).toEqual({ label: 'הסכם שלכם: 520', group: 'explore' });
     expect(resultLabel(result, false, false, 'technion_medicine')).toEqual({
-      label: 'אין הכרעת קבלה',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      label: 'הסכם שלכם: 520',
       group: 'explore',
     });
   },
@@ -265,12 +270,14 @@ describe('approved journey', () => {
     expect(resultLabel(result)).toEqual({ label: 'מתקבלים', group: 'match' });
     expect(resultExplanation(result, 'ono_nursing')).toBe(result.explanation);
     expect(resultLabel({ ...result, decision: 'pending' })).toEqual({
-      label: 'הציונים עומדים בסף',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+      label: 'עוברים את הסף ✓',
       group: 'match',
     });
     expect(
       resultLabel({ ...result, decision: 'below', scoreAssessment: 'below_threshold' }),
-    ).toEqual({ label: 'הציונים מתחת לסף', group: 'improve' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+    ).toEqual({ label: 'עוד לא בסף', group: 'improve' });
     expect(
       resultLabel({ ...result, decision: 'eligible_to_apply', scoreAssessment: undefined }),
     ).toEqual({ label: 'אפשר להגיש מועמדות', group: 'match' });
@@ -502,7 +509,8 @@ it.each([
     const generic =
       kind === 'authority_unavailable'
         ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
-        : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+        : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 6)
+          'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
 
     expect(resultExplanation(apiResult, programId)).toBe(generic);
   },

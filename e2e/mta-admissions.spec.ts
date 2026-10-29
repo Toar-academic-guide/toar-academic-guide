@@ -145,7 +145,10 @@ for (const width of [1440, 390]) {
       expect(result).toMatchObject({ decision: c.decision, kind: c.kind });
       await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);
       const main = page.getByRole('main');
-      await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(
+        main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+      ).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
         const value = Object.values(official).find((value) => value.program === c.program)!;
@@ -194,7 +197,8 @@ for (const width of [1440, 390]) {
       await expect(page.getByRole('heading', { name: 'תנאי קבלה', exact: true })).toBeVisible();
       const main = page.getByRole('main');
       await expect(main).toHaveCSS('text-align', 'right');
-      await expect(main.getByRole('link', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (catalogueApplied) {
         await expect(main.getByRole('heading', { level: 1 })).toHaveText(value.display_name);
         await expect(main).not.toContainText(

@@ -97,10 +97,12 @@ describe('ProgramPage', () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));
 
     expect(screen.getByRole('heading', { name: program.name })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'בדיקת סיכויי קבלה' }).getAttribute('href')).toBe(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    expect(screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' }).getAttribute('href')).toBe(
       `/app/calculator?program=${encodeURIComponent(program.id)}`,
     );
-    expect(screen.getByRole('link', { name: 'התאמה אישית' }).getAttribute('href')).toBe(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 38)
+    expect(screen.getByRole('link', { name: 'מה מתאים לי?' }).getAttribute('href')).toBe(
       '/app/assessment',
     );
     expect(screen.queryByText('savedProgramIds')).toBeNull();
@@ -518,13 +520,16 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: 'לפרטים על המסלול' })).toBeNull();
     });
 
-    it('keeps unlisted pages’ existing unavailable message', async () => {
+    it('hides the unlisted programme admission block', async () => {
       vi.mocked(listCataloguePrograms).mockResolvedValue({
         data: [{ ...general, isListed: false }],
         meta: {},
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: 'nursing' }) }));
-      expect(screen.getByText('אין כרגע מידע עדכני על המסלול.')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+      expect(screen.queryByText('אין כרגע מידע עדכני על המסלול.')).toBeNull();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+      expect(screen.queryByRole('heading', { name: 'תנאי קבלה' })).toBeNull();
       expect(screen.queryByRole('listitem')).toBeNull();
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
@@ -534,8 +539,10 @@ describe('ProgramPage', () => {
 it('tracks program page CTAs and official outbound links with only canonical IDs', async () => {
   render(await ProgramPage({ params: Promise.resolve({ programId: 'colmgmt_cs' }) }));
   const actions = [
-    ['בדיקת סיכויי קבלה', 'program_calculator_cta_clicked'],
-    ['יצירת קשר', 'program_contact_cta_clicked'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    ['בדקו אם אתם מתקבלים', 'program_calculator_cta_clicked'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    ['קבלו שיחה מהמוסד', 'program_contact_cta_clicked'],
     ['לאתר המוסד', 'institution_site_clicked'],
     ['למחשבון המכללה', 'institution_calculator_clicked'],
   ];

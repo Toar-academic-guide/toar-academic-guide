@@ -112,7 +112,8 @@ describe('public calculator ordinary input boundary', () => {
       score: 21.12,
       threshold: 21.12,
     } as AdmissionsEvaluationResult;
-    expect(resultVerdict(row)).toBe('הציונים מתחת לסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+    expect(resultVerdict(row)).toBe('עוד לא בסף. בואו נמצא דרך.');
   });
   it('lets existing institutional policies compute from entered certificate rows without a full-matriculation checkbox', () => {
     const input = buildSekhemInput({

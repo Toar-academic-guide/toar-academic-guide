@@ -132,7 +132,8 @@ describe('API-only result rows', () => {
       />,
     );
     const row = screen.getByTestId('result-psychology-haifa');
-    expect(row.textContent).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+    expect(row.textContent).toBe('חיפה: בדיקה אישית מול המוסד');
     expect(row.querySelector('[data-result-number]')).toBeNull();
   });
   it('names the institution when its score is not calculated here', () => {
@@ -145,7 +146,8 @@ describe('API-only result rows', () => {
       }),
     ]);
     expect(screen.getByTestId('result-psychology-tau').textContent).toBe(
-      'עדיין לא מחשבים כאן את ציון הקבלה של תל אביב',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+      'תל אביב: בדיקה אישית מול המוסד',
     );
   });
   it('links a returned missing subject only when the API names required inputs', () => {
@@ -186,7 +188,8 @@ describe('API-only result rows', () => {
     ]);
     const row = screen.getByTestId('result-psychology-tau');
     expect(row.textContent).toContain(
-      'עומדים בתנאי הסף. לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו, ולכן מוצג רק סף הקבלה.',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 23)
+      'עוברים את הסף ✓',
     );
     expect(within(row).queryByRole('button')).toBeNull();
     expect(row.querySelectorAll('[data-result-number]')).toHaveLength(1);
@@ -322,7 +325,8 @@ describe('API-only result rows', () => {
     const source = report('huji', { score: 21.12, threshold: 21.12, decision: 'below' });
     renderReports([source]);
     const row = screen.getByTestId('result-psychology-huji');
-    expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+    expect(within(row).getByText('עוד לא בסף. בואו נמצא דרך.')).toBeTruthy();
     expect(within(row).getByText('סף קבלה')).toBeTruthy();
     for (const number of row.querySelectorAll('[data-result-number]')) {
       const field = number.getAttribute('data-result-number') as 'score' | 'threshold';
@@ -342,7 +346,14 @@ describe('API-only result rows', () => {
       renderReports([source]);
       const row = screen.getByTestId(`result-psychology-${id}`);
       expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe(shown);
-      expect(within(row).getByText('הציונים מתחת לסף')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+      expect(
+        within(row).getByText(
+          score < 636 && Math.round(636 - score) > 0
+            ? `חסרות לכם ${id === 'reichman' ? Math.round(636 - score) : Number((636 - score).toPrecision(12))} נקודות לסף`
+            : 'עוד לא בסף. בואו נמצא דרך.',
+        ),
+      ).toBeTruthy();
       expect(source.results[0].score).toBe(score);
     },
   );
@@ -421,7 +432,8 @@ describe('API-only result rows', () => {
         }),
       ),
     );
-    expect(screen.getAllByText('בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.')).toHaveLength(1);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    expect(screen.queryByText('בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.')).toBeNull();
     expect(screen.queryByText('אוניברסיטת אריאל')).toBeNull();
     expect(screen.queryByText('עדיין לא נתמך')).toBeNull();
     expect(screen.getByRole('link', { name: 'יש גם אפיקי קבלה נוספים' }).getAttribute('href')).toBe(
@@ -455,7 +467,8 @@ describe('API-only result rows', () => {
     expect(row.textContent).not.toContain('חסרים תנאי קבלה לחישוב');
   });
   it.each([
-    ['haifa', 'haifa_bagrut_average', 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+    ['haifa', 'haifa_bagrut_average', 'חיפה: בדיקה אישית מול המוסד'],
     ['technion', 'bagrut_subject_record', 'בכל מקצועות הבגרות'],
     ['bgu', 'bgu_bagrut_average', 'ממוצע הבגרות לפי כללי בן־גוריון'],
     ['tau', 'tau_physiotherapy_route', 'אפיק הקבלה לפיזיותרפיה'],
@@ -487,7 +500,8 @@ describe('API-only result rows', () => {
     expect(row.querySelector('[data-result-reason]')?.textContent).toContain(label);
     if (id === 'haifa') {
       expect(row.querySelector('[data-result-reason]')?.textContent).toBe(
-        'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+        'חיפה: בדיקה אישית מול המוסד',
       );
       expect(row.textContent).not.toContain('ממוצע בגרות רשמי של חיפה');
       expect(
@@ -519,7 +533,8 @@ describe('API-only result rows', () => {
     expect(screen.getByTestId('result-law-huji')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('בחירת תוכנית'), { target: { value: 'psychology' } });
     expect(screen.getByTestId('result-psychology-huji').textContent).toContain(
-      'עדיין לא מחשבים כאן את ציון הקבלה של האוניברסיטה העברית',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+      'האוניברסיטה העברית: בדיקה אישית מול המוסד',
     );
   });
   it.each([
@@ -580,7 +595,8 @@ describe('API-only result rows', () => {
         expect(screen.getByTestId(`institution-${id}`).textContent).not.toMatch(
           /נתונים|מתואם|סכם|מצרף/,
         );
-        if (id === 'haifa') expect(reasons).toEqual(['עדיין לא מחשבים כאן את ציון הקבלה של חיפה']);
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
+        if (id === 'haifa') expect(reasons).toEqual(['חיפה: בדיקה אישית מול המוסד']);
       }
     },
   );
@@ -660,8 +676,10 @@ describe('API-only result rows', () => {
     const { onEnquiry } = renderReports([
       report('huji', { score: undefined, threshold: undefined, kind: 'needs_input' }),
     ]);
-    expect(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' })).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    fireEvent.click(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' }));
     expect(onEnquiry).toHaveBeenCalledTimes(1);
   });
   it('shows a secondary conditions link on a numberless card with a public page', () => {
@@ -686,7 +704,8 @@ describe('API-only result rows', () => {
     expect(link.classList.contains('way-button-secondary')).toBe(true);
     expect(
       screen
-        .getByRole('button', { name: 'קבלת מידע על התוכנית' })
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        .getByRole('button', { name: 'קבלו שיחה מהמוסד' })
         .classList.contains('way-button-primary'),
     ).toBe(true);
   });
@@ -696,17 +715,20 @@ describe('API-only result rows', () => {
       report('tau'),
       report('reichman', { kind: 'estimated', capability: 'estimated' }),
     ]);
-    expect(screen.getAllByRole('button', { name: 'קבלת מידע על התוכנית' })).toHaveLength(3);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(screen.getAllByRole('button', { name: 'קבלו שיחה מהמוסד' })).toHaveLength(3);
     fireEvent.click(
       within(screen.getByTestId('institution-huji')).getByRole('button', {
-        name: 'קבלת מידע על התוכנית',
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        name: 'קבלו שיחה מהמוסד',
       }),
     );
     expect(onEnquiry).toHaveBeenCalledWith(
       expect.objectContaining({ institutionId: 'huji', programId: 'psychology' }),
       expect.objectContaining({ program: { id: 'psychology', name: 'פסיכולוגיה' } }),
     );
-    expect(screen.getByText('אומדן, עד לאישור המוסד')).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+    expect(screen.queryByText('אומדן, עד לאישור המוסד')).toBeNull();
   });
 });
 
@@ -735,7 +757,8 @@ it.each(['biu', 'hit', 'afeka'])(
     expect(card.querySelector('[data-testid^="result-"]')).toBeNull();
     expect(card.querySelectorAll('[data-result-number], [data-result-reason]')).toHaveLength(0);
     expect(card.textContent).not.toMatch(/\d|עומדים|מתחת|חסרים|עדיין לא/);
-    fireEvent.click(within(card).getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    fireEvent.click(within(card).getByRole('button', { name: 'קבלו שיחה מהמוסד' }));
     expect(onEnquiry).toHaveBeenCalledWith(offering, source);
   },
 );
@@ -756,7 +779,8 @@ it('keeps filtered entries hidden whenever at least one normal result survives',
   expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
   expect(screen.queryByTestId('institution-biu')).toBeNull();
   expect(screen.queryByTestId('result-psychology-biu')).toBeNull();
-  expect(screen.getAllByRole('button', { name: 'קבלת מידע על התוכנית' })).toHaveLength(1);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  expect(screen.getAllByRole('button', { name: 'קבלו שיחה מהמוסד' })).toHaveLength(1);
 });
 
 it('does not mix filtered programmes into a surviving institution group', () => {

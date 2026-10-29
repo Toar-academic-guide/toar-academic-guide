@@ -43,7 +43,8 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       await expect(main).toHaveCSS('text-align', 'right');
       const more = main.locator('summary').filter({ hasText: /^(תנאים נוספים|פרטים נוספים)$/ });
       if (await more.count()) await more.click();
-      await expect(main.getByRole('link', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
         await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
         await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
@@ -160,7 +161,10 @@ for (const width of [390, 1440]) {
       if (value.program === 'colmgmt_cs' || value.institution === 'mta')
         expect(result.decision).toBe('pending');
       const main = page.getByRole('main');
-      await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(
+        main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+      ).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       await expect(main.getByText('תנאי קבלה', { exact: true })).toBeVisible();
       const more = main.locator('summary').filter({ hasText: /^(תנאים נוספים|פרטים נוספים)$/ });

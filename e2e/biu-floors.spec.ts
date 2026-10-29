@@ -254,7 +254,8 @@ for (const width of [1280, 390])
         'https://shoham.biu.ac.il/kabala/?utm_source=myway&utm_medium=referral',
       );
       await expect(
-        page.getByRole('main').getByRole('button', { name: 'יצירת קשר', exact: true }),
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        page.getByRole('main').getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
       ).toBeVisible();
       await expect(
         page.getByRole('main').getByRole('button', { name: 'שמירה לרשימה', exact: true }),

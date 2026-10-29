@@ -74,12 +74,15 @@ for (const width of [390, 1440]) {
       'זו אינה דחייה מכל מסלולי הקבלה.',
     );
     await expect(page.locator('.admission-estimate')).toHaveText(
-      'הערכה: חישבנו לפי הממוצע הכללי שהזנת, לא לפי ממוצע המוסד. להערכה מדויקת יותר, הזינו ציונים לפי מקצוע.',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+      'רוצים תשובה מדויקת יותר? הזינו ציונים לפי מקצוע.',
     );
     await expect(
-      page.getByRole('main').getByText('הציונים מתחת לסף', { exact: true }),
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+      page.getByRole('main').getByText('חסרות לכם 15 נקודות לסף', { exact: true }),
     ).toBeVisible();
-    await page.getByRole('button', { name: 'עדכון נתונים ותנאים נוספים', exact: true }).click();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+    await page.getByRole('button', { name: 'השלימו וקבלו תשובה', exact: true }).click();
     const average = page.getByLabel('ממוצע בגרות משוקלל של המכללה למינהל (50–130)', {
       exact: true,
     });
@@ -134,7 +137,8 @@ for (const width of [390, 1440]) {
     });
     await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);
     const main = page.getByRole('main');
-    await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await expect(main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
     await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
     await expect(main).not.toContainText('ההחלטה היא של המכללה');
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
@@ -156,7 +160,8 @@ for (const width of [390, 1440]) {
           : value.notes;
       for (const line of expectedCopy)
         await expect(main.getByText(line, { exact: true })).toBeVisible();
-      await expect(main.getByRole('link', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (value.program === 'colmgmt_economics') {
         const calculator = new URL(
           (await main

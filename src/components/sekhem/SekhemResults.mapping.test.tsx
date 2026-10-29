@@ -283,26 +283,31 @@ describe('real evaluator → batch POST → calculator result rows', () => {
       }
       const expectedVerdict =
         profile.institutionId === 'biu'
-          ? 'הציונים אינם עומדים בתנאי הקבלה שנבדקו.'
+          ? // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+            'עוד לא בסף. בואו נמצא דרך.'
           : profile.institutionId === 'afeka'
             ? 'עומדים בתנאי הקבלה של התוכנית'
             : result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold'
               ? 'הציונים עומדים בתנאי הקבלה'
-              : 'הציונים מתחת לסף';
+              : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
+                `חסרות לכם ${formatSekhemNumber(Number((result.threshold! - result.score!).toPrecision(12)), profile.institutionId)} נקודות לסף`;
       expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
       for (const gate of result.additionalConditions ?? [])
         if (gate.status !== 'confirmed') expect(row!.textContent).toContain(gate.label);
-      expect(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' })).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     }
     if (['biu', 'afeka', 'hit'].includes(profile.institutionId))
-      expect(screen.getAllByText('בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.')).toHaveLength(1);
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+      expect(screen.queryByText('בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.')).toBeNull();
     if (profile.institutionId === 'afeka')
       expect(
         screen.getByRole('link', { name: 'יש גם אפיקי קבלה נוספים' }).getAttribute('href'),
       ).toBe('/institutions/afeka');
     if (profile.institutionId === 'reichman')
-      expect(screen.getByText('אומדן, עד לאישור המוסד')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+      expect(screen.queryByText('אומדן, עד לאישור המוסד')).toBeNull();
     expect(screen.queryByText('נדרשת בדיקה מול המוסד')).toBeNull();
   });
 

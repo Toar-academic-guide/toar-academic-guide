@@ -86,7 +86,8 @@ test.describe('durable URL model', () => {
   test('public catalogue pages render without login', async ({ page }) => {
     await page.goto('/programs/cs');
     await expect(page.getByRole('heading', { name: 'מדעי המחשב' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'בדיקת סיכויי קבלה' })).toHaveAttribute(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    await expect(page.getByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toHaveAttribute(
       'href',
       '/app/calculator?program=cs',
     );

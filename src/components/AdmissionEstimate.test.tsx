@@ -28,7 +28,8 @@ describe('07:24 estimate notice scope', () => {
         }}
       />,
     );
-    expect(screen.queryByText(/הערכה:/)).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+    expect(screen.queryByText(/רוצים תשובה מדויקת יותר\?|הערכה:/)).toBeNull();
   });
   it('hides unknown results without a calculated score', () => {
     render(
@@ -41,7 +42,8 @@ describe('07:24 estimate notice scope', () => {
         }}
       />,
     );
-    expect(screen.queryByText(/הערכה:/)).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+    expect(screen.queryByText(/רוצים תשובה מדויקת יותר\?|הערכה:/)).toBeNull();
   });
   it.each([true, false, undefined])(
     'renders a calculated proxy verdict only when flagged: %s',
@@ -56,7 +58,10 @@ describe('07:24 estimate notice scope', () => {
           }}
         />,
       );
-      expect(screen.queryByText(/הערכה:/) !== null).toBe(estimated === true);
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+      expect(screen.queryByText(/רוצים תשובה מדויקת יותר\?|הערכה:/) !== null).toBe(
+        estimated === true,
+      );
     },
   );
   it('renders an actual score even before a decision is known', () => {
@@ -71,7 +76,10 @@ describe('07:24 estimate notice scope', () => {
         }}
       />,
     );
-    expect(screen.getByText(/הערכה:/).textContent).toContain('הזינו ציונים לפי מקצוע');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+    expect(screen.getByText(/רוצים תשובה מדויקת יותר\?|הערכה:/).textContent).toContain(
+      'הזינו ציונים לפי מקצוע',
+    );
   });
   it.each(['exact', 'needs_input'] as const)(
     'gates defaulted-year wording on calculated state: %s',
@@ -86,7 +94,8 @@ describe('07:24 estimate notice scope', () => {
         estimationReason: yearReason,
       };
       render(<AdmissionEstimate result={result} />);
-      const note = screen.queryByText(/הערכה:/);
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+      const note = screen.queryByText(/רוצים תשובה מדויקת יותר\?|הערכה:/);
       expect(note !== null).toBe(kind === 'exact');
       if (note) {
         expect(note.textContent).toContain('שנת הבחינה');
@@ -96,4 +105,20 @@ describe('07:24 estimate notice scope', () => {
       }
     },
   );
+});
+
+it('offers more precise subject input for an average-based estimate', () => {
+  render(
+    <AdmissionEstimate
+      result={{
+        kind: 'estimated',
+        decision: 'accepted',
+        score: 650,
+        estimated: true,
+        estimationReason: averageReason,
+      }}
+    />,
+  );
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 13)
+  expect(screen.getByText('רוצים תשובה מדויקת יותר? הזינו ציונים לפי מקצוע.')).toBeTruthy();
 });

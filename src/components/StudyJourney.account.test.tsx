@@ -246,9 +246,11 @@ describe('account grades in the homepage journey', () => {
       }
       if (surface === 'detail') {
         if (hide) {
-          expect(scope.queryByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeNull();
+          // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+          expect(scope.queryByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeNull();
         } else {
-          expect(scope.getByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeTruthy();
+          // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+          expect(scope.getByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeTruthy();
         }
         expect(scope.getByRole('button', { name: 'עוד דרכי קבלה' })).toBeTruthy();
       }
@@ -308,7 +310,8 @@ describe('account grades in the homepage journey', () => {
       const generic =
         kind === 'authority_unavailable'
           ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
-          : 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
+          : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 6)
+            'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
 
       state.fetchPrograms.mockResolvedValue([program]);
       state.fetchInstitutions.mockResolvedValue([institution]);
@@ -391,14 +394,16 @@ describe('account grades in the homepage journey', () => {
     );
     const { container } = render(<StudyJourney initialStep="detail" />);
     expect(await screen.findByText('מתקבלים')).toBeTruthy();
-    const footnote = screen.getByText('נדרש גם ריאיון קבלה. אישור סופי מהמכללה.');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 11)
+    const footnote = screen.getByText('השלב הבא: ריאיון קבלה.');
     expect(footnote.className).toContain('text-slate-400');
     expect(footnote.className).toContain('text-xs');
     expect(container.querySelector('.journey-result-explanation')?.textContent).toBe(
       result.explanation,
     );
     expect(screen.queryByText('תנאים נוספים לבדיקה')).toBeNull();
-    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
   });
 
@@ -469,7 +474,8 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByText(/^סכם:/)).toBeNull();
-    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
       'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
@@ -578,11 +584,13 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     render(<StudyJourney initialStep="detail" />);
-    const chip = await screen.findByText('אין הכרעת קבלה');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    const chip = await screen.findByText('הסכם שלכם: 520');
     expect(chip.className).toBe('journey-status status-explore');
     expect(chip.classList.contains('status-match')).toBe(false);
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
-    const listChip = await screen.findByText('אין הכרעת קבלה');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    const listChip = await screen.findByText('הסכם שלכם: 520');
     expect(listChip.className).toBe('journey-status status-explore');
   });
 
@@ -620,7 +628,8 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     render(<StudyJourney initialStep="detail" />);
-    expect(await screen.findByText('חסרים פרטים לחישוב')).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 3)
+    expect(await screen.findByText('השלימו פרטים וקבלו תשובה')).toBeTruthy();
     expect(screen.getByText(explanation)).toBeTruthy();
     expect(screen.queryByText('קבלה דרך מבחני מו"ר')).toBeNull();
     // Approved test update, Jorje 2026-10-29
@@ -876,11 +885,14 @@ describe('account grades in the homepage journey', () => {
     await screen.findByText('עדיין לא ניתן לקבוע התאמה');
     fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
     await screen.findByText('עדיין לא ניתן לקבוע התאמה');
-    expect(screen.queryByRole('button', { name: 'השלמת נתונים לחישוב' })).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+    expect(screen.queryByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeNull();
     expect(screen.queryByRole('button', { name: 'עוד דרכי קבלה' })).toBeNull();
-    expect(screen.getByRole('button', { name: 'יצירת קשר' })).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'הסרה מהרשימה' })).toBeTruthy();
-    const contact = screen.getByRole('button', { name: 'יצירת קשר' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    const contact = screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' });
     const save = screen.getByRole('button', { name: 'הסרה מהרשימה' });
     const requirements = screen.getByRole('heading', { name: 'תנאי קבלה' });
     // The main actions must be reached before supporting requirements, including by keyboard.
@@ -906,7 +918,8 @@ describe('account grades in the homepage journey', () => {
       }),
     );
     const { rerender } = render(<StudyJourney initialStep="detail" />);
-    await screen.findByRole('button', { name: 'יצירת קשר' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    await screen.findByRole('button', { name: 'קבלו שיחה מהמוסד' });
     expect(state.evaluate).not.toHaveBeenCalled();
     state.profileStatus = 'ready';
     rerender(<StudyJourney initialStep="detail" />);
@@ -942,14 +955,17 @@ describe('account grades in the homepage journey', () => {
       failedDegreeIds: [],
     });
     render(<StudyJourney initialStep="saved" />);
-    await screen.findByText('הציונים עומדים בסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+    await screen.findByText('עוברים את הסף ✓');
     fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
     await screen.findByRole('heading', { name: 'תנאים נוספים לבדיקה' });
     expect(screen.getByText('טרם אושר')).toBeTruthy();
     expect(screen.getByText('לא מתקיים לפי הנתונים שהוזנו')).toBeTruthy();
     expect(screen.getByText('פסיכומטרי: 700 · סף: 680')).toBeTruthy();
-    expect(screen.getByRole('button', { name: 'עדכון נתונים ותנאים נוספים' })).toBeTruthy();
-    expect(screen.queryByText('חסרים פרטים לחישוב')).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+    expect(screen.getByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 3)
+    expect(screen.queryByText('השלימו פרטים וקבלו תשובה')).toBeNull();
     expect(screen.queryByText('אפשר להגיש מועמדות')).toBeNull();
   });
 
@@ -966,13 +982,126 @@ describe('account grades in the homepage journey', () => {
     render(<StudyJourney initialStep="saved" />);
     await screen.findByText('החישוב לא נטען');
     fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
-    await screen.findByText('חסרים פרטים לחישוב');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 3)
+    await screen.findByText('השלימו פרטים וקבלו תשובה');
     expect(state.evaluate).toHaveBeenCalledTimes(2);
     expect(screen.queryByText('החישוב לא נטען')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'מסלול שמור — אוניברסיטת תל אביב' }));
-    await screen.findByText('חסרים פרטים לחישוב');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 3)
+    await screen.findByText('השלימו פרטים וקבלו תשובה');
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
     await screen.findByRole('heading', { name: 'הרשימה שלי' });
-    expect(screen.getByText('חסרים פרטים לחישוב')).toBeTruthy();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 3)
+    expect(screen.getByText('השלימו פרטים וקבלו תשובה')).toBeTruthy();
+  });
+  it.each(['detail', 'alternatives'] as const)(
+    'renders approved next actions in %s',
+    async (step) => {
+      const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'tau')!;
+      const program = {
+        ...getStaticCataloguePrograms().find((p) => p.id === 'tau_cs')!,
+        institutionDetails: [],
+      };
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({ reports: {}, failedDegreeIds: [] });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: 'tau_cs:tau',
+        }),
+      );
+      render(<StudyJourney initialStep={step} />);
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16, 21)
+      expect(await screen.findByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
+      if (step === 'detail') {
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+        expect(screen.getByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeTruthy();
+      } else {
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 21)
+        expect(
+          screen.getByText('יש עוד דרכים להתקבל. השאירו פרטים והמוסד יחזור אליכם עם האפשרויות.'),
+        ).toBeTruthy();
+      }
+    },
+  );
+
+  it('offers target-score exploration with the approved helper', async () => {
+    render(<StudyJourney initialStep="improve" />);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 14)
+    expect(await screen.findByText('בדקו מה ציון היעד פותח לכם.')).toBeTruthy();
+  });
+
+  it('hides unlisted requirements and evaluator no-data prose in detail and comparison', async () => {
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === 'tau')!;
+    const base = getStaticCataloguePrograms().find((p) => p.id === 'tau_cs')!;
+    const programs = ['tau_cs', 'tau_law'].map((id) => ({
+      ...base,
+      id,
+      name: id,
+      isListed: false,
+    }));
+    state.savedProgramIds = programs.map((p) => p.id);
+    state.fetchPrograms.mockResolvedValue(programs);
+    state.fetchInstitutions.mockResolvedValue([institution]);
+    state.evaluate.mockResolvedValue({
+      reports: Object.fromEntries(
+        programs.map((p) => [
+          p.id,
+          {
+            results: [
+              {
+                institution,
+                linkedInstitutionId: 'tau',
+                kind: 'unsupported',
+                decision: 'unknown',
+                explanation: 'אין כרגע מידע עדכני על המסלול.',
+              },
+            ],
+          },
+        ]),
+      ),
+      failedDegreeIds: [],
+    });
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({
+        fields: [],
+        locations: ['all'],
+        types: ['all'],
+        selectedRowId: 'tau_cs:tau',
+      }),
+    );
+    const view = render(<StudyJourney initialStep="detail" />);
+    await screen.findByRole('button', { name: 'עוד דרכי קבלה' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(screen.queryByText('אין כרגע מידע עדכני על המסלול.')).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(screen.queryByRole('heading', { name: 'תנאי קבלה' })).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(view.container.querySelector('.journey-result-explanation')).toBeNull();
+    view.unmount();
+    const saved = render(<StudyJourney initialStep="saved" />);
+    await screen.findAllByRole('checkbox', { name: 'להשוואה' });
+    screen.getAllByRole('checkbox', { name: 'להשוואה' }).forEach((box) => fireEvent.click(box));
+    fireEvent.click(screen.getByRole('button', { name: 'השוואת מסלולים' }));
+    await waitFor(() =>
+      expect(saved.container.querySelectorAll('.journey-compare article')).toHaveLength(2),
+    );
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(screen.queryByText('אין כרגע מידע עדכני על המסלול.')).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(
+      saved.container.querySelectorAll('.journey-compare ul, .journey-compare li'),
+    ).toHaveLength(0);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+    expect(
+      [...saved.container.querySelectorAll('.journey-compare p')].every((p) =>
+        p.textContent?.trim(),
+      ),
+    ).toBe(true);
   });
 });
