@@ -201,7 +201,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 402 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 403 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -215,6 +215,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/sekhem-calculator`,
+      `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -243,7 +244,12 @@ describe('crawl policy', () => {
     // its sole subject hub (official sources checked 24.10.2026).
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
-    expect(urls).toHaveLength(402);
+    expect(urls).toHaveLength(403);
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
+      url: `${SITE_URL}/psychometric-dates`,
+      lastModified: '2026-10-29',
+      changeFrequency: 'weekly',
+    });
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
     expect(subjectIndex.priority).toBe(0.9);
     // The index changes whenever any programme page changes.
