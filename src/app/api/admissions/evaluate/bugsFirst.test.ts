@@ -202,18 +202,18 @@ it.each(['psychology', 'haifa_psychology'])(
   '%s keeps Haifa psychology withheld',
   async (degreeId) => {
     const fetcher = vi.fn<typeof fetch>();
-    expect(
-      await evaluate(
-        degreeId,
-        'haifa',
-        { bagrut: 92.1, psychometric: 700, extraInputs: auditExtra },
-        fetcher,
-      ),
-    ).toMatchObject({
+    const result = await evaluate(
+      degreeId,
+      'haifa',
+      { bagrut: 92.1, psychometric: 700, extraInputs: auditExtra },
+      fetcher,
+    );
+    expect(result).toMatchObject({
       kind: 'authority_unavailable',
       decision: 'unknown',
-      degradationReason: 'pair_verification_incomplete',
     });
+    // Approved test update: Jorje 2026-10-29, option A, ledger-withheld Haifa psychology gets the Haifa note on saved and proxy paths; official-calculator results stay live.
+    expect(result.degradationReason).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
   },
 );

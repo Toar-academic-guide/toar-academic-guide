@@ -1,6 +1,7 @@
 import { BATCH_C_PROGRAMS } from '@/server/admissions/batchCUnsupportedPathEvaluation';
 import qa from '../../../../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
 import { normalizeEvaluationInputs } from '@/server/admissions/evaluationInputs';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import TechnionMedicineComparison from '@/components/TechnionMedicineComparison';
@@ -71,7 +72,8 @@ it('uses student terminology in the three admission-copy strings introduced by P
     gapApplicant(),
   );
   expect(psychology.kind).toBe('authority_unavailable');
-  expect(psychology.explanation).toContain('650');
+  // Approved test update: Jorje 2026-10-29, option A, ledger-withheld Haifa psychology gets the Haifa note on saved and proxy paths; official-calculator results stay live.
+  expect(psychology.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
   expect(haifa.explanation).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
   expect(
     [medicine, psychology.explanation, haifa.explanation].filter((text) =>
@@ -177,6 +179,328 @@ const haifaSources = [
   'https://admissions.haifa.ac.il/score-calculation/',
   'https://applicants.haifa.ac.il/enrollmentChances/index.html',
 ];
+
+function haifaAverageApplicants(haifaInformationSystemsTrack?: 'single_major') {
+  const qualification = {
+    haifaHebrewQualification: 'hebrew_school' as const,
+    haifaInformationSystemsTrack,
+  };
+  const saved = gapApplicant({ haifaBagrutAverage: 104, ...qualification });
+  const proxy = {
+    ...gapApplicant({ bagrutSubjectRecord: undefined, ...qualification }),
+    bagrut: 104,
+  };
+  return { saved, proxy };
+}
+
+function haifaAnswer(result: Awaited<ReturnType<typeof gapEvaluate>>['result']) {
+  const { capability, kind, decision, explanation, officialUrls } = result;
+  return { capability, kind, decision, explanation, officialUrls };
+}
+
+it.each(['haifa_psychology', 'psychology'])(
+  'saved Haifa average gives the same honest note as a proxy for %s',
+  async (id) => {
+    const { saved, proxy } = haifaAverageApplicants();
+    expect(
+      normalizeEvaluationInputs({ degreeId: id, ...saved }).proxyInstitutions.has('haifa'),
+    ).toBe(false);
+    expect(
+      normalizeEvaluationInputs({ degreeId: id, ...proxy }).proxyInstitutions.has('haifa'),
+    ).toBe(true);
+    const program = gapPrograms.find((program) => program.id === id)!;
+    const { result } = await gapEvaluate(program, 'haifa', saved);
+    const { result: proxyResult } = await gapEvaluate(program, 'haifa', proxy);
+    expect(haifaAnswer(result)).toEqual(haifaAnswer(proxyResult));
+    expect(result).toMatchObject({
+      kind: 'authority_unavailable',
+      capability: 'authority_unavailable',
+      explanation: HAIFA_NO_CALCULATION_NOTE,
+      officialUrls: expect.arrayContaining(haifaSources),
+    });
+    for (const answer of [result, proxyResult]) {
+      expect(answer.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
+      expect(answer.officialUrls).toEqual(expect.arrayContaining(haifaSources));
+      expect(JSON.stringify(answer)).not.toContain('650');
+      expect(answer.degradationReason).toBeUndefined();
+    }
+  },
+);
+
+// Captured on origin/main 56b3a6a with gapApplicant({ haifaBagrutAverage: 104,
+// haifaHebrewQualification: 'hebrew_school' }), across both catalogues.
+// Only the approved Haifa terminology is changed in these literal expectations.
+const mainSavedHaifaAnswers = [
+  {
+    ids: ['cs', 'haifa_cs'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 700,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3210'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: [
+      'accounting',
+      'biology',
+      'economics',
+      'haifa_accounting',
+      'haifa_biology',
+      'haifa_economics',
+      'haifa_law',
+      'haifa_physiotherapy',
+      'law',
+      'physiotherapy',
+    ],
+    result: {
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+      requiredInputs: ['haifa_psychometric_month'],
+      officialUrls: undefined,
+      explanation: 'לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי.',
+    },
+  },
+  {
+    ids: ['haifa_socialwork', 'social_work'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 615,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3082'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 580 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_nursing', 'nursing'],
+    result: {
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+      requiredInputs: ['haifa_psychometric_month', 'haifa_science_units'],
+      officialUrls: undefined,
+      explanation: 'לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי, יחידות מדעיות לסיעוד.',
+    },
+  },
+  {
+    ids: ['communication', 'haifa_communication'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 550,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/3229'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_politicalscience', 'political_science'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 580,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/3054'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 520 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_statistics'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 630,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3167'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 600 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_math'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 610,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3161'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 580 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_infosystems'],
+    result: {
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+      requiredInputs: ['haifa_information_systems_track'],
+      officialUrls: undefined,
+      explanation: 'יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה.',
+    },
+  },
+  {
+    ids: ['haifa_sociology'],
+    result: {
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 540,
+      requiredInputs: undefined,
+      officialUrls: ['https://admissions.haifa.ac.il/social-sciences/program/2968'],
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 520 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    },
+  },
+  {
+    ids: ['haifa_engineering'],
+    result: {
+      capability: 'unsupported',
+      kind: 'unsupported',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+      requiredInputs: undefined,
+      officialUrls: [
+        'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?utm_source=myway&utm_medium=referral',
+      ],
+      explanation:
+        'תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו.',
+    },
+  },
+  {
+    ids: ['occupational_therapy'],
+    result: {
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+      requiredInputs: [
+        'haifa_psychometric_month',
+        'haifa_ot_failed_selection_attempts',
+        'haifa_ot_unjustified_absence',
+      ],
+      officialUrls: undefined,
+      explanation:
+        'לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי, ניסיונות מיון בריפוי בעיסוק, היעדרות מריאיון בריפוי בעיסוק.',
+    },
+  },
+];
+
+function savedHaifaAnswer(result: Awaited<ReturnType<typeof gapEvaluate>>['result']) {
+  const {
+    capability,
+    kind,
+    decision,
+    score,
+    threshold,
+    requiredInputs,
+    officialUrls,
+    explanation,
+  } = result;
+  return {
+    capability,
+    kind,
+    decision,
+    score,
+    threshold,
+    requiredInputs,
+    officialUrls,
+    explanation,
+  };
+}
+
+it.each([
+  ['static', gapPrograms],
+  ['saved_audit', savedGapPrograms],
+] as const)(
+  'non-psychology saved Haifa results stay unchanged from main across the %s catalogue',
+  async (_catalogue, programs) => {
+    const { saved } = haifaAverageApplicants();
+    for (const program of programsFor('haifa', programs)) {
+      if (['psychology', 'haifa_psychology'].includes(program.id)) continue;
+      const baseline = mainSavedHaifaAnswers.find((row) => row.ids.includes(program.id));
+      expect(baseline, program.id).toBeDefined();
+      const { result } = await gapEvaluate(program, 'haifa', saved);
+      expect(savedHaifaAnswer(result), program.id).toStrictEqual(baseline!.result);
+    }
+  },
+);
+
+it.each(['haifa_communication', 'communication'])(
+  'saved %s keeps its live exact score and uses student terminology',
+  async (id) => {
+    const { saved } = haifaAverageApplicants();
+    const program = savedGapPrograms.find((program) => program.id === id)!;
+    const { result, fetcher } = await gapEvaluate(program, 'haifa', saved);
+    expect(result).toMatchObject({
+      capability: 'exact',
+      kind: 'exact',
+      decision: 'below',
+      score: 493,
+      threshold: 550,
+      explanation:
+        'לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..',
+    });
+    expect(fetcher).toHaveBeenCalled();
+    expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף/);
+  },
+);
+
+it.each([
+  ['saved', 'single_major'],
+  ['proxy', 'single_major'],
+  ['proxy', undefined],
+] as const)('Haifa infosystems stays blocked for %s average with track %s', async (path, track) => {
+  const applicants = haifaAverageApplicants(track);
+  const program = gapPrograms.find((program) => program.id === 'haifa_infosystems')!;
+  const { result } = await gapEvaluate(program, 'haifa', applicants[path]);
+  expect(result).toMatchObject({
+    capability: 'blocked',
+    kind: 'tracked_missing_rule',
+    sourceLabel: 'מיפוי המסלול טרם אומת',
+    officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+  });
+});
+
+it('saved Haifa infosystems without a track still asks for the track', async () => {
+  const { saved } = haifaAverageApplicants();
+  const program = gapPrograms.find((program) => program.id === 'haifa_infosystems')!;
+  const { result } = await gapEvaluate(program, 'haifa', saved);
+  expect(result).toMatchObject({
+    capability: 'needs_input',
+    kind: 'needs_input',
+    requiredInputs: ['haifa_information_systems_track'],
+  });
+});
 
 it.each(['1280', '390', '1280-retry', '390-retry'])(
   'H2 uses the real %s average-only CS UI request without asking for inputs',

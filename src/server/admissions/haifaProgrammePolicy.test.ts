@@ -4,7 +4,9 @@ import {
   HAIFA_INFORMATION_SYSTEMS_TRACKS,
 } from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsEvaluationInput } from '@/types/admissionsEvaluation';
-import { evaluateHaifaProgrammePolicy } from './haifaProgrammePolicy';
+import { evaluateHaifaProgrammePolicy, haifaMissingRuleResult } from './haifaProgrammePolicy';
+import { getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 
 const now = new Date('2026-09-28T09:00:00Z');
 const applicant: AdmissionsEvaluationInput = {
@@ -217,4 +219,62 @@ describe('current Haifa programme requirements', () => {
     expect(evaluate('haifa_law', 600)).toMatchObject({ kind: 'eligible', route: 'suitability' });
     expect(evaluate('haifa_law', 400)).toMatchObject({ kind: 'eligible', route: 'suitability' });
   });
+});
+
+it.each([
+  ['saved', false, 104, 'blocked', 'מיפוי המסלול טרם אומת'],
+  ['proxy', true, 104, 'blocked', 'מיפוי המסלול טרם אומת'],
+  ['no average', false, undefined, 'tracked_missing_rule', 'אין מספיק מידע'],
+] as const)(
+  'unresolved Haifa mapping with %s average preserves the appropriate policy',
+  (_label, averageIsProxy, haifaBagrutAverage, capability, sourceLabel) => {
+    const result = haifaMissingRuleResult(
+      'haifa_infosystems',
+      getStaticCatalogueInstitutions().find((institution) => institution.id === 'haifa')!,
+      {
+        averageIsProxy,
+        capability: 'blocked',
+        input: {
+          degreeId: 'haifa_infosystems',
+          extraInputs: { haifaBagrutAverage, haifaInformationSystemsTrack: 'single_major' },
+        },
+      },
+    );
+    expect(result).toMatchObject({ capability, sourceLabel, kind: 'tracked_missing_rule' });
+    if (haifaBagrutAverage === undefined)
+      expect(result?.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
+  },
+);
+
+it.each([
+  [
+    'haifa_communication',
+    550,
+    'ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.',
+  ],
+  [
+    'haifa_communication',
+    499,
+    'ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.',
+  ],
+  [
+    'haifa_communication',
+    500,
+    'ציון הקבלה נמצא בטווח אפיק אופק בתקשורת; אין כאן קבלה ישירה לתואר.',
+  ],
+  [
+    'haifa_socialwork',
+    580,
+    'ציון הקבלה נמצא בטווח ההמתנה; גם מועמדים בטווח זה נדרשים למיון בחוג לעבודה סוציאלית.',
+  ],
+  [
+    'occupational_therapy',
+    595,
+    'ציון הקבלה נמצא בטווח ההמתנה 595–609. אין זכאות אוטומטית למיון; החוג עשוי לפנות למועמדים שנבחרו.',
+  ],
+  ['haifa_sociology', 520, 'ציון הקבלה נמצא בטווח ההמתנה 520–539; נדרשת החלטת החוג.'],
+] as const)('Haifa %s at %i uses student terminology', (id, score, reason) => {
+  const result = evaluate(id, score);
+  expect(result).toMatchObject(result.kind === 'below' ? { reasons: [reason] } : { reason });
+  expect(JSON.stringify(result)).not.toMatch(/מתואם|סכם|מצרף/);
 });
