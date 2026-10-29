@@ -5,6 +5,11 @@ import type {
   buildAdmissionsCapabilityMatrix,
 } from './capabilityMatrix';
 import { evaluateAdmissionsForProgram } from './evaluator';
+// Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+import {
+  gapApplicant,
+  gapEvaluate,
+} from '@/app/api/admissions/evaluate/sekhemCalculatorGap.fixture';
 
 // Columns preserve programme identity, the programme actually passed to the
 // matrix, and every capability/source/target/input field used for dispatch.
@@ -506,7 +511,16 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 `
   .trim()
   .split('\n')
-  .map((line) => JSON.parse(line) as MatrixRow);
+  .map((line) => JSON.parse(line) as MatrixRow)
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  .map((row): MatrixRow =>
+    row[0] === 'haifa_communication' && row[2] === 'haifa'
+      ? ([
+          ...row.slice(0, 11),
+          ['haifa_bagrut_average', 'haifa_bagrut_year', 'haifa_psychometric_year'],
+        ] as MatrixRow)
+      : row,
+  );
 
 function comparePairs(a: MatrixRow, b: MatrixRow): number {
   return a[0].localeCompare(b[0]) || a[2].localeCompare(b[2]);
@@ -565,6 +579,20 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
       return [row[0], row[1], 'biu', 'estimated', 'in_scope', null, null, null, null, null, [], []];
     return row;
   });
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const communication = capture.rows.find(
+    (row) => row[0] === 'haifa_communication' && row[2] === 'haifa',
+  )!;
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(
+    communication[11].filter((key) =>
+      ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(key),
+    ),
+  ).toEqual([]);
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(capture.rows.find((row) => row[0] === 'haifa_cs' && row[2] === 'haifa')![11]).toContain(
+    'psychometric_math',
+  );
   for (const [index, row] of capture.rows.entries()) {
     // Approved test update, Jorje 2026-10-28
     expect(row, `${row[0]}@${row[2]}`).toEqual(expectedRows[index]);
@@ -574,4 +602,19 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
     .map((row) => `${row[0]}@${row[2]}`);
   // Approved test update, Jorje 2026-10-28
   expect(changedPairs).toEqual(['cs@biu', 'ee@biu', 'medicine@bgu']);
+});
+
+// Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+it('requires the top-level NITE total for Haifa communication', async () => {
+  // The matrix captures extra-input requirements only. evaluator.ts reads top-level psychometric and requests psychometric_overall when it is absent, even with Q/V/E supplied.
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_communication')!;
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const applicant = gapApplicant({ haifaBagrutAverage: 104 });
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  Reflect.deleteProperty(applicant, 'psychometric');
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const { result } = await gapEvaluate(program, 'haifa', applicant);
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(result).toMatchObject({ kind: 'needs_input', requiredInputs: ['psychometric_overall'] });
 });

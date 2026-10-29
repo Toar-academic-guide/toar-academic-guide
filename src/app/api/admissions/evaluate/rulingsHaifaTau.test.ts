@@ -206,22 +206,29 @@ function stripHashKeys(value: unknown): unknown {
   if (value === null || typeof value !== 'object') return value;
   return Object.fromEntries(
     Object.entries(value)
-      .filter(([key]) => !/^(?:fingerprint|hash|digest)$|(?:Fingerprint|Hash|Digest)$/.test(key))
+      .filter(
+        ([key, nested]) =>
+          !(
+            /^(?:fingerprint|hash|digest)$|(?:Fingerprint|Hash|Digest)$/.test(key) &&
+            typeof nested === 'string' &&
+            /^(?:[0-9a-f]{16,}|sha(?:1|256|384|512)[:-][0-9a-f]{16,})$/i.test(nested)
+          ),
+      )
       .map(([key, nested]) => [key, stripHashKeys(nested)]),
   );
 }
 
 it('strips hash keys recursively while retaining all other answer fields', () => {
   const answer = {
-    ruleFingerprint: '650',
-    fingerprint: '650',
-    hash: '650',
+    ruleFingerprint: 'abcdef0123456650',
+    fingerprint: 'sha256:abcdef0123456650',
+    hash: 'SHA1-ABCDEF0123456650',
     futureStudentFacingField: '650',
     nested: [
       {
-        sourceFingerprint: '650',
-        payloadHash: '650',
-        sourceDigest: '650',
+        sourceFingerprint: 'sha384:abcdef0123456650',
+        payloadHash: 'sha512-abcdef0123456650',
+        sourceDigest: 'abcdef0123456650',
         hashExplanation: '650',
         fingerprintLabel: '650',
         explanation: '650',
@@ -240,6 +247,15 @@ it('strips hash keys recursively while retaining all other answer fields', () =>
     ],
   });
 });
+
+it.each(['sourceDigest', 'fingerprint'])(
+  'keeps non-hash %s values covered by the whole-answer no-650 assertion',
+  (key) => {
+    const answer = { nested: [{ [key]: 'student-facing text 650' }] };
+    expect(() => expect(JSON.stringify(stripHashKeys(answer))).not.toContain('650')).toThrow();
+    expect(stripHashKeys(answer)).toEqual(answer);
+  },
+);
 
 it.each(['haifa_psychology', 'psychology'])(
   'saved %s reaches its missing-month gate while a proxy keeps the Haifa note',
