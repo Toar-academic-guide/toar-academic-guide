@@ -1,8 +1,9 @@
 'use client';
 
 import { useState } from 'react';
-import { ArrowLeft, Plus, Trash2, Upload } from 'lucide-react';
-import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
+import { ArrowLeft, Upload } from 'lucide-react';
+import { SECTORS } from '@/data/bagrutSubjects';
+import BagrutSubjectRows, { bagrutSubjectLabels } from './BagrutSubjectRows';
 import {
   buildBagrutSubjectRecord,
   subjectIdForWizardLabel,
@@ -18,13 +19,9 @@ const SECTOR_LABELS: Record<BagrutSector, string> = {
   bedouin: 'בדואי',
   samaritan: 'שומרוני',
 };
-const labels = [
-  ...new Set([
-    ...ALL_SUBJECTS,
-    ...Object.values(SECTORS).flatMap((items) => items.map((item) => item.n)),
-  ]),
-];
-const labelById = new Map(labels.map((label) => [subjectIdForWizardLabel(label), label]));
+const labelById = new Map(
+  bagrutSubjectLabels.map((label) => [subjectIdForWizardLabel(label), label]),
+);
 const starterRows = new Set(
   Object.values(SECTORS).flatMap((items) =>
     items.map((item) => `${item.n}|${item.min === 1 ? '' : item.min}`),
@@ -177,94 +174,7 @@ export default function JourneyExactGrades({
       </label>
       {reading && <p role="status">{reading}</p>}
       {error && <p role="alert">{error}</p>}
-      <table className="journey-grade-table">
-        <thead>
-          <tr>
-            <th scope="col">מקצוע</th>
-            <th scope="col">יחידות</th>
-            <th scope="col">ציון</th>
-            <th scope="col">
-              <span className="sr-only">הסרה</span>
-            </th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((row, index) => (
-            <tr key={index}>
-              <td>
-                <input
-                  list="journey-bagrut-subjects"
-                  aria-label={`מקצוע ${index + 1}`}
-                  value={row.label}
-                  required={!isBlankRow(row)}
-                  onChange={(event) => change(index, { label: event.target.value })}
-                />
-                {row.assessmentKind !== 'exam' && (
-                  <small>
-                    {row.assessmentKind === 'final_project' ? 'עבודת גמר' : 'ציון משולב'}
-                  </small>
-                )}
-              </td>
-              <td>
-                <input
-                  aria-label={`יחידות ${index + 1}`}
-                  type="number"
-                  min={1}
-                  max={5}
-                  step={1}
-                  required={!isBlankRow(row)}
-                  value={row.units}
-                  onChange={(event) =>
-                    change(index, {
-                      units: event.target.value === '' ? '' : Number(event.target.value),
-                    })
-                  }
-                />
-              </td>
-              <td>
-                <input
-                  aria-label={`ציון ${index + 1}`}
-                  type="number"
-                  min={0}
-                  max={100}
-                  step={1}
-                  required={!isBlankRow(row)}
-                  value={row.grade}
-                  onChange={(event) =>
-                    change(index, {
-                      grade: event.target.value === '' ? '' : Number(event.target.value),
-                    })
-                  }
-                />
-              </td>
-              <td>
-                <button
-                  type="button"
-                  className="journey-icon-button"
-                  aria-label={`הסרת מקצוע ${index + 1}`}
-                  onClick={() => setRows(rows.filter((_, i) => i !== index))}
-                >
-                  <Trash2 size={17} />
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <datalist id="journey-bagrut-subjects">
-        {labels.map((label) => (
-          <option key={label} value={label} />
-        ))}
-      </datalist>
-      <button
-        className="journey-text-button"
-        type="button"
-        onClick={() =>
-          setRows([...rows, { label: '', units: 5, grade: '', assessmentKind: 'exam' }])
-        }
-      >
-        <Plus size={16} className="inline" /> הוספת מקצוע
-      </button>
+      <BagrutSubjectRows rows={rows} onChange={setRows} isBlankRow={isBlankRow} />
       <details className="journey-field-group">
         <summary>
           עבודת גמר או ציון משולב

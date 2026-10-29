@@ -49,6 +49,8 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
   ]);
   dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
+  // Authored with the calculator page; never replace this with the build date.
+  dates.set('/sekhem-calculator', '2026-10-28');
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',
@@ -57,6 +59,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   return [
     '/',
     '/about',
+    '/sekhem-calculator',
     '/institutions',
     '/programs',
     ...(await indexableInstitutionIds(catalogue)).map(
