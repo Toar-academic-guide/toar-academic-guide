@@ -229,19 +229,16 @@ it('sends only active supported programmes in a full nine-subject run without a 
   }
 });
 
-const answerHeadings = [
-  'מה זה סכם?',
-  'איך מחשבים כאן?',
-  'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
-  'האם התוצאה מבטיחה קבלה?',
-];
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+const answerHeadings = ['מה זה סכם?', 'איך מחשבים כאן?', 'באילו מוסדות ותוכניות אפשר לבדוק כאן?'];
 
 it.each(answerHeadings)('renders the answer heading %s', async (name) => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole('heading', { level: 2, name })).toBeTruthy();
 });
 
-it('derives a distinct Hebrew-sorted institution list from the loaded offerings', async () => {
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('omits lists and institution names from the answer section with mocked offerings', async () => {
   const loader = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
     {
       programId: 'z_cs',
@@ -255,26 +252,45 @@ it('derives a distinct Hebrew-sorted institution list from the loaded offerings'
   try {
     render(await Page({ searchParams: Promise.resolve({}) }));
     const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
-    const items = within(within(section).getByRole('list')).getAllByRole('listitem');
-    expect(items).toHaveLength(2);
-    expect(items.map((item) => item.textContent)).toEqual(['אפקה', 'תל אביב']);
+    expect(within(section).queryByRole('list')).toBeNull();
+    expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
+    const heading = within(section).getByRole('heading', {
+      level: 2,
+      name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+    });
+    expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+      'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ותוכנית שעוד לא מחושבת מוצגת ככזו בבירור.',
+    );
+    for (const name of ['אפקה', 'תל אביב']) {
+      expect(section.textContent).not.toContain(name);
+    }
   } finally {
     loader.mockRestore();
   }
 });
 
-it('lists every distinct institution from the static catalogue offerings and nothing else', async () => {
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('omits lists and every real catalogue institution name from the answer section', async () => {
   const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
-  const expected = [...new Set(offerings.map((offering) => offering.institutionName))].sort(
-    (a, b) => a.localeCompare(b, 'he'),
-  );
-  expect(expected.length).toBeGreaterThan(0);
+  const institutionNames = [...new Set(offerings.map((offering) => offering.institutionName))];
+  expect(institutionNames.length).toBeGreaterThan(0);
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
-  const items = within(within(section).getByRole('list')).getAllByRole('listitem');
-  expect(items.map((item) => item.textContent)).toEqual(expected);
+  expect(within(section).queryByRole('list')).toBeNull();
+  expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
+  const heading = within(section).getByRole('heading', {
+    level: 2,
+    name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+  });
+  expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ותוכנית שעוד לא מחושבת מוצגת ככזו בבירור.',
+  );
+  for (const name of institutionNames) {
+    expect(section.textContent).not.toContain(name);
+  }
 });
 
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 it('keeps the answer section free of numbers and unsupported admission promises', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
@@ -283,14 +299,12 @@ it('keeps the answer section free of numbers and unsupported admission promises'
   for (const phrase of ['לפי הנוסחה של כל מוסד', 'כל המוסדות', 'תתקבל']) {
     expect(text).not.toContain(phrase);
   }
-  const heading = within(section).getByRole('heading', {
-    level: 2,
-    name: 'האם התוצאה מבטיחה קבלה?',
-  });
-  expect(text.replace(heading.textContent!, '')).not.toContain('מבטיח');
+  expect(text).not.toContain('מבטיח');
+  expect(text).not.toContain('הערכה בלבד');
 });
 
-it('renders all four answers below the unavailable block for an unknown programme', async () => {
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('renders all three answers below the unavailable block for an unknown programme', async () => {
   render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
   const unavailable = screen.getByText('אי אפשר לחשב כאן את סיכויי הקבלה לתוכנית הזו.');
   for (const name of answerHeadings) {
@@ -300,6 +314,47 @@ it('renders all four answers below the unavailable block for an unknown programm
     );
   }
 });
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it('renders exactly three visible answer headings in order without the guarantee question', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const headings = within(section)
+    .getAllByRole('heading', { level: 2 })
+    .filter((heading) => !heading.classList.contains('sr-only'));
+  expect(headings).toHaveLength(3);
+  expect(headings.map((heading) => heading.textContent)).toEqual(answerHeadings);
+  expect(section.textContent).not.toContain('האם התוצאה מבטיחה קבלה?');
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+it.each([undefined, 'not_a_public_programme'])(
+  'keeps all rendered page JSON-LD free of Q&A and removed answer text for programme %s',
+  async (program) => {
+    const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
+    const institutionNames = [
+      'אפקה',
+      'תל אביב',
+      ...new Set(offerings.map((offering) => offering.institutionName)),
+    ];
+    expect(offerings.length).toBeGreaterThan(0);
+    const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const scripts = Array.from(
+      container.querySelectorAll('main script[type="application/ld+json"]'),
+    );
+    expect(scripts.length).toBeGreaterThan(0);
+    const jsonLd = JSON.stringify(scripts.map((script) => JSON.parse(script.textContent!)));
+    for (const type of ['FAQPage', 'Question', 'Answer']) {
+      expect(jsonLd).not.toContain(type);
+    }
+    for (const name of institutionNames) {
+      expect(jsonLd).not.toContain(name);
+    }
+    expect(jsonLd).not.toContain('המחשבון כולל כרגע תוכניות במוסדות הבאים');
+    expect(jsonLd).not.toContain('האם התוצאה מבטיחה קבלה?');
+    expect(jsonLd).not.toContain('הערכה בלבד');
+  },
+);
 
 it.each([undefined, 'not_a_public_programme'])(
   'renders page-level WebApplication JSON-LD without FAQPage for programme %s',

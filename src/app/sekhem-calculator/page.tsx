@@ -35,9 +35,6 @@ export default async function Page({
   searchParams: Promise<{ program?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
-  const institutionNames = [...new Set(offerings.map((o) => o.institutionName))].sort((a, b) =>
-    a.localeCompare(b, 'he'),
-  );
   const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
   const initialProgramId = offerings.some((row) => row.programId === requestedId)
     ? requestedId
@@ -107,21 +104,8 @@ export default async function Page({
           <div>
             <h2 className="text-xl font-semibold">באילו מוסדות ותוכניות אפשר לבדוק כאן?</h2>
             <p className="mt-2 text-(--text-body)">
-              המחשבון כולל כרגע תוכניות במוסדות הבאים. מוסד או תוכנית שלא מופיעים כאן עוד לא נתמכים
-              במחשבון.
-            </p>
-            <ul className="mt-2 list-disc pr-5 text-(--text-body)">
-              {institutionNames.map((name) => (
-                <li key={name}>{name}</li>
-              ))}
-            </ul>
-          </div>
-          <div>
-            <h2 className="text-xl font-semibold">האם התוצאה מבטיחה קבלה?</h2>
-            <p className="mt-2 text-(--text-body)">
-              לא. התוצאה היא הערכה בלבד, וההחלטה היא של המוסד. יש תנאים נוספים, כמו רמת אנגלית,
-              מתמטיקה או ראיון, ובחלק מהתוכניות יש גם אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי
-              בלבד או קבלה דרך מכינה.
+              המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ותוכנית שעוד לא מחושבת מוצגת ככזו
+              בבירור.
             </p>
           </div>
         </section>
