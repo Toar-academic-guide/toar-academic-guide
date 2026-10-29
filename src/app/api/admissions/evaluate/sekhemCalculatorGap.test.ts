@@ -132,16 +132,21 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
       for (const row of haifa) {
         const { result, fetcher } = await gapEvaluate(row, 'haifa');
         expect(result.score, row.id).toBeUndefined();
-        if (['psychology', 'haifa_psychology'].includes(row.id))
-          expect(result.kind, row.id).toBe('authority_unavailable');
-        else {
-          // Approved test update, Jorje 2026-10-28
-          expect(result.kind, row.id).toBe('tracked_missing_rule');
-        }
-        // Approved test update, Jorje 2026-10-29
-        expect(result.explanation, row.id).toBe('עדיין לא מחשבים כאן את ציון הקבלה של חיפה');
-        // Approved test update, Jorje 2026-10-28
-        expect(result.requiredInputs, row.id).toBeUndefined();
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+        expect(result.kind, row.id).toBe(
+          row.id === 'haifa_engineering' ? 'unsupported' : 'needs_input',
+        );
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+        expect(result.requiredInputs, row.id).toEqual(
+          row.id === 'haifa_engineering'
+            ? undefined
+            : expect.arrayContaining([
+                row.id === 'haifa_infosystems'
+                  ? 'haifa_information_systems_track'
+                  : 'haifa_hebrew_qualification',
+              ]),
+        );
+        expect(result.requiredInputs ?? [], row.id).not.toContain('haifa_bagrut_average');
         expect(fetcher, row.id).not.toHaveBeenCalled();
       }
     },
@@ -160,42 +165,34 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
       gapApplicant({ haifaHebrewQualification: 'hebrew_school' }),
     );
     // Approved test update, Jorje 2026-10-28
-    expect(first.result.requiredInputs).toBeUndefined();
+    // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+    expect(first.result.requiredInputs).toEqual(['haifa_hebrew_qualification']);
     expect(first.result).toMatchObject({
-      kind: 'tracked_missing_rule',
-      // Approved test update, Jorje 2026-10-29
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      kind: 'needs_input',
     });
     expect(second.result.requiredInputs).toEqual(['haifa_hebrew_qualification']);
     // Approved test update, Jorje 2026-10-28
     expect(third.result.requiredInputs).toBeUndefined();
     expect(third.result).toMatchObject({
-      kind: 'tracked_missing_rule',
-      // Approved test update, Jorje 2026-10-29
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      kind: 'exact',
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      score: 614,
     });
     for (const { fetcher } of [first, second, third]) expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('sends explicit actual exam years and section scores to Haifa once its ordinary inputs are complete', async () => {
+  it('uses explicit actual exam years and section scores locally once ordinary Haifa inputs are complete', async () => {
     const { result, fetcher } = await gapEvaluate(
       program('haifa_cs'),
       'haifa',
       gapApplicant(haifaContinuation),
     );
-    expect(result).toMatchObject({ kind: 'exact', score: 493 });
-    const request = fetcher.mock.calls.find(([url]) =>
-      String(url).includes('operation=calculateChances'),
-    )!;
-    expect(request).toBeDefined();
-    expect(Object.fromEntries(new URL(String(request[0])).searchParams)).toMatchObject({
-      bag_avg: '102',
-      bag_year: '2020',
-      psy_year: '2025',
-      psy_math: '115',
-      psy_verbal: '110',
-      psy_english: '120',
-    });
+    // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+    expect(result).toMatchObject({ kind: 'exact', score: 606 });
+    // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it('requests the actual psychometric month when the supplied year reaches a programme deadline', async () => {

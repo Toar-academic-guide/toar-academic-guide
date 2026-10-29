@@ -64,8 +64,10 @@ describe('calculatorCoverage', () => {
     // Approved test update, Jorje 2026-10-28
     expect(formulaBackedPairCoverage).toMatchObject({
       total: 143,
-      exact: 123,
-      withheld: 19,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula count move (same as other 5 files); file granted by Oded.
+      exact: 125,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula count move (same as other 5 files); file granted by Oded.
+      withheld: 17,
       isComplete: false,
     });
 

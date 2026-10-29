@@ -348,8 +348,10 @@ describe('summarizeDataHealthRows', () => {
     // Approved test update, Jorje 2026-10-28
     expect(report.formulaVerification).toMatchObject({
       total: 143,
-      exact: 123,
-      withheld: 19,
+      // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+      exact: 125,
+      // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+      withheld: 17,
       isComplete: false,
     });
     expect(report.admissionRoutes).toMatchObject({

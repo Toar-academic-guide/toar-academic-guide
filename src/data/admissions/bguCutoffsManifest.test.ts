@@ -1,7 +1,7 @@
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
-import manifest from './reviewedManifest.json';
+import manifest from '@/server/admissions/__fixtures__/reviewedManifest-2026-10-29-bgu.json';
 
 vi.mock('server-only', () => ({}));
 

@@ -1,3 +1,4 @@
+import { calculateHaifaAdmissionScore } from '@/data/admissions/haifaAdmissionFormula';
 import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
@@ -199,7 +200,7 @@ describe.each(pairs)(
 );
 
 it.each(['psychology', 'haifa_psychology'])(
-  '%s keeps Haifa psychology withheld',
+  '%s asks for the actual psychometric month and retains the official NITE total',
   async (degreeId) => {
     const fetcher = vi.fn<typeof fetch>();
     const result = await evaluate(
@@ -209,10 +210,26 @@ it.each(['psychology', 'haifa_psychology'])(
       fetcher,
     );
     expect(result).toMatchObject({
-      kind: 'authority_unavailable',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
+      kind: 'needs_input',
       decision: 'unknown',
+      // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
+      requiredInputs: ['haifa_psychometric_month'],
     });
-    // Approved test update: Jorje 2026-10-29, option A, ledger-withheld Haifa psychology gets the Haifa note on saved and proxy paths; official-calculator results stay live.
+    const formulaInput = {
+      programme: 'psychology',
+      bagrutAverage: 104,
+      bagrutYear: 2026,
+      psychometricYear: 2026,
+      psychometric: 700,
+    };
+    // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
+    expect(calculateHaifaAdmissionScore(formulaInput)).toEqual({ kind: 'calculated', score: 703 });
+    // Haifa's exact saved104 capture shows PC699 and weighted702 for these same sections.
+    expect(calculateHaifaAdmissionScore({ ...formulaInput, psychometric: 699 })).toEqual({
+      kind: 'calculated',
+      score: 702,
+    });
     expect(result.degradationReason).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
   },

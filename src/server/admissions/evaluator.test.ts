@@ -69,6 +69,56 @@ describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
 });
 
 it.each([
+  // docs/admissions-verification/2026-09-28-haifa-official.json: cs.high, score 806 / acceptance 700.
+  {
+    average: 120,
+    psychometric: 800,
+    q: 150,
+    v: 150,
+    e: 150,
+    score: 806,
+    assessment: 'meets_threshold',
+  },
+  // docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-cs.json: score 611 / acceptance 700.
+  {
+    average: 104,
+    psychometric: 590,
+    q: 115,
+    v: 110,
+    e: 120,
+    score: 611,
+    assessment: 'below_threshold',
+  },
+] as const)('local Haifa CS score $score carries $assessment', async (profile) => {
+  const fetcher = vi.fn<typeof fetch>();
+  const report = await evaluateAdmissionsForProgram({
+    program: haifaCs,
+    institutions,
+    input: {
+      degreeId: 'haifa_cs',
+      psychometric: profile.psychometric,
+      extraInputs: {
+        haifaBagrutAverage: profile.average,
+        haifaBagrutYear: 2026,
+        haifaPsychometricYear: 2026,
+        psychometricMath: profile.q,
+        psychometricVerbal: profile.v,
+        psychometricEnglish: profile.e,
+        haifaHebrewQualification: 'hebrew_school',
+        mathUnits: 5,
+        mathGrade: 75,
+      },
+    },
+    fetcher,
+    now: new Date('2026-10-29T12:00:00Z'),
+  });
+  const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
+  expect(result).toMatchObject({ capability: 'exact', score: profile.score, threshold: 700 });
+  expect(result.scoreAssessment).toBe(profile.assessment);
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it.each([
   { bagrut: 70, psychometric: 400 },
   { bagrut: 120, psychometric: 800 },
   ...[679, 680, 681].map((psychometric) => ({ bagrut: 85, psychometric })),
@@ -1287,14 +1337,8 @@ describe('evaluateAdmissionsForProgram', () => {
         institutions,
         fetcher,
       });
-      const params = new URL(String(fetcher.mock.calls[1][0])).searchParams;
-      expect(params.get('bag_avg')).toBe('102');
-      expect(params.get('bag_year')).toBe(String(year));
-      expect(params.get('psy_year')).toBe('2026');
-      expect(Object.fromEntries(params)).toEqual(
-        haifaOfficial.yearBoundaryCases.find((record) => record.request.bag_year === String(year))
-          ?.request,
-      );
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      expect(fetcher).not.toHaveBeenCalled();
       expect(report.results[0]).toMatchObject({ score, decision });
     },
   );
@@ -4880,7 +4924,8 @@ it.each([
     expect(report.results[0].estimationReason).toBeUndefined();
     return;
   }
-  expect(report.results[0].score).toBe(proxy ? 806 : 702);
+  // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+  expect(report.results[0].score).toBe(proxy ? 806 : defaulted ? 699 : 702);
   expect(report.results[0].estimated === true).toBe(defaulted);
   if (defaulted) {
     expect(report.results[0].estimationReason).toContain('שנת הבגרות');
