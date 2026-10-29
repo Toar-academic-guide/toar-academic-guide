@@ -52,7 +52,8 @@ describe('formula-backed verification ledger', () => {
       duplicatePairIds: [],
     });
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 routes CS, EE and social work, adding three ledger records.
-    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(141);
+    // Approved test update, Jorje 2026-10-28
+    expect(FORMULA_BACKED_VERIFICATION_LEDGER).toHaveLength(143);
   });
 
   it('counts only fully proved pairs as exact', () => {
@@ -62,27 +63,30 @@ describe('formula-backed verification ledger', () => {
     );
 
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
+    // Approved test update, Jorje 2026-10-28
     expect(completion).toMatchObject({
-      total: 141,
-      exact: 124,
-      withheld: 16,
+      total: 143,
+      exact: 123,
+      withheld: 19,
       isComplete: false,
     });
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten withheld pairs.
+    // Approved test update, Jorje 2026-10-28
     expect(completion.totalsByInstitution).toEqual({
       tau: { total: 33, exact: 29, withheld: 4, stale: 0, blocked: 0 },
       huji: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
       bgu: { total: 28, exact: 28, withheld: 0, stale: 0, blocked: 0 },
-      haifa: { total: 27, exact: 25, withheld: 1, stale: 0, blocked: 1 },
+      haifa: { total: 27, exact: 24, withheld: 2, stale: 0, blocked: 1 },
       technion: { total: 14, exact: 14, withheld: 0, stale: 0, blocked: 0 },
       colman: { total: 1, exact: 0, withheld: 1, stale: 0, blocked: 0 },
-      biu: { total: 10, exact: 0, withheld: 10, stale: 0, blocked: 0 },
+      biu: { total: 12, exact: 0, withheld: 12, stale: 0, blocked: 0 },
     });
+    // Approved test update, Jorje 2026-10-28
     expect(
       FORMULA_BACKED_VERIFICATION_LEDGER.filter((entry) => entry.state === 'exact').map(
         (entry) => entry.pairId,
       ),
-    ).toHaveLength(124);
+    ).toHaveLength(123);
   });
 
   it('names a newly discovered pair that lacks a reviewed ledger record', () => {
@@ -135,7 +139,8 @@ describe('formula-backed verification ledger', () => {
     );
 
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three estimated pairs without exact formula proof.
-    expect(withheld).toHaveLength(16);
+    // Approved test update, Jorje 2026-10-28
+    expect(withheld).toHaveLength(19);
     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(true);
     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https://'))).toBe(true);
     expect(

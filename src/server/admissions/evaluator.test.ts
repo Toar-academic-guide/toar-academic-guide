@@ -1232,15 +1232,18 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 1. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    // Approved test update, Jorje 2026-10-29
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
-        kind: 'needs_input',
-        capability: 'needs_input',
+        kind: 'tracked_missing_rule',
+        capability: 'tracked_missing_rule',
         decision: 'unknown',
-        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+        explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
       }),
     );
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -4360,8 +4363,18 @@ describe('results average normalization regressions', () => {
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimationReason).toBeUndefined();
     // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
-    expect(report.results[0].requiredInputs).not.toContain('haifa_admission_qualification');
-    expect(report.results[0].requiredInputs).not.toContain('haifa_bagrut_year');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_admission_qualification');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_bagrut_year');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0]).toMatchObject({
+      kind: 'tracked_missing_rule',
+      capability: 'tracked_missing_rule',
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    });
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
   });
   it('does not leak the HIT implementation note after math gates are supplied', async () => {
     const report = await evaluateAdmissionsForProgram({
@@ -4849,6 +4862,24 @@ it.each([
         ),
       ),
   });
+  if (proxy) {
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0]).toMatchObject({
+      kind: 'tracked_missing_rule',
+      capability: 'tracked_missing_rule',
+      decision: 'unknown',
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    });
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].score).toBeUndefined();
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].estimated).not.toBe(true);
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].estimationReason).toBeUndefined();
+    return;
+  }
   expect(report.results[0].score).toBe(proxy ? 806 : 702);
   expect(report.results[0].estimated === true).toBe(defaulted);
   if (defaulted) {

@@ -63,17 +63,35 @@ describe('Batch C unsupported admission paths', () => {
           fetcher: vi.fn().mockRejectedValue(new Error('No network permitted')),
         });
         const result = report.results[0];
-        expect(result).toMatchObject({
-          kind: 'unsupported',
-          capability: 'unsupported',
-          decision: 'unknown',
-        });
+        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
+          // Approved test update, Jorje 2026-10-28
+          expect(result).toMatchObject({
+            capability: 'tracked_missing_rule',
+            kind: 'tracked_missing_rule',
+            decision: 'unknown',
+            // Approved test update, Jorje 2026-10-29
+            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+            nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+          });
+        } else {
+          expect(result).toMatchObject({
+            kind: 'unsupported',
+            capability: 'unsupported',
+            decision: 'unknown',
+          });
+        }
         expect(result.requiredInputs).toBeUndefined();
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
+        // Approved test update, Jorje 2026-10-29
         expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]|מוחרג|פרויקט אימות/);
-        expect(result.nextAction).toBe(config.nextActionHe);
+        // Approved test update, Jorje 2026-10-28
+        expect(result.nextAction).toBe(
+          degreeId === 'haifa_engineering' && !('bagrut' in scores)
+            ? 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.'
+            : config.nextActionHe,
+        );
         if (['itc_data_science', 'mon_12220696299_certificate'].includes(degreeId)) {
           expect(result.officialUrls).toBeUndefined();
           expect(result.nextAction).toContain('פנו למוסד');
@@ -81,7 +99,13 @@ describe('Batch C unsupported admission paths', () => {
           expect(result.officialUrls?.length).toBeGreaterThan(0);
         }
         for (const url of result.officialUrls ?? []) expect(url).not.toMatch(/yoram|walla/);
-        expect(resultExplanation(result, degreeId)).toBe(config.explanationHe);
+        // Approved test update, Jorje 2026-10-28
+        expect(resultExplanation(result, degreeId)).toBe(
+          degreeId === 'haifa_engineering' && !('bagrut' in scores)
+            ? // Approved test update, Jorje 2026-10-29
+              'עדיין לא מחשבים כאן את ציון הקבלה של חיפה'
+            : config.explanationHe,
+        );
         expect(resultLabel(result).group).toBe('explore');
       }
     },

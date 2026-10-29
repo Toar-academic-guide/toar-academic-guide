@@ -312,9 +312,12 @@ describe('catalogue queries', () => {
       const source = (await getPublicProgramRequirementSources(published)).technion;
       expect(source.sourceProgramId).toBe(programId);
       expect(source.program.thresholds?.technion).toBe(change.after);
+      // Approved test update, Jorje 2026-10-28
       expect(source.requirements).toEqual([
         `בחורף תשפ"ז: סכם ${change.after}`,
-        ...captured.institutionDetails[0].specificAdmissionNotes,
+        'מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.',
+        'פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות.',
+        '5 יח"ל פיזיקה — חובה',
       ]);
       expect(
         selectRequirementTiles({

@@ -8,6 +8,8 @@ import { runBguAdmissionsProof } from '@/server/ingestion/adapters/bguAdmissions
 import {
   BGU_QUANTITATIVE_METADATA_BY_PAIR_ID as artifacts,
   BGU_QUANTITATIVE_ROUTES_SCORE_URL,
+  normalizeBguQuantitativeRouteRule,
+  fingerprintBguQuantitativeRouteRule,
 } from '@/data/admissions/bguQuantitativeRoutesVerification';
 import captures from '../../../docs/admissions-verification/2026-09-27-bgu-quantitative-routes-official.json';
 import type {
@@ -18,6 +20,11 @@ import { evaluateAdmissionsForProgram } from './evaluator';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import type { SourceFreshnessStateRow } from '@/db/types';
 vi.mock('server-only', () => ({}));
+
+import biologyLive from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/biology.json';
+import businessLive from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/business.json';
+import economicsLive from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/economics.json';
+import accountingLive from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/accounting.json';
 
 const extra: AdmissionsExtraInputs = {
   bguBagrutAverage: 100,
@@ -398,6 +405,58 @@ it.each(['biology', 'economics', 'business', 'accounting'])(
     });
     expect(result.additionalConditions).toContainEqual(
       expect.objectContaining({ id: 'bgu_language_requirements', status: 'unconfirmed' }),
+    );
+  },
+);
+
+// Official GetRdpData API captures from2026-10-28; original-source and stored-file SHA-256
+// are retained in evidence/2026-10-28-bgu-attestation/. No live test requests.
+it.each([
+  ['biology', biologyLive, 585],
+  ['bgu_biology', biologyLive, 585],
+  ['business', businessLive, 620],
+  ['bgu_business', businessLive, 620],
+  ['economics', economicsLive, 620],
+  ['bgu_economics', economicsLive, 620],
+  ['accounting', accountingLive, 620],
+  ['bgu_accounting', accountingLive, 620],
+] as const)(
+  'E %s ignores a registration-status-only flip and retains exact official proof',
+  async (id, live, threshold) => {
+    const config = bguQuantitativeProgramme(id);
+    const capture = captures.find((row) => row.pairId === `${id}__bgu` && row.kind === 'eligible')!;
+    const original = normalizeBguQuantitativeRouteRule({ items: [capture.officialRule] }, config)!;
+    const flipped = normalizeBguQuantitativeRouteRule(
+      { items: [{ ...capture.officialRule, reg_status: 'סגורה' }] },
+      config,
+    )!;
+    expect
+      .soft(fingerprintBguQuantitativeRouteRule(flipped))
+      .toBe(fingerprintBguQuantitativeRouteRule(original));
+    const ctx = context(id);
+    ctx.fetcher
+      .mockReset()
+      .mockResolvedValueOnce(Response.json(live))
+      .mockResolvedValueOnce(
+        new Response(
+          '<script>parent.main.document.getElementById("on_c_val").innerHTML = 879;</script>',
+        ),
+      );
+    const proof = await runBguQuantitativeRoutesProof(ctx);
+    expect.soft(proof).toMatchObject({
+      proofLevel: 'exact_official',
+      capability: 'decision_capable',
+      status: 'succeeded',
+    });
+    expect.soft(proof.normalizedPayload.acceptanceThreshold).toBe(threshold);
+    // Stripping status must not strip an admissions rule: a changed numeric floor
+    // must still invalidate the reviewed proof.
+    const changed = normalizeBguQuantitativeRouteRule(
+      { items: [{ ...capture.officialRule, psycho_value: capture.officialRule.psycho_value + 1 }] },
+      config,
+    )!;
+    expect(fingerprintBguQuantitativeRouteRule(changed)).not.toBe(
+      fingerprintBguQuantitativeRouteRule(original),
     );
   },
 );

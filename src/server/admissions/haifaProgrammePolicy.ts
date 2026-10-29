@@ -1,9 +1,71 @@
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import evidence from '@/data/admissions/haifaProgrammePolicies.json';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import type {
   AdmissionsEvaluationInput,
+  AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+
+/** Official calculation remains external: https://admissions.haifa.ac.il/score-calculation/
+ * Evidence captured 2026-10-28; do not ask students for an institutional composite.
+ */
+export function haifaMissingRuleResult(
+  programId: string,
+  institution: AdmissionsEvaluationResult['institution'],
+  context: {
+    averageIsProxy: boolean;
+    capability: AdmissionsEvaluationResult['capability'];
+    input: AdmissionsEvaluationInput;
+  },
+): AdmissionsEvaluationResult | undefined {
+  if (context.averageIsProxy) {
+    const policy = getHaifaProgrammePolicy(
+      programId,
+      context.input.extraInputs?.haifaInformationSystemsTrack,
+    );
+    if (policy?.mappingState === 'unresolved')
+      return {
+        institution,
+        linkedInstitutionId: institution.id,
+        capability: 'blocked',
+        kind: 'tracked_missing_rule',
+        decision: 'unknown',
+        confidence: 'low',
+        sourceLabel: 'מיפוי המסלול טרם אומת',
+        explanation:
+          'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        nextAction:
+          'בדקו את המסלול מול החוג. בחרו מסלול אחר רק אם זה המסלול שאליו אתם מתכוונים להירשם.',
+        officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+      };
+    if (
+      isBatchCUnsupportedProgramId(programId, institution.id) ||
+      context.capability === 'blocked' ||
+      context.capability === 'unsupported'
+    )
+      return undefined;
+  }
+  const kind = ['psychology', 'haifa_psychology'].includes(programId)
+    ? 'authority_unavailable'
+    : 'tracked_missing_rule';
+  return {
+    institution,
+    linkedInstitutionId: institution.id,
+    capability: kind,
+    kind,
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'אין מספיק מידע',
+    explanation: HAIFA_NO_CALCULATION_NOTE,
+    nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+    officialUrls: [
+      'https://admissions.haifa.ac.il/score-calculation/',
+      'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+    ],
+  };
+}
 
 interface ProgrammePolicy {
   programme: string;
