@@ -517,7 +517,7 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   expect(mocks.submissions).toHaveLength(0);
 });
 
-test('public metadata, crawl links and homepage placement use the calculator URL', async ({
+test('public metadata and crawl links use the calculator URL; homepage hero has no calculator link', async ({
   page,
   baseURL,
   request,
@@ -540,15 +540,13 @@ test('public metadata, crawl links and homepage placement use the calculator URL
     1,
   );
   await page.goto('/');
-  const primary = page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים', exact: true });
-  const link = page.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה', exact: true });
-  await expect(link).toHaveAttribute('href', '/sekhem-calculator');
-  expect(await primary.evaluate((el) => el.nextElementSibling?.textContent?.trim())).toBe(
-    'מחשבון סכם וסיכויי קבלה',
-  );
-  const primaryBox = (await primary.boundingBox())!;
-  const linkBox = (await link.boundingBox())!;
-  expect(linkBox.y).toBeGreaterThanOrEqual(primaryBox.y + primaryBox.height);
+  await expect(
+    page
+      .locator('.journey-hero-copy')
+      .getByRole('link', { name: 'בדקו לאן אתם מתקבלים', exact: true }),
+  ).toBeVisible();
+  // PM ruling (Jorje, 2026-10-29): no sekhem link in the homepage hero.
+  await expect(page.locator('.journey-hero-copy a[href="/sekhem-calculator"]')).toHaveCount(0);
 });
 
 test('numberless cards explain missing inputs and unavailable result states', async ({

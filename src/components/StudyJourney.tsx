@@ -888,12 +888,6 @@ export default function StudyJourney({
                   />
                 </svg>
               </Link>
-              <Link
-                href="/sekhem-calculator"
-                className="mt-2 flex min-h-11 w-fit items-center justify-center underline"
-              >
-                מחשבון סכם וסיכויי קבלה
-              </Link>
               <small>אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.</small>
             </div>
             <div className="journey-funnel" aria-label="מה ללמוד, איפה ללמוד ואיך להתקבל">
