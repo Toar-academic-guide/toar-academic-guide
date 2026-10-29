@@ -176,6 +176,8 @@ describe('website enquiries → Monday', () => {
   });
   it.each([
     ['/680', '/'],
+    ['/not-a-page', '/'],
+    ['/enquiry-fake', '/'],
     ['/psychometric_680?bagrut=105.5#what_if_750', '/'],
     ['/programs/cs', '/programs/cs'],
     ['/app/calculator?psychometric=680', '/app/calculator'],
@@ -185,6 +187,16 @@ describe('website enquiries → Monday', () => {
     expect(JSON.parse(body.variables.columns).text_mm8am52m).toBe(expected);
     expect(backup).toHaveBeenCalledWith(expect.objectContaining({ sourcePath: expected }));
   });
+  // The sourcePath refine rejects absolute and protocol-relative URLs before delivery.
+  it.each(['https://evil.example/x', '//evil.example/x'])(
+    'rejects external source %s without storing or delivering it',
+    async (sourcePath) => {
+      expect((await POST(request({ sourcePath }))).status).toBe(400);
+      expect(fetch).not.toHaveBeenCalled();
+      expect(backup).not.toHaveBeenCalled();
+      expect(after).not.toHaveBeenCalled();
+    },
+  );
   it('preserves names and bounded campaign strings, storing only supported attribution keys', async () => {
     const attribution = {
       utm_source: '105.5',
