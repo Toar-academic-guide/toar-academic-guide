@@ -1,3 +1,4 @@
+import { withBatchCCatalogueFallback } from '@/lib/admissionsEvaluationProgram';
 import { CatalogueQueryError, listCataloguePrograms } from '@/server/catalogue/queries';
 import {
   buildCatalogueErrorResponse,
@@ -15,7 +16,7 @@ export async function GET() {
     const { data, meta } = await listCataloguePrograms();
     const { envelope, summary } = buildCatalogueSuccessResponse(
       'programs',
-      data,
+      withBatchCCatalogueFallback(data),
       meta,
       startedAtMs,
     );
