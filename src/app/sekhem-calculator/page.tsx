@@ -87,35 +87,41 @@ export default async function Page({
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
         <section className="mt-14 space-y-7 leading-7" aria-labelledby="sekhem-faq-title">
-          <h2 id="sekhem-faq-title" className="sr-only">שאלות על מחשבון הסכם</h2>
+          <h2 id="sekhem-faq-title" className="sr-only">
+            שאלות על מחשבון הסכם
+          </h2>
           <div>
             <h2 className="text-xl font-semibold">מה זה סכם?</h2>
             <p className="mt-2 text-(--text-body)">
-              סכם הוא ציון קבלה שמשלב את ממוצע הבגרות ואת הציון הפסיכומטרי. כל מוסד קובע נוסחה וסולם משלו,
-              ובחלק מהמוסדות הוא נקרא בשם אחר.
+              סכם הוא ציון קבלה שמשלב את ממוצע הבגרות ואת הציון הפסיכומטרי. כל מוסד קובע נוסחה וסולם
+              משלו, ובחלק מהמוסדות הוא נקרא בשם אחר.
             </p>
           </div>
           <div>
             <h2 className="text-xl font-semibold">איך מחשבים כאן?</h2>
             <p className="mt-2 text-(--text-body)">
-              בוחרים תוכנית, מזינים ציוני בגרות ופסיכומטרי, והמחשבון מציג הערכה לפי הנתונים שיש לנו לאותה
-              תוכנית. בקישור לתוכנית אפשר לבדוק את שאר תנאי הקבלה.
+              בוחרים תוכנית, מזינים ציוני בגרות ופסיכומטרי, והמחשבון מציג הערכה לפי הנתונים שיש לנו
+              לאותה תוכנית. בקישור לתוכנית אפשר לבדוק את שאר תנאי הקבלה.
             </p>
           </div>
           <div>
             <h2 className="text-xl font-semibold">באילו מוסדות ותוכניות אפשר לבדוק כאן?</h2>
             <p className="mt-2 text-(--text-body)">
-              המחשבון כולל כרגע תוכניות במוסדות הבאים. מוסד או תוכנית שלא מופיעים כאן עוד לא נתמכים במחשבון.
+              המחשבון כולל כרגע תוכניות במוסדות הבאים. מוסד או תוכנית שלא מופיעים כאן עוד לא נתמכים
+              במחשבון.
             </p>
             <ul className="mt-2 list-disc pr-5 text-(--text-body)">
-              {institutionNames.map((name) => <li key={name}>{name}</li>)}
+              {institutionNames.map((name) => (
+                <li key={name}>{name}</li>
+              ))}
             </ul>
           </div>
           <div>
             <h2 className="text-xl font-semibold">האם התוצאה מבטיחה קבלה?</h2>
             <p className="mt-2 text-(--text-body)">
-              לא. התוצאה היא הערכה בלבד, וההחלטה היא של המוסד. יש תנאים נוספים, כמו רמת אנגלית, מתמטיקה או
-              ראיון, ובחלק מהתוכניות יש גם אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי בלבד או קבלה דרך מכינה.
+              לא. התוצאה היא הערכה בלבד, וההחלטה היא של המוסד. יש תנאים נוספים, כמו רמת אנגלית,
+              מתמטיקה או ראיון, ובחלק מהתוכניות יש גם אפיק ללא פסיכומטרי, אפיק על בסיס פסיכומטרי
+              בלבד או קבלה דרך מכינה.
             </p>
           </div>
         </section>

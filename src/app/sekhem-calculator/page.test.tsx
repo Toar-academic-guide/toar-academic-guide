@@ -237,7 +237,12 @@ it.each(answerHeadings)('renders the answer heading %s', async (name) => {
 
 it('derives a distinct Hebrew-sorted institution list from the loaded offerings', async () => {
   const loader = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
-    { programId: 'z_cs', programName: 'מדעי המחשב', institutionId: 'z', institutionName: 'תל אביב' },
+    {
+      programId: 'z_cs',
+      programName: 'מדעי המחשב',
+      institutionId: 'z',
+      institutionName: 'תל אביב',
+    },
     { programId: 'a_cs', programName: 'מדעי המחשב', institutionId: 'a', institutionName: 'אפקה' },
     { programId: 'a_ee', programName: 'הנדסת חשמל', institutionId: 'a', institutionName: 'אפקה' },
   ]);
@@ -294,7 +299,9 @@ it.each([undefined, 'not_a_public_programme'])(
   'renders page-level WebApplication JSON-LD without FAQPage for programme %s',
   async (program) => {
     const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
-    const scripts = Array.from(container.querySelectorAll('main script[type="application/ld+json"]'));
+    const scripts = Array.from(
+      container.querySelectorAll('main script[type="application/ld+json"]'),
+    );
     expect(scripts.length).toBeGreaterThan(0);
     const graphs = scripts.map((script) => JSON.parse(script.textContent!));
     const nodes = graphs.flatMap((graph) => graph['@graph']);

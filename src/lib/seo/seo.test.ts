@@ -658,7 +658,11 @@ describe('structured data', () => {
       publisher: { '@id': 'https://findmyway.co.il/#organization' },
       isPartOf: { '@id': 'https://findmyway.co.il/#website' },
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-      featureList: ['שאלון התאמה ללימודים', 'קטלוג מוסדות ומסלולי לימוד', 'בדיקת סיכויי קבלה אישית'],
+      featureList: [
+        'שאלון התאמה ללימודים',
+        'קטלוג מוסדות ומסלולי לימוד',
+        'בדיקת סיכויי קבלה אישית',
+      ],
     });
   });
 
