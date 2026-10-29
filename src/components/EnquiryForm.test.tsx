@@ -1,6 +1,7 @@
 // @vitest-environment jsdom
 import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 import { StrictMode } from 'react';
+import { INSTITUTIONS } from '@/data/institutions';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import EnquiryForm from './EnquiryForm';
@@ -291,8 +292,9 @@ describe('EnquiryForm', () => {
 });
 
 it('pins all approved R7g state copy and the revised button in one place', () => {
+  // Approved test update, Jorje 2026-10-29 (consent wording item c)
   expect(ENQUIRY_PREP_CONSENT).toBe(
-    'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתחזור אליי בטלפון לגבי קורסים והטבות (לבני 18 ומעלה).',
+    'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתפנה אליי בטלפון, SMS או WhatsApp לגבי קורסים והטבות. אני מאשר/ת שגילי 18 ומעלה.',
   );
   expect(ENQUIRY_COPY).toMatchObject({
     namePlaceholder: 'שם מלא',
@@ -324,17 +326,30 @@ it('starts with exactly one optional unchecked checkbox, named only by the prep 
   expect(icon.getAttribute('aria-hidden')).toBe('true');
   expect(icon.getAttribute('focusable')).toBe('false');
   expect(icon.classList.contains('rtl:-scale-x-100')).toBe(true);
-  const consent = ['action-consent', 'consent-prep', 'privacy-link'].map((id) =>
+  // Approved test update, Jorje 2026-10-29 (consent wording item a)
+  const consent = ['consent-prep', 'privacy-link', 'action-consent'].map((id) =>
     document.getElementById(id)!,
   );
+  // Approved test update, Jorje 2026-10-29 (consent wording item a)
   expect(
     consent[0].compareDocumentPosition(consent[1]) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
+  // Approved test update, Jorje 2026-10-29 (consent wording item a)
   expect(
     consent[1].compareDocumentPosition(consent[2]) & Node.DOCUMENT_POSITION_FOLLOWING,
   ).toBeTruthy();
-  expect(consent[0].textContent).toContain('״שליחת פרטים״');
-  expect(consent[0].querySelector('bdi[dir="rtl"]')?.textContent).toBe('״שליחת פרטים״');
+  // Approved test update, Jorje 2026-10-29 (consent wording item a)
+  expect(consent[2].textContent).toBe(
+    'בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי לאוניברסיטת תל אביב בלבד',
+  );
+  // Approved test update, Jorje 2026-10-29 (consent wording item a)
+  expect(button.previousElementSibling).toBe(consent[2]);
+  expect(button.getAttribute('aria-describedby')).toBe('action-consent');
+  expect(consent[0].textContent).toContain('אני מאשר/ת שגילי 18 ומעלה');
+  expect(consent[0].textContent).toContain('טלפון, SMS או WhatsApp');
+  expect(
+    Array.from(consent[0].querySelectorAll('bdi[dir="ltr"]'), (node) => node.textContent),
+  ).toEqual(['SMS', 'WhatsApp', '18']);
 });
 
 it.each([false, true])(
@@ -395,4 +410,32 @@ it('shows text errors for untouched required fields and keeps prep optional', ()
   } finally {
     vi.unstubAllGlobals();
   }
+});
+
+it.each([
+  ['המכללה האקדמית אונו', 'למכללה האקדמית אונו'],
+  ['האוניברסיטה העברית בירושלים', 'לאוניברסיטה העברית בירושלים'],
+  ['הטכניון – מכון טכנולוגי לישראל', 'לטכניון – מכון טכנולוגי לישראל'],
+  ['המרכז האקדמי רופין', 'למרכז האקדמי רופין'],
+  ['המכון הטכנולוגי חולון (HIT)', 'למכון הטכנולוגי חולון (HIT)'],
+  ['האקדמיה למוזיקה ולמחול ירושלים', 'לאקדמיה למוזיקה ולמחול ירושלים'],
+  ['הנדסאים תל-אביב', 'להנדסאים תל-אביב'],
+  ['הנדסה בגובה בע"מ', 'להנדסה בגובה בע"מ'],
+  ['הגעתון - מחול', 'להגעתון - מחול'],
+  ['מכללת הרצוג', 'למכללת הרצוג'],
+])('uses the correct Hebrew prefix for catalogue institution %s', (name, prefixed) => {
+  const institution = INSTITUTIONS.find((entry) => entry.name === name)!;
+  expect(institution).toBeDefined();
+  render(
+    <EnquiryForm
+      programId="cs"
+      institutionId={institution.id}
+      title={`מדעי המחשב · ${institution.name}`}
+    />,
+  );
+  const button = screen.getByRole('button', { name: ENQUIRY_COPY.button });
+  expect(button.previousElementSibling?.id).toBe('action-consent');
+  expect(button.previousElementSibling?.textContent).toBe(
+    `בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי ${prefixed} בלבד`,
+  );
 });
