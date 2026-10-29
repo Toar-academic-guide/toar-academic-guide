@@ -1,4 +1,4 @@
-import { resultInputReasons } from './sekhemResultPresentation';
+import { resultInputReasons, sekhemBelowLabel } from './sekhemResultPresentation';
 import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
 import {
   buildBagrutSubjectRecord,
@@ -94,7 +94,7 @@ export function resultVerdict(result: AdmissionsEvaluationResult): string {
   if (result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold')
     return 'הציונים עומדים בתנאי הקבלה';
   if (result.decision === 'below' || result.scoreAssessment === 'below_threshold')
-    return 'הציונים מתחת לסף';
+    return sekhemBelowLabel(result);
   if (result.kind === 'manual_gate') return 'שלבי קבלה נוספים';
   return 'חסרים נתונים לחישוב';
 }

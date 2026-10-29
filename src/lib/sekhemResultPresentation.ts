@@ -1,3 +1,4 @@
+import { admissionScoreGap } from './admissionScoreGap';
 import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
@@ -127,6 +128,14 @@ export function resultInputReasons(result: AdmissionsEvaluationResult): string[]
   });
 }
 
+export function sekhemBelowLabel(result: AdmissionsEvaluationResult): string {
+  return (
+    admissionScoreGap(result, (value) =>
+      formatSekhemNumber(value, result.linkedInstitutionId ?? result.institution.id),
+    ) ?? 'עוד לא בסף. בואו נמצא דרך.'
+  );
+}
+
 type CardPresentation = {
   text: string | null;
   actions?: InputAction[];
@@ -152,17 +161,10 @@ export function resultPresentation(result: AdmissionsEvaluationResult): CardPres
 
   // A below verdict takes precedence if an inconsistent response also claims a passed floor.
   if (result.decision === 'below' || result.scoreAssessment === 'below_threshold') {
-    if (score || threshold)
-      return {
-        text:
-          result.kind === 'estimated' && score && threshold
-            ? 'ציון הקבלה המשוער שלכם נמוך מהסף'
-            : 'הציונים מתחת לסף',
-        tone: 'negative',
-      };
-    const reasons = resultInputReasons(result);
+    const reasons =
+      result.kind === 'needs_input' && !score && !threshold ? resultInputReasons(result) : [];
     return {
-      text: reasons.join(' ') || 'הציונים אינם עומדים בתנאי הקבלה שנבדקו.',
+      text: reasons.join(' ') || sekhemBelowLabel(result),
       tone: 'negative',
     };
   }
