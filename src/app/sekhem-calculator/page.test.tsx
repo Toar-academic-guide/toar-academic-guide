@@ -238,6 +238,7 @@ it.each(answerHeadings)('renders the answer heading %s', async (name) => {
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
 it('omits lists and institution names from the answer section with mocked offerings', async () => {
   const loader = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
     {
@@ -259,7 +260,7 @@ it('omits lists and institution names from the answer section with mocked offeri
       name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
     });
     expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ותוכנית שעוד לא מחושבת מוצגת ככזו בבירור.',
+      'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
     );
     for (const name of ['אפקה', 'תל אביב']) {
       expect(section.textContent).not.toContain(name);
@@ -270,6 +271,7 @@ it('omits lists and institution names from the answer section with mocked offeri
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
 it('omits lists and every real catalogue institution name from the answer section', async () => {
   const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
   const institutionNames = [...new Set(offerings.map((offering) => offering.institutionName))];
@@ -283,12 +285,37 @@ it('omits lists and every real catalogue institution name from the answer sectio
     name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
   });
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ותוכנית שעוד לא מחושבת מוצגת ככזו בבירור.',
+    'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
   );
   for (const name of institutionNames) {
     expect(section.textContent).not.toContain(name);
   }
 });
+
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it('describes exactly how to calculate a sekhem here', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+  const heading = within(section).getByRole('heading', {
+    level: 2,
+    name: 'איך מחשבים כאן?',
+  });
+  expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
+    'מזינים ציוני בגרות ופסיכומטרי, ומקבלים מיד את הסכם שלכם מול סף הקבלה של התוכנית.',
+  );
+});
+
+// Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
+it.each([undefined, 'not_a_public_programme'])(
+  'keeps the answer block free of estimate and guarantee wording for programme %s',
+  async (program) => {
+    render(await Page({ searchParams: Promise.resolve({ program }) }));
+    const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
+    for (const phrase of ['הערכה', 'מבטיח', 'הבטחה']) {
+      expect(section.textContent).not.toContain(phrase);
+    }
+  },
+);
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 it('keeps the answer section free of numbers and unsupported admission promises', async () => {
