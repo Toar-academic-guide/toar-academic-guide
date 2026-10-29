@@ -28,7 +28,11 @@ for (const width of [1280, 390]) {
       for (const path of ['/', '/app/calculator']) {
         await page.goto(path);
         if (path === '/') {
-          await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+          await page.getByRole('link', { name: 'כניסה', exact: true }).waitFor();
+          await page.evaluate(() => {
+            window.location.hash = 'intent';
+          });
+          await page.getByRole('button', { name: 'כן', exact: true }).waitFor();
           await page.getByRole('button', { name: 'כן', exact: true }).click();
         }
         await page.getByLabel('חיפוש תחום לימודים').fill('הנדסה');

@@ -22,7 +22,11 @@ for (const width of [1440, 390]) {
     await page.goto(width === 390 ? '/ig' : '/tt', {
       referer: 'https://example.com/social?private=secret',
     });
-    await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+    await page.getByRole('link', { name: 'כניסה', exact: true }).waitFor();
+    await page.evaluate(() => {
+      window.location.hash = 'intent';
+    });
+    await page.getByRole('button', { name: 'כן', exact: true }).waitFor();
     await page.getByRole('button', { name: 'כן', exact: true }).click();
     await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
     await page.getByRole('button', { name: 'המשך', exact: true }).click();
