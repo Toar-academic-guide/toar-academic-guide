@@ -709,3 +709,20 @@ describe('API-only result rows', () => {
     expect(screen.getByText('אומדן, עד לאישור המוסד')).toBeTruthy();
   });
 });
+
+it.each(['biu', 'hit', 'afeka'])(
+  'keeps programme and enquiry actions when every programme entry is filtered (%s)',
+  (id) => {
+    const source = report(id, { score: undefined, threshold: undefined, decision: 'unknown', kind: 'estimated' });
+    const offering = { ...offerings.find((item) => item.institutionId === id)!, programPath: '/programs/psychology' };
+    const onEnquiry = vi.fn();
+    render(<SekhemResults reports={[source]} offerings={[offering]} onEnquiry={onEnquiry} />);
+    const card = screen.getByTestId(`institution-${id}`);
+    expect(within(card).getByText('פסיכולוגיה')).toBeTruthy();
+    expect(within(card).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href')).toBe('/programs/psychology');
+    expect(card.querySelector('[data-testid^="result-"]')).toBeNull();
+    expect(card.textContent).not.toMatch(/\d|עומדים|מתחת|חסרים|עדיין לא/);
+    fireEvent.click(within(card).getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+    expect(onEnquiry).toHaveBeenCalledWith(offering, source);
+  },
+);

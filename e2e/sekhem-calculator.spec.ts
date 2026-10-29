@@ -760,3 +760,85 @@ test('Technion medicine with an exact score and no cutoff has no verdict or succ
   await assertStudentCards(page);
   expect(mocks.submissions).toHaveLength(0);
 });
+
+for (const width of [1280, 390]) {
+  test(`filtered biu_cs remains actionable at ${width}px`, async ({ page, baseURL }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL, false, row => row.linkedInstitutionId === 'biu' ? { ...row, kind: 'estimated', capability: 'estimated', decision: 'unknown', score: undefined, threshold: undefined, explanation: 'עמידה בתנאי הסף אינה אישור קבלה. יש לבדוק את השקלול במחשבון הרשמי של בר-אילן.' } : row);
+    await page.goto('/sekhem-calculator?program=biu_cs');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    const card = page.getByTestId('institution-biu');
+    await expect(card).toBeVisible();
+    await expect(card).toContainText('מדעי המחשב');
+    await expect(card.locator('[data-testid^="result-"]')).toHaveCount(0);
+    await expect(card).not.toContainText(/\d|עומדים|מתחת|עדיין לא/);
+    await expect(card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute('href', '/programs/biu_cs');
+    await card.getByRole('button', { name: 'קבלת מידע על התוכנית' }).click();
+    const dialog = page.getByRole('dialog');
+    await dialog.getByLabel(ENQUIRY_COPY.nameLabel, { exact: true }).fill('QA Test');
+    await dialog.getByLabel(ENQUIRY_COPY.phoneLabel, { exact: true }).fill('0500000000');
+    await dialog.getByRole('button', { name: ENQUIRY_COPY.button, exact: true }).click();
+    await expect(dialog.getByRole('status')).toContainText(ENQUIRY_COPY.successTitle);
+    expect(mocks.submissions).toHaveLength(1);
+    expect(mocks.submissions[0]).toMatchObject({ programId: 'biu_cs', institutionId: 'biu', evaluationInput: { degreeId: 'biu_cs', psychometric: 700 } });
+  });
+
+  test(`programme Back restores calculator state at ${width}px`, async ({ page, baseURL }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.getByText('בחירת תחום לימודים', { exact: true }).click();
+    await page.getByLabel('תוכנית לימודים').selectOption('bgu_psychology');
+    await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+    await page.getByTestId('institution-bgu').getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).click();
+    await expect(page).toHaveURL(/\/programs\/bgu_psychology$/);
+    await page.goBack();
+    await expect(page.getByLabel('ציון 1', { exact: true })).toHaveValue('92');
+    await expect(page.getByLabel('יחידות 1', { exact: true })).toHaveValue('5');
+    await expect(page.getByLabel('פסיכומטרי — ציון כללי')).toHaveValue('700');
+    await expect(page.getByLabel('תוכנית לימודים')).toHaveValue('bgu_psychology');
+    await expect(page.getByTestId('institution-bgu')).toContainText('648');
+    expect(mocks.batches).toHaveLength(1);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+
+  test(`range errors identify and focus their field at ${width}px`, async ({ page, baseURL }) => {
+    await page.setViewportSize({ width, height: 900 });
+    const mocks = await installMocks(page, baseURL);
+    await page.goto('/sekhem-calculator');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    for (const [label, value, message] of [['ציון 1', '101', 'ציון בין 0 ל-100'], ['יחידות 1', '0', 'יחידות בין 1 ל-5']]) {
+      const input = page.getByLabel(label, { exact: true });
+      await input.fill(value);
+      await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+      await expect(input).toBeFocused();
+      await expect(input).toBeInViewport();
+      await expect(input).toHaveAttribute('aria-invalid', 'true');
+      const id = await input.getAttribute('aria-describedby');
+      await expect(page.locator(`[id="${id}"]`)).toHaveText(message);
+      await expect(page.locator(`[id="${id}"]`)).toBeVisible();
+      await assertAlignedFields(page.locator('main'));
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(true);
+      await test.info().attach(`range-error-${label}-${width}`, { body: await page.screenshot(), contentType: 'image/png' });
+      await input.fill(label.startsWith('ציון') ? '100' : '5');
+    }
+    expect(mocks.batches).toHaveLength(0);
+    expect(mocks.submissions).toHaveLength(0);
+  });
+}
+
+test('calculator reload restores state without another evaluation', async ({ page, baseURL }) => {
+  const mocks = await installMocks(page, baseURL);
+  await page.goto('/sekhem-calculator?program=tau_law');
+  await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+  await page.getByRole('button', { name: 'לחשב את הסכם', exact: true }).click();
+  await expect(page.getByTestId('institution-tau')).toContainText('639');
+  await page.reload();
+  await expect(page.getByLabel('ציון 1', { exact: true })).toHaveValue('92');
+  await expect(page.getByLabel('מילולי', { exact: true })).toHaveValue('130');
+  await expect(page.getByTestId('institution-tau')).toContainText('639');
+  expect(mocks.batches).toHaveLength(1);
+  expect(mocks.submissions).toHaveLength(0);
+});
