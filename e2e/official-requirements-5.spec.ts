@@ -154,12 +154,21 @@ for (const width of [390, 1440]) {
       await expect(main).toHaveCSS('text-align', 'right');
       const more = main.getByText('תנאים נוספים', { exact: true });
       if (await more.count()) await more.click();
-      const expectedCopy =
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+      const removedRow39Sentence =
+        'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.';
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+      const expectedCopy = (
         value.program === 'colmgmt_economics'
           ? [...value.requirements, ...value.notes]
-          : value.notes;
+          : value.notes
+      ).filter((line) => value.program !== 'ono_law' || line !== removedRow39Sentence);
       for (const line of expectedCopy)
         await expect(main.getByText(line, { exact: true })).toBeVisible();
+      if (value.program === 'ono_law') {
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+        await expect(main.getByText(removedRow39Sentence, { exact: true })).not.toBeVisible();
+      }
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (value.program === 'colmgmt_economics') {
