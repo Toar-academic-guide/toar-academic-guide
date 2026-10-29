@@ -784,7 +784,11 @@ for (const width of [1280, 390]) {
     const card = page.getByTestId('institution-biu');
     await expect(card).toBeVisible();
     await expect(card).toContainText('מדעי המחשב');
-    await expect(card.locator('[data-testid^="result-"]')).toHaveCount(0);
+    const row = card.getByTestId('result-biu_cs-biu');
+    await expect(row).toHaveCount(1);
+    await expect(row).toHaveAttribute('data-action-only', 'true');
+    await expect(row).toHaveText('');
+    await expect(row.locator('[data-result-number], [data-result-reason], p')).toHaveCount(0);
     await expect(card).not.toContainText(/\d|עומדים|מתחת|עדיין לא/);
     await expect(card.getByRole('link', { name: 'לתנאי הקבלה של התוכנית' })).toHaveAttribute(
       'href',

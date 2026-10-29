@@ -129,67 +129,70 @@ function InstitutionGroup({
             </Link>
           )}
         </div>
-        {!entry.actionOnly && (
-          <div
-            data-testid={`result-${offering.programId}-${offering.institutionId}`}
-            data-kind={result.kind}
-            data-capability={result.capability}
-            data-decision={result.decision}
-          >
-            <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
-              {score && (
-                <div>
-                  <span
-                    data-result-number="score"
-                    dir="ltr"
-                    className="block text-3xl font-semibold tabular-nums"
-                  >
-                    {formatSekhemNumber(result.score!, offering.institutionId)}
-                  </span>
-                  <span className="text-sm text-(--text-body)">
-                    {result.kind === 'estimated' ? 'ציון הקבלה המשוער' : 'ציון הקבלה'}
-                  </span>
-                </div>
-              )}
-              {threshold && (
-                <div>
-                  <span className="block text-sm text-(--text-body)">סף קבלה</span>
-                  <span data-result-number="threshold" dir="ltr" className="tabular-nums">
-                    {formatSekhemNumber(result.threshold!, offering.institutionId)}
-                  </span>
-                </div>
-              )}
-            </div>
-            {!scoreOnly && !textOnlyGate && (
-              <p
-                data-result-reason={numberless ? '' : undefined}
-                className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
-              >
-                {presentation.text}
-                {presentation.actions?.map((action, index) => (
-                  <span key={action.label}>
-                    {index > 0 && ' וב'}
-                    <button
-                      type="button"
-                      className="underline underline-offset-4"
-                      onClick={() => onInputFocus?.(action.target)}
+        <div
+          data-testid={`result-${offering.programId}-${offering.institutionId}`}
+          data-kind={result.kind}
+          data-capability={result.capability}
+          data-decision={result.decision}
+          data-action-only={entry.actionOnly ? true : undefined}
+        >
+          {!entry.actionOnly && (
+            <>
+              <div className="flex flex-wrap items-baseline gap-x-5 gap-y-2">
+                {score && (
+                  <div>
+                    <span
+                      data-result-number="score"
+                      dir="ltr"
+                      className="block text-3xl font-semibold tabular-nums"
                     >
-                      {action.label}
-                    </button>
-                  </span>
-                ))}
-              </p>
-            )}
-            {visibleGates.map((gate) => (
-              <p key={gate} data-result-reason className="mt-2 text-sm text-(--text-body)">
-                {gate}
-              </p>
-            ))}
-            {offering.institutionId === 'reichman' && !numberless && !scoreOnly && (
-              <p className="mt-2 text-sm text-(--text-body)">אומדן, עד לאישור המוסד</p>
-            )}
-          </div>
-        )}
+                      {formatSekhemNumber(result.score!, offering.institutionId)}
+                    </span>
+                    <span className="text-sm text-(--text-body)">
+                      {result.kind === 'estimated' ? 'ציון הקבלה המשוער' : 'ציון הקבלה'}
+                    </span>
+                  </div>
+                )}
+                {threshold && (
+                  <div>
+                    <span className="block text-sm text-(--text-body)">סף קבלה</span>
+                    <span data-result-number="threshold" dir="ltr" className="tabular-nums">
+                      {formatSekhemNumber(result.threshold!, offering.institutionId)}
+                    </span>
+                  </div>
+                )}
+              </div>
+              {!scoreOnly && !textOnlyGate && (
+                <p
+                  data-result-reason={numberless ? '' : undefined}
+                  className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
+                >
+                  {presentation.text}
+                  {presentation.actions?.map((action, index) => (
+                    <span key={action.label}>
+                      {index > 0 && ' וב'}
+                      <button
+                        type="button"
+                        className="underline underline-offset-4"
+                        onClick={() => onInputFocus?.(action.target)}
+                      >
+                        {action.label}
+                      </button>
+                    </span>
+                  ))}
+                </p>
+              )}
+              {visibleGates.map((gate) => (
+                <p key={gate} data-result-reason className="mt-2 text-sm text-(--text-body)">
+                  {gate}
+                </p>
+              ))}
+              {offering.institutionId === 'reichman' && !numberless && !scoreOnly && (
+                <p className="mt-2 text-sm text-(--text-body)">אומדן, עד לאישור המוסד</p>
+              )}
+            </>
+          )}
+        </div>
       </div>
       <div className="mt-5 flex flex-wrap gap-3">
         <button

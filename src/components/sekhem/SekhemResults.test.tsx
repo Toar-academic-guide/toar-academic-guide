@@ -730,7 +730,10 @@ it.each(['biu', 'hit', 'afeka'])(
     expect(
       within(card).getByRole('link', { name: 'לתנאי הקבלה של התוכנית' }).getAttribute('href'),
     ).toBe('/programs/psychology');
-    expect(card.querySelector('[data-testid^="result-"]')).toBeNull();
+    const row = within(card).getByTestId(`result-psychology-${id}`);
+    expect(row.getAttribute('data-action-only')).toBe('true');
+    expect(row.textContent).toBe('');
+    expect(row.querySelectorAll('[data-result-number], [data-result-reason], p')).toHaveLength(0);
     expect(card.textContent).not.toMatch(/\d|עומדים|מתחת|חסרים|עדיין לא/);
     fireEvent.click(within(card).getByRole('button', { name: 'קבלת מידע על התוכנית' }));
     expect(onEnquiry).toHaveBeenCalledWith(offering, source);
