@@ -32,6 +32,7 @@ import type {
   UniversityCalculatorConfigRow,
 } from '@/db/types';
 import { getCatalogueSourceMode, hasDatabaseUrl, isProductionRuntime } from '@/env';
+import { withBatchCCatalogueFallback } from '@/lib/admissionsEvaluationProgram';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import type {
   ApiMetaPayload,
@@ -456,12 +457,15 @@ function isListedProgramInstitution(row: { programId: string; institutionId: str
   return row.programId !== 'law' || row.institutionId !== 'bgu';
 }
 
-export async function listCataloguePrograms(): Promise<CatalogueQueryResult<CatalogueProgram[]>> {
+export async function listCataloguePrograms(options?: {
+  includeBatchCCodeFallback?: boolean;
+}): Promise<CatalogueQueryResult<CatalogueProgram[]>> {
   const resolution = await resolveCatalogueSource();
 
   if (resolution.source === 'static') {
+    const data = getStaticCataloguePrograms();
     return {
-      data: getStaticCataloguePrograms(),
+      data: options?.includeBatchCCodeFallback ? withBatchCCatalogueFallback(data) : data,
       meta: resolution.meta,
     };
   }
@@ -477,7 +481,7 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
     (program) => program.id === 'jerusalem_academy_dance' && program.isListed !== false,
   );
 
-  return {
+  const result = {
     data: snapshot.programs
       .filter((row) => {
         // Rollback preserves the allocated ID as an archive for saved references.
@@ -516,6 +520,10 @@ export async function listCataloguePrograms(): Promise<CatalogueQueryResult<Cata
       ),
     meta: resolution.meta,
   };
+
+  return options?.includeBatchCCodeFallback
+    ? { ...result, data: withBatchCCatalogueFallback(result.data) }
+    : result;
 }
 
 export async function getRequirementIdsForProgram(programId: string): Promise<string[]> {

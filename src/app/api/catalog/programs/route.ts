@@ -12,7 +12,7 @@ export async function GET() {
   const startedAtMs = Date.now();
 
   try {
-    const { data, meta } = await listCataloguePrograms();
+    const { data, meta } = await listCataloguePrograms({ includeBatchCCodeFallback: true });
     const { envelope, summary } = buildCatalogueSuccessResponse(
       'programs',
       data,
