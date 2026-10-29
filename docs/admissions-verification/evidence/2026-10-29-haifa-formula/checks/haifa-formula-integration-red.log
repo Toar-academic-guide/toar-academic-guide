@@ -1,0 +1,114 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/data/admissions/haifaFormula.test.ts (150 tests | 4 failed) 66ms
+     × keeps unresolved single-major IS blocked with derivable subjects 8ms
+     × uses NITE total for a general programme without demanding Q/V/E 1ms
+     × keeps an expired psychometric non-exact even when all other inputs suffice 26ms
+     × routes engineering without an average to unsupported 1ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 4 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/data/admissions/haifaFormula.test.ts > Haifa local evaluator input and mapping boundaries > keeps unresolved single-major IS blocked with derivable subjects
+AssertionError: expected { …(11) } to match object { capability: 'blocked', …(1) }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "capability": "blocked",
+-   "sourceLabel": "מיפוי המסלול טרם אומת",
++   "capability": "tracked_missing_rule",
++   "sourceLabel": "אין מספיק מידע",
+  }
+
+ ❯ src/data/admissions/haifaFormula.test.ts:83:20
+     81|       haifaInformationSystemsTrack: 'single_major',
+     82|     }));
+     83|     expect(result).toMatchObject({ capability: 'blocked', sourceLabel:…
+       |                    ^
+     84|   });
+     85|   it('uses NITE total for a general programme without demanding Q/V/E'…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/4]⎯
+
+ FAIL  src/data/admissions/haifaFormula.test.ts > Haifa local evaluator input and mapping boundaries > uses NITE total for a general programme without demanding Q/V/E
+AssertionError: expected { …(11) } to match object { capability: 'exact', …(2) }
+(23 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "capability": "exact",
+-   "score": 701,
+-   "threshold": 650,
++   "capability": "authority_unavailable",
+  }
+
+ ❯ src/data/admissions/haifaFormula.test.ts:93:20
+     91|       },
+     92|     });
+     93|     expect(result).toMatchObject({ capability: 'exact', score: 701, th…
+       |                    ^
+     94|     expect(fetcher).not.toHaveBeenCalled();
+     95|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/4]⎯
+
+ FAIL  src/data/admissions/haifaFormula.test.ts > Haifa local evaluator input and mapping boundaries > keeps an expired psychometric non-exact even when all other inputs suffice
+AssertionError: expected { …(17) } to match object { kind: 'tracked_missing_rule', …(1) }
+(28 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "decision": "unknown",
+-   "kind": "tracked_missing_rule",
++   "decision": "below",
++   "kind": "exact",
+  }
+
+ ❯ src/data/admissions/haifaFormula.test.ts:107:20
+    105|       haifaBagrutAverage: 103.5, haifaPsychometricYear: 2012, haifaHeb…
+    106|     }));
+    107|     expect(result).toMatchObject({ kind: 'tracked_missing_rule', decis…
+       |                    ^
+    108|     expect(result.score).toBeUndefined();
+    109|     expect(result.explanation).toContain('10');
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/4]⎯
+
+ FAIL  src/data/admissions/haifaFormula.test.ts > Haifa local evaluator input and mapping boundaries > routes engineering without an average to unsupported
+AssertionError: expected { …(11) } to match object { kind: 'unsupported', …(1) }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "decision": "unknown",
+-   "kind": "unsupported",
++   "kind": "tracked_missing_rule",
+  }
+
+ ❯ src/data/admissions/haifaFormula.test.ts:116:20
+    114|       psychometric: 590, extraInputs: {},
+    115|     });
+    116|     expect(result).toMatchObject({ kind: 'unsupported', decision: 'unk…
+       |                    ^
+    117|     expect(result.institution.programUrl ?? result.officialUrls?.[0]).…
+    118|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/4]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  4 failed | 146 passed (150)
+   Start at  14:55:33
+   Duration  2.22s (transform 1.11s, setup 94ms, import 1.88s, tests 66ms, environment 0ms)

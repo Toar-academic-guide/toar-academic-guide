@@ -8,8 +8,8 @@ import type {
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
 
-/** Official calculation remains external: https://admissions.haifa.ac.il/score-calculation/
- * Evidence captured 2026-10-28; do not ask students for an institutional composite.
+/** Missing institutional average cannot be replaced by the generic proxy.
+ * Local formula evidence: docs/admissions-verification/evidence/2026-10-29-haifa-formula/.
  */
 export function haifaMissingRuleResult(
   programId: string,
@@ -20,6 +20,7 @@ export function haifaMissingRuleResult(
     input: AdmissionsEvaluationInput;
   },
 ): AdmissionsEvaluationResult | undefined {
+  if (isBatchCUnsupportedProgramId(programId, institution.id)) return undefined;
   const averageKnown =
     context.averageIsProxy || context.input.extraInputs?.haifaBagrutAverage !== undefined;
   if (averageKnown) {
@@ -42,12 +43,7 @@ export function haifaMissingRuleResult(
           'בדקו את המסלול מול החוג. בחרו מסלול אחר רק אם זה המסלול שאליו אתם מתכוונים להירשם.',
         officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
       };
-    if (
-      isBatchCUnsupportedProgramId(programId, institution.id) ||
-      context.capability === 'blocked' ||
-      context.capability === 'unsupported'
-    )
-      return undefined;
+    if (context.capability === 'blocked' || context.capability === 'unsupported') return undefined;
   }
   const kind = ['psychology', 'haifa_psychology'].includes(programId)
     ? 'authority_unavailable'

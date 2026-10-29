@@ -35,6 +35,8 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'haifa_infosystems',
   'haifa_nursing',
   'haifa_politicalscience',
+  // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+  'haifa_psychology',
   'haifa_sociology',
   'huji_accounting',
   'huji_business',
@@ -76,7 +78,8 @@ describe('published composite threshold selector', () => {
       }),
     );
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(40);
+    // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(41);
   });
 
   it.each([
