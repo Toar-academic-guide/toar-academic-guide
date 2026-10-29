@@ -99,8 +99,14 @@ it('renders an indexable public calculator with absolute title and canonical met
   expect(metadata.title).toEqual({ absolute: 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
-    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.',
+    // Approved test update, Jorje 2026-10-29: meta no-overclaim
+    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.',
   );
+});
+it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
+  expect(metadata.description).not.toContain('לפי נוסחאות');
+  expect(metadata.openGraph?.description).not.toContain('לפי נוסחאות');
+  expect(metadata.openGraph?.description).toBe(metadata.description);
 });
 it('has one sitemap entry with the authored date and one llms entry', async () => {
   const entries = (await sitemap()).filter(

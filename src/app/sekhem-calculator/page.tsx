@@ -11,7 +11,7 @@ import { absoluteUrl, SITE_NAME } from '@/lib/site';
 
 const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
 const description =
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, מחשבים סכם לפי נוסחאות המוסדות הנתמכים וממשיכים לבדיקת התוכנית שמעניינת אותך.';
+  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת ומקבלים הערכה, עם קישור לתנאי הקבלה של התוכנית.';
 const canonical = absoluteUrl('/sekhem-calculator');
 
 export const dynamic = 'force-dynamic';
