@@ -2,12 +2,12 @@
 
 import {
   formatSekhemNumber,
-  resultInputReasons,
-  resultSourceReason,
+  resultPresentation,
+  type ResultInputTarget,
 } from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
-import { resultVerdict, type CalculatorOffering } from '@/lib/sekhemCalculator';
+import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import type {
   AdmissionsEvaluationReport,
   AdmissionsEvaluationResult,
@@ -18,6 +18,7 @@ type Entry = {
   report: AdmissionsEvaluationReport;
   result: AdmissionsEvaluationResult;
 };
+type InputFocus = (target: ResultInputTarget) => void;
 type Enquiry = (offering: CalculatorOffering, report: AdmissionsEvaluationReport) => void;
 const noScoreInstitutions = new Set(['biu', 'afeka', 'hit']);
 const hasNumber = (value: number | null | undefined): value is number =>
@@ -51,10 +52,14 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     const text = textOnly && /\d/.test(result.explanation) ? numberlessGate : result.explanation;
     if (text) labels.push(text);
   }
-  return labels.filter(
-    (label) =>
-      !/נדרשת בדיקה מול המוסד|מקור חסום|ממוצע בגרות רשמי של חיפה|[a-z]+_[a-z_]+/i.test(label),
-  );
+  return labels
+    .map((label) => label.replace(/מתואם|סכם|מצרף/g, 'ציון הקבלה'))
+    .filter(
+      (label) =>
+        !/נדרשת בדיקה מול המוסד|מקור חסום|ממוצע בגרות רשמי של חיפה|נתונים|[a-z]+_[a-z_]+/i.test(
+          label,
+        ),
+    );
 }
 
 function InstitutionGroup({
@@ -62,24 +67,30 @@ function InstitutionGroup({
   entry,
   onSelect,
   onEnquiry,
+  onInputFocus,
 }: {
   entries: Entry[];
   entry: Entry;
   onSelect: (programId: string) => void;
   onEnquiry: Enquiry;
+  onInputFocus?: InputFocus;
 }) {
   const { offering, report, result } = entry;
   const numberless = !hasResultNumber(entry);
   const gates = numberless && offering.institutionId === 'haifa' ? [] : gateText(result);
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
-  const reasons = resultInputReasons(result);
-  if (!score && !gates.length && !reasons.length)
-    reasons.push({ text: resultSourceReason(result) });
-  const verdict =
-    result.kind === 'manual_gate' && !score && !threshold && !gates.length
-      ? 'חסרים נתונים לחישוב'
-      : resultVerdict(result);
+  const presentation = resultPresentation(result);
+  // Accepted floor-only routes have one unambiguous line. A text-only manual gate
+  // instead carries the actual returned gate, without a generic fallback sentence.
+  const acceptedWithoutNumbers =
+    numberless &&
+    !result.requiredInputs?.length &&
+    (result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold') &&
+    result.decision !== 'below' &&
+    result.scoreAssessment !== 'below_threshold';
+  const visibleGates = acceptedWithoutNumbers || result.decision === 'below' ? [] : gates;
+  const textOnlyGate = numberless && visibleGates.length > 0 && result.kind === 'manual_gate';
   return (
     <section
       data-testid={`institution-${offering.institutionId}`}
@@ -131,9 +142,9 @@ function InstitutionGroup({
                 >
                   {formatSekhemNumber(result.score!, offering.institutionId)}
                 </span>
-                {result.scoreLabel && (
-                  <span className="text-sm text-(--text-body)">{result.scoreLabel}</span>
-                )}
+                <span className="text-sm text-(--text-body)">
+                  {result.kind === 'estimated' ? 'ציון הקבלה המשוער' : 'ציון הקבלה'}
+                </span>
               </div>
             )}
             {threshold && (
@@ -145,28 +156,32 @@ function InstitutionGroup({
               </div>
             )}
           </div>
-          <p
-            className={`mt-3 font-medium ${verdict === 'הציונים עומדים בתנאי הקבלה' ? 'text-[#206345]' : verdict === 'הציונים מתחת לסף' ? 'text-[#8c2438]' : ''}`}
-          >
-            {verdict}
-          </p>
-          {gates.map((gate) => (
+          {!textOnlyGate && (
+            <p
+              data-result-reason={numberless ? '' : undefined}
+              className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
+            >
+              {presentation.text}
+              {presentation.actions?.map((action, index) => (
+                <span key={action.label}>
+                  {index > 0 && ' וב'}
+                  <button
+                    type="button"
+                    className="underline underline-offset-4"
+                    onClick={() => onInputFocus?.(action.target)}
+                  >
+                    {action.label}
+                  </button>
+                </span>
+              ))}
+            </p>
+          )}
+          {visibleGates.map((gate) => (
             <p key={gate} data-result-reason className="mt-2 text-sm text-(--text-body)">
               {gate}
             </p>
           ))}
-          {reasons.map((reason) => (
-            <p key={reason.text} data-result-reason className="mt-2 text-sm text-(--text-body)">
-              {reason.href ? (
-                <a className="underline underline-offset-4" href={reason.href}>
-                  {reason.text}
-                </a>
-              ) : (
-                reason.text
-              )}
-            </p>
-          ))}
-          {offering.institutionId === 'reichman' && (
+          {offering.institutionId === 'reichman' && !numberless && (
             <p className="mt-2 text-sm text-(--text-body)">אומדן, עד לאישור המוסד</p>
           )}
         </div>
@@ -196,10 +211,12 @@ export default function SekhemResults({
   reports,
   offerings,
   onEnquiry,
+  onInputFocus,
 }: {
   reports: AdmissionsEvaluationReport[];
   offerings: CalculatorOffering[];
   onEnquiry: Enquiry;
+  onInputFocus?: InputFocus;
 }) {
   const [selectedPrograms, setSelectedPrograms] = useState<Record<string, string>>({});
   const groups = new Map<string, Entry[]>();
@@ -246,6 +263,7 @@ export default function SekhemResults({
               setSelectedPrograms((current) => ({ ...current, [id]: programId }))
             }
             onEnquiry={onEnquiry}
+            onInputFocus={onInputFocus}
           />
         ))}
       {afeka && (

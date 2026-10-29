@@ -101,10 +101,9 @@ it.each([true, false])(
       />,
     );
     examples();
-    if (!existing)
-      fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 8', exact: true }));
+    if (!existing) fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 8' }));
     submit();
-    fireEvent.click(await screen.findByRole('button', { name: 'פיזיקה', exact: true }));
+    fireEvent.click(await screen.findByRole('button', { name: 'פיזיקה' }));
     const index = existing ? 8 : 9;
     await waitFor(() =>
       expect(document.activeElement).toBe(screen.getByLabelText(`ציון ${index}`)),

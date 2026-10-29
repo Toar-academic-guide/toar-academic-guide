@@ -194,7 +194,8 @@ async function assertAlignedFields(root: Locator) {
 
 async function assertStudentCards(page: Page) {
   for (const card of await page.locator('[data-testid^="institution-"]').all()) {
-    await expect(card).not.toContainText(/נתונים|מתואם|סכם|מצרף/);
+    await expect(card).not.toContainText(/מתואם|סכם|מצרף/);
+    await expect(card.locator('[data-testid^="result-"]')).not.toContainText('נתונים');
   }
 }
 

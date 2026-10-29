@@ -119,7 +119,7 @@ describe('API-only result rows', () => {
     expect(row.textContent).toContain(
       'עומדים בתנאי הסף. כדי לחשב את ציון הקבלה, הוסיפו ציון בפיזיקה',
     );
-    fireEvent.click(within(row).getByRole('button', { name: 'פיזיקה', exact: true }));
+    fireEvent.click(within(row).getByRole('button', { name: 'פיזיקה' }));
     expect(focus).toHaveBeenCalledWith({ subject: 'פיזיקה', field: 'grade' });
   });
   it('describes a passed published threshold without claiming a calculated score', () => {
@@ -403,7 +403,7 @@ describe('API-only result rows', () => {
     expect(row.textContent).not.toContain('חסרים תנאי קבלה לחישוב');
   });
   it.each([
-    ['haifa', 'haifa_bagrut_average', 'עדיין לא מחשבים את הסכם של חיפה כאן'],
+    ['haifa', 'haifa_bagrut_average', 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה'],
     ['technion', 'bagrut_subject_record', 'בכל מקצועות הבגרות'],
     ['bgu', 'bgu_bagrut_average', 'ממוצע הבגרות לפי כללי בן־גוריון'],
     ['tau', 'tau_physiotherapy_route', 'אפיק הקבלה לפיזיותרפיה'],
@@ -435,7 +435,7 @@ describe('API-only result rows', () => {
     expect(row.querySelector('[data-result-reason]')?.textContent).toContain(label);
     if (id === 'haifa') {
       expect(row.querySelector('[data-result-reason]')?.textContent).toBe(
-        'עדיין לא מחשבים את הסכם של חיפה כאן',
+        'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
       );
       expect(row.textContent).not.toContain('ממוצע בגרות רשמי של חיפה');
       expect(
@@ -467,7 +467,7 @@ describe('API-only result rows', () => {
     expect(screen.getByTestId('result-law-huji')).toBeTruthy();
     fireEvent.change(screen.getByLabelText('בחירת תוכנית'), { target: { value: 'psychology' } });
     expect(screen.getByTestId('result-psychology-huji').textContent).toContain(
-      'עדיין אין לנו מקור רשמי עדכני לחישוב',
+      'עדיין לא מחשבים כאן את ציון הקבלה של האוניברסיטה העברית',
     );
   });
   it.each([
@@ -528,7 +528,7 @@ describe('API-only result rows', () => {
         expect(screen.getByTestId(`institution-${id}`).textContent).not.toMatch(
           /נתונים|מתואם|סכם|מצרף/,
         );
-        if (id === 'haifa') expect(reasons).toEqual(['עדיין לא מחשבים את הסכם של חיפה כאן']);
+        if (id === 'haifa') expect(reasons).toEqual(['עדיין לא מחשבים כאן את ציון הקבלה של חיפה']);
       }
     },
   );

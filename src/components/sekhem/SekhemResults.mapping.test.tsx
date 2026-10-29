@@ -280,12 +280,15 @@ describe('real evaluator → batch POST → calculator result rows', () => {
         expect(number.textContent).toBe(formatSekhemNumber(result[field]!, profile.institutionId));
       }
       const expectedVerdict =
-        result.kind === 'needs_input'
-          ? 'חסרים נתונים לחישוב'
-          : result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold'
-            ? 'הציונים עומדים בתנאי הקבלה'
-            : 'הציונים מתחת לסף';
+        profile.institutionId === 'biu'
+          ? 'הציונים אינם עומדים בתנאי הקבלה שנבדקו.'
+          : profile.institutionId === 'afeka'
+            ? 'עומדים בתנאי הקבלה של התוכנית'
+            : result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold'
+              ? 'הציונים עומדים בתנאי הקבלה'
+              : 'הציונים מתחת לסף';
       expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
+      expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
       for (const gate of result.additionalConditions ?? [])
         if (gate.status !== 'confirmed') expect(row!.textContent).toContain(gate.label);
       expect(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' })).toBeTruthy();

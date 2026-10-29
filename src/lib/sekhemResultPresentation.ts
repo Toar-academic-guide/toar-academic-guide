@@ -1,4 +1,3 @@
-import { HAIFA_REQUIRED_INPUT_LABELS } from './haifaAdmissionsInputs';
 import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
@@ -10,7 +9,6 @@ export function formatSekhemNumber(value: number, institutionId: string): string
 }
 
 const inputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
-  ...HAIFA_REQUIRED_INPUT_LABELS,
   haifa_bagrut_average: 'ממוצע הבגרות בחיפה',
   bagrut_subject_record: 'יחידות וציונים בכל מקצועות הבגרות',
   bagrut_average: 'ממוצע הבגרות',
@@ -47,55 +45,137 @@ const inputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
   huji_medicine_preparatory_conversion: 'המרת ממוצע המכינה לסולם העברית',
   huji_medicine_qualification: 'תנאי הקבלה לרפואה בעברית',
   // A composite is never requested, including when an API route names it as missing.
-  huji_medicine_cognitive_score: 'נתוני המסלול לרפואה בעברית',
-  institution_weighted_score: 'נתוני החישוב של התוכנית',
-  bgu_engineering_details: 'ציוני הבגרות ונתוני המכינה או ההנדסאי להנדסה בבן־גוריון',
+  huji_medicine_cognitive_score: 'פרטי המסלול לרפואה בעברית',
+  institution_weighted_score: 'פרטי הקבלה של התוכנית',
+  bgu_engineering_details: 'ציוני הבגרות ופרטי המכינה או ההנדסאי להנדסה בבן־גוריון',
   bgu_engineering_physics_course: 'השלמת פיזיקה להנדסה בבן־גוריון',
 };
 
-const inputTargets: Partial<Record<AdmissionsRequiredInput, string>> = {
-  haifa_bagrut_average: '#haifaBagrutAverage',
-  bagrut_subject_record: '#sekhem-bagrut-subjects',
-  psychometric_overall: '#psychometric-total',
-  psychometric_math: '#psychometric-quantitative',
-  psychometric_verbal: '#psychometric-verbal',
-  psychometric_english: '#psychometric-english',
+export type ResultInputTarget = { subject: string; field: 'grade' | 'units' } | { inputId: string };
+
+type InputAction = { label: string; target: ResultInputTarget };
+const subjects: Record<string, string> = {
+  math: 'מתמטיקה',
+  english: 'אנגלית',
+  physics: 'פיזיקה',
+  cs: 'מדעי המחשב',
+};
+const psychometricTargets: Record<string, string> = {
+  psychometric_overall: 'psychometric-total',
+  psychometric_math: 'psychometric-quantitative',
+  psychometric_verbal: 'psychometric-verbal',
+  psychometric_english: 'psychometric-english',
+};
+const psychometricLabels: Record<string, string> = {
+  psychometric_overall: 'הפסיכומטרי הכללי',
+  psychometric_math: 'החלק הכמותי',
+  psychometric_verbal: 'החלק המילולי',
+  psychometric_english: 'החלק באנגלית',
 };
 
-export function resultInputReasons(
-  result: AdmissionsEvaluationResult,
-): { text: string; href?: string }[] {
-  if (
-    result.linkedInstitutionId === 'haifa' &&
-    !Number.isFinite(result.score) &&
-    !Number.isFinite(result.threshold)
-  )
-    return [{ text: 'עדיין לא מחשבים את הסכם של חיפה כאן' }];
+function requiredActions(result: AdmissionsEvaluationResult): InputAction[] {
+  const actions: InputAction[] = [];
+  for (const key of new Set(result.requiredInputs ?? [])) {
+    const [subject, field] = key.split('_');
+    if (subjects[subject] && (field === 'grade' || field === 'units')) {
+      if (
+        !actions.some(
+          (item) => 'subject' in item.target && item.target.subject === subjects[subject],
+        )
+      )
+        actions.push({ label: subjects[subject], target: { subject: subjects[subject], field } });
+    } else if (psychometricTargets[key]) {
+      actions.push({
+        label: psychometricLabels[key],
+        target: { inputId: psychometricTargets[key] },
+      });
+    }
+  }
+  return actions;
+}
+
+const institutionNames: Record<string, string> = {
+  haifa: 'חיפה',
+  tau: 'תל אביב',
+  huji: 'האוניברסיטה העברית',
+  bgu: 'בן־גוריון',
+  technion: 'הטכניון',
+  reichman: 'רייכמן',
+  biu: 'בר־אילן',
+  afeka: 'אפקה',
+  hit: 'HIT',
+};
+
+export function resultSourceReason(result: AdmissionsEvaluationResult): string {
+  const institution = institutionNames[result.linkedInstitutionId ?? result.institution.id];
+  return institution
+    ? `עדיין לא מחשבים כאן את ציון הקבלה של ${institution}`
+    : 'לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו.';
+}
+
+export function resultInputReasons(result: AdmissionsEvaluationResult): string[] {
   return [...new Set(result.requiredInputs ?? [])].flatMap((key) => {
     if (!inputLabels[key]) return [];
-    const text =
-      result.linkedInstitutionId === 'technion' && key === 'bagrut_subject_record'
-        ? 'לחישוב הסכם בטכניון דרושים ציונים ויחידות בכל מקצועות הבגרות.'
-        : `לחישוב צריך להשלים: ${inputLabels[key]}.`;
-    return [{ text, href: inputTargets[key] }];
+    return [`כדי לחשב את ציון הקבלה, יש להשלים: ${inputLabels[key]}.`];
   });
 }
 
-/** Source diagnostics belong in the API; students get the consequence for their calculation. */
-export function resultSourceReason(result: AdmissionsEvaluationResult): string {
-  switch (result.kind) {
-    case 'authority_unavailable':
-    case 'tracked_missing_rule':
-    case 'degraded':
-      return 'עדיין אין לנו מקור רשמי עדכני לחישוב.';
-    case 'unsupported':
-      return 'עדיין לא מחשבים סכם לתוכנית הזו כאן.';
-    case 'requirements_only':
-    case 'open_admission':
-      return 'בתוכנית הזו נבדקים תנאי הקבלה בלי חישוב סכם.';
-    case 'needs_input':
-      return 'חסרים ציונים או פרטים נוספים לחישוב הסכם.';
-    default:
-      return 'לא התקבלו כל הנתונים הדרושים לחישוב הסכם.';
+type CardPresentation = { text: string; actions?: InputAction[]; tone?: 'positive' | 'negative' };
+
+/** A verdict never implies that the API returned a calculated score. */
+export function resultPresentation(result: AdmissionsEvaluationResult): CardPresentation {
+  const score = Number.isFinite(result.score);
+  const threshold = Number.isFinite(result.threshold);
+  if (result.linkedInstitutionId === 'haifa' && !score && !threshold)
+    return { text: resultSourceReason(result) };
+
+  if (
+    ['authority_unavailable', 'tracked_missing_rule', 'degraded', 'unsupported'].includes(
+      result.kind,
+    )
+  )
+    return { text: resultSourceReason(result) };
+
+  // A below verdict takes precedence if an inconsistent response also claims a passed floor.
+  if (result.decision === 'below' || result.scoreAssessment === 'below_threshold') {
+    if (score || threshold)
+      return {
+        text:
+          result.kind === 'estimated' && score && threshold
+            ? 'ציון הקבלה המשוער שלכם נמוך מהסף'
+            : 'הציונים מתחת לסף',
+        tone: 'negative',
+      };
+    const reasons = resultInputReasons(result);
+    return {
+      text: reasons.join(' ') || 'הציונים אינם עומדים בתנאי הקבלה שנבדקו.',
+      tone: 'negative',
+    };
   }
+  if (result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold') {
+    if (result.requiredInputs?.length) {
+      const actions = requiredActions(result);
+      return actions.length
+        ? {
+            text: 'עומדים בתנאי הסף. כדי לחשב את ציון הקבלה, הוסיפו ציון ב',
+            actions,
+            tone: 'positive',
+          }
+        : {
+            text: `עומדים בתנאי הסף. ${resultInputReasons(result).join(' ') || 'לחישוב ציון הקבלה דרושים פרטים נוספים על מסלול הקבלה.'}`,
+            tone: 'positive',
+          };
+    }
+    if (!score && threshold)
+      return {
+        text: 'עומדים בתנאי הסף. לתוכנית הזו עוד אין חישוב ציון קבלה אצלנו, ולכן מוצג רק סף הקבלה.',
+        tone: 'positive',
+      };
+    return {
+      text: score ? 'הציונים עומדים בתנאי הקבלה' : 'עומדים בתנאי הקבלה של התוכנית',
+      tone: 'positive',
+    };
+  }
+  const reasons = resultInputReasons(result);
+  return { text: reasons.join(' ') || resultSourceReason(result) };
 }

@@ -1,8 +1,10 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import BagrutSubjectRows, { type BagrutSubjectRow } from '@/components/BagrutSubjectRows';
 import EnquiryForm from '@/components/EnquiryForm';
+import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
+import type { ResultInputTarget } from '@/lib/sekhemResultPresentation';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
@@ -70,6 +72,39 @@ export default function SekhemCalculator({
     offering: CalculatorOffering;
     report: AdmissionsEvaluationReport;
   } | null>(null);
+  const subjectFields = useRef<HTMLDivElement>(null);
+  const pendingFocus = useRef<{ index: number; field: 'grade' | 'units' } | null>(null);
+  function focusSubject(index: number, field: 'grade' | 'units') {
+    const label = `${field === 'grade' ? 'ציון' : 'יחידות'} ${index + 1}`;
+    const input = subjectFields.current?.querySelector<HTMLInputElement>(`[aria-label="${label}"]`);
+    input?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+    input?.focus({ preventScroll: true });
+  }
+  useEffect(() => {
+    const target = pendingFocus.current;
+    if (target) {
+      focusSubject(target.index, target.field);
+      pendingFocus.current = null;
+    }
+  }, [rows]);
+
+  function focusResultInput(target: ResultInputTarget) {
+    if ('inputId' in target) {
+      const input = document.getElementById(target.inputId);
+      input?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
+      input?.focus({ preventScroll: true });
+      return;
+    }
+    const index = rows.findIndex(
+      (row) => subjectIdForWizardLabel(row.label) === subjectIdForWizardLabel(target.subject),
+    );
+    if (index >= 0) focusSubject(index, target.field);
+    else {
+      invalidate();
+      pendingFocus.current = { index: rows.length, field: target.field };
+      setRows([...rows, { label: target.subject, units: '', grade: '', assessmentKind: 'exam' }]);
+    }
+  }
   const generation = useRef(0);
   const chosen = offerings.filter((row) => !programId || row.programId === programId);
   const programs = [...new Map(offerings.map((row) => [row.programId, row.programName])).entries()];
@@ -195,7 +230,7 @@ export default function SekhemCalculator({
             ערכים לדוגמה
           </button>
         </div>
-        <div id="sekhem-bagrut-subjects" tabIndex={-1}>
+        <div ref={subjectFields} id="sekhem-bagrut-subjects" tabIndex={-1}>
           <BagrutSubjectRows
             rows={rows}
             onChange={(next) => {
@@ -342,6 +377,7 @@ export default function SekhemCalculator({
         <SekhemResults
           reports={reports}
           offerings={chosen}
+          onInputFocus={focusResultInput}
           onEnquiry={(offering, report) => setEnquiry({ offering, report })}
         />
       )}
