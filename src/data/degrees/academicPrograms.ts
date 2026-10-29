@@ -2025,7 +2025,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 705 },
+    thresholds: { haifa: 700 },
     institutionDetails: D['haifa_cs'],
   },
   {
@@ -2159,7 +2159,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.statistics,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 650 },
+    thresholds: { haifa: 630 },
     institutionDetails: D['haifa_statistics'],
   },
   {

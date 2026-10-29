@@ -349,19 +349,40 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
-    if (
-      institution.id === 'haifa' &&
-      (args.haifaAverageIsProxy ||
-        input.extraInputs?.haifaBagrutAverage === undefined ||
-        ['psychology', 'haifa_psychology'].includes(program.id))
-    ) {
-      const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
-        averageIsProxy: args.haifaAverageIsProxy,
-        capability: entry.capability,
-        input,
-      });
-      if (missingRule) {
-        results[index] = missingRule;
+    if (institution.id === 'haifa') {
+      const { calculateHaifaBagrutAverage } = await import('@/data/admissions/haifaAdmissionFormula');
+      const average =
+        (!args.haifaAverageIsProxy ? input.extraInputs?.haifaBagrutAverage : undefined) ??
+        calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
+      if (average !== undefined)
+        input.extraInputs = { ...input.extraInputs, haifaBagrutAverage: average };
+      if (
+        average === undefined ||
+        (program.id === 'haifa_infosystems' &&
+          input.extraInputs?.haifaInformationSystemsTrack === 'single_major')
+      ) {
+        const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
+          averageIsProxy: args.haifaAverageIsProxy,
+          capability: entry.capability,
+          input,
+        });
+        if (missingRule) {
+          results[index] = missingRule;
+          continue;
+        }
+      }
+      if (average !== undefined && entry.capability === 'needs_input' && entry.exactTarget) {
+        const exactTarget = entry.exactTarget;
+        exactTasks.push(async () => {
+          results[index] = await evaluateExactResult({
+            input,
+            program,
+            institution,
+            exactTarget,
+            fetcher,
+            now,
+          });
+        });
         continue;
       }
     }
@@ -982,6 +1003,12 @@ async function evaluateExactScores(args: {
         return requiredInputsResult(institution, ['psychometric_overall']);
       const average = requestedInput.extraInputs?.haifaBagrutAverage;
       if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
+      const { calculateHaifaAdmissionScore, haifaUsesMathPsychometric, HAIFA_FORMULA_SOURCE_URL } =
+        await import('@/data/admissions/haifaAdmissionFormula');
+      const policy = getHaifaProgrammePolicy(
+        program.id,
+        requestedInput.extraInputs?.haifaInformationSystemsTrack,
+      );
       const missingScoreInputs: AdmissionsRequiredInput[] = [];
       for (const [key, id] of [
         ['haifaBagrutYear', 'haifa_bagrut_year'],
@@ -990,17 +1017,17 @@ async function evaluateExactScores(args: {
         ['psychometricVerbal', 'psychometric_verbal'],
         ['psychometricEnglish', 'psychometric_english'],
       ] as const)
-        if (requestedInput.extraInputs?.[key] === undefined) missingScoreInputs.push(id);
+        if (
+          requestedInput.extraInputs?.[key] === undefined &&
+          (key === 'haifaBagrutYear' ||
+            key === 'haifaPsychometricYear' ||
+            (policy && haifaUsesMathPsychometric(policy.programme)))
+        )
+          missingScoreInputs.push(id);
       if (missingScoreInputs.length) return requiredInputsResult(institution, missingScoreInputs);
-      const policy = getHaifaProgrammePolicy(
-        program.id,
-        requestedInput.extraInputs?.haifaInformationSystemsTrack,
-      );
       const track =
         program.id === 'haifa_infosystems'
-          ? getHaifaInformationSystemsTrack(
-              requestedInput.extraInputs?.haifaInformationSystemsTrack,
-            )
+          ? getHaifaInformationSystemsTrack(requestedInput.extraInputs?.haifaInformationSystemsTrack)
           : undefined;
       const gates = evaluateHaifaProgrammePolicy({
         assessment: 'scores',
@@ -1029,49 +1056,52 @@ async function evaluateExactScores(args: {
           nextAction: 'בדקו את מסלול ההרשמה מול החוג.',
           officialUrls: policy ? [policy.source.url] : [],
         };
-      const proof = await runHaifaAdmissionsProof({
-        assessment: 'scores',
-        fetcher: timedFetcher,
-        now,
-        program: exactTarget.program,
-        applicant: {
-          bagrutAverage: average,
-          extraInputs: requestedInput.extraInputs,
-          bagrutYear: requestedInput.extraInputs?.haifaBagrutYear?.toString(),
-          psychometric: requestedInput.psychometric,
-          psychometricYear: requestedInput.extraInputs?.haifaPsychometricYear?.toString(),
-          psychometricSubscores: {
-            english: requestedInput.extraInputs?.psychometricEnglish ?? 0,
-            math: requestedInput.extraInputs?.psychometricMath ?? 0,
-            verbal: requestedInput.extraInputs?.psychometricVerbal ?? 0,
-          },
-        },
+      const calculation = calculateHaifaAdmissionScore({
+        programme: policy.programme,
+        bagrutAverage: average,
+        bagrutYear: requestedInput.extraInputs!.haifaBagrutYear!,
+        psychometricYear: requestedInput.extraInputs!.haifaPsychometricYear!,
+        psychometric: requestedInput.psychometric,
+        quantitative: requestedInput.extraInputs?.psychometricMath,
+        verbal: requestedInput.extraInputs?.psychometricVerbal,
+        english: requestedInput.extraInputs?.psychometricEnglish,
       });
-      const baseResult = normalizeExactProofResult({
-        institution,
-        proof: proof.normalizedPayload,
-        explanationPrefix: track
-          ? `מערכות מידע בחיפה — ${track.label}`
-          : 'מקור רשמי של אוניברסיטת חיפה',
-      });
-      if (baseResult.capability !== 'exact' || baseResult.score === undefined) return baseResult;
-      if (baseResult.threshold !== policy.score.acceptance)
+      if (calculation.kind !== 'calculated')
         return {
-          ...baseResult,
-          capability: 'authority_unavailable',
-          kind: 'authority_unavailable',
+          institution: publicInstitutionShape(institution),
+          linkedInstitutionId: institution.id,
+          capability: 'tracked_missing_rule',
+          kind: 'tracked_missing_rule',
           decision: 'unknown',
           confidence: 'low',
-          sourceLabel: 'הסף הרשמי השתנה',
-          explanation: 'סף המחשבון אינו תואם את תנאי החוג שנבדקו. נדרש עדכון לפני קביעת זכאות.',
-          nextAction: 'בדקו את הסף בעמוד החוג הרשמי.',
-          officialUrls: [policy.source.url],
+          sourceLabel: 'אין מספיק מידע',
+          explanation:
+            calculation.kind === 'expired_psychometric'
+              ? 'לא ניתן לחשב את ציון הקבלה בחיפה עם פסיכומטרי מלפני יותר מ־10 שנים.'
+              : 'חסרים נתונים לחישוב ציון הקבלה בחיפה.',
+          nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+          officialUrls: [HAIFA_FORMULA_SOURCE_URL, policy.source.url],
         };
+      const baseResult: AdmissionsEvaluationResult = {
+        institution: publicInstitutionShape(institution),
+        linkedInstitutionId: institution.id,
+        capability: 'exact',
+        kind: 'exact',
+        decision: calculation.score >= policy.score.acceptance ? 'accepted' : 'below',
+        confidence: 'high',
+        score: calculation.score,
+        scoreLabel: 'ציון משוקלל',
+        threshold: policy.score.acceptance,
+        sourceLabel: 'חישוב לפי תנאי הקבלה של חיפה',
+        explanation: 'ציון הקבלה חושב לפי נוסחת אוניברסיטת חיפה.',
+        nextAction: 'בדקו את תנאי ההרשמה בעמוד החוג הרשמי.',
+        officialUrls: [HAIFA_FORMULA_SOURCE_URL, policy.source.url],
+      };
       const eligibility = evaluateHaifaProgrammePolicy({
         assessment: 'scores',
         programId: program.id,
         input: requestedInput,
-        score: baseResult.score,
+        score: calculation.score,
         now,
       });
       if (eligibility.kind === 'below')
@@ -1082,6 +1112,7 @@ async function evaluateExactScores(args: {
             unmetRequirements: eligibility.reasons,
             requirementsUrl: policy.source.url,
           }),
+          officialUrls: [HAIFA_FORMULA_SOURCE_URL, policy.source.url],
         };
       if (eligibility.kind !== 'eligible' && eligibility.kind !== 'pending') return baseResult;
       return {
@@ -1098,6 +1129,7 @@ async function evaluateExactScores(args: {
         nextAction:
           eligibility.steps.join(' ') || 'בדקו את מצב ההרשמה ואת תנאי המסמכים בעמוד החוג הרשמי.',
         officialUrls: [
+          HAIFA_FORMULA_SOURCE_URL,
           policy.source.url,
           'https://admissions.haifa.ac.il/hebrew-language-proficiency/',
           'https://admissions.haifa.ac.il/english-language-proficiency/',

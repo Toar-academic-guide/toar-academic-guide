@@ -1,0 +1,1382 @@
+{
+ "data": {
+  "optional": [
+   {
+    "subject": "810",
+    "subjectName": "אדריכלות"
+   },
+   {
+    "subject": "811",
+    "subjectName": "אדריכלות ועיצוב נוף"
+   },
+   {
+    "subject": "812",
+    "subjectName": "אדריכלות ועיצוב פנים"
+   },
+   {
+    "subject": "786",
+    "subjectName": "אוטו-טק - מערכות ממוחשבות ברכב"
+   },
+   {
+    "subject": "813",
+    "subjectName": "אומנויות הבישול המלונאי"
+   },
+   {
+    "subject": "50",
+    "subjectName": "אומנות"
+   },
+   {
+    "subject": "61",
+    "subjectName": "אומנות הקולנוע"
+   },
+   {
+    "subject": "816",
+    "subjectName": "אומנות שימושית"
+   },
+   {
+    "subject": "814",
+    "subjectName": "אופטיקה יישומית"
+   },
+   {
+    "subject": "570",
+    "subjectName": "אידיש"
+   },
+   {
+    "subject": "571",
+    "subjectName": "איטלקית"
+   },
+   {
+    "subject": "53",
+    "subjectName": "אלקטרוניקה"
+   },
+   {
+    "subject": "815",
+    "subjectName": "אלקטרוניקה ומחשבים"
+   },
+   {
+    "subject": "218",
+    "subjectName": "אלקטרוניקה כללית ותקשורת"
+   },
+   {
+    "subject": "572",
+    "subjectName": "אמהרית"
+   },
+   {
+    "subject": "777",
+    "subjectName": "אפייה מלונאית"
+   },
+   {
+    "subject": "245",
+    "subjectName": "אפסנאות וטכנולוגיה"
+   },
+   {
+    "subject": "817",
+    "subjectName": "ארגון וניהול תעשייתי"
+   },
+   {
+    "subject": "588",
+    "subjectName": "בולגרית"
+   },
+   {
+    "subject": "818",
+    "subjectName": "בזק"
+   },
+   {
+    "subject": "283",
+    "subjectName": "ביוטכנולוגיה"
+   },
+   {
+    "subject": "789",
+    "subjectName": "ביוכימיה"
+   },
+   {
+    "subject": "43",
+    "subjectName": "ביולוגיה"
+   },
+   {
+    "subject": "45",
+    "subjectName": "ביולוגיה חקלאית"
+   },
+   {
+    "subject": "235",
+    "subjectName": "ביולוגיה לקוסמטיקה"
+   },
+   {
+    "subject": "95",
+    "subjectName": "בין תחומי"
+   },
+   {
+    "subject": "819",
+    "subjectName": "בקרת מכונות"
+   },
+   {
+    "subject": "287",
+    "subjectName": "בקרת תהליכים"
+   },
+   {
+    "subject": "230",
+    "subjectName": "בריאות הילד וסביבתו"
+   },
+   {
+    "subject": "57",
+    "subjectName": "גיאוגרפיה"
+   },
+   {
+    "subject": "62",
+    "subjectName": "גיאולוגיה"
+   },
+   {
+    "subject": "303",
+    "subjectName": "גילוף עץ עיצוב וטכנולוגיה"
+   },
+   {
+    "subject": "573",
+    "subjectName": "גרוזית"
+   },
+   {
+    "subject": "574",
+    "subjectName": "גרמנית"
+   },
+   {
+    "subject": "820",
+    "subjectName": "גרפיקה ממחושבת"
+   },
+   {
+    "subject": "253",
+    "subjectName": "גרפיקה עיצוב גרפי"
+   },
+   {
+    "subject": "254",
+    "subjectName": "גרפיקה עיצוב וטכנולוגיה"
+   },
+   {
+    "subject": "73",
+    "subjectName": "דת נוצרית"
+   },
+   {
+    "subject": "782",
+    "subjectName": "הגנת סייבר"
+   },
+   {
+    "subject": "821",
+    "subjectName": "הדפסת אופסט"
+   },
+   {
+    "subject": "575",
+    "subjectName": "הולנדית"
+   },
+   {
+    "subject": "576",
+    "subjectName": "הונגרית"
+   },
+   {
+    "subject": "822",
+    "subjectName": "החינוך בגיל הרך"
+   },
+   {
+    "subject": "481",
+    "subjectName": "היסטוריה וגיאוגרפיה"
+   },
+   {
+    "subject": "295",
+    "subjectName": "המטוס ומערכותיו"
+   },
+   {
+    "subject": "206",
+    "subjectName": "המסוק ומערכותיו"
+   },
+   {
+    "subject": "774",
+    "subjectName": "הנדסת אוטוטק"
+   },
+   {
+    "subject": "862",
+    "subjectName": "הפקות בתקשורת"
+   },
+   {
+    "subject": "823",
+    "subjectName": "הרכבה לאופסט"
+   },
+   {
+    "subject": "779",
+    "subjectName": "השפעה ויוזמה חברתית"
+   },
+   {
+    "subject": "248",
+    "subjectName": "התמחות פקידות קבלה"
+   },
+   {
+    "subject": "13",
+    "subjectName": "חבור עברי"
+   },
+   {
+    "subject": "72",
+    "subjectName": "חוק ומשפט"
+   },
+   {
+    "subject": "41",
+    "subjectName": "חינוך גופני"
+   },
+   {
+    "subject": "487",
+    "subjectName": "חינוך גופני וביולוגיה"
+   },
+   {
+    "subject": "229",
+    "subjectName": "חינוך הילד בגיל הרך"
+   },
+   {
+    "subject": "261",
+    "subjectName": "חישוב סטטי וקונסטרוקציות"
+   },
+   {
+    "subject": "262",
+    "subjectName": "חישובי קונסטרוקציות"
+   },
+   {
+    "subject": "46",
+    "subjectName": "חקלאות"
+   },
+   {
+    "subject": "80",
+    "subjectName": "חקלאות מעשית"
+   },
+   {
+    "subject": "824",
+    "subjectName": "חשבונאות"
+   },
+   {
+    "subject": "293",
+    "subjectName": "חשמל ואלקטרוניקה ברכב"
+   },
+   {
+    "subject": "825",
+    "subjectName": "חשמל ובקרה ימיים"
+   },
+   {
+    "subject": "237",
+    "subjectName": "טיפול בחולה פנימי וחולה כירורגי"
+   },
+   {
+    "subject": "826",
+    "subjectName": "טכנאות שיניים"
+   },
+   {
+    "subject": "313",
+    "subjectName": "טכנולוגיה ובדיקת מזון"
+   },
+   {
+    "subject": "895",
+    "subjectName": "טכנולוגיה מוכללת"
+   },
+   {
+    "subject": "267",
+    "subjectName": "טכנולוגיה של הדפוס"
+   },
+   {
+    "subject": "308",
+    "subjectName": "טכנולוגיה של הקולנוע והטלוויזיה"
+   },
+   {
+    "subject": "242",
+    "subjectName": "טכנולוגיה של טכנאות שיניים"
+   },
+   {
+    "subject": "887",
+    "subjectName": "טכנולוגיה של מזון"
+   },
+   {
+    "subject": "827",
+    "subjectName": "טכנולוגיית בנייה"
+   },
+   {
+    "subject": "828",
+    "subjectName": "טלוויזיה וקולנוע"
+   },
+   {
+    "subject": "4",
+    "subjectName": "יהדות"
+   },
+   {
+    "subject": "77",
+    "subjectName": "יהדות ממ\"ד"
+   },
+   {
+    "subject": "771",
+    "subjectName": "יזמות עסקית"
+   },
+   {
+    "subject": "829",
+    "subjectName": "ייצור רהיטים ונגרות בניין"
+   },
+   {
+    "subject": "775",
+    "subjectName": "יישומי אוטוטק"
+   },
+   {
+    "subject": "783",
+    "subjectName": "יישומים בביוטכנולוגיה"
+   },
+   {
+    "subject": "830",
+    "subjectName": "ימאות"
+   },
+   {
+    "subject": "310",
+    "subjectName": "ימאות ומטאורולוגיה"
+   },
+   {
+    "subject": "801",
+    "subjectName": "ימאות ספינות"
+   },
+   {
+    "subject": "778",
+    "subjectName": "יסודות בעיצוב שיער"
+   },
+   {
+    "subject": "42",
+    "subjectName": "יסודות תורת המחשב"
+   },
+   {
+    "subject": "37",
+    "subjectName": "כימיה"
+   },
+   {
+    "subject": "277",
+    "subjectName": "כימיה אנליטית ותורת המכשירים"
+   },
+   {
+    "subject": "282",
+    "subjectName": "כימיה וביולוגיה"
+   },
+   {
+    "subject": "488",
+    "subjectName": "כימיה וביולוגיה"
+   },
+   {
+    "subject": "232",
+    "subjectName": "כימיה וטקסטיל"
+   },
+   {
+    "subject": "499",
+    "subjectName": "כימיה ותורת הקרקע"
+   },
+   {
+    "subject": "79",
+    "subjectName": "כימיה חקלאית"
+   },
+   {
+    "subject": "831",
+    "subjectName": "כימיה טכנולוגית"
+   },
+   {
+    "subject": "279",
+    "subjectName": "כימיה כללית ואורגנית"
+   },
+   {
+    "subject": "278",
+    "subjectName": "כימיה כללית ואנאורגנית"
+   },
+   {
+    "subject": "276",
+    "subjectName": "כימיה כללית ופעולות יסוד"
+   },
+   {
+    "subject": "236",
+    "subjectName": "כימיה לקוסמטיקה"
+   },
+   {
+    "subject": "63",
+    "subjectName": "כלכלה"
+   },
+   {
+    "subject": "888",
+    "subjectName": "כלכלה ומשק"
+   },
+   {
+    "subject": "268",
+    "subjectName": "כתב ומתווה"
+   },
+   {
+    "subject": "317",
+    "subjectName": "כתבנות"
+   },
+   {
+    "subject": "999",
+    "subjectName": "לא ידוע"
+   },
+   {
+    "subject": "587",
+    "subjectName": "לדינו"
+   },
+   {
+    "subject": "577",
+    "subjectName": "לטינית / רומית"
+   },
+   {
+    "subject": "12",
+    "subjectName": "לימודי ארץ ישראל"
+   },
+   {
+    "subject": "75",
+    "subjectName": "לשון"
+   },
+   {
+    "subject": "67",
+    "subjectName": "לשון ותקשורת"
+   },
+   {
+    "subject": "213",
+    "subjectName": "מבוא למחשבים וענ\"א"
+   },
+   {
+    "subject": "222",
+    "subjectName": "מבוא למחשבים ותכנות"
+   },
+   {
+    "subject": "890",
+    "subjectName": "מבוא למקצועות האופנה"
+   },
+   {
+    "subject": "240",
+    "subjectName": "מבוא לרפואת שיניים"
+   },
+   {
+    "subject": "56",
+    "subjectName": "מבוא לתקשורת המונים"
+   },
+   {
+    "subject": "897",
+    "subjectName": "מבנה אוניות"
+   },
+   {
+    "subject": "225",
+    "subjectName": "מדע התזונה והאירוח"
+   },
+   {
+    "subject": "60",
+    "subjectName": "מדע וטכנולוגיה בחברה"
+   },
+   {
+    "subject": "704",
+    "subjectName": "מדע וטכנולוגיה לכל"
+   },
+   {
+    "subject": "703",
+    "subjectName": "מדע חישובי"
+   },
+   {
+    "subject": "802",
+    "subjectName": "מדעי הבריאות"
+   },
+   {
+    "subject": "889",
+    "subjectName": "מדעי הבריאות"
+   },
+   {
+    "subject": "807",
+    "subjectName": "מדעי ההנדסה א'"
+   },
+   {
+    "subject": "49",
+    "subjectName": "מדעי החברה"
+   },
+   {
+    "subject": "44",
+    "subjectName": "מדעי החיים וחקלאות"
+   },
+   {
+    "subject": "894",
+    "subjectName": "מדעי הטכנולוגיה"
+   },
+   {
+    "subject": "793",
+    "subjectName": "מדעי הטכנולוגיה"
+   },
+   {
+    "subject": "800",
+    "subjectName": "מדעי הים יסודות"
+   },
+   {
+    "subject": "66",
+    "subjectName": "מדעי המדינה"
+   },
+   {
+    "subject": "899",
+    "subjectName": "מדעי המחשב"
+   },
+   {
+    "subject": "64",
+    "subjectName": "מדעי הסביבה"
+   },
+   {
+    "subject": "798",
+    "subjectName": "מדעי התזונה"
+   },
+   {
+    "subject": "776",
+    "subjectName": "מדעי תחבורה מתקדמת"
+   },
+   {
+    "subject": "48",
+    "subjectName": "מוסיקה"
+   },
+   {
+    "subject": "27",
+    "subjectName": "מורשת דרוזית"
+   },
+   {
+    "subject": "503",
+    "subjectName": "מורשת דת ותרבות במזרח התיכון"
+   },
+   {
+    "subject": "74",
+    "subjectName": "מורשת ודת האיסלאם"
+   },
+   {
+    "subject": "316",
+    "subjectName": "מזכירות"
+   },
+   {
+    "subject": "243",
+    "subjectName": "מזכירות ומנהל"
+   },
+   {
+    "subject": "68",
+    "subjectName": "מחול"
+   },
+   {
+    "subject": "833",
+    "subjectName": "מחשבים ומערכות"
+   },
+   {
+    "subject": "38",
+    "subjectName": "מחשבת ישראל לבי\"ס דתי"
+   },
+   {
+    "subject": "39",
+    "subjectName": "מחשבת ישראל לבי\"ס כללי"
+   },
+   {
+    "subject": "834",
+    "subjectName": "מחשוב ובקרה"
+   },
+   {
+    "subject": "835",
+    "subjectName": "מחשוב ובקרה בהתיישבות"
+   },
+   {
+    "subject": "52",
+    "subjectName": "מטאורולוגיה"
+   },
+   {
+    "subject": "785",
+    "subjectName": "מידע וידע באינטרנט"
+   },
+   {
+    "subject": "784",
+    "subjectName": "מידע ונתונים"
+   },
+   {
+    "subject": "90",
+    "subjectName": "מיומנויות התרגום"
+   },
+   {
+    "subject": "298",
+    "subjectName": "מיכון חקלאי ומערכות"
+   },
+   {
+    "subject": "836",
+    "subjectName": "מיקרו ביולוגיה"
+   },
+   {
+    "subject": "318",
+    "subjectName": "מכון חקלאי (יד נתן)"
+   },
+   {
+    "subject": "837",
+    "subjectName": "מכונאות ימית"
+   },
+   {
+    "subject": "209",
+    "subjectName": "מכונאות כללית"
+   },
+   {
+    "subject": "285",
+    "subjectName": "מכונאות מיכון"
+   },
+   {
+    "subject": "284",
+    "subjectName": "מכונאות מיכון ותרמודינמיקה"
+   },
+   {
+    "subject": "202",
+    "subjectName": "מכונות חום ותרמודינמיקה"
+   },
+   {
+    "subject": "300",
+    "subjectName": "מכונות חקלאיות וטרקטורים"
+   },
+   {
+    "subject": "805",
+    "subjectName": "מכטרוניקה"
+   },
+   {
+    "subject": "896",
+    "subjectName": "מכניקה הנדסית"
+   },
+   {
+    "subject": "838",
+    "subjectName": "מכניקה הנדסית"
+   },
+   {
+    "subject": "315",
+    "subjectName": "מכשירים ופיקוד"
+   },
+   {
+    "subject": "893",
+    "subjectName": "מכשירנות"
+   },
+   {
+    "subject": "799",
+    "subjectName": "מנהיגות ויזמות"
+   },
+   {
+    "subject": "839",
+    "subjectName": "מנהל וכלכלה"
+   },
+   {
+    "subject": "898",
+    "subjectName": "מנהל תיירותי"
+   },
+   {
+    "subject": "296",
+    "subjectName": "מנועי מטובים ותרמודינמיקה"
+   },
+   {
+    "subject": "291",
+    "subjectName": "מנועים ומערכות הידראוליות"
+   },
+   {
+    "subject": "840",
+    "subjectName": "מערכות אלקטרו-אופטיות"
+   },
+   {
+    "subject": "841",
+    "subjectName": "מערכות אלקטרוניות"
+   },
+   {
+    "subject": "787",
+    "subjectName": "מערכות אלקטרוניות וחשמל"
+   },
+   {
+    "subject": "216",
+    "subjectName": "מערכות בזק"
+   },
+   {
+    "subject": "842",
+    "subjectName": "מערכות ביוטכנולוגיה"
+   },
+   {
+    "subject": "224",
+    "subjectName": "מערכות בקרה ממוחשבות"
+   },
+   {
+    "subject": "843",
+    "subjectName": "מערכות בקרת תהליכים"
+   },
+   {
+    "subject": "844",
+    "subjectName": "מערכות הספק"
+   },
+   {
+    "subject": "299",
+    "subjectName": "מערכות ומכונאות בחקלאות"
+   },
+   {
+    "subject": "845",
+    "subjectName": "מערכות חשמל"
+   },
+   {
+    "subject": "220",
+    "subjectName": "מערכות חשמל ובקרה ימיות"
+   },
+   {
+    "subject": "208",
+    "subjectName": "מערכות כוח ועבודה"
+   },
+   {
+    "subject": "790",
+    "subjectName": "מערכות מידע"
+   },
+   {
+    "subject": "846",
+    "subjectName": "מערכות מיכון חקלאי"
+   },
+   {
+    "subject": "312",
+    "subjectName": "מערכות מכשור ובקרה"
+   },
+   {
+    "subject": "847",
+    "subjectName": "מערכות ממוחה"
+   },
+   {
+    "subject": "848",
+    "subjectName": "מערכות פיקוד ובקרה"
+   },
+   {
+    "subject": "219",
+    "subjectName": "מערכות פיקוד ובקרה - מחשבים"
+   },
+   {
+    "subject": "849",
+    "subjectName": "מערכות רכב"
+   },
+   {
+    "subject": "806",
+    "subjectName": "מערכות רפואיות"
+   },
+   {
+    "subject": "221",
+    "subjectName": "מערכות תוכנה וחומרה"
+   },
+   {
+    "subject": "850",
+    "subjectName": "מערכות תיב\"מ"
+   },
+   {
+    "subject": "851",
+    "subjectName": "מערכות תיעוש הבגד"
+   },
+   {
+    "subject": "791",
+    "subjectName": "מערכות תיקשוב"
+   },
+   {
+    "subject": "852",
+    "subjectName": "מערכות תכנון וייצור"
+   },
+   {
+    "subject": "853",
+    "subjectName": "מערכות תעופה"
+   },
+   {
+    "subject": "204",
+    "subjectName": "מערכות תעופה ואביזראות מטוסים"
+   },
+   {
+    "subject": "217",
+    "subjectName": "מערכות תקשורת"
+   },
+   {
+    "subject": "490",
+    "subjectName": "מתמטיקה ויסודות תורת המחשב"
+   },
+   {
+    "subject": "491",
+    "subjectName": "מתמטיקה ופיסיקה"
+   },
+   {
+    "subject": "804",
+    "subjectName": "ניהול הייצור"
+   },
+   {
+    "subject": "854",
+    "subjectName": "ניהול ומזכירות"
+   },
+   {
+    "subject": "872",
+    "subjectName": "ניהול ומלאי"
+   },
+   {
+    "subject": "803",
+    "subjectName": "ניהול ותפעול א'"
+   },
+   {
+    "subject": "855",
+    "subjectName": "ניהול חשבונית"
+   },
+   {
+    "subject": "226",
+    "subjectName": "ניהול מוסד ומחסנאות"
+   },
+   {
+    "subject": "808",
+    "subjectName": "ניהול משאבי אנוש"
+   },
+   {
+    "subject": "244",
+    "subjectName": "ניהול רכש ומלאי"
+   },
+   {
+    "subject": "856",
+    "subjectName": "ניהול שיווק ומכירות"
+   },
+   {
+    "subject": "809",
+    "subjectName": "ניהול תעשייתי"
+   },
+   {
+    "subject": "55",
+    "subjectName": "ניווט"
+   },
+   {
+    "subject": "857",
+    "subjectName": "ניתוח מערכות וארגון קבצים"
+   },
+   {
+    "subject": "858",
+    "subjectName": "סדר דפוס"
+   },
+   {
+    "subject": "65",
+    "subjectName": "סוציולוגיה"
+   },
+   {
+    "subject": "860",
+    "subjectName": "סייעות שיניים"
+   },
+   {
+    "subject": "239",
+    "subjectName": "סייעת ברפואת שיניים"
+   },
+   {
+    "subject": "702",
+    "subjectName": "סינית"
+   },
+   {
+    "subject": "859",
+    "subjectName": "סיעוד כללי"
+   },
+   {
+    "subject": "578",
+    "subjectName": "סלובקית"
+   },
+   {
+    "subject": "579",
+    "subjectName": "ספרדית"
+   },
+   {
+    "subject": "861",
+    "subjectName": "ספרות ילדים"
+   },
+   {
+    "subject": "589",
+    "subjectName": "סרבית"
+   },
+   {
+    "subject": "795",
+    "subjectName": "ע\"ג הוראה והדרכה"
+   },
+   {
+    "subject": "78",
+    "subjectName": "עבודה מעשית בחקלאות"
+   },
+   {
+    "subject": "998",
+    "subjectName": "עבודת גמר"
+   },
+   {
+    "subject": "997",
+    "subjectName": "עבודת גמר - ללא בונוס"
+   },
+   {
+    "subject": "101",
+    "subjectName": "עברית"
+   },
+   {
+    "subject": "891",
+    "subjectName": "עיצוב"
+   },
+   {
+    "subject": "863",
+    "subjectName": "עיצוב אופנה"
+   },
+   {
+    "subject": "864",
+    "subjectName": "עיצוב גרפי"
+   },
+   {
+    "subject": "305",
+    "subjectName": "עיצוב המוצר"
+   },
+   {
+    "subject": "865",
+    "subjectName": "עיצוב התכשיט"
+   },
+   {
+    "subject": "796",
+    "subjectName": "עיצוב וטיפוח החן"
+   },
+   {
+    "subject": "304",
+    "subjectName": "עיצוב וטכנולוגיה"
+   },
+   {
+    "subject": "866",
+    "subjectName": "עיצוב וציור טקסטיל"
+   },
+   {
+    "subject": "867",
+    "subjectName": "עיצוב חזותי"
+   },
+   {
+    "subject": "257",
+    "subjectName": "עיצוב יהלומים"
+   },
+   {
+    "subject": "868",
+    "subjectName": "עיצוב כללי"
+   },
+   {
+    "subject": "311",
+    "subjectName": "עיצוב נוף"
+   },
+   {
+    "subject": "869",
+    "subjectName": "עיצוב קרמי"
+   },
+   {
+    "subject": "502",
+    "subjectName": "ערבית ומורשת דרוזים"
+   },
+   {
+    "subject": "18",
+    "subjectName": "ערבית לבי\"ס יהודי"
+   },
+   {
+    "subject": "580",
+    "subjectName": "פולנית"
+   },
+   {
+    "subject": "581",
+    "subjectName": "פורטוגזית"
+   },
+   {
+    "subject": "40",
+    "subjectName": "פילוסופיה"
+   },
+   {
+    "subject": "36",
+    "subjectName": "פיסיקה"
+   },
+   {
+    "subject": "290",
+    "subjectName": "פיסיקה ושרטוט טכני"
+   },
+   {
+    "subject": "69",
+    "subjectName": "פסיכולוגיה"
+   },
+   {
+    "subject": "870",
+    "subjectName": "פסיכולוגיה התפתחותית"
+   },
+   {
+    "subject": "582",
+    "subjectName": "פרסית"
+   },
+   {
+    "subject": "583",
+    "subjectName": "צ'כית"
+   },
+   {
+    "subject": "269",
+    "subjectName": "ציור טקסטיל"
+   },
+   {
+    "subject": "302",
+    "subjectName": "ציור שלטים ודקורציה"
+   },
+   {
+    "subject": "871",
+    "subjectName": "צילום"
+   },
+   {
+    "subject": "892",
+    "subjectName": "צנרת ומבנים"
+   },
+   {
+    "subject": "17",
+    "subjectName": "צרפתית"
+   },
+   {
+    "subject": "873",
+    "subjectName": "קבלת תיירות"
+   },
+   {
+    "subject": "234",
+    "subjectName": "קוסמטיקה"
+   },
+   {
+    "subject": "874",
+    "subjectName": "קירור ומיזוג אויר"
+   },
+   {
+    "subject": "301",
+    "subjectName": "קרמיקה עיצוב וטכנולוגיה"
+   },
+   {
+    "subject": "875",
+    "subjectName": "רדיו ואלקטרוניקה ימית"
+   },
+   {
+    "subject": "584",
+    "subjectName": "רומנית"
+   },
+   {
+    "subject": "585",
+    "subjectName": "רוסית"
+   },
+   {
+    "subject": "306",
+    "subjectName": "רישום ציור ואסטטיקה בעיצוב"
+   },
+   {
+    "subject": "246",
+    "subjectName": "שיווק ומכירות"
+   },
+   {
+    "subject": "876",
+    "subjectName": "שיווק וקידום מכירות"
+   },
+   {
+    "subject": "877",
+    "subjectName": "שיווק וקידום תיירות"
+   },
+   {
+    "subject": "309",
+    "subjectName": "שייט וניווט חופי"
+   },
+   {
+    "subject": "797",
+    "subjectName": "שימושי פעילויות חינוך"
+   },
+   {
+    "subject": "265",
+    "subjectName": "שרטוט אדריכלי"
+   },
+   {
+    "subject": "288",
+    "subjectName": "שרטוט אוטומציה וחשמל"
+   },
+   {
+    "subject": "264",
+    "subjectName": "שרטוט בניין אדריכלי"
+   },
+   {
+    "subject": "263",
+    "subjectName": "שרטוט בניין לקונסטרוקציות"
+   },
+   {
+    "subject": "297",
+    "subjectName": "שרטוט ואווירודינמיקה"
+   },
+   {
+    "subject": "271",
+    "subjectName": "שרטוט וטכנולוגיה"
+   },
+   {
+    "subject": "314",
+    "subjectName": "שרטוט וטכנולוגיה במיכון חקלאי"
+   },
+   {
+    "subject": "258",
+    "subjectName": "שרטוט וטכנולוגיה של יהלומים"
+   },
+   {
+    "subject": "205",
+    "subjectName": "שרטוט ומנועי מטוסים"
+   },
+   {
+    "subject": "286",
+    "subjectName": "שרטוט ומערכות מיכון"
+   },
+   {
+    "subject": "294",
+    "subjectName": "שרטוט ותורת המנוע והרכב"
+   },
+   {
+    "subject": "215",
+    "subjectName": "שרטוט ותורת הקירור"
+   },
+   {
+    "subject": "292",
+    "subjectName": "שרטוט ותורת הרכב"
+   },
+   {
+    "subject": "275",
+    "subjectName": "שרטוט מכונות"
+   },
+   {
+    "subject": "280",
+    "subjectName": "שרטוט מכני"
+   },
+   {
+    "subject": "203",
+    "subjectName": "שרטוט מכניקה וחשמל"
+   },
+   {
+    "subject": "281",
+    "subjectName": "שרטוט ממוחשב"
+   },
+   {
+    "subject": "207",
+    "subjectName": "שרטוט מנועי מסוקים ופרקי מכונות"
+   },
+   {
+    "subject": "210",
+    "subjectName": "שרטוט מערכות חשמל"
+   },
+   {
+    "subject": "259",
+    "subjectName": "שרטוט מפות"
+   },
+   {
+    "subject": "252",
+    "subjectName": "תולדות האומנות והבנתה"
+   },
+   {
+    "subject": "233",
+    "subjectName": "תולדות הלבוש וציורו"
+   },
+   {
+    "subject": "47",
+    "subjectName": "תולדות הערבים (בי\"ס ערבי)"
+   },
+   {
+    "subject": "19",
+    "subjectName": "תולדות הערבים והאיסלאם (יהודי)"
+   },
+   {
+    "subject": "586",
+    "subjectName": "תורכית"
+   },
+   {
+    "subject": "266",
+    "subjectName": "תורת הבנייה וחומרי בניין"
+   },
+   {
+    "subject": "211",
+    "subjectName": "תורת החשמל"
+   },
+   {
+    "subject": "214",
+    "subjectName": "תורת הטלפון, תקשורת ומיתוג"
+   },
+   {
+    "subject": "250",
+    "subjectName": "תורת המבנה, תחשיב ואוטומציה"
+   },
+   {
+    "subject": "260",
+    "subjectName": "תורת המדידה"
+   },
+   {
+    "subject": "878",
+    "subjectName": "תורת הניווט הימי"
+   },
+   {
+    "subject": "879",
+    "subjectName": "תורת הסיעוד"
+   },
+   {
+    "subject": "256",
+    "subjectName": "תורת הצילום"
+   },
+   {
+    "subject": "307",
+    "subjectName": "תורת הקולנוע והטלוויזיה"
+   },
+   {
+    "subject": "241",
+    "subjectName": "תורת טכנאות השיניים"
+   },
+   {
+    "subject": "5",
+    "subjectName": "תושבע\"פ"
+   },
+   {
+    "subject": "7",
+    "subjectName": "תושבע\"פ לבי\"ס כללי"
+   },
+   {
+    "subject": "792",
+    "subjectName": "תחזוקת מערכות"
+   },
+   {
+    "subject": "781",
+    "subjectName": "תחזוקת מערכות סלולריות"
+   },
+   {
+    "subject": "51",
+    "subjectName": "תיאטרון"
+   },
+   {
+    "subject": "880",
+    "subjectName": "תיירות"
+   },
+   {
+    "subject": "772",
+    "subjectName": "תיירות דיגיטלית"
+   },
+   {
+    "subject": "247",
+    "subjectName": "תיירות ותפעול משרד נסיעות"
+   },
+   {
+    "subject": "881",
+    "subjectName": "תכנון הנדסי של מבנים"
+   },
+   {
+    "subject": "770",
+    "subjectName": "תכנון וניהול עסק"
+   },
+   {
+    "subject": "249",
+    "subjectName": "תכנון ושרטוט רהיטים"
+   },
+   {
+    "subject": "212",
+    "subjectName": "תכנון ותכנות מערכות"
+   },
+   {
+    "subject": "274",
+    "subjectName": "תכנון מבלטים ומתקנים"
+   },
+   {
+    "subject": "270",
+    "subjectName": "תכנון פרקי מכונות"
+   },
+   {
+    "subject": "289",
+    "subjectName": "תכנון פרקי מכונות ואופטיקה"
+   },
+   {
+    "subject": "273",
+    "subjectName": "תכנון פרקי מכשירים"
+   },
+   {
+    "subject": "272",
+    "subjectName": "תכנון צנרת ומבנים"
+   },
+   {
+    "subject": "227",
+    "subjectName": "תכנון תפריט ומחסנאות"
+   },
+   {
+    "subject": "773",
+    "subjectName": "תכנות אוטוטק"
+   },
+   {
+    "subject": "882",
+    "subjectName": "תכנות יישומים מנהליים"
+   },
+   {
+    "subject": "883",
+    "subjectName": "תכנות מערכות"
+   },
+   {
+    "subject": "251",
+    "subjectName": "תכשיטנות, עיצוב וטכנולוגיה"
+   },
+   {
+    "subject": "6",
+    "subjectName": "תלמוד"
+   },
+   {
+    "subject": "496",
+    "subjectName": "תנ\"ך וספרות"
+   },
+   {
+    "subject": "884",
+    "subjectName": "תעשייה כימית"
+   },
+   {
+    "subject": "885",
+    "subjectName": "תעשיית המזון"
+   },
+   {
+    "subject": "228",
+    "subjectName": "תפעול מלון"
+   },
+   {
+    "subject": "832",
+    "subjectName": "תקשורת"
+   },
+   {
+    "subject": "91",
+    "subjectName": "תקשורת בינ\"ל באנגלית"
+   },
+   {
+    "subject": "788",
+    "subjectName": "תקשורת וחברה"
+   },
+   {
+    "subject": "54",
+    "subjectName": "תרמודינמיקה"
+   },
+   {
+    "subject": "886",
+    "subjectName": "תרמודינמיקה טכנית"
+   },
+   {
+    "subject": "794",
+    "subjectName": "תשתיות מחשוב ותקשוב"
+   }
+  ],
+  "mandatory": [
+   {
+    "subject": "34",
+    "subjectName": "אזרחות"
+   },
+   {
+    "subject": "24",
+    "subjectName": "אזרחות לבי\"ס ערבי"
+   },
+   {
+    "subject": "16",
+    "subjectName": "אנגלית"
+   },
+   {
+    "subject": "11",
+    "subjectName": "הבעה עברית"
+   },
+   {
+    "subject": "22",
+    "subjectName": "היסטוריה"
+   },
+   {
+    "subject": "23",
+    "subjectName": "היסטוריה לבי\"ס ערבי"
+   },
+   {
+    "subject": "35",
+    "subjectName": "מתמטיקה"
+   },
+   {
+    "subject": "10",
+    "subjectName": "ספרות"
+   },
+   {
+    "subject": "14",
+    "subjectName": "עברית לבי\"ס ערבי"
+   },
+   {
+    "subject": "20",
+    "subjectName": "ערבית לבי\"ס ערבי"
+   },
+   {
+    "subject": "1",
+    "subjectName": "תנ\"ך"
+   }
+  ]
+ },
+ "return": {
+  "number": "",
+  "errorType": "",
+  "type": "S",
+  "message": ""
+ }
+}

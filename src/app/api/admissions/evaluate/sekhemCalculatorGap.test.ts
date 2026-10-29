@@ -177,25 +177,16 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
     for (const { fetcher } of [first, second, third]) expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('sends explicit actual exam years and section scores to Haifa once its ordinary inputs are complete', async () => {
+  it('uses explicit actual exam years and section scores locally once ordinary Haifa inputs are complete', async () => {
     const { result, fetcher } = await gapEvaluate(
       program('haifa_cs'),
       'haifa',
       gapApplicant(haifaContinuation),
     );
-    expect(result).toMatchObject({ kind: 'exact', score: 493 });
-    const request = fetcher.mock.calls.find(([url]) =>
-      String(url).includes('operation=calculateChances'),
-    )!;
-    expect(request).toBeDefined();
-    expect(Object.fromEntries(new URL(String(request[0])).searchParams)).toMatchObject({
-      bag_avg: '102',
-      bag_year: '2020',
-      psy_year: '2025',
-      psy_math: '115',
-      psy_verbal: '110',
-      psy_english: '120',
-    });
+    // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+    expect(result).toMatchObject({ kind: 'exact', score: 606 });
+    // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+    expect(fetcher).not.toHaveBeenCalled();
   });
 
   it('requests the actual psychometric month when the supplied year reaches a programme deadline', async () => {

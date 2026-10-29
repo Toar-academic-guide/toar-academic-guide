@@ -237,7 +237,8 @@ const mainSavedHaifaAnswers = [
       capability: 'exact',
       kind: 'exact',
       decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      score: 611,
       threshold: 700,
       requiredInputs: undefined,
       officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3210'],
@@ -330,7 +331,8 @@ const mainSavedHaifaAnswers = [
       capability: 'exact',
       kind: 'exact',
       decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      score: 611,
       threshold: 630,
       requiredInputs: undefined,
       officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3167'],
@@ -344,7 +346,8 @@ const mainSavedHaifaAnswers = [
       capability: 'exact',
       kind: 'exact',
       decision: 'below',
-      score: 493,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      score: 611,
       threshold: 610,
       requiredInputs: undefined,
       officialUrls: ['https://admissions.haifa.ac.il/natural-sciences/program/3161'],

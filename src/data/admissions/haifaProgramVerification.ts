@@ -1,4 +1,5 @@
 import { createHash } from 'node:crypto';
+import { HAIFA_FORMULA_SOURCE_URL, haifaUsesMathPsychometric } from './haifaAdmissionFormula';
 import { HAIFA_PROGRAM_ALIASES } from '@/lib/haifaAdmissionsInputs';
 import policyEvidence from './haifaProgrammePolicies.json';
 import { getHaifaProgrammePolicy } from '@/server/admissions/haifaProgrammePolicy';
@@ -12,7 +13,7 @@ import { fingerprintVerificationFixtures } from '@/server/admissions/verificatio
 
 export const HAIFA_SOURCE_URL =
   'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet';
-const CAPTURED_AT = '2026-09-28T06:45:06.973290+00:00';
+const CAPTURED_AT = '2026-10-29T07:20:35.990Z';
 
 interface HaifaProgramConfig {
   programId: string;
@@ -185,7 +186,9 @@ function sourceFingerprint(config: HaifaProgramConfig): string {
     .update(
       JSON.stringify({
         config,
-        inputPolicy: 'official_average_and_actual_years_v1',
+        inputPolicy: 'saved_non_proxy_or_haifa_subject_average_v2',
+        formulaPolicy: 'haifa_2026_bt_pm_ceil_nite_pc_age_bands_half_up_v1',
+        formulaSource: HAIFA_FORMULA_SOURCE_URL,
         gatePolicy: 'published_programme_requirements_v1',
         programmePolicy: policyEvidence.records.find(
           (record) => record.programme === config.programId,
@@ -353,15 +356,19 @@ export const HAIFA_PROGRAM_VERIFICATION_METADATA: Record<string, HaifaProgramVer
               institutionId: 'haifa',
               officialProgramId: config.officialProgramId,
               admissionCycle: '2026-2027',
-              source: { targetId: `haifa-${programId}-live`, url: HAIFA_SOURCE_URL },
+              source: { targetId: `haifa-${programId}-live`, url: HAIFA_FORMULA_SOURCE_URL },
               calculation: {
                 adapterId: 'haifa',
-                mode: 'official_replay',
-                formulaFamily: 'haifa_official_calculator',
+                mode: 'formula',
+                formulaFamily: 'haifa_local_official_formula',
                 requiredInputs: [
-                  'psychometric_math',
-                  'psychometric_verbal',
-                  'psychometric_english',
+                  ...(haifaUsesMathPsychometric(config.programId)
+                    ? ([
+                        'psychometric_math',
+                        'psychometric_verbal',
+                        'psychometric_english',
+                      ] as const)
+                    : []),
                   'haifa_bagrut_average',
                   'haifa_bagrut_year',
                   'haifa_psychometric_year',
@@ -384,7 +391,7 @@ export const HAIFA_PROGRAM_VERIFICATION_METADATA: Record<string, HaifaProgramVer
             ledgerReason:
               config.programId === 'infosystems'
                 ? 'Current single-major calculator mapping remains unresolved: configured ID absent from the current dictionary. Not eligible for activation.'
-                : 'Official numeric replay is combined with current programme-page qualification, maths, language, exam-session and selection requirements. Positive verdict establishes eligibility for the stated route, never final discretionary admission. Fresh matching review is required before production activation.',
+                : 'Local Haifa formula reproduces 130 official calculator composite vectors and eight optimal-average vectors (2026-10-29 evidence). PC uses the student NITE total; PM uses the observed ceiling. Current programme gates remain independent. Fresh matching review is required before production activation.',
           } satisfies HaifaProgramVerificationMetadata,
         ];
       }),

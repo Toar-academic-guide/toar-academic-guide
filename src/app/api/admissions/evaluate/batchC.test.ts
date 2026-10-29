@@ -40,25 +40,15 @@ describe('Batch C API dispatch', () => {
         const result = data.results.find(
           (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === config.institutionId,
         );
-        if (degreeId === 'haifa_engineering' && !('bagrut' in scores)) {
-          // Approved test update, Jorje 2026-10-28
-          expect(result).toMatchObject({
-            capability: 'tracked_missing_rule',
-            kind: 'tracked_missing_rule',
-            decision: 'unknown',
-            // Approved test update, Jorje 2026-10-29
-            explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
-            nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
-          });
-        } else {
-          expect(result).toMatchObject({
-            capability: 'unsupported',
-            kind: 'unsupported',
-            decision: 'unknown',
-            explanation: config.explanationHe,
-            nextAction: config.nextActionHe,
-          });
-        }
+        // Ruling 3: Jorje 2026-10-29; no engineering calculator mapping exists, so all inputs reach unsupported.
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+        expect(result).toMatchObject({
+          capability: 'unsupported',
+          kind: 'unsupported',
+          decision: 'unknown',
+          explanation: config.explanationHe,
+          nextAction: config.nextActionHe,
+        });
         expect(result.requiredInputs).toBeUndefined();
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();

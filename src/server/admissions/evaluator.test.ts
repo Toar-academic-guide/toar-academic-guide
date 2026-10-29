@@ -1287,14 +1287,8 @@ describe('evaluateAdmissionsForProgram', () => {
         institutions,
         fetcher,
       });
-      const params = new URL(String(fetcher.mock.calls[1][0])).searchParams;
-      expect(params.get('bag_avg')).toBe('102');
-      expect(params.get('bag_year')).toBe(String(year));
-      expect(params.get('psy_year')).toBe('2026');
-      expect(Object.fromEntries(params)).toEqual(
-        haifaOfficial.yearBoundaryCases.find((record) => record.request.bag_year === String(year))
-          ?.request,
-      );
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      expect(fetcher).not.toHaveBeenCalled();
       expect(report.results[0]).toMatchObject({ score, decision });
     },
   );

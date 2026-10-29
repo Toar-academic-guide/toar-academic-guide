@@ -1,0 +1,9 @@
+
+> toar-academic-guide@0.1.0 lint
+> eslint .
+
+
+/workspace/toar-wt-haifa-formula/src/server/admissions/evaluator.ts
+  81:10  warning  'runHaifaAdmissionsProof' is defined but never used. Allowed unused vars must match /^_/u  @typescript-eslint/no-unused-vars
+
+✖ 1 problem (0 errors, 1 warning)
