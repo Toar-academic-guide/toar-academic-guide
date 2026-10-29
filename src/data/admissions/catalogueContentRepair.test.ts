@@ -5,8 +5,54 @@ import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { getRequirementsChecked } from '@/lib/requirementsChecked';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
 import repair from './catalogueContentRepair.json';
+import { BGU_QUANTITATIVE_PROGRAMMES } from '@/server/admissions/bguQuantitativeRoutesPolicy';
 
 describe('verified catalogue content repair', () => {
+  it('matches BGU business administration copy to the reviewed quantitative routes', () => {
+    const row = repair.requirements.find(
+      (entry) => entry.programId === 'bgu_business' && entry.institutionId === 'bgu',
+    )!;
+    const policy = BGU_QUANTITATIVE_PROGRAMMES.business;
+    expect(policy).toMatchObject({
+      score: 620,
+      minimumPsychometric: 600,
+      alternate: { score: 640, psychometric: 570 },
+      directAverage: 107,
+      directPreparatoryAverage: 87,
+    });
+    const text = row.notes.join(' ');
+    expect(text).toContain('כלכלה חד־מחלקתי – מנהל עסקים');
+    expect(text).toContain(`סכם כמותי ${policy.score} לפחות וגם פסיכומטרי ${policy.minimumPsychometric} לפחות`);
+    expect(text).toContain(`סכם כמותי ${policy.alternate!.score} ופסיכומטרי ${policy.alternate!.psychometric} לפחות`);
+    expect(text).toContain(`ממוצע בגרות ${policy.directAverage} לפחות`);
+    expect(text).toContain(`בממוצע ${policy.directPreparatoryAverage}`);
+    expect(text).toContain('5 יחידות בציון 75 לפחות או 4 יחידות בציון 85 לפחות');
+    expect(text).toContain('4 יחידות בציון 75 לפחות או 5 יחידות בציון 65 לפחות');
+    expect(text).toContain('רכיב כמותי 130');
+    expect(text).toContain('ציון עובר ב־4 או 5 יחידות');
+    expect(text).toContain('אנגלית ברמת בסיסי ועברית ברמה ה׳');
+    expect(text).toContain('מבוא למתמטיקה בסמסטר א׳');
+    expect(text).toContain('4 יחידות בציון 75–84, 5 יחידות בציון 65–74');
+    expect(text).toContain('25.08.2026');
+    expect(text).toContain('ממליצה להירשם');
+    expect(text).toContain('עד 20 נקודות');
+    expect(text).not.toMatch(/580|בניהול|ניהול חד|ניהול דו|103|105/);
+    expect(row.checkedAt).toBe('2026-10-29');
+  });
+
+  it.each([
+    ['communication', '2026-10-21'],
+    ['bgu_accounting', '2026-10-29'],
+    ['bgu_business', '2026-10-29'],
+  ])(
+    'keeps the approved BGU verification date for %s',
+    (programId, checkedAt) => {
+      expect(repair.requirements.find(
+        (row) => row.programId === programId && row.institutionId === 'bgu',
+      )!.checkedAt).toBe(checkedAt);
+    },
+  );
+
   it.each(['braude', 'ort_braude', 'mon_12220708942'] as const)(
     'resolves the Braude CS requirements-checked footer for %s',
     (institutionId) => {

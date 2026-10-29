@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { UNIVERSITIES } from '@/data/degreesData';
-import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import reviewedManifest from '@/server/admissions/__fixtures__/reviewedManifest-2026-10-25.json';
 import technionWinterManifest from '@/server/admissions/__fixtures__/technionWinterManifest.json';
 import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
 import {
