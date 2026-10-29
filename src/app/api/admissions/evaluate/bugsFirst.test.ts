@@ -216,11 +216,20 @@ it.each(['psychology', 'haifa_psychology'])(
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
       requiredInputs: ['haifa_psychometric_month'],
     });
-    const formulaInput = { programme: 'psychology', bagrutAverage: 104, bagrutYear: 2026, psychometricYear: 2026, psychometric: 700 };
+    const formulaInput = {
+      programme: 'psychology',
+      bagrutAverage: 104,
+      bagrutYear: 2026,
+      psychometricYear: 2026,
+      psychometric: 700,
+    };
     // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved104-nite700-psychology.json
     expect(calculateHaifaAdmissionScore(formulaInput)).toEqual({ kind: 'calculated', score: 703 });
     // Haifa's exact saved104 capture shows PC699 and weighted702 for these same sections.
-    expect(calculateHaifaAdmissionScore({ ...formulaInput, psychometric: 699 })).toEqual({ kind: 'calculated', score: 702 });
+    expect(calculateHaifaAdmissionScore({ ...formulaInput, psychometric: 699 })).toEqual({
+      kind: 'calculated',
+      score: 702,
+    });
     expect(result.degradationReason).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
   },

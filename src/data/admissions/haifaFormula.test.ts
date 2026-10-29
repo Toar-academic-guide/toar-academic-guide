@@ -170,7 +170,7 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
   });
 });
 
-describe("ruling (a): official NITE total and Haifa calculator PC siblings", () => {
+describe('ruling (a): official NITE total and Haifa calculator PC siblings', () => {
   it.each([
     // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
     ['rulingsHaifaTau-saved-communication.json', 620],
@@ -218,13 +218,30 @@ describe("ruling (a): official NITE total and Haifa calculator PC siblings", () 
     ['haifaProgramVerification-high-psychology.json', 818],
     // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/haifaProgramVerification-low-psychology.json
     ['haifaProgramVerification-low-psychology.json', 493],
-  ] as const)('%s keeps the NITE score and reproduces the captured calculator with its own PC', (file, niteScore) => {
-    const capture = JSON.parse(readFileSync(`docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/${file}`, 'utf8'));
-    const content = capture.json.data[0].results[0].content as { label: string; value: string }[];
-    const calculatorPC = Number(content.find((row) => row.label === 'ציון הפסיכומטרי שלך')!.value);
-    const calculatorScore = Number(content.find((row) => row.label === 'הציון המשוקלל שלך')!.value);
-    expect(calculateHaifaAdmissionScore(capture.localInput)).toEqual({ kind: 'calculated', score: niteScore });
-    // Each case names its exact capture above; only this sibling substitutes the displayed calculator PC.
-    expect(calculateHaifaAdmissionScore({ ...capture.localInput, psychometric: calculatorPC })).toEqual({ kind: 'calculated', score: calculatorScore });
-  });
+  ] as const)(
+    '%s keeps the NITE score and reproduces the captured calculator with its own PC',
+    (file, niteScore) => {
+      const capture = JSON.parse(
+        readFileSync(
+          `docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/${file}`,
+          'utf8',
+        ),
+      );
+      const content = capture.json.data[0].results[0].content as { label: string; value: string }[];
+      const calculatorPC = Number(
+        content.find((row) => row.label === 'ציון הפסיכומטרי שלך')!.value,
+      );
+      const calculatorScore = Number(
+        content.find((row) => row.label === 'הציון המשוקלל שלך')!.value,
+      );
+      expect(calculateHaifaAdmissionScore(capture.localInput)).toEqual({
+        kind: 'calculated',
+        score: niteScore,
+      });
+      // Each case names its exact capture above; only this sibling substitutes the displayed calculator PC.
+      expect(
+        calculateHaifaAdmissionScore({ ...capture.localInput, psychometric: calculatorPC }),
+      ).toEqual({ kind: 'calculated', score: calculatorScore });
+    },
+  );
 });

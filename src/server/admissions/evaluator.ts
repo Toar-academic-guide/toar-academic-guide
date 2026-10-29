@@ -351,7 +351,8 @@ async function evaluateCapabilityEntries(args: {
     }
 
     if (institution.id === 'haifa') {
-      const { calculateHaifaBagrutAverage } = await import('@/data/admissions/haifaAdmissionFormula');
+      const { calculateHaifaBagrutAverage } =
+        await import('@/data/admissions/haifaAdmissionFormula');
       const average =
         (!args.haifaAverageIsProxy ? input.extraInputs?.haifaBagrutAverage : undefined) ??
         calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
@@ -362,11 +363,15 @@ async function evaluateCapabilityEntries(args: {
         (program.id === 'haifa_infosystems' &&
           input.extraInputs?.haifaInformationSystemsTrack === 'single_major')
       ) {
-        const missingRule = haifaMissingRuleResult(program.id, publicInstitutionShape(institution), {
-          averageIsProxy: args.haifaAverageIsProxy,
-          capability: entry.capability,
-          input,
-        });
+        const missingRule = haifaMissingRuleResult(
+          program.id,
+          publicInstitutionShape(institution),
+          {
+            averageIsProxy: args.haifaAverageIsProxy,
+            capability: entry.capability,
+            input,
+          },
+        );
         if (missingRule) {
           results[index] = missingRule;
           continue;
@@ -1028,7 +1033,9 @@ async function evaluateExactScores(args: {
       if (missingScoreInputs.length) return requiredInputsResult(institution, missingScoreInputs);
       const track =
         program.id === 'haifa_infosystems'
-          ? getHaifaInformationSystemsTrack(requestedInput.extraInputs?.haifaInformationSystemsTrack)
+          ? getHaifaInformationSystemsTrack(
+              requestedInput.extraInputs?.haifaInformationSystemsTrack,
+            )
           : undefined;
       const gates = evaluateHaifaProgrammePolicy({
         assessment: 'scores',

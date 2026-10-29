@@ -133,11 +133,19 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
         const { result, fetcher } = await gapEvaluate(row, 'haifa');
         expect(result.score, row.id).toBeUndefined();
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(result.kind, row.id).toBe(row.id === 'haifa_engineering' ? 'unsupported' : 'needs_input');
+        expect(result.kind, row.id).toBe(
+          row.id === 'haifa_engineering' ? 'unsupported' : 'needs_input',
+        );
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(result.requiredInputs, row.id).toEqual(row.id === 'haifa_engineering' ? undefined : expect.arrayContaining([
-          row.id === 'haifa_infosystems' ? 'haifa_information_systems_track' : 'haifa_hebrew_qualification',
-        ]));
+        expect(result.requiredInputs, row.id).toEqual(
+          row.id === 'haifa_engineering'
+            ? undefined
+            : expect.arrayContaining([
+                row.id === 'haifa_infosystems'
+                  ? 'haifa_information_systems_track'
+                  : 'haifa_hebrew_qualification',
+              ]),
+        );
         expect(result.requiredInputs ?? [], row.id).not.toContain('haifa_bagrut_average');
         expect(fetcher, row.id).not.toHaveBeenCalled();
       }

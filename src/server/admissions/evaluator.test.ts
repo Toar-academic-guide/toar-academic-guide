@@ -70,9 +70,25 @@ describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
 
 it.each([
   // docs/admissions-verification/2026-09-28-haifa-official.json: cs.high, score 806 / acceptance 700.
-  { average: 120, psychometric: 800, q: 150, v: 150, e: 150, score: 806, assessment: 'meets_threshold' },
+  {
+    average: 120,
+    psychometric: 800,
+    q: 150,
+    v: 150,
+    e: 150,
+    score: 806,
+    assessment: 'meets_threshold',
+  },
   // docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-cs.json: score 611 / acceptance 700.
-  { average: 104, psychometric: 590, q: 115, v: 110, e: 120, score: 611, assessment: 'below_threshold' },
+  {
+    average: 104,
+    psychometric: 590,
+    q: 115,
+    v: 110,
+    e: 120,
+    score: 611,
+    assessment: 'below_threshold',
+  },
 ] as const)('local Haifa CS score $score carries $assessment', async (profile) => {
   const fetcher = vi.fn<typeof fetch>();
   const report = await evaluateAdmissionsForProgram({
