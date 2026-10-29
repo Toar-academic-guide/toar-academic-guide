@@ -120,12 +120,19 @@ export function resultInputReasons(result: AdmissionsEvaluationResult): string[]
   });
 }
 
-type CardPresentation = { text: string; actions?: InputAction[]; tone?: 'positive' | 'negative' };
+type CardPresentation = {
+  text: string | null;
+  actions?: InputAction[];
+  tone?: 'positive' | 'negative';
+};
 
 /** A verdict never implies that the API returned a calculated score. */
 export function resultPresentation(result: AdmissionsEvaluationResult): CardPresentation {
   const score = Number.isFinite(result.score);
   const threshold = Number.isFinite(result.threshold);
+  // An exact score without a cutoff establishes no admission verdict.
+  if (result.kind === 'exact' && score && !threshold && result.decision === 'unknown')
+    return { text: null };
   if (result.linkedInstitutionId === 'haifa' && !score && !threshold)
     return { text: resultSourceReason(result) };
 

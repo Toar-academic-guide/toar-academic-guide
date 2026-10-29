@@ -81,6 +81,7 @@ function InstitutionGroup({
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
   const presentation = resultPresentation(result);
+  const scoreOnly = presentation.text === null;
   // Accepted floor-only routes have one unambiguous line. A text-only manual gate
   // instead carries the actual returned gate, without a generic fallback sentence.
   const acceptedWithoutNumbers =
@@ -89,7 +90,8 @@ function InstitutionGroup({
     (result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold') &&
     result.decision !== 'below' &&
     result.scoreAssessment !== 'below_threshold';
-  const visibleGates = acceptedWithoutNumbers || result.decision === 'below' ? [] : gates;
+  const visibleGates =
+    scoreOnly || acceptedWithoutNumbers || result.decision === 'below' ? [] : gates;
   const textOnlyGate = numberless && visibleGates.length > 0 && result.kind === 'manual_gate';
   return (
     <section
@@ -156,7 +158,7 @@ function InstitutionGroup({
               </div>
             )}
           </div>
-          {!textOnlyGate && (
+          {!scoreOnly && !textOnlyGate && (
             <p
               data-result-reason={numberless ? '' : undefined}
               className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
@@ -181,7 +183,7 @@ function InstitutionGroup({
               {gate}
             </p>
           ))}
-          {offering.institutionId === 'reichman' && !numberless && (
+          {offering.institutionId === 'reichman' && !numberless && !scoreOnly && (
             <p className="mt-2 text-sm text-(--text-body)">אומדן, עד לאישור המוסד</p>
           )}
         </div>
