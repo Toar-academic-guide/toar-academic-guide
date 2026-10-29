@@ -74,6 +74,8 @@ describe('crawler-visible SSR text boundaries', () => {
 
   it('separates every shared header link including the account action', () => {
     const text = crawlerText(renderToString(<PublicNavBar />));
-    expect(text).toMatch(/מוסדות לימוד\s+הרשימה שלי\s+מי אנחנו\s+כניסה/);
+    expect(text).toMatch(
+      /מה הסיכויים שלי\?\s+מחשבונים\s+מחשבון סכם\s+בדיקת סיכויי קבלה\s+מה ללמוד\?\s+תחומי לימוד\s+שאלון ״מה מתאים לי\?״\s+איפה ללמוד\?\s+מוסדות לימוד\s+הכנה וקבלה\s+עזרה בהכנה לפסיכומטרי\s+הרשימה שלי\s+כניסה/,
+    );
   });
 });
