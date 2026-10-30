@@ -65,6 +65,11 @@ for (const width of [1280, 390]) {
     await page.getByLabel('מקצוע 5', { exact: true }).fill('ספרות');
     await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toHaveCount(0);
     await review.check();
+    await page.getByRole('button', { name: /הוספת מקצוע/ }).click();
+    const manualPhysics = await page.locator('input[aria-label^="מקצוע "]').count();
+    await page.getByLabel(`מקצוע ${manualPhysics}`, { exact: true }).fill('פיזיקה');
+    await page.getByLabel(`יחידות ${manualPhysics}`, { exact: true }).fill('4');
+    await page.getByLabel(`ציון ${manualPhysics}`, { exact: true }).fill('84');
     await page
       .locator('input[type="file"]')
       .setInputFiles('src/lib/__fixtures__/bagrut-pdf/synthetic-nine-starred.pdf');
@@ -74,8 +79,10 @@ for (const width of [1280, 390]) {
       .locator('input[aria-label^="מקצוע "]')
       .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value));
     expect(names).toHaveLength(10);
+    expect(names.filter((name) => name === 'פיזיקה' || name === 'פיסיקה')).toHaveLength(1);
     const physics = names.indexOf('פיסיקה') + 1;
     expect(physics).toBeGreaterThan(0);
+    await expect(page.getByLabel(`יחידות ${physics}`, { exact: true })).toHaveValue('5');
     await expect(page.getByLabel(`ציון ${physics}`, { exact: true })).toHaveValue('90');
     await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toHaveCount(0);
     await review.check();

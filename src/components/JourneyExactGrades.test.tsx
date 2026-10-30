@@ -253,15 +253,108 @@ describe('JourneyExactGrades PDF imports', () => {
     expect(reviewed).toHaveProperty('checked', false);
     expect(subjectInputs()).toHaveLength(2);
   });
-  it('merges a manual physics spelling with the canonical PDF spelling', async () => {
-    render(<JourneyExactGrades onComplete={vi.fn()} />);
-    const physicsIndex = subjectInputs().findIndex((i) => i.value === 'מתמטיקה') + 1;
-    fireEvent.change(screen.getByLabelText(`מקצוע ${physicsIndex}`, { selector: 'input' }), {
-      target: { value: 'פיזיקה' },
+  const enterManualSubject = (label: string, units: number, grade: number) => {
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    const index = subjectInputs().length;
+    fireEvent.change(screen.getByLabelText(`מקצוע ${index}`, { selector: 'input' }), {
+      target: { value: label },
     });
-    fireEvent.change(screen.getByLabelText(`ציון ${physicsIndex}`), { target: { value: '64' } });
-    await upload([{ label: 'פיסיקה', units: 5, grade: 90 }]);
-    expect(subjectInputs().map((i) => i.value)).toEqual(['פיסיקה']);
-    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '90');
+    fireEvent.change(screen.getByLabelText(`יחידות ${index}`), {
+      target: { value: String(units) },
+    });
+    fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: String(grade) } });
+  };
+  const confirmAndContinue = () => {
+    fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  };
+
+  it.each([
+    {
+      name: 'physics alias',
+      manualLabel: 'פיזיקה',
+      pdfLabel: 'פיסיקה',
+      manualGrade: 84,
+      pdfGrade: 90,
+      subjectId: 'physics',
+    },
+    {
+      name: 'reverse physics alias',
+      manualLabel: 'פיסיקה',
+      pdfLabel: 'פיזיקה',
+      manualGrade: 84,
+      pdfGrade: 90,
+      subjectId: 'physics',
+    },
+    {
+      name: 'canonical math',
+      manualLabel: 'מתמטיקה',
+      pdfLabel: 'מתמטיקה',
+      manualGrade: 80,
+      pdfGrade: 95,
+      subjectId: 'mathematics',
+    },
+  ])(
+    'merges $name with PDF units/grade and completes without a duplicate error',
+    async ({ manualLabel, pdfLabel, manualGrade, pdfGrade, subjectId }) => {
+      const onComplete = vi.fn();
+      render(<JourneyExactGrades onComplete={onComplete} />);
+      enterManualSubject(manualLabel, 4, manualGrade);
+      await upload([{ label: pdfLabel, units: 5, grade: pdfGrade }]);
+
+      expect(subjectInputs().map((input) => input.value)).toEqual([pdfLabel]);
+      expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '5');
+      expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', String(pdfGrade));
+      confirmAndContinue();
+
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(onComplete).toHaveBeenCalledOnce();
+      expect(onComplete.mock.calls[0][0].subjects).toEqual([
+        { subjectId, units: 5, grade: pdfGrade, assessmentKind: 'exam' },
+      ]);
+    },
+  );
+
+  it.each([
+    {
+      name: 'different unknown names',
+      manualLabel: 'מקצוע בדיקה א',
+      pdfLabels: ['מקצוע בדיקה ב'],
+      expected: [
+        { label: 'מקצוע בדיקה א', units: 4, grade: 84 },
+        { label: 'מקצוע בדיקה ב', units: 5, grade: 90 },
+      ],
+    },
+    {
+      name: 'repeated unknown name',
+      manualLabel: 'מקצוע בדיקה א',
+      pdfLabels: ['מקצוע בדיקה א', 'מקצוע בדיקה א'],
+      expected: [{ label: 'מקצוע בדיקה א', units: 5, grade: 90 }],
+    },
+    {
+      name: 'normalized unknown name',
+      manualLabel: '  מקצוע בדיקה ״א״  ',
+      pdfLabels: ['מקצוע   בדיקה "א" (רמה רגילה)'],
+      expected: [{ label: 'מקצוע   בדיקה "א" (רמה רגילה)', units: 5, grade: 90 }],
+    },
+  ])('merges $name only by normalized raw name', async ({ manualLabel, pdfLabels, expected }) => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    enterManualSubject(manualLabel, 4, 84);
+    await upload(pdfLabels.map((label) => ({ label, units: 5, grade: 90, unmatched: true })));
+
+    expect(subjectInputs().map((input) => input.value)).toEqual(expected.map((row) => row.label));
+    for (const [index, row] of expected.entries()) {
+      expect(screen.getByLabelText(`יחידות ${index + 1}`)).toHaveProperty(
+        'value',
+        String(row.units),
+      );
+      expect(screen.getByLabelText(`ציון ${index + 1}`)).toHaveProperty('value', String(row.grade));
+    }
+    confirmAndContinue();
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(onComplete).toHaveBeenCalledOnce();
+    expect(onComplete.mock.calls[0][0].subjects).toHaveLength(expected.length);
   });
 });
