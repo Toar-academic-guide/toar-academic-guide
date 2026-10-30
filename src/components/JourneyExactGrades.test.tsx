@@ -5,6 +5,7 @@ import { describe, expect, it, vi } from 'vitest';
 import JourneyExactGrades from './JourneyExactGrades';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { calculateOptimizedBagrutAverage } from '@/server/admissions/bagrutPolicies';
+import type { ExactInProgress } from '@/lib/studyJourney';
 
 describe('JourneyExactGrades sector selection', () => {
   it('updates untouched starter rows to the selected sector', () => {
@@ -217,6 +218,60 @@ describe('JourneyExactGrades PDF imports', () => {
     });
     await screen.findByText(/בדקתי את הציונים שזוהו/);
   };
+
+  it('restores PDF-imported rows, units, grades and review flags from saved progress', async () => {
+    const onProgress = vi.fn<(progress: ExactInProgress) => void>();
+    const onComplete = vi.fn();
+    let editor = render(<JourneyExactGrades onProgress={onProgress} onComplete={onComplete} />);
+    enterManualSubject('פיזיקה', 4, 84);
+    await upload([
+      { label: 'פיסיקה', units: 5, grade: 90 },
+      { label: 'אנגלית', units: 4, grade: 54 },
+      { label: 'תנ״ך', units: 2, grade: 84 },
+    ]);
+    const expectedRows = [
+      { label: 'פיסיקה', units: 5, grade: 90, assessmentKind: 'exam' },
+      { label: 'אנגלית', units: 4, grade: 54, assessmentKind: 'exam' },
+      { label: 'תנ״ך', units: 2, grade: 84, assessmentKind: 'exam' },
+    ];
+    for (const reviewed of [false, true]) {
+      if (reviewed) fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
+      const saved: ExactInProgress = JSON.parse(JSON.stringify(onProgress.mock.calls.at(-1)![0]));
+      expect(saved).toEqual({
+        sector: 'יהודי',
+        certificate: 'internal',
+        complete: false,
+        rows: expectedRows,
+        imported: true,
+        reviewed,
+      });
+      expect(saved).not.toHaveProperty('importStatus');
+      editor.unmount();
+      editor = render(
+        <JourneyExactGrades
+          initialProgress={saved}
+          onProgress={onProgress}
+          onComplete={onComplete}
+        />,
+      );
+      expect(onProgress).toHaveBeenLastCalledWith(saved);
+      expect(subjectInputs().map((input) => input.value)).toEqual(
+        expectedRows.map((row) => row.label),
+      );
+      expectedRows.forEach((row, index) => {
+        expect(screen.getByLabelText(`יחידות ${index + 1}`)).toHaveProperty(
+          'value',
+          String(row.units),
+        );
+        expect(screen.getByLabelText(`ציון ${index + 1}`)).toHaveProperty(
+          'value',
+          String(row.grade),
+        );
+      });
+      expect(screen.getByLabelText(/בדקתי את הציונים שזוהו/)).toHaveProperty('checked', reviewed);
+      expect(screen.queryByRole('status')).toBeNull();
+    }
+  });
 
   it.each([
     { matched: 3, unmatched: 1, status: 'זוהו 3 מקצועות · 1 לא זוהה, נא לבדוק' },
