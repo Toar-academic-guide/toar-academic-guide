@@ -142,7 +142,8 @@ describe('published-threshold calculator links', () => {
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
-    expect(linked).toHaveLength(41);
+    // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
+    expect(linked).toHaveLength(42);
     expect(linked).toEqual(
       expect.arrayContaining([
         'haifa_infosystems',

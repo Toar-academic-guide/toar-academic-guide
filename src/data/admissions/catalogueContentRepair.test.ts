@@ -124,6 +124,38 @@ describe('verified catalogue content repair', () => {
     },
   );
 
+  it('re-encodes and stamps the regular Haifa CS route', () => {
+    const program = allPrograms.find((item) => item.id === 'haifa_cs')!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    expect(notes).toEqual([
+      'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+      'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+      'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
+    ]);
+    expect(notes).toHaveLength(3);
+    expect(program.thresholds).toEqual({ haifa: 700 });
+    expect(repair.requirements.find((row) => row.programId === program.id)).toMatchObject({
+      institutionId: 'haifa',
+      sourceUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',
+      sourceSha256: '7daea619ad71622a283aa2da04c7570d42b719c8d31e3c7ecfc35de1e6731b0d',
+      checkedAt: '2026-10-30',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(program.id, { id: 'haifa' }, notes)).toEqual({
+      date: '30.10.2026',
+      sourceUrl:
+        'https://admissions.haifa.ac.il/computer-information-science/program/3210/?utm_source=myway&utm_medium=referral',
+    });
+    expect(
+      getRequirementsChecked(
+        program.id,
+        { id: 'haifa' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
+
   it('re-encodes and stamps the regular Haifa psychology route', () => {
     const program = allPrograms.find((item) => item.id === 'haifa_psychology')!;
     const notes = program.institutionDetails![0].specificAdmissionNotes;

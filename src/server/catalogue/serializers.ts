@@ -286,6 +286,7 @@ export function serializeProgramRow(args: {
     ],
   };
   const repaired = [
+    'haifa_cs',
     'haifa_psychology',
     'mon_12220708942_cs',
     'huji_psychology',
@@ -298,7 +299,7 @@ export function serializeProgramRow(args: {
     'jerusalem_academy_dance',
     'rubin_classical',
   ].includes(program.id)
-    ? applyCatalogueContentRepair(serialized)
+    ? applyHaifaOfficialUrls(applyCatalogueContentRepair(serialized))
     : applyHaifaOfficialUrls(serialized);
   const curriculum = applyJamdCurriculum(applyEngineeringMathRequirements(repaired));
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
