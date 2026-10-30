@@ -153,6 +153,7 @@ interface Draft {
   types: InstitutionType[];
   scores: AcademicScores;
   exactInProgress?: ExactInProgress;
+  quickInProgress?: string;
   target?: number;
   gradeMode?: 'quick' | 'exact' | 'none';
   bagrutInputIdentity?: string;
@@ -203,6 +204,10 @@ function readDraft(): Draft | null {
       types: raw.types,
       scores,
       exactInProgress: exactInProgress.success ? exactInProgress.data : undefined,
+      quickInProgress:
+        typeof raw.quickInProgress === 'string' && Number.isFinite(Number(raw.quickInProgress))
+          ? raw.quickInProgress
+          : undefined,
       target: raw.target >= 200 && raw.target <= 800 ? raw.target : undefined,
       gradeMode,
       bagrutInputIdentity:
@@ -286,9 +291,8 @@ export default function StudyJourney({
   const [step, setStep] = useState<Step>(initialStep);
   const [catalogue, setCatalogue] = useState<JourneyCatalogue | null>(null);
   const programs = catalogue?.programs ?? EMPTY_PROGRAMS;
-  const [quickAverage, setQuickAverage] = useState<string | null>(null);
   const quickAverageValue =
-    quickAverage ??
+    draft.quickInProgress ??
     (draft.gradeMode === 'quick' ? String(draft.scores.bagrut?.weightedAverage ?? '') : '');
   const journeyScores = useMemo(
     () => bagrutScoresForMode(draft.scores, draft.gradeMode),
@@ -322,7 +326,6 @@ export default function StudyJourney({
     (next: Step) => {
       focusHeadingOnNavigation.current = true;
       setStep(next);
-      setQuickAverage(null);
       setMessage('');
       if (next === 'home') router.push(ROUTES.home);
       else if (window.location.hash !== `#${next}`) {
@@ -345,7 +348,6 @@ export default function StudyJourney({
     const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
       focusHeadingOnNavigation.current = !!event;
-      setQuickAverage(null);
       setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
@@ -1190,6 +1192,7 @@ export default function StudyJourney({
                     gradeMode: 'none',
                     bagrutInputIdentity: profileIdentity,
                     exactInProgress: undefined,
+                    quickInProgress: undefined,
                     scores: { ...draft.scores, bagrut: undefined },
                   });
                   go('psy-mode');
@@ -1220,6 +1223,7 @@ export default function StudyJourney({
                 gradeMode: 'quick',
                 bagrutInputIdentity: profileIdentity,
                 exactInProgress: undefined,
+                quickInProgress: undefined,
                 scores: {
                   ...draft.scores,
                   bagrut: {
@@ -1240,7 +1244,7 @@ export default function StudyJourney({
                 step="any"
                 required
                 value={quickAverageValue}
-                onChange={(event) => setQuickAverage(event.target.value)}
+                onChange={(event) => patch({ quickInProgress: event.target.value })}
               />
             </label>
             <div className="journey-actions">
@@ -1258,6 +1262,7 @@ export default function StudyJourney({
                 gradeMode: 'exact',
                 bagrutInputIdentity: profileIdentity,
                 exactInProgress: undefined,
+                quickInProgress: undefined,
                 scores: { ...draft.scores, bagrut: { subjectRecord: record } },
               });
               afterGrades();
