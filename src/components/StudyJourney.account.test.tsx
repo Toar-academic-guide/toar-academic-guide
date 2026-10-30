@@ -349,7 +349,7 @@ describe('account grades in the homepage journey', () => {
       }
     },
   );
-  it('keeps the entered average when completing subject grades', async () => {
+  it('drops the typed average when subject grades are submitted', async () => {
     render(<StudyJourney initialStep="grades-exact" />);
     await screen.findByLabelText('סוג תעודה');
     fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
@@ -364,7 +364,7 @@ describe('account grades in the homepage journey', () => {
     fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
     await waitFor(() => {
       const draft = JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!);
-      expect(draft.scores.bagrut.weightedAverage).toBe(95);
+      expect(draft.scores.bagrut.weightedAverage).toBeUndefined();
       expect(draft.scores.bagrut.subjectRecord.subjects).toHaveLength(2);
     });
   });
