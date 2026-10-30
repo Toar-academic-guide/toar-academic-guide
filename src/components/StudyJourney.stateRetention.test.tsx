@@ -86,7 +86,6 @@ const stored = () =>
     gradeMode: string;
     fieldLabels: Record<string, string>;
   };
-const next = () => fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
 const back = () => fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
 const submit = () =>
   fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
@@ -128,7 +127,14 @@ function fillNineSubjects() {
     [8, 'כימיה'],
   ] as const) {
     fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
-    fireEvent.change(screen.getByLabelText(`מקצוע ${index + 1}`), { target: { value: label } });
+    fireEvent.change(
+      screen
+        .getAllByLabelText(`מקצוע ${index + 1}`)
+        .find((element) => element.tagName === 'INPUT')!,
+      {
+        target: { value: label },
+      },
+    );
   }
   const subjects = screen
     .getAllByLabelText(/^מקצוע /)
@@ -177,6 +183,16 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     expect(stored().scores.bagrut?.subjectRecord).toEqual(record);
   });
 
+  it('restores the exact editor on remount even when its dynamic component is already loaded', async () => {
+    seed();
+    const first = render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    first.unmount();
+    seed({ bagrut: { subjectRecord: record } }, 'exact');
+    render(<StudyJourney initialStep="grades-exact" />);
+    await expectRecord();
+  });
+
   it('keeps committed subjects and mode through an unsubmitted average detour', async () => {
     seed({ bagrut: { subjectRecord: record } }, 'exact');
     render(<StudyJourney initialStep="review" />);
@@ -202,10 +218,13 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     withoutPsy();
     expect(stored().scores.bagrut).toEqual({ weightedAverage: 110 });
     editBagrut();
+    expect(screen.getByLabelText('ממוצע בגרות')).toHaveProperty('value', '110');
     back();
     fireEvent.click(screen.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }));
     await screen.findByLabelText('סוג תעודה');
     fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    expect(stored().gradeMode).toBe('quick');
+    expect(stored().scores.bagrut).toEqual({ weightedAverage: 110 });
     fillNineSubjects();
     submit();
     withoutPsy();
@@ -218,7 +237,7 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
     for (const [input] of state.evaluate.mock.calls) {
       expect(input.bagrut).toBeUndefined();
-      expect(input.extraInputs.bagrutSubjectRecord).toEqual(record);
+      expect(input.extraInputs?.bagrutSubjectRecord).toEqual(record);
     }
     // Exercise the actual client serialization, including its estimated flag.
     const client = await vi.importActual<typeof import('@/lib/admissionsEvaluationClient')>(
@@ -255,7 +274,7 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
     expect(state.evaluate).toHaveBeenLastCalledWith(expect.objectContaining({ bagrut: 95 }));
-    expect(state.evaluate.mock.calls[0][0].extraInputs.bagrutSubjectRecord).toBeUndefined();
+    expect(state.evaluate.mock.calls[0][0].extraInputs?.bagrutSubjectRecord).toBeUndefined();
   });
 
   it.each(['quick', 'exact'] as const)(
@@ -271,9 +290,26 @@ describe('summary Bagrut editing and exclusive submissions', () => {
       await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
       const input = state.evaluate.mock.calls[0][0];
       expect(input.bagrut).toBe(mode === 'quick' ? 110 : undefined);
-      expect(input.extraInputs.bagrutSubjectRecord).toEqual(mode === 'exact' ? record : undefined);
+      expect(input.extraInputs?.bagrutSubjectRecord).toEqual(mode === 'exact' ? record : undefined);
     },
   );
+
+  it('evaluates imported coexisting account scores on the exact journey path without rewriting the profile', async () => {
+    seed();
+    state.user = { id: 'test-account' };
+    state.scores = { bagrut: { weightedAverage: 110, subjectRecord: record } };
+    render(<StudyJourney initialStep="review" />);
+    expect(screen.getByText('9 מקצועות')).toBeTruthy();
+    expect(stored().scores).toEqual(state.scores);
+    fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+    expect(state.evaluate.mock.calls[0][0]).toMatchObject({
+      bagrut: undefined,
+      extraInputs: { bagrutSubjectRecord: record },
+    });
+    expect(state.scores.bagrut?.weightedAverage).toBe(110);
+    expect(stored().scores).toEqual(state.scores);
+  });
 
   it('keeps the explicit no-grades choice destructive', () => {
     seed({ bagrut: { subjectRecord: record } }, 'exact');
@@ -311,6 +347,27 @@ describe('saved field selection before paint', () => {
     }
     expect(screen.queryByText('טוענים מסלולים…')).toBeNull();
     expect(state.programs).toHaveBeenCalledTimes(2);
+  });
+
+  it('retains cached selections on a failed background refresh and keeps retry working', async () => {
+    seed();
+    const home = render(<StudyJourney />);
+    await act(async () => {});
+    home.unmount();
+    state.programs.mockRejectedValueOnce(new Error('temporary catalogue failure'));
+    render(<StudyJourney initialStep="subjects" />);
+    await screen.findByRole('alert');
+    expect(screen.queryByText('טוענים מסלולים…')).toBeNull();
+    for (const name of ['מדעי המחשב', 'משפטים']) {
+      expect(
+        screen
+          .getAllByRole('button', { name })
+          .every((chip) => chip.getAttribute('aria-pressed') === 'true'),
+      ).toBe(true);
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+    await waitFor(() => expect(screen.queryByRole('alert')).toBeNull());
+    expect(state.programs).toHaveBeenCalledTimes(3);
   });
 
   it('saves selected catalogue labels for a subsequent cold load and drops stale labels after loading', async () => {

@@ -1,3 +1,4 @@
+import type { AcademicScores } from '@/types';
 import { admissionScoreGap } from './admissionScoreGap';
 import { formatSekhemNumber } from './sekhemResultPresentation';
 import { institutionLink } from '@/lib/institutionLinks';
@@ -11,6 +12,24 @@ import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/program
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import { isBatchBManualProgramId } from '@/data/admissions/batchBManualProgramIds';
+
+/** Select the journey's committed Bagrut path without changing an imported account profile. */
+export function bagrutScoresForMode(
+  scores: AcademicScores,
+  gradeMode: 'quick' | 'exact' | 'none' | undefined,
+): AcademicScores {
+  if (gradeMode === undefined || !scores.bagrut) return scores;
+  const { weightedAverage, subjectRecord } = scores.bagrut;
+  return {
+    ...scores,
+    bagrut:
+      gradeMode === 'quick'
+        ? { weightedAverage }
+        : gradeMode === 'exact'
+          ? { subjectRecord }
+          : undefined,
+  };
+}
 
 export const LOCATIONS = {
   all: 'כל הארץ',

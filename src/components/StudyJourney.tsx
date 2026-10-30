@@ -3,7 +3,15 @@
 import AdmissionEstimate from './AdmissionEstimate';
 import { biuFloorVerdict, type BiuFloorResult } from '@/lib/biuFloorPresentation';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -28,6 +36,7 @@ import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalo
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
+  bagrutScoresForMode,
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
@@ -127,8 +136,17 @@ const STEPS = [
 ] as const;
 type Step = (typeof STEPS)[number];
 const DRAFT_KEY = 'myway_study_journey_v2';
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+interface JourneyCatalogue {
+  programs: CatalogueProgram[];
+  institutions: CatalogueInstitution[];
+}
+let cachedCatalogue: JourneyCatalogue | null = null;
+const EMPTY_PROGRAMS: CatalogueProgram[] = [];
+
 interface Draft {
   fields: string[];
+  fieldLabels?: Record<string, string>;
   locations: JourneyLocation[];
   types: InstitutionType[];
   scores: AcademicScores;
@@ -156,14 +174,31 @@ function readDraft(): Draft | null {
       academicScores: raw.scores,
     });
     if (!profile.success) return null;
+    const scores = profile.data.academicScores ?? {};
+    let gradeMode: Draft['gradeMode'] = ['quick', 'exact', 'none'].includes(raw.gradeMode)
+      ? raw.gradeMode
+      : undefined;
+    if (gradeMode === 'none' && scores.bagrut?.subjectRecord) gradeMode = 'exact';
+    else if (gradeMode === 'none' && scores.bagrut?.weightedAverage !== undefined)
+      gradeMode = 'quick';
     return {
       ...EMPTY,
       fields: raw.fields,
+      fieldLabels: Object.fromEntries(
+        Object.entries(
+          raw.fieldLabels && typeof raw.fieldLabels === 'object' && !Array.isArray(raw.fieldLabels)
+            ? raw.fieldLabels
+            : {},
+        ).filter(
+          (entry): entry is [string, string] =>
+            raw.fields.includes(entry[0]) && typeof entry[1] === 'string' && !!entry[1].trim(),
+        ),
+      ),
       locations: raw.locations,
       types: raw.types,
-      scores: profile.data.academicScores ?? {},
+      scores,
       target: raw.target >= 200 && raw.target <= 800 ? raw.target : undefined,
-      gradeMode: ['quick', 'exact', 'none'].includes(raw.gradeMode) ? raw.gradeMode : undefined,
+      gradeMode,
       psyMode: ['score', 'target', 'none'].includes(raw.psyMode) ? raw.psyMode : undefined,
       selectedRowId: typeof raw.selectedRowId === 'string' ? raw.selectedRowId : undefined,
     };
@@ -239,10 +274,19 @@ export default function StudyJourney({
   const [ready, setReady] = useState(false);
   const hadStoredDraft = useRef(false);
   const [step, setStep] = useState<Step>(initialStep);
-  const [programs, setPrograms] = useState<CatalogueProgram[]>([]);
-  const [institutions, setInstitutions] = useState<CatalogueInstitution[]>([]);
+  const [catalogue, setCatalogue] = useState<JourneyCatalogue | null>(null);
+  const programs = catalogue?.programs ?? EMPTY_PROGRAMS;
+  const [quickAverage, setQuickAverage] = useState<string | null>(null);
+  const quickAverageValue =
+    quickAverage ??
+    (draft.gradeMode === 'quick' ? String(draft.scores.bagrut?.weightedAverage ?? '') : '');
+  const journeyScores = useMemo(
+    () => bagrutScoresForMode(draft.scores, draft.gradeMode),
+    [draft.scores, draft.gradeMode],
+  );
   const [catalogueError, setCatalogueError] = useState('');
-  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueRefreshing, setCatalogueRefreshing] = useState(true);
+  const catalogueLoading = !catalogue && catalogueRefreshing;
   const [query, setQuery] = useState('');
   const [quizPrompt, setQuizPrompt] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
@@ -268,6 +312,7 @@ export default function StudyJourney({
     (next: Step) => {
       focusHeadingOnNavigation.current = true;
       setStep(next);
+      setQuickAverage(null);
       setMessage('');
       if (next === 'home') router.push(ROUTES.home);
       else if (window.location.hash !== `#${next}`) {
@@ -278,7 +323,8 @@ export default function StudyJourney({
     },
     [router],
   );
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
+    if (cachedCatalogue) setCatalogue(cachedCatalogue);
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
     if (stored) {
@@ -289,6 +335,7 @@ export default function StudyJourney({
     const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
       focusHeadingOnNavigation.current = !!event;
+      setQuickAverage(null);
       setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
@@ -343,39 +390,52 @@ export default function StudyJourney({
     else if (dialog.current?.open) dialog.current.close();
   }, [quizPrompt]);
   const loadCatalogue = useCallback(async () => {
-    setCatalogueLoading(true);
+    setCatalogueRefreshing(true);
     setCatalogueError('');
     try {
       const [nextPrograms, nextInstitutions] = await Promise.all([
         fetchCataloguePrograms(),
         fetchCatalogueInstitutions(),
       ]);
-      setPrograms(nextPrograms);
-      setInstitutions(nextInstitutions);
+      cachedCatalogue = { programs: nextPrograms, institutions: nextInstitutions };
+      setCatalogue(cachedCatalogue);
     } catch {
       setCatalogueError('לא הצלחנו לטעון את המסלולים. נסו שוב.');
     } finally {
-      setCatalogueLoading(false);
+      setCatalogueRefreshing(false);
     }
   }, []);
   useEffect(() => {
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
+  useEffect(() => {
+    if (!catalogue) return;
+    setDraft((current) => {
+      const fieldLabels = Object.fromEntries(
+        fields
+          .filter((field) => current.fields.includes(field.id))
+          .map((field) => [field.id, field.name]),
+      );
+      return JSON.stringify(current.fieldLabels) === JSON.stringify(fieldLabels)
+        ? current
+        : { ...current, fieldLabels };
+    });
+  }, [catalogue, fields, draft.fields]);
   const selectedFieldIds = useMemo(
     () => selectedStudyFieldIds(fields, draft.fields),
     [fields, draft.fields],
   );
   const allRows = useMemo(
-    () => journeyRows(studyFields(programs, true), institutions),
-    [programs, institutions],
+    () => journeyRows(studyFields(programs, true), catalogue?.institutions ?? []),
+    [programs, catalogue],
   );
   const preselectedProgram = useRef<string | null>(null);
   useEffect(() => {
     if (
       !initialProgramId ||
       !ready ||
-      catalogueLoading ||
+      catalogueRefreshing ||
       preselectedProgram.current === initialProgramId
     )
       return;
@@ -393,7 +453,7 @@ export default function StudyJourney({
       selectedRowId: row?.id,
     }));
     setActiveId(row?.id ?? null);
-  }, [initialProgramId, ready, catalogueLoading, fields, allRows]);
+  }, [initialProgramId, ready, catalogueRefreshing, fields, allRows]);
   const selectedRows = useMemo(
     () =>
       distinctRecommendations(allRows).filter(
@@ -531,7 +591,7 @@ export default function StudyJourney({
     evaluationScope === 'saved' || (evaluationScope === 'detail' && detailOrigin === 'saved');
   const evaluationScores = usesSavedGrades
     ? (profile.academicScores ?? EMPTY.scores)
-    : draft.scores;
+    : journeyScores;
   const evaluationTarget = usesSavedGrades ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
     evaluationScope,
@@ -547,7 +607,7 @@ export default function StudyJourney({
       viewedResults.current = '';
       return;
     }
-    if (!ready || catalogueLoading || catalogueError || calculating) return;
+    if (!ready || catalogueRefreshing || catalogueError || calculating) return;
     // Wait for the current calculation, including when older reports are still rendered.
     if (draft.fields.length && rows.length && lastEvaluation.current !== resultSignature) return;
     if (draft.fields.length && rows.some((row) => !row.result && !row.failed)) return;
@@ -568,7 +628,7 @@ export default function StudyJourney({
   }, [
     step,
     ready,
-    catalogueLoading,
+    catalogueRefreshing,
     catalogueError,
     calculating,
     draft.fields.length,
@@ -577,7 +637,7 @@ export default function StudyJourney({
     resultSignature,
   ]);
   useEffect(() => {
-    if (!ready || catalogueLoading || !evaluationScope) return;
+    if (!ready || catalogueRefreshing || !evaluationScope) return;
     if (['saved', 'detail'].includes(evaluationScope) && initialProfileStatus !== 'ready') return;
     // A detail reached from results already has a report; a refreshed detail does not.
     if (evaluationScope === 'detail' && (activeRow?.result || activeRow?.failed)) return;
@@ -596,7 +656,7 @@ export default function StudyJourney({
     activeRow?.result,
     activeRow?.failed,
     ready,
-    catalogueLoading,
+    catalogueRefreshing,
     initialProfileStatus,
     resultSignature,
     evaluationTargets,
@@ -976,9 +1036,12 @@ export default function StudyJourney({
             {!!draft.fields.length && (
               <Chips
                 items={Object.fromEntries(
-                  fields
-                    .filter((field) => draft.fields.includes(field.id))
-                    .map((field) => [field.id, field.name]),
+                  draft.fields.flatMap((id) => {
+                    const label =
+                      fields.find((field) => field.id === id)?.name ??
+                      (!catalogue ? draft.fieldLabels?.[id] : undefined);
+                    return label ? [[id, label]] : [];
+                  }),
                 )}
                 selected={draft.fields}
                 onSelect={(id) => patch({ fields: toggle(draft.fields, id) })}
@@ -1080,22 +1143,12 @@ export default function StudyJourney({
         {step === 'grade-mode' && (
           <section className="journey-narrow">
             <div className="journey-choice-list">
-              <button
-                onClick={() => {
-                  patch({ gradeMode: 'quick' });
-                  go('grades-quick');
-                }}
-              >
+              <button onClick={() => go('grades-quick')}>
                 <strong>יש לי ממוצע בגרות</strong>
                 <span>מזינים ממוצע וממשיכים</span>
                 <ArrowLeft size={20} />
               </button>
-              <button
-                onClick={() => {
-                  patch({ gradeMode: 'exact' });
-                  go('grades-exact');
-                }}
-              >
+              <button onClick={() => go('grades-exact')}>
                 <strong>יש לי ציונים לפי מקצוע</strong>
                 <span>מזינים ציונים או מעלים גיליון PDF</span>
                 <ArrowLeft size={20} />
@@ -1127,6 +1180,15 @@ export default function StudyJourney({
             className="journey-narrow"
             onSubmit={(event) => {
               event.preventDefault();
+              patch({
+                gradeMode: 'quick',
+                scores: {
+                  ...draft.scores,
+                  bagrut: {
+                    weightedAverage: quickAverageValue ? Number(quickAverageValue) : undefined,
+                  },
+                },
+              });
               afterGrades();
             }}
           >
@@ -1139,14 +1201,8 @@ export default function StudyJourney({
                 max={120}
                 step="any"
                 required
-                value={draft.scores.bagrut?.weightedAverage ?? ''}
-                onChange={(event) =>
-                  patchScores({
-                    bagrut: {
-                      weightedAverage: event.target.value ? Number(event.target.value) : undefined,
-                    },
-                  })
-                }
+                value={quickAverageValue}
+                onChange={(event) => setQuickAverage(event.target.value)}
               />
             </label>
             <div className="journey-actions">
@@ -1154,15 +1210,13 @@ export default function StudyJourney({
             </div>
           </form>
         )}
-        {step === 'grades-exact' && (
+        {step === 'grades-exact' && ready && (
           <JourneyExactGrades
             initialRecord={draft.scores.bagrut?.subjectRecord}
             onComplete={(record) => {
-              patchScores({
-                bagrut: {
-                  ...draft.scores.bagrut,
-                  subjectRecord: record,
-                },
+              patch({
+                gradeMode: 'exact',
+                scores: { ...draft.scores, bagrut: { subjectRecord: record } },
               });
               afterGrades();
             }}
@@ -1294,10 +1348,16 @@ export default function StudyJourney({
                 ['איפה לומדים', draft.locations.map((id) => LOCATIONS[id]).join(', '), 'regions'],
                 [
                   'בגרות',
-                  draft.scores.bagrut?.subjectRecord
-                    ? `${draft.scores.bagrut.subjectRecord.subjects.length} מקצועות`
-                    : (draft.scores.bagrut?.weightedAverage ?? 'ללא ציון כרגע'),
-                  'grade-mode',
+                  draft.gradeMode === 'quick'
+                    ? `ממוצע שהזנת: ${journeyScores.bagrut?.weightedAverage ?? ''}`
+                    : draft.gradeMode === 'exact'
+                      ? `${journeyScores.bagrut?.subjectRecord?.subjects.length ?? 0} מקצועות`
+                      : 'ללא ציון כרגע',
+                  draft.gradeMode === 'exact'
+                    ? 'grades-exact'
+                    : draft.gradeMode === 'quick'
+                      ? 'grades-quick'
+                      : 'grade-mode',
                 ],
                 [
                   'פסיכומטרי',
@@ -1318,6 +1378,7 @@ export default function StudyJourney({
                 </div>
               ))}
             </div>
+            <p className="journey-helper">הממוצע של כל מוסד מופיע בתוצאות</p>
             <div className="journey-actions">
               <Primary onClick={startResults}>לגלות את האפשרויות שלי</Primary>
             </div>
@@ -1388,7 +1449,7 @@ export default function StudyJourney({
                   onClick={() =>
                     void evaluate(
                       selectedRows.filter((row) => failedReports.includes(row.program.id)),
-                      draft.scores,
+                      journeyScores,
                       simulation ?? draft.target,
                       true,
                     )
