@@ -56,10 +56,11 @@ describe('JourneyExactGrades blank rows', () => {
   };
   const submit = () => fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
 
-  it('starts compulsory one-unit-minimum subjects empty and keeps clearing a units field empty', () => {
+  it('starts compulsory one-unit-minimum subjects at 2 and keeps clearing a units field empty', () => {
     render(<JourneyExactGrades onComplete={vi.fn()} />);
     for (const subject of ['תנ״ך', 'ספרות', 'הבעה עברית', 'היסטוריה / תע״י', 'אזרחות']) {
-      expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('');
+      // Approved test update, Jorje 2026-10-30
+      expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('2');
     }
     expect(field(`יחידות ${rowNumber('מתמטיקה')}`).value).toBe('3');
     const civics = field(`יחידות ${rowNumber('אזרחות')}`);
@@ -73,7 +74,10 @@ describe('JourneyExactGrades blank rows', () => {
     render(<JourneyExactGrades onComplete={onComplete} />);
     fillMathAndEnglish();
     const compulsory = ['תנ״ך', 'ספרות', 'הבעה עברית', 'היסטוריה / תע״י', 'אזרחות'];
-    for (const subject of compulsory) expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('');
+    for (const subject of compulsory) {
+      // Approved test update, Jorje 2026-10-30
+      expect(field(`יחידות ${rowNumber(subject)}`).value).toBe('2');
+    }
     submit();
     const withBlankRows = onComplete.mock.calls[0][0];
     for (let index = labels().length; index >= 1; index--) {
@@ -99,14 +103,25 @@ describe('JourneyExactGrades blank rows', () => {
     expect(calculateOptimizedBagrutAverage(withoutBlankRows, policy)).toEqual(average);
   });
 
-  it('requires explicit units when a compulsory grade is entered', () => {
+  it('uses default units when a compulsory grade is entered', () => {
     const onComplete = vi.fn();
     render(<JourneyExactGrades onComplete={onComplete} />);
     fillMathAndEnglish();
     fireEvent.change(field(`ציון ${rowNumber('אזרחות')}`), { target: { value: '90' } });
-    expect(field(`יחידות ${rowNumber('אזרחות')}`).validity.valueMissing).toBe(true);
+    // Approved test update, Jorje 2026-10-30
+    expect(field(`יחידות ${rowNumber('אזרחות')}`).validity.valueMissing).toBe(false);
     submit();
-    expect(onComplete).not.toHaveBeenCalled();
+    // Approved test update, Jorje 2026-10-30
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        complete: true,
+        subjects: [
+          { subjectId: 'civics', units: 2, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'english', units: 5, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ],
+      }),
+    );
   });
 
   it('preserves units from a saved subject record', () => {
@@ -368,3 +383,96 @@ it.each(['8.5', '-3', '85a', ' 90', '101'])(
     );
   },
 );
+
+describe('new-row defaults in journey', () => {
+  const unitsFor = (label: string) => {
+    const index = screen
+      .getAllByLabelText(/^מקצוע /)
+      .findIndex((input) => (input as HTMLInputElement).value === label);
+    return screen.getByLabelText(`יחידות ${index + 1}`);
+  };
+
+  it('defaults starters to 2 or 3 and excludes untouched starters from the record', () => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    expect(unitsFor('אזרחות')).toHaveProperty('value', '2');
+    expect(unitsFor('אנגלית')).toHaveProperty('value', '3');
+    expect(unitsFor('מתמטיקה')).toHaveProperty('value', '3');
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    fireEvent.change(screen.getByLabelText('ציון 4'), { target: { value: '90' } });
+    expect(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!.checkValidity()).toBe(
+      true,
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
+    expect(onComplete.mock.calls[0][0]).toEqual({
+      schemaVersion: 2,
+      sector: 'jewish',
+      certificateType: 'internal',
+      complete: true,
+      subjects: [{ subjectId: 'english', units: 3, grade: 90, assessmentKind: 'exam' }],
+    });
+  });
+
+  it.each(['ערבי', 'דרוזי'])(
+    'replaces untouched starters and defaults Hebrew to 3 in %s',
+    (sector) => {
+      render(<JourneyExactGrades onComplete={vi.fn()} />);
+      fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: sector } });
+      expect(unitsFor('עברית')).toHaveProperty('value', '3');
+      expect(unitsFor('ערבית')).toHaveProperty('value', '2');
+      expect(
+        screen.getAllByLabelText(/^מקצוע /).map((input) => (input as HTMLInputElement).value),
+      ).toEqual(SECTORS[sector].map((subject) => subject.n));
+    },
+  );
+
+  it('recomputes an added Hebrew row on sector changes until units are chosen', () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    fireEvent.change(screen.getByLabelText('מקצוע 8'), { target: { value: 'עברית' } });
+    expect(unitsFor('עברית')).toHaveProperty('value', '2');
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(unitsFor('עברית')).toHaveProperty('value', '3');
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'יהודי' } });
+    expect(unitsFor('עברית')).toHaveProperty('value', '2');
+  });
+
+  it.each(['4', ''])('preserves picked units %j through label and sector changes', (value) => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value } });
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(unitsFor('עברית')).toHaveProperty('value', value);
+  });
+
+  it.each([2, 4])('preserves initialRecord units %s through label and sector changes', (units) => {
+    render(
+      <JourneyExactGrades
+        onComplete={vi.fn()}
+        initialRecord={{
+          schemaVersion: 2,
+          sector: 'jewish',
+          certificateType: 'internal',
+          complete: false,
+          subjects: [{ subjectId: 'english', units, grade: 90, assessmentKind: 'exam' }],
+        }}
+      />,
+    );
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', String(units));
+  });
+
+  it('preserves imported legacy units through label and sector changes', async () => {
+    const { readBagrutPdf } = await import('@/lib/bagrutPdf');
+    vi.mocked(readBagrutPdf).mockResolvedValueOnce([{ label: 'אנגלית', units: 2, grade: 90 }]);
+    const { container } = render(<JourneyExactGrades onComplete={vi.fn()} />);
+    fireEvent.change(container.querySelector('input[type="file"]')!, {
+      target: { files: [new File(['pdf'], 'grades.pdf', { type: 'application/pdf' })] },
+    });
+    await screen.findByText('בדקתי את הציונים שזוהו מול התעודה ותיקנתי או השלמתי את הנדרש');
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
+  });
+});

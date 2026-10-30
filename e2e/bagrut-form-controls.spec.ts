@@ -78,7 +78,9 @@ for (const width of [1280, 390]) {
             : 'יחידות כימיה 1',
         { exact: true },
       );
-      await expect(units).toHaveValue('');
+      // Approved test update, Jorje 2026-10-30
+      await expect(units).toHaveValue(step === 'mandatory' ? '3' : '2');
+      await units.selectOption('');
       const metrics = await units.evaluate((element) => {
         const select = element as HTMLSelectElement;
         const style = getComputedStyle(select);
@@ -159,5 +161,27 @@ for (const width of [1280, 390]) {
         width,
       );
     }
+  });
+}
+
+for (const width of [1280, 390]) {
+  test(`journey new-row defaults follow label and sector at ${width}px`, async ({ page }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.route('**/api/enquiries', (route) => route.abort());
+    await page.goto('/app/calculator#grades-exact');
+    await expect(page.getByLabel('יחידות 4', { exact: true })).toHaveValue('3');
+    await page.getByRole('button', { name: /הוספת מקצוע/ }).click();
+    const units = page.getByLabel('יחידות 8', { exact: true });
+    const label = page.getByLabel('מקצוע 8', { exact: true });
+    await expect(units).toHaveValue('2');
+    await label.fill('אנגלית');
+    await expect(units).toHaveValue('3');
+    await label.fill('עברית');
+    await expect(units).toHaveValue('2');
+    await page.getByRole('combobox', { name: 'מגזר', exact: true }).selectOption('ערבי');
+    await expect(units).toHaveValue('3');
+    await units.selectOption('4');
+    await label.fill('כימיה');
+    await expect(units).toHaveValue('4');
   });
 }

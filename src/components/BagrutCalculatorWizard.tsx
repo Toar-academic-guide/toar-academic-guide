@@ -9,12 +9,13 @@ import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagru
 
 import { SECTORS, ALL_SUBJECTS } from '@/data/bagrutSubjects';
 import { bagrutGradeError, parseBagrutGrade } from './BagrutSubjectRows';
-import { unitOptionsFor } from './bagrutUnitOptions';
+import { defaultUnitsFor, unitOptionsFor } from './bagrutUnitOptions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 interface MandGrade {
   units: number | '';
+  autoUnits?: boolean;
   grade: number | '';
   gradeText?: string;
 }
@@ -75,7 +76,11 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
   const [sector, setSector] = useState('יהודי');
   const [certificateType, setCertificateType] = useState<BagrutCertificateType>('other');
   const [mandGrades, setMandGrades] = useState<MandGrade[]>(
-    SECTORS['יהודי'].map(() => ({ units: '' as const, grade: '' })),
+    SECTORS['יהודי'].map((subject) => ({
+      units: defaultUnitsFor(subject.n, 'יהודי'),
+      autoUnits: true,
+      grade: '',
+    })),
   );
   const [electives, setElectives] = useState<ElectiveRow[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
@@ -104,7 +109,22 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
   function handleSetSector(sec: string) {
     invalidateCalculatedRecord();
     setSector(sec);
-    setMandGrades(SECTORS[sec].map(() => ({ units: '' as const, grade: '' })));
+    setMandGrades(
+      SECTORS[sec].map((subject) => {
+        const previous = mandGrades[SECTORS[sector].findIndex((item) => item.n === subject.n)];
+        return previous
+          ? {
+              ...previous,
+              units: previous.autoUnits ? defaultUnitsFor(subject.n, sec) : previous.units,
+            }
+          : { units: defaultUnitsFor(subject.n, sec), autoUnits: true, grade: '' };
+      }),
+    );
+    setElectives((previous) =>
+      previous.map((row) =>
+        row.autoUnits ? { ...row, units: defaultUnitsFor(row.name, sec) } : row,
+      ),
+    );
   }
 
   function goStep(n: number) {
@@ -115,7 +135,9 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
   function updateMandUnits(i: number, v: number | '') {
     invalidateCalculatedRecord();
-    setMandGrades((prev) => prev.map((mg, idx) => (idx === i ? { ...mg, units: v } : mg)));
+    setMandGrades((prev) =>
+      prev.map((mg, idx) => (idx === i ? { ...mg, units: v, autoUnits: false } : mg)),
+    );
   }
 
   function updateMandGrade(i: number, text: string) {
@@ -130,7 +152,10 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
   function addElective(name: string) {
     if (!electives.find((e) => e.name === name)) {
       invalidateCalculatedRecord();
-      setElectives((prev) => [...prev, { name, units: '', grade: '' }]);
+      setElectives((prev) => [
+        ...prev,
+        { name, units: defaultUnitsFor(name, sector), autoUnits: true, grade: '' },
+      ]);
     }
     setSearchQuery('');
     setDropOpen(false);
@@ -143,7 +168,9 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
   function updateElectiveUnits(idx: number, v: number | '') {
     invalidateCalculatedRecord();
-    setElectives((prev) => prev.map((e, i) => (i === idx ? { ...e, units: v } : e)));
+    setElectives((prev) =>
+      prev.map((e, i) => (i === idx ? { ...e, units: v, autoUnits: false } : e)),
+    );
   }
 
   function updateElectiveGrade(idx: number, text: string) {
@@ -193,7 +220,13 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
   function resetWizard() {
     setElectives([]);
-    setMandGrades(SECTORS[sector].map(() => ({ units: '' as const, grade: '' })));
+    setMandGrades(
+      SECTORS[sector].map((subject) => ({
+        units: defaultUnitsFor(subject.n, sector),
+        autoUnits: true,
+        grade: '',
+      })),
+    );
     setComputedAvg(null);
     setStructuredRecord(null);
     setCertificateType('other');

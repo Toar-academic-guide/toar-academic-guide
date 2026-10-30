@@ -26,7 +26,8 @@ describe('BagrutSubjectRows', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
     expect(screen.getByLabelText('מקצוע 2')).toHaveProperty('value', '');
-    expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '');
+    // Approved test update, Jorje 2026-10-30
+    expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '2');
     fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 1' }));
     expect(screen.queryByLabelText('מקצוע 2')).toBeNull();
     expect(screen.getByLabelText('מקצוע 1')).toHaveProperty('value', '');
@@ -104,7 +105,7 @@ it('renders field messages in one full-width row after the invalid subject row',
   }
 });
 
-it('uses plural headings, an empty units choice and a text grade without spinners', () => {
+it('uses plural headings, default units with a clearable choice and a text grade without spinners', () => {
   render(<SubjectRows />);
   for (const name of ['מקצועות', 'יחידות', 'ציונים']) {
     expect(screen.getByRole('columnheader', { name })).toBeTruthy();
@@ -115,7 +116,9 @@ it('uses plural headings, an empty units choice and a text grade without spinner
   expect(grade.getAttribute('inputmode')).toBe('numeric');
   fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
   const units = screen.getByRole('combobox', { name: 'יחידות 2' });
-  expect(units).toHaveProperty('value', '');
+  // Approved test update, Jorje 2026-10-30
+  expect(units).toHaveProperty('value', '2');
+  fireEvent.change(units, { target: { value: '' } });
   expect(within(units).getByRole('option', { name: 'בחירה' })).toHaveProperty('selected', true);
 });
 
@@ -196,3 +199,48 @@ it.each(['8.5', '-3', '85a', ' 90', '101'])(
     expect(grade.validity.valueMissing).toBe(true);
   },
 );
+
+describe('new-row defaults in shared rows', () => {
+  function NewRows() {
+    const [rows, setRows] = useState<BagrutWizardSubjectInput[]>([]);
+    return <BagrutSubjectRows rows={rows} onChange={setRows} />;
+  }
+
+  it('starts an empty added row at 2 and recomputes defaults as its label is typed', () => {
+    render(<NewRows />);
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    const units = screen.getByLabelText('יחידות 1');
+    expect(units).toHaveProperty('value', '2');
+    for (const [label, value] of [
+      ['כימיה', '2'],
+      ['אנגלית', '3'],
+      ['מתמטיקה', '3'],
+      ['כימיה', '2'],
+    ]) {
+      fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: label } });
+      expect(units).toHaveProperty('value', value);
+    }
+  });
+
+  it.each(['4', ''])('preserves explicitly chosen units %j across label edits', (value) => {
+    render(<NewRows />);
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value } });
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'אנגלית' } });
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', value);
+    expect(
+      within(screen.getByLabelText('יחידות 1')).getByRole('option', { name: 'בחירה' }),
+    ).toBeTruthy();
+  });
+
+  it('keeps unit ownership with the row when an earlier row is removed', () => {
+    render(<NewRows />);
+    const add = screen.getByRole('button', { name: /הוספת מקצוע/ });
+    fireEvent.click(add);
+    fireEvent.click(add);
+    fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: '4' } });
+    fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 1' }));
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'אנגלית' } });
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '3');
+  });
+});

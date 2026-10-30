@@ -4,7 +4,10 @@ import { useEffect, useRef, useState } from 'react';
 import BagrutSubjectRows, {
   type BagrutSubjectRow,
   type BagrutFieldErrors,
+  rowsForSector,
+  subjectRowValues,
 } from '@/components/BagrutSubjectRows';
+import { defaultUnitsFor } from '@/components/bagrutUnitOptions';
 import EnquiryForm from '@/components/EnquiryForm';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import { institutionShortName, type ResultInputTarget } from '@/lib/sekhemResultPresentation';
@@ -24,8 +27,14 @@ import SekhemResults from './SekhemResults';
 import './sekhem.css';
 
 const subjectNames = ['מתמטיקה', 'אנגלית', 'פיזיקה', 'מדעי המחשב'];
-const emptyRows = (): BagrutSubjectRow[] =>
-  subjectNames.map((label) => ({ label, units: 5, grade: '', assessmentKind: 'exam' }));
+const emptyRows = (sector = 'יהודי'): BagrutSubjectRow[] =>
+  subjectNames.map((label) => ({
+    label,
+    units: defaultUnitsFor(label, sector),
+    autoUnits: true,
+    grade: '',
+    assessmentKind: 'exam',
+  }));
 const exampleRows = (): BagrutSubjectRow[] =>
   (
     [
@@ -73,7 +82,7 @@ export default function SekhemCalculator({
   offerings: CalculatorOffering[];
   initialProgramId?: string;
 }) {
-  const [rows, setRows] = useState(emptyRows);
+  const [rows, setRows] = useState(() => emptyRows());
   const [psychometric, setPsychometric] = useState('');
   const [verbal, setVerbal] = useState('');
   const [quantitative, setQuantitative] = useState('');
@@ -128,7 +137,16 @@ export default function SekhemCalculator({
     else {
       invalidate();
       pendingFocus.current = { index: rows.length, field: target.field };
-      setRows([...rows, { label: target.subject, units: '', grade: '', assessmentKind: 'exam' }]);
+      setRows([
+        ...rows,
+        {
+          label: target.subject,
+          units: defaultUnitsFor(target.subject, sector),
+          autoUnits: true,
+          grade: '',
+          assessmentKind: 'exam',
+        },
+      ]);
     }
   }
   const generation = useRef(0);
@@ -179,7 +197,7 @@ export default function SekhemCalculator({
     if (restoredFor?.offerings !== offerings || restoredFor.initialProgramId !== initialProgramId)
       return;
     const snapshot = {
-      rows,
+      rows: subjectRowValues(rows),
       psychometric,
       verbal,
       quantitative,
@@ -241,7 +259,7 @@ export default function SekhemCalculator({
     let applicant;
     try {
       applicant = buildSekhemInput({
-        rows,
+        rows: subjectRowValues(rows),
         psychometric,
         verbal,
         quantitative,
@@ -369,6 +387,7 @@ export default function SekhemCalculator({
                 onChange={(event) => {
                   invalidate();
                   setSector(event.target.value);
+                  setRows(rowsForSector(rows, event.target.value));
                 }}
               >
                 {Object.keys(SECTORS).map((value) => (

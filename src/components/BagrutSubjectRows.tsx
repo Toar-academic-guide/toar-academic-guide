@@ -2,11 +2,30 @@
 
 import { Fragment, useId } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
-import { unitOptionsFor } from './bagrutUnitOptions';
+import { defaultUnitsFor, unitOptionsFor } from './bagrutUnitOptions';
 import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
 import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
-export type BagrutSubjectRow = BagrutWizardSubjectInput & { gradeText?: string };
+export type BagrutSubjectRow = BagrutWizardSubjectInput & {
+  gradeText?: string;
+  // UI only: absent on restored/imported rows, false after any explicit units choice.
+  autoUnits?: boolean;
+};
+
+export function rowsForSector(rows: BagrutSubjectRow[], sector: string): BagrutSubjectRow[] {
+  return rows.map((row) =>
+    row.autoUnits ? { ...row, units: defaultUnitsFor(row.label, sector) } : row,
+  );
+}
+
+export function subjectRowValues(rows: BagrutSubjectRow[]): BagrutWizardSubjectInput[] {
+  return rows.map(({ label, units, grade, assessmentKind }) => ({
+    label,
+    units,
+    grade,
+    assessmentKind,
+  }));
+}
 
 export function parseBagrutGrade(text: string): number | '' {
   return text === '' ? '' : /^\d+$/.test(text) ? Number(text) : Number.NaN;
@@ -73,7 +92,14 @@ export default function BagrutSubjectRows({
                     value={row.label}
                     required={!isBlankRow(row)}
                     disabled={disabled}
-                    onChange={(event) => change(index, { label: event.target.value })}
+                    onChange={(event) =>
+                      change(index, {
+                        label: event.target.value,
+                        ...(row.autoUnits
+                          ? { units: defaultUnitsFor(event.target.value, sector) }
+                          : {}),
+                      })
+                    }
                   />
                   {row.assessmentKind !== 'exam' && (
                     <small>
@@ -99,6 +125,7 @@ export default function BagrutSubjectRows({
                     onChange={(event) =>
                       change(index, {
                         units: event.target.value === '' ? '' : Number(event.target.value),
+                        autoUnits: false,
                       })
                     }
                   >
@@ -186,7 +213,16 @@ export default function BagrutSubjectRows({
         disabled={disabled}
         type="button"
         onClick={() =>
-          onChange([...rows, { label: '', units: '', grade: '', assessmentKind: 'exam' }])
+          onChange([
+            ...rows,
+            {
+              label: '',
+              units: defaultUnitsFor('', sector),
+              autoUnits: true,
+              grade: '',
+              assessmentKind: 'exam',
+            },
+          ])
         }
       >
         <Plus size={16} className="inline" /> הוספת מקצוע

@@ -51,14 +51,15 @@ describe('BagrutCalculatorWizard', () => {
     );
   });
 
-  it('uses empty sector-aware units selects and text grades without final-project controls', () => {
+  it('uses sector-aware default units selects and text grades without final-project controls', () => {
     render(<BagrutCalculatorWizard onComplete={vi.fn()} />);
     fireEvent.click(screen.getByRole('button', { name: 'המשיכו למקצועות חובה ←' }));
     expect(screen.queryByRole('button', { name: /עבודת גמר/ })).toBeNull();
     expect(screen.queryAllByRole('spinbutton')).toHaveLength(0);
     for (const name of ['אנגלית', 'מתמטיקה']) {
       const units = screen.getByRole('combobox', { name: `יחידות ${name}` }) as HTMLSelectElement;
-      expect(units.value).toBe('');
+      // Approved test update, Jorje 2026-10-30
+      expect(units.value).toBe('3');
       expect(Array.from(units.options, (o) => o.value)).toEqual(['', '3', '4', '5']);
     }
     expect(screen.getAllByText('יחידות')).toHaveLength(7);
@@ -69,7 +70,8 @@ describe('BagrutCalculatorWizard', () => {
     fireEvent.click(screen.getByRole('button', { name: 'הציגו רשימה מלאה' }));
     fireEvent.click(screen.getByRole('button', { name: 'כימיה' }));
     const units = screen.getByRole('combobox', { name: 'יחידות כימיה 1' }) as HTMLSelectElement;
-    expect(units.value).toBe('');
+    // Approved test update, Jorje 2026-10-30
+    expect(units.value).toBe('2');
     expect(Array.from(units.options, (o) => o.value)).toEqual(['', '1', '2', '3', '4', '5']);
     expect(within(units).queryByRole('option', { name: '10' })).toBeNull();
     expect(screen.queryAllByRole('spinbutton')).toHaveLength(0);
@@ -99,7 +101,7 @@ describe('BagrutCalculatorWizard', () => {
 });
 
 it.each(['abc', '90.5', '101'])(
-  'blocks invalid grade %s and ignores missing units after correction',
+  'blocks invalid grade %s and counts default units after correction',
   (invalid) => {
     const onStructuredComplete = vi.fn();
     render(
@@ -120,14 +122,21 @@ it.each(['abc', '90.5', '101'])(
     fireEvent.change(screen.getByLabelText('ציון אנגלית'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'המשיכו למקצועות בחירה ←' }));
     fireEvent.click(screen.getByRole('button', { name: 'חשבו ממוצע בגרות ←' }));
-    expect(screen.getByText('90.0')).toBeTruthy();
-    expect(screen.getByText('יחידות לימוד').previousElementSibling?.textContent).toBe('5');
-    expect(screen.getByText('מקצועות חובה').previousElementSibling?.textContent).toBe('1');
+    // Approved test update, Jorje 2026-10-30
+    expect(screen.getByText('92.9')).toBeTruthy();
+    // Approved test update, Jorje 2026-10-30
+    expect(screen.getByText('יחידות לימוד').previousElementSibling?.textContent).toBe('7');
+    // Approved test update, Jorje 2026-10-30
+    expect(screen.getByText('מקצועות חובה').previousElementSibling?.textContent).toBe('2');
     fireEvent.click(screen.getByRole('button', { name: 'השתמשו באומדן זה ←' }));
+    // Approved test update, Jorje 2026-10-30
     expect(onStructuredComplete).toHaveBeenCalledWith(
       expect.objectContaining({
         complete: false,
-        subjects: [{ subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' }],
+        subjects: [
+          { subjectId: 'civics', units: 2, grade: 100, assessmentKind: 'exam' },
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ],
       }),
     );
   },
@@ -181,4 +190,65 @@ it.each(
     grade: 85,
     assessmentKind: 'exam',
   });
+});
+
+describe('new-row defaults in wizard', () => {
+  const mandatory = () =>
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו למקצועות חובה ←' }));
+  const elective = () => {
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו למקצועות בחירה ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'הציגו רשימה מלאה' }));
+    fireEvent.click(screen.getByRole('button', { name: 'כימיה' }));
+  };
+
+  it('defaults mandatory and elective rows and emits only record fields', () => {
+    const onStructuredComplete = vi.fn();
+    render(
+      <BagrutCalculatorWizard onComplete={vi.fn()} onStructuredComplete={onStructuredComplete} />,
+    );
+    mandatory();
+    expect(screen.getByLabelText('יחידות אנגלית')).toHaveProperty('value', '3');
+    expect(screen.getByLabelText('יחידות מתמטיקה')).toHaveProperty('value', '3');
+    expect(screen.getByLabelText('יחידות אזרחות')).toHaveProperty('value', '2');
+    fireEvent.change(screen.getByLabelText('ציון מתמטיקה'), { target: { value: '90' } });
+    elective();
+    expect(screen.getByLabelText('יחידות כימיה 1')).toHaveProperty('value', '2');
+    fireEvent.change(screen.getByLabelText('ציון כימיה 1'), { target: { value: '80' } });
+    fireEvent.click(screen.getByRole('button', { name: 'חשבו ממוצע בגרות ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'השתמשו באומדן זה ←' }));
+    expect(onStructuredComplete.mock.calls[0][0].subjects).toEqual([
+      { subjectId: 'chemistry', units: 2, grade: 80, assessmentKind: 'exam' },
+      { subjectId: 'mathematics', units: 3, grade: 90, assessmentKind: 'exam' },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'חישוב מחדש' }));
+    mandatory();
+    expect(screen.getByLabelText('יחידות מתמטיקה')).toHaveProperty('value', '3');
+    expect(screen.getByLabelText('יחידות אזרחות')).toHaveProperty('value', '2');
+  });
+
+  it.each(['ערבי', 'דרוזי'])('defaults Hebrew to 3 after selecting %s', (sector) => {
+    render(<BagrutCalculatorWizard onComplete={vi.fn()} />);
+    fireEvent.click(screen.getByRole('button', { name: sector }));
+    mandatory();
+    expect(screen.getByLabelText('יחידות עברית')).toHaveProperty('value', '3');
+    expect(screen.getByLabelText('יחידות ערבית')).toHaveProperty('value', '2');
+  });
+
+  it.each(['4', ''])(
+    'preserves picked mandatory and elective units %j on sector changes',
+    (value) => {
+      render(<BagrutCalculatorWizard onComplete={vi.fn()} />);
+      mandatory();
+      fireEvent.change(screen.getByLabelText('יחידות מתמטיקה'), { target: { value } });
+      elective();
+      fireEvent.change(screen.getByLabelText('יחידות כימיה 1'), { target: { value } });
+      fireEvent.click(screen.getByText('מגזר', { exact: true }));
+      fireEvent.click(screen.getByRole('button', { name: 'ערבי' }));
+      mandatory();
+      expect(screen.getByLabelText('יחידות מתמטיקה')).toHaveProperty('value', value);
+      expect(screen.getByLabelText('יחידות עברית')).toHaveProperty('value', '3');
+      fireEvent.click(screen.getByRole('button', { name: 'המשיכו למקצועות בחירה ←' }));
+      expect(screen.getByLabelText('יחידות כימיה 1')).toHaveProperty('value', value);
+    },
+  );
 });

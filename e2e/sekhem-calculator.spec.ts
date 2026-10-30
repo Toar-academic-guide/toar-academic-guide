@@ -335,7 +335,11 @@ for (const width of [1280, 390]) {
       });
       expect(batch.extraInputs?.bagrutSubjectRecord?.subjects).toHaveLength(4);
       for (const subject of batch.extraInputs!.bagrutSubjectRecord!.subjects) {
-        expect(subject).toMatchObject({ units: 5, grade: 90 });
+        // Approved test update, Jorje 2026-10-30
+        expect(subject).toMatchObject({
+          units: ['mathematics', 'english'].includes(subject.subjectId) ? 3 : 2,
+          grade: 90,
+        });
       }
       assertNoCompositePayload(batch);
     }
@@ -986,7 +990,8 @@ for (const width of [1280, 390]) {
     await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
     const units = page.getByLabel('יחידות 1', { exact: true });
     const grade = page.getByLabel('ציון 1', { exact: true });
-    await expect(units).toHaveValue('');
+    // Approved test update, Jorje 2026-10-30
+    await expect(units).toHaveValue('2');
     await expect(grade).toHaveValue('');
     await assertAlignedFields(page.locator('.journey-grade-table'));
     await units.selectOption('5');

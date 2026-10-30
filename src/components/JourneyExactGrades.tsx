@@ -3,12 +3,14 @@
 import { useState } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { SECTORS } from '@/data/bagrutSubjects';
-import BagrutSubjectRows, { bagrutSubjectLabels } from './BagrutSubjectRows';
-import {
-  buildBagrutSubjectRecord,
-  subjectIdForWizardLabel,
-  type BagrutWizardSubjectInput,
-} from '@/utils/bagrutSubjectRecord';
+import BagrutSubjectRows, {
+  bagrutSubjectLabels,
+  rowsForSector,
+  subjectRowValues,
+  type BagrutSubjectRow,
+} from './BagrutSubjectRows';
+import { defaultUnitsFor } from './bagrutUnitOptions';
+import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import type { BagrutCertificateType, BagrutSector, BagrutSubjectRecord } from '@/types';
 
 const SECTOR_LABELS: Record<BagrutSector, string> = {
@@ -23,19 +25,21 @@ const labelById = new Map(
   bagrutSubjectLabels.map((label) => [subjectIdForWizardLabel(label), label]),
 );
 const starterRows = new Set(
-  Object.values(SECTORS).flatMap((items) =>
-    items.map((item) => `${item.n}|${item.min === 1 ? '' : item.min}`),
+  Object.entries(SECTORS).flatMap(([sector, items]) =>
+    items.map((item) => `${item.n}|${defaultUnitsFor(item.n, sector)}`),
   ),
 );
 // A row the student never filled: an empty added row, or an untouched starter row.
-const isBlankRow = (row: BagrutWizardSubjectInput) =>
+const isBlankRow = (row: BagrutSubjectRow) =>
   row.grade === '' &&
   (row.assessmentKind ?? 'exam') === 'exam' &&
-  (row.label.trim() === '' || starterRows.has(`${row.label}|${row.units}`));
-const emptyRows = (sector: string): BagrutWizardSubjectInput[] =>
+  (row.label.trim() === '' ||
+    (row.autoUnits === true && starterRows.has(`${row.label}|${row.units}`)));
+const emptyRows = (sector: string): BagrutSubjectRow[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
-    units: subject.min === 1 ? '' : subject.min,
+    units: defaultUnitsFor(subject.n, sector),
+    autoUnits: true,
     grade: '',
     assessmentKind: 'exam',
   }));
@@ -53,7 +57,7 @@ export default function JourneyExactGrades({
   const [certificate, setCertificate] = useState<BagrutCertificateType | ''>(
     initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : '',
   );
-  const [rows, setRows] = useState<BagrutWizardSubjectInput[]>(
+  const [rows, setRows] = useState<BagrutSubjectRow[]>(
     () =>
       initialRecord?.subjects.map((subject) => ({
         label: labelById.get(subject.subjectId) ?? subject.subjectId,
@@ -81,7 +85,7 @@ export default function JourneyExactGrades({
           sectorLabel: sector,
           certificateType: certificate || 'other',
           complete: true,
-          subjects: filledRows,
+          subjects: subjectRowValues(filledRows),
         });
         if (!filledRows.length || record.subjects.length !== filledRows.length) {
           setError('יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.');
@@ -103,11 +107,13 @@ export default function JourneyExactGrades({
                 rows.every(
                   (row, index) =>
                     row.label === defaults[index].label &&
+                    row.autoUnits &&
                     row.units === defaults[index].units &&
                     row.grade === '' &&
                     row.assessmentKind === defaults[index].assessmentKind,
                 );
               if (untouched) setRows(emptyRows(nextSector));
+              else setRows(rowsForSector(rows, nextSector));
               setSector(nextSector);
             }}
             required
