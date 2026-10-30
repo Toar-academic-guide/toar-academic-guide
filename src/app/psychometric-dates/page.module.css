@@ -19,8 +19,7 @@
 
 .main h1 {
   color: #12234a;
-  /* The approved mockup renders its missing 700 face with the existing Arial fallback. */
-  font-family: Arial, sans-serif;
+  font-family: var(--font-sans);
   font-size: 38px;
   line-height: 1.25;
   font-weight: 700;

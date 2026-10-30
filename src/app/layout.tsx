@@ -7,7 +7,6 @@ import JsonLd from '@/components/seo/JsonLd';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonLd';
 import { SITE_DESCRIPTION, SITE_URL } from '@/lib/site';
 import './globals.css';
-import '@/components/hero/heebo-font.css';
 
 export const metadata: Metadata = {
   applicationName: 'MyWay',
@@ -60,6 +59,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className="h-full">
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/heebo-variable.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-full antialiased">
         <SkipLink />
         <JsonLd data={[organizationLd(), websiteLd()]} />
