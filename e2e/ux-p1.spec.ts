@@ -61,7 +61,7 @@ for (const width of [1280, 390]) {
       }
     });
 
-    test('blank compulsory units stay empty and are excluded from the submitted grades', async ({
+    test('untouched compulsory rows show default units and are excluded from the submitted grades when no grade is entered', async ({
       page,
     }) => {
       await page.goto('/app/calculator?program=tau_cs');
@@ -71,7 +71,11 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
       await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
       for (const index of [1, 2, 3, 6, 7])
-        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('');
+        // Approved test update, Jorje 2026-10-30
+        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('2');
+      for (const index of [4, 5])
+        // Approved test update, Jorje 2026-10-30
+        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('3');
       for (const [index, grade] of [
         [4, '95'],
         [5, '90'],
