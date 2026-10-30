@@ -15,7 +15,6 @@ vi.mock('@/lib/bagrutPdf', () => ({
 }));
 import type { ExactInProgress } from '@/lib/studyJourney';
 
-
 describe('JourneyExactGrades sector selection', () => {
   it('updates untouched starter rows to the selected sector', () => {
     render(<JourneyExactGrades onComplete={vi.fn()} />);
@@ -754,7 +753,6 @@ describe('JourneyExactGrades PDF imports', () => {
   });
 });
 
-
 describe('saved-progress units stay locked', () => {
   it.each([false, true])(
     'locks restored units on sector and label changes and defaults only fresh rows (legacy auto flag: %s)',
@@ -808,7 +806,6 @@ describe('saved-progress units stay locked', () => {
   });
 });
 
-
 it('submits restored progress with untouched starters and keeps only filled rows', () => {
   const onComplete = vi.fn();
   const rows: ExactInProgress['rows'] = SECTORS['יהודי'].map((subject) => ({
@@ -817,8 +814,14 @@ it('submits restored progress with untouched starters and keeps only filled rows
     grade: '',
     assessmentKind: 'exam',
   }));
-  Object.assign(rows.find((row) => row.label === 'אנגלית')!, { units: 2, grade: 90 });
-  Object.assign(rows.find((row) => row.label === 'מתמטיקה')!, { units: 5, grade: 88 });
+  Object.assign(
+    rows.find((row) => row.label === 'אנגלית')!,
+    { units: 2, grade: 90 },
+  );
+  Object.assign(
+    rows.find((row) => row.label === 'מתמטיקה')!,
+    { units: 5, grade: 88 },
+  );
   rows.push({ label: 'פיזיקה', units: 4, grade: 84, assessmentKind: 'exam' });
   render(
     <JourneyExactGrades

@@ -38,8 +38,7 @@ const starterRows = new Set(
 const isBlankRow = (row: BagrutSubjectRow) =>
   row.grade === '' &&
   (row.assessmentKind ?? 'exam') === 'exam' &&
-  (row.label.trim() === '' ||
-    (!row.edited && starterRows.has(`${row.label}|${row.units}`)));
+  (row.label.trim() === '' || (!row.edited && starterRows.has(`${row.label}|${row.units}`)));
 const emptyRows = (sector: string): BagrutSubjectRow[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
