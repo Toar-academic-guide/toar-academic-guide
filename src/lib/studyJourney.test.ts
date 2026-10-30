@@ -528,6 +528,22 @@ describe('bagrutScoresForMode', () => {
     psychometric: { overall: 650 },
   };
   it.each(['quick', 'exact', 'none'] as const)(
+    'aligns a stale profile marker with the newly submitted %s projection',
+    (mode) => {
+      const saved = { ...scores, admissions: { activeBagrutPath: 'quick' as const } };
+      const result = bagrutScoresForMode(saved, mode);
+      expect(result.admissions?.activeBagrutPath).toBe(mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(saved.admissions.activeBagrutPath).toBe('quick');
+    },
+  );
+  it.each(['quick', 'exact', 'none'] as const)(
     'selects only the %s path without mutating scores',
     (mode) => {
       const result = bagrutScoresForMode(scores, mode);

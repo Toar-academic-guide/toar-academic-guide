@@ -195,7 +195,10 @@ describe('unsubmitted quick average survives refresh', () => {
         expect(input.extraInputs?.bagrutSubjectRecord).toBeUndefined();
       }
       expect(state.updateProfile).toHaveBeenLastCalledWith({
-        academicScores: { bagrut: { weightedAverage: 110.5 } },
+        academicScores: {
+          bagrut: { weightedAverage: 110.5 },
+          admissions: { activeBagrutPath: 'quick' },
+        },
       });
     },
   );
@@ -227,7 +230,10 @@ describe('unsubmitted quick average survives refresh', () => {
       expect(input.extraInputs?.bagrutSubjectRecord).toEqual(record);
     }
     expect(state.updateProfile).toHaveBeenLastCalledWith({
-      academicScores: { bagrut: { subjectRecord: record } },
+      academicScores: {
+        bagrut: { subjectRecord: record },
+        admissions: { activeBagrutPath: 'exact' },
+      },
     });
   });
 });

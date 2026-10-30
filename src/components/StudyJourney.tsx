@@ -152,6 +152,7 @@ interface Draft {
   locations: JourneyLocation[];
   types: InstitutionType[];
   scores: AcademicScores;
+  bagrutPaths?: AcademicScores['bagrut'];
   exactInProgress?: ExactInProgress;
   quickInProgress?: string;
   target?: number;
@@ -180,12 +181,25 @@ function readDraft(): Draft | null {
     });
     if (!profile.success) return null;
     const scores = profile.data.academicScores ?? {};
+    const bagrutPaths = userProfileSchema.safeParse({
+      geographicPreference: 'any',
+      academicScores: { bagrut: raw.bagrutPaths },
+    });
     const exactInProgress = exactInProgressSchema.safeParse(raw.exactInProgress);
     let gradeMode: Draft['gradeMode'] = ['quick', 'exact', 'none'].includes(raw.gradeMode)
       ? raw.gradeMode
-      : undefined;
-    if (gradeMode === 'none' && scores.bagrut?.subjectRecord) gradeMode = 'exact';
-    else if (gradeMode === 'none' && scores.bagrut?.weightedAverage !== undefined)
+      : scores.admissions?.activeBagrutPath;
+    if (
+      gradeMode === 'none' &&
+      !scores.admissions?.activeBagrutPath &&
+      scores.bagrut?.subjectRecord
+    )
+      gradeMode = 'exact';
+    else if (
+      gradeMode === 'none' &&
+      !scores.admissions?.activeBagrutPath &&
+      scores.bagrut?.weightedAverage !== undefined
+    )
       gradeMode = 'quick';
     return {
       ...EMPTY,
@@ -203,6 +217,7 @@ function readDraft(): Draft | null {
       locations: raw.locations,
       types: raw.types,
       scores,
+      bagrutPaths: bagrutPaths.success ? bagrutPaths.data.academicScores?.bagrut : undefined,
       exactInProgress: exactInProgress.success ? exactInProgress.data : undefined,
       quickInProgress:
         typeof raw.quickInProgress === 'string' && Number.isFinite(Number(raw.quickInProgress))
@@ -293,7 +308,7 @@ export default function StudyJourney({
   const programs = catalogue?.programs ?? EMPTY_PROGRAMS;
   const quickAverageValue =
     draft.quickInProgress ??
-    (draft.gradeMode === 'quick' ? String(draft.scores.bagrut?.weightedAverage ?? '') : '');
+    String(draft.scores.bagrut?.weightedAverage ?? draft.bagrutPaths?.weightedAverage ?? '');
   const journeyScores = useMemo(
     () => bagrutScoresForMode(draft.scores, draft.gradeMode),
     [draft.scores, draft.gradeMode],
@@ -371,11 +386,13 @@ export default function StudyJourney({
     importedProfile.current = profileIdentity;
     if (auth.user || !hadStoredDraft.current) {
       const scores = profile.academicScores ?? {};
-      const profileGradeMode = scores.bagrut?.subjectRecord
-        ? 'exact'
-        : scores.bagrut?.weightedAverage
-          ? 'quick'
-          : 'none';
+      const profileGradeMode =
+        scores.admissions?.activeBagrutPath ??
+        (scores.bagrut?.subjectRecord
+          ? 'exact'
+          : scores.bagrut?.weightedAverage
+            ? 'quick'
+            : 'none');
       setDraft((current) => {
         const keepBagrutInput = current.bagrutInputIdentity === profileIdentity;
         return {
@@ -385,6 +402,9 @@ export default function StudyJourney({
             : scores,
           gradeMode: keepBagrutInput ? current.gradeMode : profileGradeMode,
           bagrutInputIdentity: keepBagrutInput ? current.bagrutInputIdentity : undefined,
+          bagrutPaths: keepBagrutInput
+            ? { ...scores.bagrut, ...current.bagrutPaths, ...current.scores.bagrut }
+            : scores.bagrut,
           psyMode: scores.psychometric?.overall ? 'score' : 'none',
           target: undefined,
         };
@@ -544,6 +564,19 @@ export default function StudyJourney({
     setDraft((current) => ({ ...current, exactInProgress }));
   }, []);
   const patch = (updates: Partial<Draft>) => setDraft((current) => ({ ...current, ...updates }));
+  const submitBagrut = (
+    gradeMode: NonNullable<Draft['gradeMode']>,
+    bagrut?: AcademicScores['bagrut'],
+  ) => {
+    patch({
+      gradeMode,
+      bagrutInputIdentity: profileIdentity,
+      exactInProgress: undefined,
+      quickInProgress: undefined,
+      bagrutPaths: { ...draft.bagrutPaths, ...draft.scores.bagrut, ...bagrut },
+      scores: { ...draft.scores, bagrut },
+    });
+  };
   const patchScores = (updates: Partial<AcademicScores>) =>
     patch({ scores: { ...draft.scores, ...updates } });
   const setType = (type: InstitutionType) => {
@@ -614,12 +647,19 @@ export default function StudyJourney({
     () =>
       usesSavedGrades
         ? draft.bagrutInputIdentity === profileIdentity
-          ? { ...profile.academicScores, bagrut: journeyScores.bagrut }
-          : (profile.academicScores ?? EMPTY.scores)
+          ? bagrutScoresForMode(
+              { ...profile.academicScores, bagrut: journeyScores.bagrut },
+              draft.gradeMode,
+            )
+          : bagrutScoresForMode(
+              profile.academicScores ?? EMPTY.scores,
+              profile.academicScores?.admissions?.activeBagrutPath,
+            )
         : journeyScores,
     [
       usesSavedGrades,
       draft.bagrutInputIdentity,
+      draft.gradeMode,
       profileIdentity,
       profile.academicScores,
       journeyScores,
@@ -734,7 +774,14 @@ export default function StudyJourney({
     }
   }, [step, contactProgramId, contactInstitutionId, contactResultGroup]);
   const saveScores = async () => {
-    if (!(await updateProfile({ academicScores: journeyScores })))
+    const academicScores: AcademicScores = {
+      ...draft.scores,
+      bagrut: { ...draft.bagrutPaths, ...draft.scores.bagrut },
+      ...(draft.gradeMode !== undefined
+        ? { admissions: { ...draft.scores.admissions, activeBagrutPath: draft.gradeMode } }
+        : {}),
+    };
+    if (!(await updateProfile({ academicScores })))
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
   };
   const selectRow = (row: JourneyRow, next: Step) => {
@@ -1188,13 +1235,7 @@ export default function StudyJourney({
               </button>
               <button
                 onClick={() => {
-                  patch({
-                    gradeMode: 'none',
-                    bagrutInputIdentity: profileIdentity,
-                    exactInProgress: undefined,
-                    quickInProgress: undefined,
-                    scores: { ...draft.scores, bagrut: undefined },
-                  });
+                  submitBagrut('none');
                   go('psy-mode');
                 }}
               >
@@ -1219,17 +1260,8 @@ export default function StudyJourney({
             className="journey-narrow"
             onSubmit={(event) => {
               event.preventDefault();
-              patch({
-                gradeMode: 'quick',
-                bagrutInputIdentity: profileIdentity,
-                exactInProgress: undefined,
-                quickInProgress: undefined,
-                scores: {
-                  ...draft.scores,
-                  bagrut: {
-                    weightedAverage: quickAverageValue ? Number(quickAverageValue) : undefined,
-                  },
-                },
+              submitBagrut('quick', {
+                weightedAverage: quickAverageValue ? Number(quickAverageValue) : undefined,
               });
               afterGrades();
             }}
@@ -1254,17 +1286,11 @@ export default function StudyJourney({
         )}
         {step === 'grades-exact' && ready && (
           <JourneyExactGrades
-            initialRecord={draft.scores.bagrut?.subjectRecord}
+            initialRecord={draft.scores.bagrut?.subjectRecord ?? draft.bagrutPaths?.subjectRecord}
             initialProgress={draft.exactInProgress}
             onProgress={saveExactProgress}
             onComplete={(record) => {
-              patch({
-                gradeMode: 'exact',
-                bagrutInputIdentity: profileIdentity,
-                exactInProgress: undefined,
-                quickInProgress: undefined,
-                scores: { ...draft.scores, bagrut: { subjectRecord: record } },
-              });
+              submitBagrut('exact', { subjectRecord: record });
               afterGrades();
             }}
           />

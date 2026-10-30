@@ -42,6 +42,9 @@ export function bagrutScoresForMode(
   const { weightedAverage, subjectRecord } = scores.bagrut;
   return {
     ...scores,
+    ...(scores.admissions?.activeBagrutPath !== undefined
+      ? { admissions: { ...scores.admissions, activeBagrutPath: gradeMode } }
+      : {}),
     bagrut:
       gradeMode === 'quick'
         ? { weightedAverage }

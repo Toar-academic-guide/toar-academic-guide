@@ -67,6 +67,38 @@ describe('admissions routes API', () => {
     mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'enabled' });
   });
 
+  it.each(
+    (['tau_cs', 'bgu_cs'] as const).flatMap((degreeId) =>
+      (['quick', 'exact', 'none'] as const).map((activeBagrutPath) => ({
+        degreeId,
+        activeBagrutPath,
+      })),
+    ),
+  )(
+    'uses only active subjects for $degreeId saved-profile simulation ($activeBagrutPath)',
+    async ({ degreeId, activeBagrutPath }) => {
+      mocks.requireAuthenticatedUserId.mockResolvedValue('test-user');
+      mocks.getUserProfileSnapshot.mockResolvedValue({
+        academicScores: {
+          psychometric: { overall: 660, quantitative: 135, verbal: 120, english: 125 },
+          bagrut: { weightedAverage: 110, subjectRecord: profile.subjectRecord },
+          admissions: {
+            activeBagrutPath,
+            tauBagrutAverage: 108,
+            bguBagrutAverage: 108,
+            bguLanguageRequirementsConfirmed: true,
+          },
+        },
+      });
+      const response = await POST(request({ degreeId, source: 'saved_profile' }));
+      expect(response.status).toBe(activeBagrutPath === 'exact' ? 200 : 422);
+      if (activeBagrutPath !== 'exact') {
+        expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
+        expect(mocks.runBguComputerScienceProfileRouteSimulation).not.toHaveBeenCalled();
+      }
+    },
+  );
+
   it('accepts a complete anonymous TAU profile without a user identifier', async () => {
     const response = await POST(request({ degreeId: 'tau_cs', source: 'input', profile }));
 
