@@ -171,3 +171,28 @@ it.each(['abc', '90.5', '1e2', '-1', '101'])(
     ).toMatchObject({ complete: false, subjects: [] });
   },
 );
+
+it.each(['8.5', '-3', '85a', ' 90', '101'])(
+  'preserves raw grade %j while blocking invalid input and allows correction',
+  (raw) => {
+    render(<SubjectRows />);
+    const grade = screen.getByRole('textbox', { name: 'ציון 1' }) as HTMLInputElement;
+    fireEvent.change(grade, { target: { value: '' } });
+    for (let length = 1; length <= raw.length; length++) {
+      const value = raw.slice(0, length);
+      fireEvent.change(grade, { target: { value } });
+      expect(grade.value).toBe(value);
+    }
+    expect(grade.checkValidity()).toBe(false);
+    expect(grade.validationMessage).toBe('ציון בין 0 ל-100');
+    expect(grade.getAttribute('aria-invalid')).toBe('true');
+    expect(screen.getByText('ציון בין 0 ל-100').id).toBe(grade.getAttribute('aria-describedby'));
+    fireEvent.change(grade, { target: { value: '90' } });
+    expect(grade.value).toBe('90');
+    expect(grade.checkValidity()).toBe(true);
+    expect(screen.queryByText('ציון בין 0 ל-100')).toBeNull();
+    fireEvent.change(grade, { target: { value: '' } });
+    expect(grade.required).toBe(true);
+    expect(grade.validity.valueMissing).toBe(true);
+  },
+);

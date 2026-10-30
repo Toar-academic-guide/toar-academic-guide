@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState, useRef, useEffect } from 'react';
+import { Fragment, useState, useRef, useEffect, useId } from 'react';
 import { Check, ChevronDown, X } from 'lucide-react';
 import type { BagrutCertificateType, BagrutSubjectRecord } from '@/types';
 import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
@@ -8,6 +8,7 @@ import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagru
 // ── Sector → mandatory subjects ───────────────────────────────────────────────
 
 import { SECTORS, ALL_SUBJECTS } from '@/data/bagrutSubjects';
+import { bagrutGradeError, parseBagrutGrade } from './BagrutSubjectRows';
 import { unitOptionsFor } from './bagrutUnitOptions';
 
 // ── Types ─────────────────────────────────────────────────────────────────────
@@ -15,6 +16,7 @@ import { unitOptionsFor } from './bagrutUnitOptions';
 interface MandGrade {
   units: number | '';
   grade: number | '';
+  gradeText?: string;
 }
 
 interface ElectiveRow extends MandGrade {
@@ -68,6 +70,7 @@ function WizBtn({
 // ── Component ─────────────────────────────────────────────────────────────────
 
 export default function BagrutCalculatorWizard({ onComplete, onStructuredComplete }: Props) {
+  const gradeId = useId();
   const [step, setStep] = useState(1);
   const [sector, setSector] = useState('יהודי');
   const [certificateType, setCertificateType] = useState<BagrutCertificateType>('other');
@@ -115,9 +118,13 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
     setMandGrades((prev) => prev.map((mg, idx) => (idx === i ? { ...mg, units: v } : mg)));
   }
 
-  function updateMandGrade(i: number, v: number | '') {
+  function updateMandGrade(i: number, text: string) {
     invalidateCalculatedRecord();
-    setMandGrades((prev) => prev.map((mg, idx) => (idx === i ? { ...mg, grade: v } : mg)));
+    setMandGrades((prev) =>
+      prev.map((mg, idx) =>
+        idx === i ? { ...mg, grade: parseBagrutGrade(text), gradeText: text } : mg,
+      ),
+    );
   }
 
   function addElective(name: string) {
@@ -139,12 +146,21 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
     setElectives((prev) => prev.map((e, i) => (i === idx ? { ...e, units: v } : e)));
   }
 
-  function updateElectiveGrade(idx: number, v: number | '') {
+  function updateElectiveGrade(idx: number, text: string) {
     invalidateCalculatedRecord();
-    setElectives((prev) => prev.map((e, i) => (i === idx ? { ...e, grade: v } : e)));
+    setElectives((prev) =>
+      prev.map((e, i) =>
+        i === idx ? { ...e, grade: parseBagrutGrade(text), gradeText: text } : e,
+      ),
+    );
   }
 
   function calculateAndAdvance() {
+    if (mandGrades.some((row) => bagrutGradeError(row.grade))) {
+      goStep(2);
+      return;
+    }
+    if (electives.some((row) => bagrutGradeError(row.grade))) return;
     const record = buildBagrutSubjectRecord({
       certificateType,
       complete: true,
@@ -311,7 +327,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     onChange={(e) =>
                       updateMandUnits(i, e.target.value === '' ? '' : Number(e.target.value))
                     }
-                    className={`${numInput} w-20`}
+                    className={`${numInput} w-24`}
                   >
                     <option value="">בחירה</option>
                     {unitOptionsFor(sub.n, sector, mandGrades[i]?.units ?? '').map((units) => (
@@ -328,19 +344,27 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                     type="text"
                     inputMode="numeric"
                     placeholder="—"
-                    value={Number.isNaN(mandGrades[i]?.grade) ? '' : (mandGrades[i]?.grade ?? '')}
-                    onChange={(e) =>
-                      updateMandGrade(
-                        i,
-                        e.target.value === ''
-                          ? ''
-                          : /^\d+$/.test(e.target.value)
-                            ? Number(e.target.value)
-                            : Number.NaN,
-                      )
+                    value={mandGrades[i]?.gradeText ?? mandGrades[i]?.grade ?? ''}
+                    onChange={(event) => updateMandGrade(i, event.target.value)}
+                    aria-invalid={bagrutGradeError(mandGrades[i]?.grade ?? '') ? true : undefined}
+                    aria-describedby={
+                      bagrutGradeError(mandGrades[i]?.grade ?? '')
+                        ? `${gradeId}-mandatory-${i}`
+                        : undefined
                     }
+                    ref={(input) => {
+                      input?.setCustomValidity(bagrutGradeError(mandGrades[i]?.grade ?? '') ?? '');
+                    }}
                     className={`${numInput} w-16`}
                   />
+                  {bagrutGradeError(mandGrades[i]?.grade ?? '') && (
+                    <p
+                      id={`${gradeId}-mandatory-${i}`}
+                      className="mt-1 text-right text-xs text-[#8c2438]"
+                    >
+                      {bagrutGradeError(mandGrades[i]?.grade ?? '')}
+                    </p>
+                  )}
                 </div>
               </div>
             ))}
@@ -440,7 +464,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                           ev.target.value === '' ? '' : Number(ev.target.value),
                         )
                       }
-                      className={`${numInput} w-20`}
+                      className={`${numInput} w-24`}
                     >
                       <option value="">בחירה</option>
                       {unitOptionsFor(e.name, sector, e.units).map((units) => (
@@ -457,19 +481,25 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                       type="text"
                       inputMode="numeric"
                       placeholder="—"
-                      value={Number.isNaN(e.grade) ? '' : e.grade}
-                      onChange={(ev) =>
-                        updateElectiveGrade(
-                          i,
-                          ev.target.value === ''
-                            ? ''
-                            : /^\d+$/.test(ev.target.value)
-                              ? Number(ev.target.value)
-                              : Number.NaN,
-                        )
+                      value={e.gradeText ?? e.grade}
+                      onChange={(event) => updateElectiveGrade(i, event.target.value)}
+                      aria-invalid={bagrutGradeError(e.grade) ? true : undefined}
+                      aria-describedby={
+                        bagrutGradeError(e.grade) ? `${gradeId}-elective-${i}` : undefined
                       }
+                      ref={(input) => {
+                        input?.setCustomValidity(bagrutGradeError(e.grade) ?? '');
+                      }}
                       className={`${numInput} w-16`}
                     />
+                    {bagrutGradeError(e.grade) && (
+                      <p
+                        id={`${gradeId}-elective-${i}`}
+                        className="mt-1 text-right text-xs text-[#8c2438]"
+                      >
+                        {bagrutGradeError(e.grade)}
+                      </p>
+                    )}
                   </div>
                   <button
                     type="button"

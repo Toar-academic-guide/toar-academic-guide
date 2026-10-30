@@ -6,7 +6,17 @@ import { unitOptionsFor } from './bagrutUnitOptions';
 import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
 import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
-export type BagrutSubjectRow = BagrutWizardSubjectInput;
+export type BagrutSubjectRow = BagrutWizardSubjectInput & { gradeText?: string };
+
+export function parseBagrutGrade(text: string): number | '' {
+  return text === '' ? '' : /^\d+$/.test(text) ? Number(text) : Number.NaN;
+}
+
+export function bagrutGradeError(grade: number | '') {
+  return grade !== '' && (!Number.isInteger(grade) || grade < 0 || grade > 100)
+    ? 'ציון בין 0 ל-100'
+    : undefined;
+}
 
 export type BagrutFieldErrors = Partial<Record<'units' | 'grade', string>>[];
 
@@ -33,6 +43,10 @@ export default function BagrutSubjectRows({
   sector?: string;
 }) {
   const subjectListId = useId();
+  const errors: BagrutFieldErrors = rows.map((row, index) => ({
+    ...fieldErrors?.[index],
+    grade: bagrutGradeError(row.grade) ?? fieldErrors?.[index]?.grade,
+  }));
   const change = (index: number, updates: Partial<BagrutSubjectRow>) =>
     onChange(rows.map((row, i) => (i === index ? { ...row, ...updates } : row)));
   return (
@@ -70,15 +84,13 @@ export default function BagrutSubjectRows({
                 <td>
                   <select
                     className={
-                      fieldErrors?.[index]?.units
-                        ? 'aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
-                        : undefined
+                      errors?.[index]?.units
+                        ? 'px-1! aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
+                        : 'px-1!'
                     }
-                    aria-invalid={fieldErrors?.[index]?.units ? true : undefined}
+                    aria-invalid={errors?.[index]?.units ? true : undefined}
                     aria-describedby={
-                      fieldErrors?.[index]?.units
-                        ? `${subjectListId}-${index}-units-error`
-                        : undefined
+                      errors?.[index]?.units ? `${subjectListId}-${index}-units-error` : undefined
                     }
                     aria-label={`יחידות ${index + 1}`}
                     required={!isBlankRow(row)}
@@ -101,30 +113,27 @@ export default function BagrutSubjectRows({
                 <td>
                   <input
                     className={
-                      fieldErrors?.[index]?.grade
+                      errors?.[index]?.grade
                         ? 'aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
                         : undefined
                     }
-                    aria-invalid={fieldErrors?.[index]?.grade ? true : undefined}
+                    aria-invalid={errors?.[index]?.grade ? true : undefined}
                     aria-describedby={
-                      fieldErrors?.[index]?.grade
-                        ? `${subjectListId}-${index}-grade-error`
-                        : undefined
+                      errors?.[index]?.grade ? `${subjectListId}-${index}-grade-error` : undefined
                     }
                     aria-label={`ציון ${index + 1}`}
                     type="text"
                     inputMode="numeric"
                     required={!isBlankRow(row)}
                     disabled={disabled}
-                    value={Number.isNaN(row.grade) ? '' : row.grade}
+                    value={row.gradeText ?? (Number.isNaN(row.grade) ? '' : row.grade)}
+                    ref={(input) => {
+                      input?.setCustomValidity(bagrutGradeError(row.grade) ?? '');
+                    }}
                     onChange={(event) =>
                       change(index, {
-                        grade:
-                          event.target.value === ''
-                            ? ''
-                            : /^\d+$/.test(event.target.value)
-                              ? Number(event.target.value)
-                              : Number.NaN,
+                        gradeText: event.target.value,
+                        grade: parseBagrutGrade(event.target.value),
                       })
                     }
                   />
@@ -141,23 +150,23 @@ export default function BagrutSubjectRows({
                   </button>
                 </td>
               </tr>
-              {(fieldErrors?.[index]?.units || fieldErrors?.[index]?.grade) && (
+              {(errors?.[index]?.units || errors?.[index]?.grade) && (
                 <tr>
                   <td colSpan={4} className="text-right">
-                    {fieldErrors?.[index]?.units && (
+                    {errors?.[index]?.units && (
                       <p
                         id={`${subjectListId}-${index}-units-error`}
                         className="mt-1 text-right text-xs text-[#8c2438]"
                       >
-                        {fieldErrors[index].units}
+                        {errors[index].units}
                       </p>
                     )}
-                    {fieldErrors?.[index]?.grade && (
+                    {errors?.[index]?.grade && (
                       <p
                         id={`${subjectListId}-${index}-grade-error`}
                         className="mt-1 text-right text-xs text-[#8c2438]"
                       >
-                        {fieldErrors[index].grade}
+                        {errors[index].grade}
                       </p>
                     )}
                   </td>

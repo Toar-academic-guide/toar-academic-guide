@@ -330,3 +330,41 @@ it('supplies a complete internal record to the unchanged BGU and TAU averages', 
     });
   }
 });
+
+it.each(['8.5', '-3', '85a', ' 90', '101'])(
+  'keeps grade %j visible and blocks journey completion until corrected',
+  (raw) => {
+    const onComplete = vi.fn();
+    render(
+      <JourneyExactGrades
+        onComplete={onComplete}
+        initialRecord={{
+          schemaVersion: 2,
+          sector: 'jewish',
+          certificateType: 'internal',
+          complete: true,
+          subjects: [{ subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' }],
+        }}
+      />,
+    );
+    const grade = screen.getByLabelText('ציון 1') as HTMLInputElement;
+    fireEvent.change(grade, { target: { value: '' } });
+    for (let length = 1; length <= raw.length; length++) {
+      const value = raw.slice(0, length);
+      fireEvent.change(grade, { target: { value } });
+      expect(grade.value).toBe(value);
+    }
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(grade.validationMessage).toBe('ציון בין 0 ל-100');
+    expect(screen.getByText('ציון בין 0 ל-100')).toBeTruthy();
+    fireEvent.change(grade, { target: { value: '90' } });
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    expect(onComplete).toHaveBeenCalledWith(
+      expect.objectContaining({
+        complete: true,
+        subjects: [{ subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' }],
+      }),
+    );
+  },
+);

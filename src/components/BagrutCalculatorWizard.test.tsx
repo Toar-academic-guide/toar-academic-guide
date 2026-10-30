@@ -99,7 +99,7 @@ describe('BagrutCalculatorWizard', () => {
 });
 
 it.each(['abc', '90.5', '101'])(
-  'ignores a grade %s and missing units in the estimate and counters',
+  'blocks invalid grade %s and ignores missing units after correction',
   (invalid) => {
     const onStructuredComplete = vi.fn();
     render(
@@ -111,6 +111,13 @@ it.each(['abc', '90.5', '101'])(
     fireEvent.change(screen.getByLabelText('יחידות אנגלית'), { target: { value: '5' } });
     fireEvent.change(screen.getByLabelText('ציון אנגלית'), { target: { value: invalid } });
     fireEvent.change(screen.getByLabelText('ציון אזרחות'), { target: { value: '100' } });
+    fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות בחירה ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'חשב ממוצע בגרות ←' }));
+    expect(screen.queryByText('אומדן ממוצע הציונים שלך')).toBeNull();
+    expect(onStructuredComplete).not.toHaveBeenCalled();
+    expect(screen.getByLabelText('ציון אנגלית')).toHaveProperty('value', invalid);
+    expect(screen.getByText('ציון בין 0 ל-100')).toBeTruthy();
+    fireEvent.change(screen.getByLabelText('ציון אנגלית'), { target: { value: '' } });
     fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות בחירה ←' }));
     fireEvent.click(screen.getByRole('button', { name: 'חשב ממוצע בגרות ←' }));
     expect(screen.getByText('90.0')).toBeTruthy();
@@ -125,3 +132,53 @@ it.each(['abc', '90.5', '101'])(
     );
   },
 );
+
+it.each(
+  ['8.5', '-3', '85a', ' 90', '101'].flatMap((raw) =>
+    ['mandatory', 'elective'].map((kind) => [kind, raw]),
+  ),
+)('preserves %s grade %j and blocks calculation until corrected', (kind, raw) => {
+  const onStructuredComplete = vi.fn();
+  render(
+    <BagrutCalculatorWizard onComplete={vi.fn()} onStructuredComplete={onStructuredComplete} />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות חובה ←' }));
+  fireEvent.change(screen.getByLabelText('יחידות מתמטיקה'), { target: { value: '5' } });
+  fireEvent.change(screen.getByLabelText('ציון מתמטיקה'), { target: { value: '90' } });
+  if (kind === 'elective') {
+    fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות בחירה ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'הצג רשימה מלאה' }));
+    fireEvent.click(screen.getByRole('button', { name: 'כימיה' }));
+    fireEvent.change(screen.getByLabelText('יחידות כימיה 1'), { target: { value: '5' } });
+  }
+  const label = kind === 'mandatory' ? 'ציון מתמטיקה' : 'ציון כימיה 1';
+  let grade = screen.getByLabelText(label) as HTMLInputElement;
+  fireEvent.change(grade, { target: { value: '' } });
+  for (let length = 1; length <= raw.length; length++) {
+    const value = raw.slice(0, length);
+    fireEvent.change(grade, { target: { value } });
+    expect(grade.value).toBe(value);
+  }
+  expect(grade.getAttribute('aria-invalid')).toBe('true');
+  expect(screen.getByText('ציון בין 0 ל-100').id).toBe(grade.getAttribute('aria-describedby'));
+  if (kind === 'mandatory')
+    fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות בחירה ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'חשב ממוצע בגרות ←' }));
+  expect(screen.queryByText('אומדן ממוצע הציונים שלך')).toBeNull();
+  expect(onStructuredComplete).not.toHaveBeenCalled();
+  grade = screen.getByLabelText(label) as HTMLInputElement;
+  expect(grade.value).toBe(raw);
+  fireEvent.change(grade, { target: { value: '85' } });
+  expect(screen.queryByText('ציון בין 0 ל-100')).toBeNull();
+  if (kind === 'mandatory')
+    fireEvent.click(screen.getByRole('button', { name: 'המשך למקצועות בחירה ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'חשב ממוצע בגרות ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'השתמש/י באומדן זה ←' }));
+  expect(onStructuredComplete).toHaveBeenCalledTimes(1);
+  expect(onStructuredComplete.mock.calls[0][0].subjects).toContainEqual({
+    subjectId: kind === 'mandatory' ? 'mathematics' : 'chemistry',
+    units: 5,
+    grade: 85,
+    assessmentKind: 'exam',
+  });
+});
