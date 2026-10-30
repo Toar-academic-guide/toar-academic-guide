@@ -3,8 +3,8 @@ import { describe, expect, it, vi } from 'vitest';
 import * as pdfjs from 'pdfjs-dist/legacy/build/pdf.mjs';
 import { readBagrutPdfBytes } from './bagrutPdf';
 
-const fixture = () =>
-  readFile(new URL('./__fixtures__/bagrut-pdf/synthetic-corrupt.pdf', import.meta.url));
+const fixture = (filename = 'synthetic-corrupt.pdf') =>
+  readFile(new URL(`./__fixtures__/bagrut-pdf/${filename}`, import.meta.url));
 export const expectedSyntheticSubjects = [
   { label: 'מתמטיקה', units: 5, grade: 45 },
   { label: 'אנגלית', units: 4, grade: 54 },
@@ -13,25 +13,31 @@ export const expectedSyntheticSubjects = [
 ];
 
 describe('synthetic corrupted Ministry-style PDF', () => {
-  it('reproduces digit and final-pe corruption in raw pdf.js extraction', async () => {
-    const task = pdfjs.getDocument({ data: new Uint8Array(await fixture()), verbosity: 0 });
-    try {
-      const pdf = await task.promise;
-      const pages = await Promise.all(
-        Array.from({ length: pdf.numPages }, async (_, i) => {
-          const text = await (await pdf.getPage(i + 1)).getTextContent();
-          return text.items.flatMap((item) => ('str' in item ? [item.str] : []));
-        }),
-      );
-      const text = pages.flat().join(' ');
-      expect(text).not.toContain('045');
-      expect(text).not.toContain('054');
-      expect(text).not.toContain('ף');
-      expect(text).toContain('000');
-    } finally {
-      await task.destroy();
-    }
-  });
+  it.each(['synthetic-corrupt.pdf', 'synthetic-nine-starred.pdf'])(
+    'reproduces corruption in raw pdf.js extraction: %s',
+    async (filename) => {
+      const task = pdfjs.getDocument({
+        data: new Uint8Array(await fixture(filename)),
+        verbosity: 0,
+      });
+      try {
+        const pdf = await task.promise;
+        const pages = await Promise.all(
+          Array.from({ length: pdf.numPages }, async (_, i) => {
+            const text = await (await pdf.getPage(i + 1)).getTextContent();
+            return text.items.flatMap((item) => ('str' in item ? [item.str] : []));
+          }),
+        );
+        const text = pages.flat().join(' ');
+        expect(text).not.toContain('045');
+        expect(text).not.toContain('054');
+        expect(text).not.toContain('ף');
+        expect(text).toContain('000');
+      } finally {
+        await task.destroy();
+      }
+    },
+  );
 
   it('repairs embedded font maps and imports exactly the final subjects without OCR', async () => {
     const ocr = vi.fn(async () => {
@@ -116,4 +122,62 @@ describe('document-wide OCR fallback', () => {
       ),
     ).toEqual([]);
   });
+});
+
+const expectedNineSubjects = [
+  { label: 'מתמטיקה', units: 5, grade: 45 },
+  { label: 'אנגלית', units: 4, grade: 54 },
+  { label: 'תנ״ך', units: 2, grade: 84 },
+  { label: 'פיסיקה', units: 5, grade: 90 },
+  { label: 'ביולוגיה', units: 5, grade: 75 },
+  { label: 'כימיה', units: 5, grade: 94 },
+  { label: 'מדעי המחשב', units: 5, grade: 85 },
+  { label: 'היסטוריה', units: 2, grade: 64 },
+  { label: 'גלוף עץ עצוב וטכנולוגיה', units: 4, grade: 95 },
+];
+
+it.each(['synthetic-nine-starred.pdf', 'synthetic-nine-simple.pdf'])(
+  'imports all nine synthetic subjects with canonical physics and no unmatched rows: %s',
+  async (filename) => {
+    const bytes = new Uint8Array(
+      await readFile(new URL(`./__fixtures__/bagrut-pdf/${filename}`, import.meta.url)),
+    );
+    const ocr = vi.fn(async () => {
+      throw new Error('Synthetic text PDF must not use OCR');
+    });
+    const found = await readBagrutPdfBytes(bytes, pdfjs, () => {}, ocr);
+    expect(found).toHaveLength(9);
+    expect(found).toEqual(expectedNineSubjects);
+    expect(found.filter((row) => row.unmatched)).toHaveLength(0);
+    expect(ocr).not.toHaveBeenCalled();
+  },
+);
+
+it('does not bypass a broken starred table with simple lines', async () => {
+  const { PDFDocument } = await import('pdf-lib');
+  const doc = await PDFDocument.create();
+  doc.addPage();
+  const page = {
+    cleanup: vi.fn(),
+    getTextContent: async () => ({
+      items: [
+        { str: '*', transform: [1, 0, 0, 1, 552, 500], width: 5 },
+        { str: 'פיזיקה 5 90', transform: [1, 0, 0, 1, 400, 400], width: 90 },
+      ],
+    }),
+  };
+  const getDocument = vi.fn(() => ({
+    promise: Promise.resolve({ numPages: 1, getPage: async () => page }),
+    destroy: vi.fn(),
+  }));
+  const ocr = vi.fn(async () => []);
+  expect(
+    await readBagrutPdfBytes(
+      await doc.save(),
+      { getDocument } as unknown as Pick<typeof pdfjs, 'getDocument'>,
+      () => {},
+      ocr,
+    ),
+  ).toEqual([]);
+  expect(ocr).toHaveBeenCalledOnce();
 });

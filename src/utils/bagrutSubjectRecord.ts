@@ -1,3 +1,5 @@
+import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
+import { normalizeBagrutPdfSubject } from '@/lib/bagrutPdfSubjectName';
 import type {
   BagrutAssessmentKind,
   BagrutCertificateType,
@@ -27,9 +29,9 @@ const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
   פיסיקה: 'physics',
   ספרות: 'literature',
   'תנ״ך': 'bible',
-  'תנ"ך': 'bible',
   היסטוריה: 'history',
   'היסטוריה / תע״י': 'history',
+  'היסטוריה ותע״י': 'history',
   'הסטוריה ותע"י': 'history',
   'היסטוריה ותולדות הערבים': 'history',
   ערבית: 'arabic',
@@ -37,6 +39,41 @@ const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
   'הבעה עברית': 'hebrew_expression',
   'הבעה ערבית': 'arabic_expression',
 };
+
+export const bagrutSubjectLabels = [
+  ...new Set([
+    ...ALL_SUBJECTS,
+    ...Object.values(SECTORS).flatMap((items) => items.map((item) => item.n)),
+  ]),
+];
+
+const subjectIdsByNormalizedLabel = new Map(
+  Object.entries(SUBJECT_IDS_BY_WIZARD_LABEL).map(([label, id]) => [
+    normalizeBagrutPdfSubject(label),
+    id,
+  ]),
+);
+const wizardLabelsBySubjectId = new Map<string, string>();
+for (const label of bagrutSubjectLabels) {
+  const subjectId = subjectIdForWizardLabel(label);
+  subjectIdsByNormalizedLabel.set(normalizeBagrutPdfSubject(label), subjectId);
+  const existing = wizardLabelsBySubjectId.get(subjectId);
+  if (!existing || normalizeBagrutPdfSubject(existing) === normalizeBagrutPdfSubject(label)) {
+    wizardLabelsBySubjectId.set(subjectId, label);
+  }
+}
+
+export function bagrutSubjectLabelForId(subjectId: string): string | undefined {
+  return wizardLabelsBySubjectId.get(subjectId);
+}
+
+export function resolveBagrutWizardSubject(
+  label: string,
+): { subjectId: string; label: string } | undefined {
+  const subjectId = subjectIdsByNormalizedLabel.get(normalizeBagrutPdfSubject(label));
+  const canonicalLabel = subjectId && bagrutSubjectLabelForId(subjectId);
+  return subjectId && canonicalLabel ? { subjectId, label: canonicalLabel } : undefined;
+}
 
 export interface BagrutWizardSubjectInput {
   label: string;
@@ -111,7 +148,7 @@ function isValidSubject(subject: BagrutWizardSubjectInput): subject is BagrutWiz
 export function subjectIdForWizardLabel(label: string): string {
   const normalizedLabel = label.trim();
   return (
-    SUBJECT_IDS_BY_WIZARD_LABEL[normalizedLabel] ??
+    subjectIdsByNormalizedLabel.get(normalizeBagrutPdfSubject(normalizedLabel)) ??
     `subject_${Array.from(normalizedLabel, (character) => character.codePointAt(0)!.toString(16)).join('_')}`
   );
 }

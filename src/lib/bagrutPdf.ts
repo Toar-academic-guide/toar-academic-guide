@@ -1,4 +1,4 @@
-import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
+import { resolveBagrutWizardSubject } from '@/utils/bagrutSubjectRecord';
 import { normalizeBagrutPdfSubject as normalize } from './bagrutPdfSubjectName';
 import type { PDFPageProxy } from 'pdfjs-dist';
 
@@ -16,22 +16,9 @@ export interface PositionedItem {
   fontName?: string;
   bold?: boolean;
 }
-const catalogue = new Map(ALL_SUBJECTS.map((label) => [normalize(label), label]));
-// Prefer compulsory wizard labels where catalogue spellings differ.
-for (const subjects of Object.values(SECTORS))
-  for (const subject of subjects) {
-    catalogue.set(normalize(subject.n), subject.n);
-  }
-const aliases: Record<string, string> = {
-  פיזיקה: 'פיסיקה',
-  'היסטוריה ותעי': 'היסטוריה / תע״י',
-  'הסטוריה ותעי': 'היסטוריה / תע״י',
-  'היסטוריה/תעי': 'היסטוריה / תע״י',
-};
 function subjectLabel(raw: string): Pick<ExtractedGrade, 'label' | 'unmatched'> {
-  const key = normalize(raw);
-  const label = catalogue.get(key) ?? aliases[key];
-  return label ? { label } : { label: raw.trim(), unmatched: true };
+  const subject = resolveBagrutWizardSubject(normalize(raw));
+  return subject ? { label: subject.label } : { label: raw.trim(), unmatched: true };
 }
 const right = (item: PositionedItem) => item.x + (item.width ?? 0);
 const isStars = (item: PositionedItem) => /^[*\s]+$/.test(item.str);
@@ -142,6 +129,30 @@ export function parseBagrutTable(pages: PositionedItem[][]) {
   };
 }
 
+export function parseSimpleBagrutLines(lines: string[]): ExtractedGrade[] {
+  return lines.flatMap((line) => {
+    const text = line.trim().replace(/\s+/g, ' ');
+    const forward = text.match(/^(.+?)\s+(\d{1,2})\s+(\d{1,3})$/);
+    const reverse = text.match(/^(\d{1,3})\s+(\d{1,2})\s+(.+)$/);
+    const name = forward?.[1] ?? reverse?.[3] ?? '';
+    const units = Number(forward?.[2] ?? reverse?.[2]);
+    const grade = Number(forward?.[3] ?? reverse?.[1]);
+    if (
+      !/[א-ת]/.test(name) ||
+      /[\d*]/.test(normalize(name)) ||
+      /שעות|יח["״׳']?ל/.test(name) ||
+      !Number.isInteger(units) ||
+      units < 1 ||
+      units > 10 ||
+      !Number.isInteger(grade) ||
+      grade < 0 ||
+      grade > 100
+    )
+      return [];
+    return [{ ...subjectLabel(name), units, grade }];
+  });
+}
+
 type RecognizePage = (
   page: PDFPageProxy,
   pageNumber: number,
@@ -187,6 +198,19 @@ export async function readBagrutPdfBytes(
     }
     const parsed = parseBagrutTable(pages);
     if (parsed.valid) return parsed.subjects;
+    if (parsed.starredRows === 0) {
+      const simple = parseSimpleBagrutLines(
+        pages.flatMap((items) =>
+          groupRows(items).map(({ items: row }) =>
+            row
+              .sort((a, b) => b.x - a.x)
+              .map((item) => item.str)
+              .join(' '),
+          ),
+        ),
+      );
+      if (simple.length) return simple;
+    }
     const scanned: PositionedItem[][] = [];
     for (let number = 1; number <= pdf.numPages; number++) {
       onProgress(`סורקים עמוד ${number} מתוך ${pdf.numPages}…`);

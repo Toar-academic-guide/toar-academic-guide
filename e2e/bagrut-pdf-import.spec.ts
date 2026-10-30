@@ -52,12 +52,32 @@ for (const width of [1280, 390]) {
     await expect(page.getByRole('status')).toHaveCSS('text-align', 'right');
     const review = page.getByLabel(/בדקתי את הציונים שזוהו/);
     await expect(review).not.toBeChecked();
+    await expect(page.getByLabel('מקצוע 5', { exact: true })).toHaveAttribute(
+      'aria-invalid',
+      'true',
+    );
+    await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toBeVisible();
     await page.screenshot({
       path: testInfo.outputPath(`synthetic-import-${width}.png`),
       fullPage: true,
     });
     // Correct the unmatched synthetic name before continuing the real journey.
     await page.getByLabel('מקצוע 5', { exact: true }).fill('ספרות');
+    await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toHaveCount(0);
+    await review.check();
+    await page
+      .locator('input[type="file"]')
+      .setInputFiles('src/lib/__fixtures__/bagrut-pdf/synthetic-nine-starred.pdf');
+    await expect(page.getByRole('status')).toHaveText('זוהו 9 מקצועות');
+    await expect(review).not.toBeChecked();
+    const names = await page
+      .locator('input[aria-label^="מקצוע "]')
+      .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value));
+    expect(names).toHaveLength(10);
+    const physics = names.indexOf('פיסיקה') + 1;
+    expect(physics).toBeGreaterThan(0);
+    await expect(page.getByLabel(`ציון ${physics}`, { exact: true })).toHaveValue('90');
+    await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toHaveCount(0);
     await review.check();
     await page.getByRole('button', { name: 'המשך', exact: true }).click();
     await expect(page).toHaveURL(/#psy-mode$/);

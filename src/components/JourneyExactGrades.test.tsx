@@ -241,9 +241,27 @@ describe('JourneyExactGrades PDF imports', () => {
     expect(screen.getByRole('status').textContent).toBe('זוהו 2 מקצועות · 1 לא זוהה, נא לבדוק');
     const reviewed = screen.getByLabelText(/בדקתי את הציונים שזוהו/);
     expect(reviewed).toHaveProperty('checked', false);
+    const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
+    expect(unknown.getAttribute('aria-invalid')).toBe('true');
+    const reviewMessage = document.getElementById(unknown.getAttribute('aria-describedby')!);
+    expect(reviewMessage?.textContent).toBe('נא לבדוק את שם המקצוע');
+    fireEvent.change(unknown, { target: { value: 'פיזיקה' } });
+    expect(unknown.getAttribute('aria-invalid')).toBeNull();
+    expect(screen.queryByText('נא לבדוק את שם המקצוע')).toBeNull();
     fireEvent.click(reviewed);
     await upload([{ label: 'תנ״ך', units: 2, grade: 85 }]);
     expect(reviewed).toHaveProperty('checked', false);
     expect(subjectInputs()).toHaveLength(2);
+  });
+  it('merges a manual physics spelling with the canonical PDF spelling', async () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    const physicsIndex = subjectInputs().findIndex((i) => i.value === 'מתמטיקה') + 1;
+    fireEvent.change(screen.getByLabelText(`מקצוע ${physicsIndex}`, { selector: 'input' }), {
+      target: { value: 'פיזיקה' },
+    });
+    fireEvent.change(screen.getByLabelText(`ציון ${physicsIndex}`), { target: { value: '64' } });
+    await upload([{ label: 'פיסיקה', units: 5, grade: 90 }]);
+    expect(subjectInputs().map((i) => i.value)).toEqual(['פיסיקה']);
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '90');
   });
 });

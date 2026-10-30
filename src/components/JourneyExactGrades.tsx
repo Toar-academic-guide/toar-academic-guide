@@ -4,10 +4,12 @@ import { useState } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { normalizeBagrutPdfSubject } from '@/lib/bagrutPdfSubjectName';
-import BagrutSubjectRows, { bagrutSubjectLabels } from './BagrutSubjectRows';
+import BagrutSubjectRows from './BagrutSubjectRows';
 import {
   buildBagrutSubjectRecord,
+  bagrutSubjectLabelForId,
   subjectIdForWizardLabel,
+  resolveBagrutWizardSubject,
   type BagrutWizardSubjectInput,
 } from '@/utils/bagrutSubjectRecord';
 import type { BagrutCertificateType, BagrutSector, BagrutSubjectRecord } from '@/types';
@@ -20,9 +22,6 @@ const SECTOR_LABELS: Record<BagrutSector, string> = {
   bedouin: 'בדואי',
   samaritan: 'שומרוני',
 };
-const labelById = new Map(
-  bagrutSubjectLabels.map((label) => [subjectIdForWizardLabel(label), label]),
-);
 const starterRows = new Set(
   Object.values(SECTORS).flatMap((items) =>
     items.map((item) => `${item.n}|${item.min === 1 ? '' : item.min}`),
@@ -60,7 +59,7 @@ export default function JourneyExactGrades({
   const [rows, setRows] = useState<BagrutWizardSubjectInput[]>(
     () =>
       initialRecord?.subjects.map((subject) => ({
-        label: labelById.get(subject.subjectId) ?? subject.subjectId,
+        label: bagrutSubjectLabelForId(subject.subjectId) ?? subject.subjectId,
         units: subject.units,
         grade: subject.grade,
         assessmentKind: 'assessmentKind' in subject ? subject.assessmentKind : 'exam',
@@ -163,10 +162,13 @@ export default function JourneyExactGrades({
                 const merged = new Map(
                   current
                     .filter((row) => !isBlankRow(row))
-                    .map((row) => [normalizeBagrutPdfSubject(row.label), row]),
+                    .map((row) => [
+                      subjectIdForWizardLabel(normalizeBagrutPdfSubject(row.label)),
+                      row,
+                    ]),
                 );
                 for (const row of found) {
-                  const key = normalizeBagrutPdfSubject(row.label);
+                  const key = subjectIdForWizardLabel(normalizeBagrutPdfSubject(row.label));
                   const previous = merged.get(key);
                   merged.set(key, {
                     label: row.label,
@@ -205,7 +207,20 @@ export default function JourneyExactGrades({
         </p>
       )}
       {error && <p role="alert">{error}</p>}
-      <BagrutSubjectRows rows={rows} onChange={setRows} isBlankRow={isBlankRow} />
+      <BagrutSubjectRows
+        rows={rows}
+        onChange={setRows}
+        isBlankRow={isBlankRow}
+        fieldErrors={
+          imported
+            ? rows.map((row) =>
+                row.label.trim() && !resolveBagrutWizardSubject(row.label)
+                  ? { label: 'נא לבדוק את שם המקצוע' }
+                  : {},
+              )
+            : undefined
+        }
+      />
       <details className="journey-field-group">
         <summary>
           עבודת גמר או ציון משולב

@@ -1,5 +1,6 @@
+import { resolveBagrutWizardSubject } from '@/utils/bagrutSubjectRecord';
 import { describe, expect, it } from 'vitest';
-import { parseBagrutTable, type PositionedItem } from './bagrutPdf';
+import { parseBagrutTable, parseSimpleBagrutLines, type PositionedItem } from './bagrutPdf';
 
 const item = (str: string, x: number, y = 500, width = 15): PositionedItem => ({
   str,
@@ -89,4 +90,32 @@ describe('positioned final Bagrut rows', () => {
     expect(parseBagrutTable([[]]).valid).toBe(false);
     expect(parseBagrutTable([[...row(), item('*', 552, 420)]]).valid).toBe(false);
   });
+});
+
+it.each(['פיזיקה', 'פיסיקה'])(
+  'maps PDF spelling %s through the shared manual-entry subject map',
+  (name) => {
+    const parsed = parseBagrutTable([row(name)]).subjects[0];
+    expect(parsed.label).toBe('פיסיקה');
+    expect(parsed.unmatched).toBeUndefined();
+    expect(resolveBagrutWizardSubject(parsed.label)).toEqual(resolveBagrutWizardSubject(name));
+  },
+);
+
+it('accepts simple subject/units/grade lines in either PDF text direction, retaining unknowns', () => {
+  expect(
+    parseSimpleBagrutLines([
+      'פיזיקה 5 90',
+      '054 4 אנגלית',
+      'מקצוע בדיקה עם ף 4 55',
+      '000000000',
+      '04/2024 מתמטיקה 5 90',
+      'אנגלית 5 90 95',
+      'מעורבות חברתית 60 שעות 100',
+    ]),
+  ).toEqual([
+    { label: 'פיסיקה', units: 5, grade: 90 },
+    { label: 'אנגלית', units: 4, grade: 54 },
+    { label: 'מקצוע בדיקה עם ף', units: 4, grade: 55, unmatched: true },
+  ]);
 });

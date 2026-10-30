@@ -107,6 +107,7 @@ const targetedTests = [
   'src/lib/__tests__/StudyJourney.technionWinter.test.tsx',
   'scripts/check-haifa-official-urls.test.ts',
   'src/lib/bagrutPdf.test.ts',
+  'src/utils/bagrutSubjectRecord.test.ts',
   'src/lib/bagrutPdf.pipeline.test.ts',
   'src/lib/bagrutPdf.ocr.test.ts',
   'src/lib/bagrutPdfFontRepair.test.ts',
