@@ -122,3 +122,62 @@ it.each([undefined, false, true])(
     } else expect(payload.prepConsentAt).toBeNull();
   },
 );
+
+it.each([
+  ['unticked', { prepConsent: false }],
+  [
+    'unticked with forged current evidence',
+    {
+      prepConsent: false,
+      prepConsentText: ENQUIRY_PREP_CONSENT,
+      prepConsentAt: new Date('2000-01-01'),
+    },
+  ],
+  [
+    'missing attestation with forged evidence',
+    { prepConsentText: 'obsolete attestation', prepConsentAt: new Date('2000-01-01') },
+  ],
+])('stores no prep age attestation for %s', async (_label, evidence) => {
+  execute.mockReset().mockResolvedValue({ rows: [] });
+  transaction.mockImplementation((fn) => fn({ execute }));
+  getDb.mockReturnValue({ transaction });
+  await saveEnquiryBackup({
+    ...enquiry,
+    programId: 'psychometric-preparation',
+    institutionId: '',
+    ...evidence,
+  });
+  const query = new PgDialect().sqlToQuery(execute.mock.calls[1][0]);
+  const payload = JSON.parse(query.params[0] as string);
+  expect(payload).toMatchObject({
+    consent: true,
+    consentText: ENQUIRY_CONSENT,
+    prepConsent: false,
+    prepConsentText: null,
+    prepConsentAt: null,
+  });
+});
+
+it.each([null, 'obsolete attestation'])(
+  'creates current server evidence for a new affirmative prep consent instead of text %s',
+  async (prepConsentText) => {
+    execute.mockReset().mockResolvedValue({ rows: [] });
+    transaction.mockImplementation((fn) => fn({ execute }));
+    getDb.mockReturnValue({ transaction });
+    const before = Date.now();
+    await saveEnquiryBackup({
+      ...enquiry,
+      programId: 'psychometric-preparation',
+      institutionId: '',
+      prepConsent: true,
+      prepConsentText,
+      prepConsentAt: new Date('2000-01-01'),
+    });
+    const query = new PgDialect().sqlToQuery(execute.mock.calls[1][0]);
+    const payload = JSON.parse(query.params[0] as string);
+    expect(payload.prepConsent).toBe(true);
+    expect(payload.prepConsentText).toBe(ENQUIRY_PREP_CONSENT);
+    expect(Date.parse(payload.prepConsentAt)).toBeGreaterThanOrEqual(before);
+    expect(Date.parse(payload.prepConsentAt)).toBeLessThanOrEqual(Date.now());
+  },
+);

@@ -109,3 +109,69 @@ it('sends bands only across the entire Monday payload, including a crafted sourc
   });
   expect(context).not.toHaveProperty('what_if_score');
 });
+
+it.each([
+  ['unticked', { prepConsent: false }],
+  [
+    'forged unticked evidence',
+    {
+      prepConsent: false,
+      prepConsentText: 'forged attestation',
+      prepConsentAt: new Date('2000-01-01'),
+    },
+  ],
+  ['missing stored age attestation', { prepConsent: true, prepConsentText: null }],
+  [
+    'obsolete stored age attestation',
+    { prepConsent: true, prepConsentText: 'obsolete attestation' },
+  ],
+])(
+  'keeps %s prep lead on the MyWay board with only existing contact fields',
+  async (_label, evidence) => {
+    vi.stubEnv('MONDAY_API_TOKEN', 'test-token');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123' } } })),
+    );
+    const lead: EnquiryRecord = {
+      requestId: 'b783a6d4-0428-4ddd-827f-82d33251be52',
+      name: 'Synthetic enquiry',
+      phone: '0501234567',
+      programId: 'psychometric-preparation',
+      institutionId: '',
+      programName: 'הכנה לפסיכומטרי',
+      institutionName: '',
+      sourcePath: '/enquiry',
+      consent: true,
+      resultStatus: 'unknown',
+      bagrut: null,
+      psychometric: null,
+      createdAt: new Date('2026-10-24T12:00:00Z'),
+      ...evidence,
+    };
+    await sendEnquiryToMonday(lead);
+    expect(fetch).toHaveBeenCalledOnce();
+    const [url, options] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('https://api.monday.com/v2');
+    const body = JSON.parse(options?.body as string);
+    expect(body.variables.board).toBe('18436300533');
+    expect(body.variables.name).toBe(lead.name);
+    const columns = JSON.parse(body.variables.columns);
+    expect(columns.phone_mm8ar2e2).toEqual({ phone: '+972501234567', countryShortName: 'IL' });
+    expect(columns.text_mm8a4c4w).toBe('');
+    const context = JSON.parse(columns.long_text_mm8ay37r.text.split('\n\nLead context:\n')[1]);
+    expect(context).toEqual({
+      program_id: 'psychometric-preparation',
+      institution_id: '',
+      result_status: 'unknown',
+      bagrut_band: null,
+      psychometric_band: null,
+    });
+    const otherColumns = { ...columns };
+    delete otherColumns.phone_mm8ar2e2;
+    expect(JSON.stringify(otherColumns)).not.toContain(lead.phone);
+    expect(JSON.stringify(otherColumns)).not.toContain(lead.name);
+    expect(options?.body).not.toContain('forged attestation');
+    expect(options?.body).not.toContain('obsolete attestation');
+  },
+);
