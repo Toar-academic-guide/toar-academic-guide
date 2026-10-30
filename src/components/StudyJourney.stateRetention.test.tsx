@@ -169,6 +169,69 @@ beforeEach(async () => {
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
 });
 
+describe('unsubmitted quick average survives refresh', () => {
+  it.each(['guest', 'account'] as const)(
+    'restores an unsubmitted quick 110.5 after reload and evaluates 110.5 only after submission (%s)',
+    async (identity) => {
+      state.user = identity === 'account' ? { id: 'test-account' } : null;
+      seed();
+      const first = render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+      fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '110.5' } });
+      fireEvent(window, new Event('pagehide'));
+      first.unmount();
+
+      render(<StudyJourney initialStep="subjects" />);
+      expect(screen.getByLabelText('ממוצע בגרות')).toHaveProperty('value', '110.5');
+      expect(stored().scores).toEqual({});
+      expect(state.evaluate).not.toHaveBeenCalled();
+      submit();
+      withoutPsy();
+      expect(screen.getByText('הזנתם ממוצע: 110.5')).toBeTruthy();
+      fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      for (const [input] of state.evaluate.mock.calls) {
+        expect(input.bagrut).toBe(110.5);
+        expect(input.extraInputs?.bagrutSubjectRecord).toBeUndefined();
+      }
+      expect(state.updateProfile).toHaveBeenLastCalledWith({
+        academicScores: { bagrut: { weightedAverage: 110.5 } },
+      });
+    },
+  );
+
+  it('keeps submitted subjects in summary and evaluation while restoring an unsubmitted quick average', async () => {
+    seed({ bagrut: { subjectRecord: record } }, 'exact');
+    const first = render(<StudyJourney initialStep="review" />);
+    editBagrut();
+    await expectRecord();
+    back();
+    fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+    fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '110.5' } });
+    first.unmount();
+
+    render(<StudyJourney initialStep="subjects" />);
+    expect(screen.getByLabelText('ממוצע בגרות')).toHaveProperty('value', '110.5');
+    expect(stored().gradeMode).toBe('exact');
+    expect(stored().scores.bagrut).toEqual({ subjectRecord: record });
+    act(() => {
+      window.history.replaceState(null, '', '/app/calculator#review');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByText('הזנתם ציונים ב-9 מקצועות')).toBeTruthy();
+    expect(screen.queryByText('הזנתם ממוצע: 110.5')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+    for (const [input] of state.evaluate.mock.calls) {
+      expect(input.bagrut).toBeUndefined();
+      expect(input.extraInputs?.bagrutSubjectRecord).toEqual(record);
+    }
+    expect(state.updateProfile).toHaveBeenLastCalledWith({
+      academicScores: { bagrut: { subjectRecord: record } },
+    });
+  });
+});
+
 describe('last submitted Bagrut path across reloads', () => {
   const restores = (['guest', 'account'] as const).flatMap((identity) =>
     (['review', 'saved'] as const).map((surface) => ({ identity, surface })),
