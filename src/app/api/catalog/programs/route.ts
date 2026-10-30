@@ -22,7 +22,14 @@ export async function GET() {
 
     logCatalogueResponse('programs', envelope.meta, summary);
 
-    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>);
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>, {
+      headers: {
+        'Cache-Control':
+          meta.catalogueSource === 'database' && !meta.fallbackReason
+            ? 'public, s-maxage=120, stale-while-revalidate=600'
+            : 'no-store',
+      },
+    });
   } catch (error) {
     const code =
       error instanceof CatalogueQueryError ? error.code : 'CATALOGUE_PROGRAMS_INTERNAL_ERROR';
@@ -43,6 +50,9 @@ export async function GET() {
 
     logCatalogueResponse('programs', envelope.meta, summary);
 
-    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>, { status });
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>, {
+      status,
+      headers: { 'Cache-Control': 'no-store' },
+    });
   }
 }
