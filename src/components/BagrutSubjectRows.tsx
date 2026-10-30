@@ -11,6 +11,8 @@ export type BagrutSubjectRow = BagrutWizardSubjectInput & {
   gradeText?: string;
   // UI only: absent on restored/imported rows, false after any explicit units choice.
   autoUnits?: boolean;
+  // UI only: an explicit label/units edit requires a grade even at the default units.
+  edited?: boolean;
 };
 
 export function rowsForSector(rows: BagrutSubjectRow[], sector: string): BagrutSubjectRow[] {
@@ -98,6 +100,7 @@ export default function BagrutSubjectRows({
                     onChange={(event) =>
                       change(index, {
                         label: event.target.value,
+                        edited: true,
                         ...(row.autoUnits
                           ? { units: defaultUnitsFor(event.target.value, sector) }
                           : {}),
@@ -137,6 +140,7 @@ export default function BagrutSubjectRows({
                       change(index, {
                         units: event.target.value === '' ? '' : Number(event.target.value),
                         autoUnits: false,
+                        edited: true,
                       })
                     }
                   >

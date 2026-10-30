@@ -39,7 +39,7 @@ const isBlankRow = (row: BagrutSubjectRow) =>
   row.grade === '' &&
   (row.assessmentKind ?? 'exam') === 'exam' &&
   (row.label.trim() === '' ||
-    (row.autoUnits === true && starterRows.has(`${row.label}|${row.units}`)));
+    (!row.edited && starterRows.has(`${row.label}|${row.units}`)));
 const emptyRows = (sector: string): BagrutSubjectRow[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
@@ -135,6 +135,7 @@ export default function JourneyExactGrades({
                   (row, index) =>
                     row.label === defaults[index].label &&
                     row.autoUnits &&
+                    !row.edited &&
                     row.units === defaults[index].units &&
                     row.grade === '' &&
                     row.assessmentKind === defaults[index].assessmentKind,

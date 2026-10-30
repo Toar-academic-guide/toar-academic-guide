@@ -807,3 +807,44 @@ describe('saved-progress units stay locked', () => {
     for (const row of saved.rows) expect(row).not.toHaveProperty('autoUnits');
   });
 });
+
+
+it('submits restored progress with untouched starters and keeps only filled rows', () => {
+  const onComplete = vi.fn();
+  const rows: ExactInProgress['rows'] = SECTORS['יהודי'].map((subject) => ({
+    label: subject.n,
+    units: subject.min === 3 ? 3 : 2,
+    grade: '',
+    assessmentKind: 'exam',
+  }));
+  Object.assign(rows.find((row) => row.label === 'אנגלית')!, { units: 2, grade: 90 });
+  Object.assign(rows.find((row) => row.label === 'מתמטיקה')!, { units: 5, grade: 88 });
+  rows.push({ label: 'פיזיקה', units: 4, grade: 84, assessmentKind: 'exam' });
+  render(
+    <JourneyExactGrades
+      initialProgress={{
+        sector: 'יהודי',
+        certificate: 'internal',
+        complete: false,
+        rows,
+        imported: true,
+        reviewed: true,
+      }}
+      onComplete={onComplete}
+    />,
+  );
+  fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
+  expect(onComplete).toHaveBeenCalledOnce();
+  expect(onComplete).toHaveBeenCalledWith({
+    schemaVersion: 2,
+    sector: 'jewish',
+    certificateType: 'internal',
+    complete: true,
+    subjects: [
+      { subjectId: 'english', units: 2, grade: 90, assessmentKind: 'exam' },
+      { subjectId: 'mathematics', units: 5, grade: 88, assessmentKind: 'exam' },
+      { subjectId: 'physics', units: 4, grade: 84, assessmentKind: 'exam' },
+    ],
+  });
+  expect(screen.queryByRole('alert')).toBeNull();
+});
