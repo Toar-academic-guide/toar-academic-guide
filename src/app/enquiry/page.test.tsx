@@ -95,7 +95,27 @@ describe('enquiry link integrity', () => {
     );
     expect(markup).toContain('השאירו פרטים</button>');
     expect(markup).not.toContain('רוצים תשובות ישר מהמוסד?');
-    expect(markup).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/);
+    const hero = markup.match(/<section\b[^>]*>.*?<\/section>/s)?.[0];
+    const dialog = markup.match(/<dialog\b[^>]*>.*?<\/dialog>/s)?.[0];
+    expect(hero).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(dialog).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(`${hero}${dialog}`).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/); // Approved test update, Jorje 2026-10-30
+  });
+
+  it('allows the approved government-course sentence as the only free-course claim', async () => {
+    const markup = await form('/enquiry?program=psychometric-preparation');
+    const sentence = 'הקורס מוצע בחינם לכל דורש, ולמי שרוצה יותר יש לצדו גם מסלול מתוגבר בתשלום.';
+    const sentenceMarkup = sentence.replace(
+      'מסלול מתוגבר בתשלום',
+      '<strong>מסלול מתוגבר בתשלום</strong>',
+    );
+    const reading = markup.match(/<section\b[^>]*data-prep-content[^>]*>.*?<\/section>/s)?.[0];
+    const renderedText = markup.replace(/<[^>]*>/g, '');
+    expect(reading).toContain(`<p>${sentenceMarkup}</p>`); // Approved test update, Jorje 2026-10-30
+    expect(renderedText).toContain(sentence); // Approved test update, Jorje 2026-10-30
+    expect(markup.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.replace(sentence, '')).not.toMatch(/חינם/); // Approved test update, Jorje 2026-10-30
   });
 
   it('keeps the institution enquiry intro unchanged', async () => {
