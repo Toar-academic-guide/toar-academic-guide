@@ -1,8 +1,9 @@
 // @vitest-environment jsdom
 
 import { useState } from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it } from 'vitest';
+import { buildBagrutSubjectRecord } from '@/utils/bagrutSubjectRecord';
 import BagrutSubjectRows from './BagrutSubjectRows';
 import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
@@ -25,7 +26,7 @@ describe('BagrutSubjectRows', () => {
 
     fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
     expect(screen.getByLabelText('מקצוע 2')).toHaveProperty('value', '');
-    expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '5');
+    expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '');
     fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 1' }));
     expect(screen.queryByLabelText('מקצוע 2')).toBeNull();
     expect(screen.getByLabelText('מקצוע 1')).toHaveProperty('value', '');
@@ -102,3 +103,71 @@ it('renders field messages in one full-width row after the invalid subject row',
     expect(screen.getByLabelText(label).getAttribute('aria-invalid')).toBe('true');
   }
 });
+
+it('uses plural headings, an empty units choice and a text grade without spinners', () => {
+  render(<SubjectRows />);
+  for (const name of ['מקצועות', 'יחידות', 'ציונים']) {
+    expect(screen.getByRole('columnheader', { name })).toBeTruthy();
+  }
+  expect(screen.queryAllByRole('spinbutton')).toHaveLength(0);
+  const grade = screen.getByRole('textbox', { name: 'ציון 1' });
+  expect(grade.getAttribute('type')).toBe('text');
+  expect(grade.getAttribute('inputmode')).toBe('numeric');
+  fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+  const units = screen.getByRole('combobox', { name: 'יחידות 2' });
+  expect(units).toHaveProperty('value', '');
+  expect(within(units).getByRole('option', { name: 'בחירה' })).toHaveProperty('selected', true);
+});
+
+it.each([
+  ['אנגלית', 'יהודי', ['', '3', '4', '5']],
+  ['מתמטיקה', 'יהודי', ['', '3', '4', '5']],
+  ['כימיה', 'יהודי', ['', '1', '2', '3', '4', '5']],
+  ['עברית', 'ערבי', ['', '3', '4', '5']],
+  ['עברית', 'יהודי', ['', '1', '2', '3', '4', '5']],
+])('offers only the units for %s in %s', (label, sector, expected) => {
+  render(
+    <BagrutSubjectRows
+      sector={sector}
+      rows={[{ label, units: '', grade: '', assessmentKind: 'exam' }]}
+      onChange={() => {}}
+    />,
+  );
+  const units = screen.getByRole('combobox', { name: 'יחידות 1' }) as HTMLSelectElement;
+  expect(Array.from(units.options, (option) => option.value)).toEqual(expected);
+  expect(within(units).queryByRole('option', { name: '10' })).toBeNull();
+});
+
+it.each([2, 10])('preserves stored out-of-list units %s as the selected option', (units) => {
+  render(
+    <BagrutSubjectRows
+      rows={[{ label: 'אנגלית', units, grade: 90, assessmentKind: 'exam' }]}
+      onChange={() => {}}
+    />,
+  );
+  const select = screen.getByRole('combobox', { name: 'יחידות 1' });
+  expect(select).toHaveProperty('value', String(units));
+  expect(within(select).getByRole('option', { name: String(units) })).toHaveProperty(
+    'selected',
+    true,
+  );
+});
+
+it.each(['abc', '90.5', '1e2', '-1', '101'])(
+  'keeps invalid grade %s rejected by record validation',
+  (value) => {
+    let rows: BagrutWizardSubjectInput[] = [];
+    render(
+      <BagrutSubjectRows
+        rows={[{ label: 'אנגלית', units: 5, grade: '', assessmentKind: 'exam' }]}
+        onChange={(next) => {
+          rows = next;
+        }}
+      />,
+    );
+    fireEvent.change(screen.getByRole('textbox', { name: 'ציון 1' }), { target: { value } });
+    expect(
+      buildBagrutSubjectRecord({ sectorLabel: 'יהודי', complete: true, subjects: rows }),
+    ).toMatchObject({ complete: false, subjects: [] });
+  },
+);

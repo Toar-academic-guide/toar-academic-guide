@@ -100,7 +100,9 @@ export default function SekhemCalculator({
   const pendingFocus = useRef<{ index: number; field: 'grade' | 'units' } | null>(null);
   function focusSubject(index: number, field: 'grade' | 'units') {
     const label = `${field === 'grade' ? 'ציון' : 'יחידות'} ${index + 1}`;
-    const input = subjectFields.current?.querySelector<HTMLInputElement>(`[aria-label="${label}"]`);
+    const input = subjectFields.current?.querySelector<HTMLInputElement | HTMLSelectElement>(
+      `[aria-label="${label}"]`,
+    );
     input?.scrollIntoView?.({ block: 'center', behavior: 'smooth' });
     input?.focus({ preventScroll: true });
   }

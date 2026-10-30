@@ -4,7 +4,15 @@ import { fireEvent, render, screen } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
 import JourneyExactGrades from './JourneyExactGrades';
 import { SECTORS } from '@/data/bagrutSubjects';
-import { calculateOptimizedBagrutAverage } from '@/server/admissions/bagrutPolicies';
+import {
+  calculateOptimizedBagrutAverage,
+  calculateBguBagrutAverage,
+  calculateTauBagrutAverage,
+} from '@/server/admissions/bagrutPolicies';
+
+vi.mock('@/lib/bagrutPdf', () => ({
+  readBagrutPdf: vi.fn(async () => [{ label: 'אנגלית', units: 5, grade: 90 }]),
+}));
 
 describe('JourneyExactGrades sector selection', () => {
   it('updates untouched starter rows to the selected sector', () => {
@@ -34,7 +42,8 @@ describe('JourneyExactGrades blank rows', () => {
       .filter((element) => element.tagName === 'INPUT')
       .map((input) => (input as HTMLInputElement).value);
   const field = (label: string) =>
-    screen.getByLabelText(label, { selector: 'input' }) as HTMLInputElement;
+    screen.getByLabelText(label, { selector: 'input, select' }) as
+      HTMLInputElement | HTMLSelectElement;
   const rowNumber = (label: string) => labels().indexOf(label) + 1;
   const fillRow = (index: number, units: string, grade: string) => {
     fireEvent.change(field(`יחידות ${index}`), { target: { value: units } });
@@ -132,6 +141,7 @@ describe('JourneyExactGrades blank rows', () => {
     expect(onComplete.mock.calls[0][0]).toMatchObject({
       sector: 'jewish',
       certificateType: 'internal',
+      complete: true,
       subjects: [
         { subjectId: 'english', units: 5, grade: 85, assessmentKind: 'exam' },
         { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
@@ -200,4 +210,123 @@ describe('JourneyExactGrades blank rows', () => {
       'יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.',
     );
   });
+});
+
+it('removes assessment editing and completeness confirmation', () => {
+  render(<JourneyExactGrades onComplete={vi.fn()} />);
+  expect(screen.queryByText('עבודת גמר או ציון משולב')).toBeNull();
+  expect(screen.queryByLabelText(/הזנתי את כל המקצועות/)).toBeNull();
+});
+
+it.each(['final_project', 'combined'] as const)(
+  'resubmits saved %s facts and their label unchanged',
+  (assessmentKind) => {
+    const onComplete = vi.fn();
+    const subjects = [{ subjectId: 'english', units: 2, grade: 90, assessmentKind }];
+    render(
+      <JourneyExactGrades
+        onComplete={onComplete}
+        initialRecord={{
+          schemaVersion: 2,
+          sector: 'jewish',
+          certificateType: 'internal',
+          complete: false,
+          subjects,
+        }}
+      />,
+    );
+    expect(
+      screen.getByText(assessmentKind === 'final_project' ? 'עבודת גמר' : 'ציון משולב'),
+    ).toBeTruthy();
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ complete: true, subjects }));
+  },
+);
+
+it('still requires review of PDF-imported grades before continuing', async () => {
+  const onComplete = vi.fn();
+  render(<JourneyExactGrades onComplete={onComplete} />);
+  fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+  fireEvent.change(screen.getByLabelText(/העלאת גיליון PDF/), {
+    target: { files: [new File(['synthetic'], 'grades.pdf', { type: 'application/pdf' })] },
+  });
+  const review = await screen.findByRole('checkbox', { name: /בדקתי את הציונים שזוהו/ });
+  const form = screen.getByRole('button', { name: 'המשך' }).closest('form')!;
+  fireEvent.submit(form);
+  expect(onComplete).not.toHaveBeenCalled();
+  expect(screen.getByRole('alert').textContent).toBe('יש לבדוק את הציונים שזוהו ולאשר אותם.');
+  fireEvent.click(review);
+  fireEvent.submit(form);
+  expect(onComplete).toHaveBeenCalledWith(
+    expect.objectContaining({
+      complete: true,
+      subjects: [{ subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' }],
+    }),
+  );
+});
+
+it.each(['duplicate', 'invalid'])(
+  'blocks a %s row instead of sending a complete record',
+  (kind) => {
+    const onComplete = vi.fn();
+    render(
+      <JourneyExactGrades
+        onComplete={onComplete}
+        initialRecord={{
+          schemaVersion: 2,
+          sector: 'jewish',
+          certificateType: 'internal',
+          complete: true,
+          subjects: [{ subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' }],
+        }}
+      />,
+    );
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    fireEvent.change(screen.getByLabelText('מקצוע 2'), {
+      target: { value: kind === 'duplicate' ? 'אנגלית' : 'כימיה' },
+    });
+    fireEvent.change(screen.getByLabelText('יחידות 2'), { target: { value: '5' } });
+    fireEvent.change(screen.getByLabelText('ציון 2'), {
+      target: { value: kind === 'duplicate' ? '90' : '101' },
+    });
+    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert').textContent).toBe(
+      'יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.',
+    );
+  },
+);
+
+it('supplies a complete internal record to the unchanged BGU and TAU averages', () => {
+  const onComplete = vi.fn();
+  render(<JourneyExactGrades onComplete={onComplete} />);
+  fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+  SECTORS['יהודי'].forEach((subject, index) => {
+    fireEvent.change(screen.getByLabelText(`יחידות ${index + 1}`), {
+      target: { value: subject.min === 3 ? '5' : '2' },
+    });
+    fireEvent.change(screen.getByLabelText(`ציון ${index + 1}`), { target: { value: '90' } });
+  });
+  // Five-unit elective takes this synthetic certificate above TAU's 20-unit floor.
+  fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+  fireEvent.change(screen.getByLabelText('מקצוע 8'), { target: { value: 'כימיה' } });
+  fireEvent.change(screen.getByLabelText('יחידות 8'), { target: { value: '5' } });
+  fireEvent.change(screen.getByLabelText('ציון 8'), { target: { value: '90' } });
+  fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  expect(onComplete).toHaveBeenCalledTimes(1);
+  const record = onComplete.mock.calls[0][0];
+  expect(record.complete).toBe(true);
+  expect(
+    record.subjects.every(
+      (subject: { assessmentKind: string }) => subject.assessmentKind === 'exam',
+    ),
+  ).toBe(true);
+  for (const calculate of [calculateBguBagrutAverage, calculateTauBagrutAverage]) {
+    expect(calculate(record)).toMatchObject({ state: 'calculated' });
+    expect(calculate({ ...record, complete: false })).toMatchObject({
+      state: 'needs_input',
+      missingInputs: ['bagrut_certificate_complete'],
+    });
+  }
 });

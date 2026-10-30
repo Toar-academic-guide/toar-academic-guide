@@ -61,6 +61,31 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
 
+// Invalid select values can only arrive from a restored record, not from its options.
+function restoreUnits(units: number, grade = 92) {
+  sessionStorage.setItem(
+    'myway:sekhem-calculator:v1',
+    JSON.stringify({
+      version: 1,
+      rows: [
+        { label: 'מתמטיקה', units, grade, assessmentKind: 'exam' },
+        { label: 'אנגלית', units: 5, grade: 95, assessmentKind: 'exam' },
+      ],
+      sector: 'יהודי',
+      certificate: 'internal',
+      psychometric: '700',
+      verbal: '130',
+      quantitative: '140',
+      english: '135',
+      programId: '',
+      requiredKeys: [],
+      haifaValues: {},
+      reports: [],
+      failedIds: [],
+    }),
+  );
+}
+
 it.each([true, false])(
   'focuses a requested subject grade, adding its row when absent (existing=%s)',
   async (existing) => {
@@ -461,9 +486,12 @@ it.each([
   ['ציון 1', '90.5'],
   ['יחידות 1', '4.5'],
 ])('focuses the first invalid grade or units field without evaluating (%s=%s)', (label, value) => {
+  if (label.startsWith('יחידות')) restoreUnits(Number(value));
   render(<SekhemCalculator offerings={offerings} />);
-  examples();
-  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  if (label.startsWith('ציון')) {
+    examples();
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  }
   fireEvent.change(screen.getByLabelText('ציון 2'), { target: { value: '101' } });
   submit();
   const input = screen.getByLabelText(label);
@@ -479,10 +507,8 @@ it.each([
 });
 
 it('focuses units before grade when both fields in the first row are invalid', () => {
+  restoreUnits(150, 150);
   render(<SekhemCalculator offerings={offerings} />);
-  examples();
-  for (const label of ['יחידות 1', 'ציון 1'])
-    fireEvent.change(screen.getByLabelText(label), { target: { value: '150' } });
   submit();
   expect(document.activeElement).toBe(screen.getByLabelText('יחידות 1'));
   expect(fetchMock).not.toHaveBeenCalled();
@@ -495,6 +521,8 @@ it.each([
   render(<SekhemCalculator offerings={offerings} />);
   examples();
   fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: String(grade) } });
+  if (units === 1)
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'כימיה' } });
   fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: String(units) } });
   submit();
   await screen.findByText('הציונים עומדים בתנאי הקבלה');

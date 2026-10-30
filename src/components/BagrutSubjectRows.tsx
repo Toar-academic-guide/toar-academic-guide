@@ -2,6 +2,7 @@
 
 import { Fragment, useId } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
+import { unitOptionsFor } from './bagrutUnitOptions';
 import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
 import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
@@ -22,12 +23,14 @@ export default function BagrutSubjectRows({
   isBlankRow = (row) => row.label.trim() === '' && row.grade === '',
   disabled = false,
   fieldErrors,
+  sector = 'יהודי',
 }: {
   rows: BagrutSubjectRow[];
   onChange: (rows: BagrutSubjectRow[]) => void;
   isBlankRow?: (row: BagrutSubjectRow) => boolean;
   disabled?: boolean;
   fieldErrors?: BagrutFieldErrors;
+  sector?: string;
 }) {
   const subjectListId = useId();
   const change = (index: number, updates: Partial<BagrutSubjectRow>) =>
@@ -37,9 +40,9 @@ export default function BagrutSubjectRows({
       <table className="journey-grade-table">
         <thead>
           <tr>
-            <th scope="col">מקצוע</th>
+            <th scope="col">מקצועות</th>
             <th scope="col">יחידות</th>
-            <th scope="col">ציון</th>
+            <th scope="col">ציונים</th>
             <th scope="col">
               <span className="sr-only">הסרה</span>
             </th>
@@ -65,7 +68,7 @@ export default function BagrutSubjectRows({
                   )}
                 </td>
                 <td>
-                  <input
+                  <select
                     className={
                       fieldErrors?.[index]?.units
                         ? 'aria-invalid:border-[#8c2438]! focus:outline-[#8c2438]! focus-visible:outline-[#8c2438]!'
@@ -78,10 +81,6 @@ export default function BagrutSubjectRows({
                         : undefined
                     }
                     aria-label={`יחידות ${index + 1}`}
-                    type="number"
-                    min={1}
-                    max={5}
-                    step={1}
                     required={!isBlankRow(row)}
                     disabled={disabled}
                     value={row.units}
@@ -90,7 +89,14 @@ export default function BagrutSubjectRows({
                         units: event.target.value === '' ? '' : Number(event.target.value),
                       })
                     }
-                  />
+                  >
+                    <option value="">בחירה</option>
+                    {unitOptionsFor(row.label, sector, row.units).map((units) => (
+                      <option key={units} value={units}>
+                        {units}
+                      </option>
+                    ))}
+                  </select>
                 </td>
                 <td>
                   <input
@@ -106,16 +112,19 @@ export default function BagrutSubjectRows({
                         : undefined
                     }
                     aria-label={`ציון ${index + 1}`}
-                    type="number"
-                    min={0}
-                    max={100}
-                    step={1}
+                    type="text"
+                    inputMode="numeric"
                     required={!isBlankRow(row)}
                     disabled={disabled}
-                    value={row.grade}
+                    value={Number.isNaN(row.grade) ? '' : row.grade}
                     onChange={(event) =>
                       change(index, {
-                        grade: event.target.value === '' ? '' : Number(event.target.value),
+                        grade:
+                          event.target.value === ''
+                            ? ''
+                            : /^\d+$/.test(event.target.value)
+                              ? Number(event.target.value)
+                              : Number.NaN,
                       })
                     }
                   />
@@ -168,7 +177,7 @@ export default function BagrutSubjectRows({
         disabled={disabled}
         type="button"
         onClick={() =>
-          onChange([...rows, { label: '', units: 5, grade: '', assessmentKind: 'exam' }])
+          onChange([...rows, { label: '', units: '', grade: '', assessmentKind: 'exam' }])
         }
       >
         <Plus size={16} className="inline" /> הוספת מקצוע

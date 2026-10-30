@@ -53,9 +53,6 @@ export default function JourneyExactGrades({
   const [certificate, setCertificate] = useState<BagrutCertificateType | ''>(
     initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : '',
   );
-  const [complete, setComplete] = useState(
-    initialRecord?.schemaVersion === 2 ? initialRecord.complete : false,
-  );
   const [rows, setRows] = useState<BagrutWizardSubjectInput[]>(
     () =>
       initialRecord?.subjects.map((subject) => ({
@@ -69,8 +66,6 @@ export default function JourneyExactGrades({
   const [reading, setReading] = useState('');
   const [imported, setImported] = useState(false);
   const [reviewed, setReviewed] = useState(false);
-  const change = (index: number, updates: Partial<BagrutWizardSubjectInput>) =>
-    setRows((current) => current.map((row, i) => (i === index ? { ...row, ...updates } : row)));
   return (
     <form
       className="journey-narrow"
@@ -85,7 +80,7 @@ export default function JourneyExactGrades({
         const record = buildBagrutSubjectRecord({
           sectorLabel: sector,
           certificateType: certificate || 'other',
-          complete,
+          complete: true,
           subjects: filledRows,
         });
         if (!filledRows.length || record.subjects.length !== filledRows.length) {
@@ -159,7 +154,6 @@ export default function JourneyExactGrades({
               setRows(found.map((row) => ({ ...row, assessmentKind: 'exam' })));
               setImported(true);
               setReviewed(false);
-              setComplete(false);
             } catch (cause) {
               setError(
                 cause instanceof Error && /^(אפשר|בחרו)/.test(cause.message)
@@ -174,38 +168,7 @@ export default function JourneyExactGrades({
       </label>
       {reading && <p role="status">{reading}</p>}
       {error && <p role="alert">{error}</p>}
-      <BagrutSubjectRows rows={rows} onChange={setRows} isBlankRow={isBlankRow} />
-      <details className="journey-field-group">
-        <summary>
-          עבודת גמר או ציון משולב
-          <ArrowLeft size={16} />
-        </summary>
-        {rows.map((row, index) => (
-          <label className="journey-complete" key={index}>
-            {row.label || `מקצוע ${index + 1}`}
-            <select
-              value={row.assessmentKind ?? 'exam'}
-              onChange={(event) =>
-                change(index, {
-                  assessmentKind: event.target.value as BagrutWizardSubjectInput['assessmentKind'],
-                })
-              }
-            >
-              <option value="exam">בחינה</option>
-              <option value="final_project">עבודת גמר</option>
-              <option value="combined">משולב</option>
-            </select>
-          </label>
-        ))}
-      </details>
-      <label className="journey-complete">
-        <input
-          type="checkbox"
-          checked={complete}
-          onChange={(event) => setComplete(event.target.checked)}
-        />
-        הזנתי את כל המקצועות שמופיעים בתעודה
-      </label>
+      <BagrutSubjectRows rows={rows} onChange={setRows} isBlankRow={isBlankRow} sector={sector} />
       {imported && (
         <label className="journey-complete">
           <input
