@@ -1,3 +1,4 @@
+import plainItems from './__fixtures__/bagrut-pdf/synthetic-plain-text-items.json';
 import { resolveBagrutWizardSubject } from '@/utils/bagrutSubjectRecord';
 import { describe, expect, it } from 'vitest';
 import { parseBagrutTable, parseSimpleBagrutLines, type PositionedItem } from './bagrutPdf';
@@ -117,5 +118,55 @@ it('accepts simple subject/units/grade lines in either PDF text direction, retai
     { label: 'פיסיקה', units: 5, grade: 90 },
     { label: 'אנגלית', units: 4, grade: 54 },
     { label: 'מקצוע בדיקה עם ף', units: 4, grade: 55, unmatched: true },
+  ]);
+});
+
+it('imports nine plain PDF rows from the captured combined numeric item shapes', () => {
+  const lines = [...new Set(plainItems.map((item) => item.y))].map((y) =>
+    plainItems
+      .filter((item) => item.y === y)
+      .sort((a, b) => b.x - a.x)
+      .map((item) => item.text)
+      .join(' '),
+  );
+  expect(parseSimpleBagrutLines(lines)).toEqual([
+    { label: 'מתמטיקה', units: 4, grade: 88 },
+    { label: 'אנגלית', units: 5, grade: 95 },
+    { label: 'פיסיקה', units: 5, grade: 90 },
+    { label: 'מדעי המחשב', units: 5, grade: 94 },
+    { label: 'הבעה עברית', units: 2, grade: 88 },
+    { label: 'תנ״ך', units: 2, grade: 85 },
+    { label: 'ספרות', units: 2, grade: 90 },
+    { label: 'היסטוריה', units: 2, grade: 87 },
+    { label: 'אזרחות', units: 2, grade: 93 },
+  ]);
+});
+
+it('assigns simple-line units and grades by range regardless of numeric order', () => {
+  expect(
+    parseSimpleBagrutLines(['מתמטיקה 88 4', 'אנגלית 100 5', '90 5 פיזיקה', '5 90 כימיה']),
+  ).toEqual([
+    { label: 'מתמטיקה', units: 4, grade: 88 },
+    { label: 'אנגלית', units: 5, grade: 100 },
+    { label: 'פיסיקה', units: 5, grade: 90 },
+    { label: 'כימיה', units: 5, grade: 90 },
+  ]);
+});
+
+it('keeps positional low-grade rules and excludes dates, hours and invalid numeric ranges', () => {
+  expect(
+    parseSimpleBagrutLines([
+      'מתמטיקה 4 5',
+      '5 4 אנגלית',
+      'כימיה 5 0',
+      'מתמטיקה 04/2024 4 88',
+      'מעורבות חברתית 60 שעות 100',
+      'מתמטיקה 88 94',
+      'אנגלית 5 101',
+    ]),
+  ).toEqual([
+    { label: 'מתמטיקה', units: 4, grade: 5 },
+    { label: 'אנגלית', units: 4, grade: 5 },
+    { label: 'כימיה', units: 5, grade: 0 },
   ]);
 });

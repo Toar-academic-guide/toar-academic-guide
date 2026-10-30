@@ -218,6 +218,73 @@ describe('JourneyExactGrades PDF imports', () => {
     await screen.findByText(/בדקתי את הציונים שזוהו/);
   };
 
+  it.each([
+    { matched: 3, unmatched: 1, status: 'זוהו 3 מקצועות · 1 לא זוהה, נא לבדוק' },
+    { matched: 1, unmatched: 1, status: 'זוהה מקצוע אחד · 1 לא זוהה, נא לבדוק' },
+    { matched: 0, unmatched: 2, status: '2 לא זוהו, נא לבדוק' },
+    { matched: 0, unmatched: 1, status: '1 לא זוהה, נא לבדוק' },
+    { matched: 9, unmatched: 0, status: 'זוהו 9 מקצועות' },
+  ])(
+    'reports $matched matched and $unmatched unmatched PDF subjects',
+    async ({ matched, unmatched, status }) => {
+      render(<JourneyExactGrades onComplete={vi.fn()} />);
+      const labels = [
+        'מתמטיקה',
+        'אנגלית',
+        'פיסיקה',
+        'כימיה',
+        'ביולוגיה',
+        'תנ״ך',
+        'ספרות',
+        'היסטוריה',
+        'אזרחות',
+      ];
+      await upload([
+        ...labels.slice(0, matched).map((label) => ({ label, units: 5, grade: 90 })),
+        ...Array.from({ length: unmatched }, (_, i) => ({
+          label: `מקצוע בדיקה ${i === 0 ? 'א' : 'ב'}`,
+          units: 2,
+          grade: 80,
+          unmatched: true,
+        })),
+      ]);
+      expect(screen.getByRole('status').textContent).toBe(status);
+    },
+  );
+
+  it.each(['rename', 'delete'])(
+    'blocks reviewed unmatched PDF subjects until students %s the unknown row',
+    async (correction) => {
+      const onComplete = vi.fn();
+      render(<JourneyExactGrades onComplete={onComplete} />);
+      fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+      await upload([
+        { label: 'מתמטיקה', units: 5, grade: 90 },
+        { label: 'מקצוע בדיקה א', units: 5, grade: 85, unmatched: true },
+      ]);
+      fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      expect(onComplete).not.toHaveBeenCalled();
+      const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
+      expect(unknown.getAttribute('aria-invalid')).toBe('true');
+      expect(screen.getByText('נא לבדוק את שם המקצוע')).toBeTruthy();
+      if (correction === 'rename') {
+        fireEvent.change(unknown, { target: { value: 'פיזיקה' } });
+      } else {
+        fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 2' }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      expect(onComplete).toHaveBeenCalledOnce();
+      expect(onComplete.mock.calls[0][0].subjects).toEqual([
+        { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ...(correction === 'rename'
+          ? [{ subjectId: 'physics', units: 5, grade: 85, assessmentKind: 'exam' }]
+          : []),
+      ]);
+      expect(screen.queryByText('נא לבדוק את שם המקצוע')).toBeNull();
+    },
+  );
+
   it('keeps entered math when a PDF contains only English and drops blank starters', async () => {
     render(<JourneyExactGrades onComplete={vi.fn()} />);
     const mathIndex = subjectInputs().findIndex((i) => i.value === 'מתמטיקה') + 1;
@@ -238,7 +305,7 @@ describe('JourneyExactGrades PDF imports', () => {
     ]);
     expect(subjectInputs().map((i) => i.value)).toEqual(['תנ"ך', 'מקצוע בדיקה עם ף']);
     expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '84');
-    expect(screen.getByRole('status').textContent).toBe('זוהו 2 מקצועות · 1 לא זוהה, נא לבדוק');
+    expect(screen.getByRole('status').textContent).toBe('זוהה מקצוע אחד · 1 לא זוהה, נא לבדוק');
     const reviewed = screen.getByLabelText(/בדקתי את הציונים שזוהו/);
     expect(reviewed).toHaveProperty('checked', false);
     const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
@@ -353,8 +420,7 @@ describe('JourneyExactGrades PDF imports', () => {
       expect(screen.getByLabelText(`ציון ${index + 1}`)).toHaveProperty('value', String(row.grade));
     }
     confirmAndContinue();
-    expect(screen.queryByRole('alert')).toBeNull();
-    expect(onComplete).toHaveBeenCalledOnce();
-    expect(onComplete.mock.calls[0][0].subjects).toHaveLength(expected.length);
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getAllByText('נא לבדוק את שם המקצוע')).toHaveLength(expected.length);
   });
 });

@@ -132,11 +132,14 @@ export function parseBagrutTable(pages: PositionedItem[][]) {
 export function parseSimpleBagrutLines(lines: string[]): ExtractedGrade[] {
   return lines.flatMap((line) => {
     const text = line.trim().replace(/\s+/g, ' ');
-    const forward = text.match(/^(.+?)\s+(\d{1,2})\s+(\d{1,3})$/);
-    const reverse = text.match(/^(\d{1,3})\s+(\d{1,2})\s+(.+)$/);
+    const forward = text.match(/^(.+?)\s+(\d{1,3})\s+(\d{1,3})$/);
+    const reverse = text.match(/^(\d{1,3})\s+(\d{1,3})\s+(.+)$/);
     const name = forward?.[1] ?? reverse?.[3] ?? '';
-    const units = Number(forward?.[2] ?? reverse?.[2]);
-    const grade = Number(forward?.[3] ?? reverse?.[1]);
+    let units = Number(forward?.[2] ?? reverse?.[2]);
+    let grade = Number(forward?.[3] ?? reverse?.[1]);
+    // LTR numeric spans can reverse the pair in an otherwise RTL line.
+    // Keep the existing positional rule when both values could be units.
+    if (units > 10 && grade >= 1 && grade <= 10) [units, grade] = [grade, units];
     if (
       !/[א-ת]/.test(name) ||
       /[\d*]/.test(normalize(name)) ||
@@ -204,7 +207,7 @@ export async function readBagrutPdfBytes(
           groupRows(items).map(({ items: row }) =>
             row
               .sort((a, b) => b.x - a.x)
-              .map((item) => item.str)
+              .flatMap((item) => item.str.trim().split(/\s+/))
               .join(' '),
           ),
         ),

@@ -8,6 +8,22 @@ import {
 import { userProfileSchema } from '@/server/user/profileSchema';
 
 describe('buildBagrutSubjectRecord', () => {
+  it('never emits a non-catalogue subject id and cannot mark discarded unknown rows complete', () => {
+    const record = buildBagrutSubjectRecord({
+      sectorLabel: 'יהודי',
+      complete: true,
+      subjects: [
+        { label: 'מתמטיקה', units: 5, grade: 90 },
+        { label: 'מקצוע בדיקה א', units: 5, grade: 85 },
+        { label: 'subject_unknown', units: 5, grade: 85 },
+      ],
+    });
+    expect(record.subjects).toEqual([
+      { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+    ]);
+    expect(record.complete).toBe(false);
+  });
+
   it.each(['פיסיקה', 'פיזיקה'])('recognizes the physics picker spelling %s', (label) => {
     const record = buildBagrutSubjectRecord({
       sectorLabel: 'יהודי',

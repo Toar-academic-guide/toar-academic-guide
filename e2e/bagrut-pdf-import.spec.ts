@@ -32,7 +32,7 @@ for (const width of [1280, 390]) {
     await page
       .locator('input[type="file"]')
       .setInputFiles('src/lib/__fixtures__/bagrut-pdf/synthetic-corrupt.pdf');
-    await expect(page.getByRole('status')).toHaveText('זוהו 4 מקצועות · 1 לא זוהה, נא לבדוק');
+    await expect(page.getByRole('status')).toHaveText('זוהו 3 מקצועות · 1 לא זוהה, נא לבדוק');
     const actual = await page.locator('.journey-grade-table tbody tr').evaluateAll((rows) =>
       rows.map((row) => {
         const inputs = Array.from(row.querySelectorAll('input'));

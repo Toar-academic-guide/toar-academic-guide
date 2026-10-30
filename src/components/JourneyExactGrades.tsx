@@ -180,11 +180,16 @@ export default function JourneyExactGrades({
                 return [...merged.values()];
               });
               const unmatched = found.filter((row) => row.unmatched).length;
+              const matched = found.length - unmatched;
               setImportStatus(
-                (found.length === 1 ? 'זוהה מקצוע אחד' : `זוהו ${found.length} מקצועות`) +
-                  (unmatched
-                    ? ` · ${unmatched} ${unmatched === 1 ? 'לא זוהה' : 'לא זוהו'}, נא לבדוק`
-                    : ''),
+                [
+                  matched ? (matched === 1 ? 'זוהה מקצוע אחד' : `זוהו ${matched} מקצועות`) : '',
+                  unmatched
+                    ? `${unmatched} ${unmatched === 1 ? 'לא זוהה' : 'לא זוהו'}, נא לבדוק`
+                    : '',
+                ]
+                  .filter(Boolean)
+                  .join(' · '),
               );
               setImported(true);
               setReviewed(false);
@@ -211,15 +216,11 @@ export default function JourneyExactGrades({
         rows={rows}
         onChange={setRows}
         isBlankRow={isBlankRow}
-        fieldErrors={
-          imported
-            ? rows.map((row) =>
-                row.label.trim() && !resolveBagrutWizardSubject(row.label)
-                  ? { label: 'נא לבדוק את שם המקצוע' }
-                  : {},
-              )
-            : undefined
-        }
+        fieldErrors={rows.map((row) =>
+          row.label.trim() && !resolveBagrutWizardSubject(row.label)
+            ? { label: 'נא לבדוק את שם המקצוע' }
+            : {},
+        )}
       />
       <details className="journey-field-group">
         <summary>

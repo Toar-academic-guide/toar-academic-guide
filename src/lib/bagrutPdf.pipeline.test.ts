@@ -181,3 +181,27 @@ it('does not bypass a broken starred table with simple lines', async () => {
   ).toEqual([]);
   expect(ocr).toHaveBeenCalledOnce();
 });
+
+it('imports all nine QA plain PDF subjects with correct ranges and canonical physics without OCR', async () => {
+  const ocr = vi.fn(async () => []);
+  const found = await readBagrutPdfBytes(
+    new Uint8Array(await fixture('synthetic-plain.pdf')),
+    pdfjs,
+    () => {},
+    ocr,
+  );
+  expect(found).toEqual([
+    { label: 'מתמטיקה', units: 4, grade: 88 },
+    { label: 'אנגלית', units: 5, grade: 95 },
+    { label: 'פיסיקה', units: 5, grade: 90 },
+    { label: 'מדעי המחשב', units: 5, grade: 94 },
+    { label: 'הבעה עברית', units: 2, grade: 88 },
+    { label: 'תנ״ך', units: 2, grade: 85 },
+    { label: 'ספרות', units: 2, grade: 90 },
+    { label: 'היסטוריה', units: 2, grade: 87 },
+    { label: 'אזרחות', units: 2, grade: 93 },
+  ]);
+  expect(found).toHaveLength(9);
+  expect(found.filter((row) => row.unmatched)).toHaveLength(0);
+  expect(ocr).not.toHaveBeenCalled();
+});

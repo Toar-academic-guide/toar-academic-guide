@@ -133,7 +133,7 @@ function isValidSubject(subject: BagrutWizardSubjectInput): subject is BagrutWiz
   grade: number;
 } {
   return (
-    subject.label.trim().length > 0 &&
+    resolveBagrutWizardSubject(subject.label) !== undefined &&
     typeof subject.units === 'number' &&
     Number.isInteger(subject.units) &&
     subject.units >= 1 &&
