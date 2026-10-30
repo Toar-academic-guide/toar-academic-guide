@@ -40,15 +40,21 @@ export function createSilkRenderer(canvas: SilkCanvas, options: RendererOptions)
     frame = 0;
     previous = null;
   }
+  function forgetHandles() {
+    buffer = null;
+    program = null;
+    shaders = [];
+    phase = null;
+    size = null;
+    title = null;
+  }
   function release() {
-    if (gl) {
+    if (gl && !lost) {
       if (buffer) gl.deleteBuffer(buffer);
       if (program) gl.deleteProgram(program);
       shaders.forEach((shader) => gl!.deleteShader(shader));
     }
-    buffer = null;
-    program = null;
-    shaders = [];
+    forgetHandles();
   }
   function initialize() {
     try {
@@ -138,11 +144,12 @@ export function createSilkRenderer(canvas: SilkCanvas, options: RendererOptions)
     event.preventDefault();
     lost = true;
     stop();
+    // Context loss already freed these objects; restored contexts reject their handles.
+    forgetHandles();
     options.report('lost');
   };
   const onRestored = () => {
     // React integration: rebuild resources in place; do not reload the student's page.
-    release();
     lost = false;
     initialize();
     resize();

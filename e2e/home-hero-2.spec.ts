@@ -1,5 +1,12 @@
 import { expect, test } from './fixtures';
 
+const POSTHOG_MISSING_TOKEN_NOTICE =
+  '[PostHog.js] PostHog was initialized without a token. This likely indicates a misconfiguration. Please check the first argument passed to posthog.init()';
+
+function isUnexpectedConsoleError(message: string) {
+  return message !== POSTHOG_MISSING_TOKEN_NOTICE;
+}
+
 test.use({
   launchOptions: {
     args: [
@@ -11,6 +18,18 @@ test.use({
   },
 });
 
+test('console allowlist excludes only the exact missing-token notice', () => {
+  const unexpected = [
+    '[PostHog.js] Another initialization error',
+    `${POSTHOG_MISSING_TOKEN_NOTICE} `,
+    `Error: ${POSTHOG_MISSING_TOKEN_NOTICE}`,
+    'Hero renderer: Shader compilation failed',
+  ];
+  expect([POSTHOG_MISSING_TOKEN_NOTICE, ...unexpected].filter(isUnexpectedConsoleError)).toEqual(
+    unexpected,
+  );
+});
+
 for (const viewport of [
   { width: 1280, height: 800 },
   { width: 390, height: 844 },
@@ -20,7 +39,8 @@ for (const viewport of [
     const errors: string[] = [];
     page.on('pageerror', (error) => errors.push(error.message));
     page.on('console', (message) => {
-      if (message.type() === 'error') errors.push(message.text());
+      if (message.type() === 'error' && isUnexpectedConsoleError(message.text()))
+        errors.push(message.text());
     });
     await page.goto('/');
     const hero = page.locator('.hero-v2');
@@ -77,6 +97,48 @@ test('main-thread fallback renders when OffscreenCanvas transfer is unavailable'
   await page.goto('/');
   await expect(page.locator('.hero-v2')).toHaveAttribute('data-renderer-thread', 'main');
   await expect(page.locator('.hero-v2')).toHaveAttribute('data-renderer', 'webgl');
+});
+
+test('main-thread renderer restores lost context without WebGL warnings', async ({ page }) => {
+  const warnings: string[] = [];
+  const errors: string[] = [];
+  page.on('pageerror', (error) => errors.push(error.message));
+  page.on('console', (message) => {
+    if (message.type() === 'warning') warnings.push(message.text());
+    if (message.type() === 'error' && isUnexpectedConsoleError(message.text()))
+      errors.push(message.text());
+  });
+  await page.addInitScript(() => {
+    Object.defineProperty(HTMLCanvasElement.prototype, 'transferControlToOffscreen', {
+      value: undefined,
+      configurable: true,
+    });
+  });
+  await page.goto('/');
+  const hero = page.locator('.hero-v2');
+  await expect(hero).toHaveAttribute('data-renderer-thread', 'main');
+  await expect(hero).toHaveAttribute('data-renderer', 'webgl');
+  const extension = await hero.locator('canvas').evaluateHandle((canvas) => {
+    const gl = canvas.getContext('webgl');
+    const loseContext = gl?.getExtension('WEBGL_lose_context');
+    if (!loseContext) throw new Error('WEBGL_lose_context is required for restoration coverage');
+    return loseContext;
+  });
+  await extension.evaluate((loseContext) => loseContext.loseContext());
+  await expect(hero).toHaveAttribute('data-renderer', 'fallback');
+  await expect(hero.locator('.hero-fallback')).toBeVisible();
+  await extension.evaluate((loseContext) => loseContext.restoreContext());
+  await expect(hero).toHaveAttribute('data-renderer', 'webgl');
+  await expect(hero.locator('.hero-fallback')).toBeHidden();
+  await page.evaluate(
+    () =>
+      new Promise<void>((resolve) =>
+        requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+      ),
+  );
+  await extension.dispose();
+  expect(warnings).toEqual([]);
+  expect(errors).toEqual([]);
 });
 
 test('reduced motion holds one static silk frame', async ({ page }) => {

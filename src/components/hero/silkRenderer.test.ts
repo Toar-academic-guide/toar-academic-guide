@@ -118,7 +118,37 @@ describe('Silk renderer lifecycle', () => {
     h.canvas.dispatchEvent(new Event('webglcontextrestored'));
     expect(h.createContext).toHaveBeenCalledTimes(2);
     expect(h.report).toHaveBeenLastCalledWith('ready');
+    expect(h.gl.createBuffer).toHaveBeenCalledTimes(2);
+    expect(h.gl.createProgram).toHaveBeenCalledTimes(2);
+    expect(h.gl.createShader).toHaveBeenCalledTimes(4);
+    expect(h.gl.deleteBuffer).not.toHaveBeenCalled();
+    expect(h.gl.deleteProgram).not.toHaveBeenCalled();
+    expect(h.gl.deleteShader).not.toHaveBeenCalled();
+    expect(h.gl.uniform2f).toHaveBeenLastCalledWith('size', 1280, 720);
+    expect(h.gl.uniform4f).toHaveBeenLastCalledWith('title', ...initial.title);
+    expect(h.frames.size).toBe(1);
     h.renderer.destroy();
+    for (const [create, remove] of [
+      ['createBuffer', 'deleteBuffer'],
+      ['createProgram', 'deleteProgram'],
+      ['createShader', 'deleteShader'],
+    ]) {
+      const objects = (h.gl[create] as ReturnType<typeof vi.fn>).mock.results;
+      const restored = objects.slice(objects.length / 2);
+      expect(h.gl[remove]).toHaveBeenCalledTimes(restored.length);
+      restored.forEach(({ value }) => expect(h.gl[remove]).toHaveBeenCalledWith(value));
+    }
+  });
+  it('forgets lost-context resources without deleting them when destroyed before restoration', () => {
+    const h = harness();
+    h.canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }));
+    h.renderer.destroy();
+    expect(h.gl.deleteBuffer).not.toHaveBeenCalled();
+    expect(h.gl.deleteProgram).not.toHaveBeenCalled();
+    expect(h.gl.deleteShader).not.toHaveBeenCalled();
+    expect(h.frames.size).toBe(0);
+    h.canvas.dispatchEvent(new Event('webglcontextrestored'));
+    expect(h.createContext).toHaveBeenCalledTimes(1);
   });
   it('releases the frame, GL resources and context listeners on destruction', () => {
     const h = harness();
