@@ -42,6 +42,55 @@ function useEntry(entry: Omit<matrix.AdmissionsCapabilityEntry, 'institutionId'>
 
 describe('student-facing evaluator explanations', () => {
   it.each(profiles)(
+    'keeps internal ids out of tracked-missing-rule explanations: %j',
+    async (profile) => {
+      const trackedPrograms = new Set<string>();
+      for (const program of programs) {
+        const report = await evaluate(program, profile);
+        for (const result of report.results) {
+          if (result.kind !== 'tracked_missing_rule') continue;
+          trackedPrograms.add(program.id);
+          expect(result.explanation, program.id).not.toMatch(/[a-z_]/i);
+          expect(result.explanation, program.id).not.toContain('מקור העבודה');
+          if (program.id === 'ariel_engineering') {
+            expect(result.explanation).toBe('עדיין חסר כלל רשמי כדי לתת החלטת קבלה.');
+          }
+        }
+      }
+      expect(trackedPrograms.has('ariel_engineering')).toBe(true);
+    },
+  );
+
+  it.each([true, false])(
+    'keeps the tracked fallback generic with evidence present: %s',
+    async (withEvidence) => {
+      const trackedEvidence = withEvidence
+        ? {
+            ...openEvidence,
+            itemName: '8. Internal evidence item',
+            missingData: ['synthetic_missing_official_rule'],
+          }
+        : undefined;
+      useEntry({ capability: 'tracked_missing_rule', evidence: trackedEvidence });
+      const result = (await evaluate()).results[0];
+      expect(result.kind).toBe('tracked_missing_rule');
+      expect(result.explanation).not.toMatch(/[a-z_]/i);
+      expect(result.explanation).not.toContain('מקור העבודה');
+      expect(result.explanation).toBe('עדיין חסר כלל רשמי כדי לתת החלטת קבלה.');
+      expect(result).toMatchObject({
+        decision: 'unknown',
+        confidence: trackedEvidence?.confidence ?? 'medium',
+        sourceLabel: 'חסר כלל רשמי ממופה',
+        nextAction: 'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
+        evidenceItemId: trackedEvidence?.itemId,
+        evidenceItemName: trackedEvidence?.itemName,
+        missingData: trackedEvidence?.missingData ?? ['official_rule'],
+        officialUrls: trackedEvidence?.officialUrls ?? [],
+      });
+    },
+  );
+
+  it.each(profiles)(
     'has no Latin-only student fields across the entire static catalogue: %j',
     async (profile) => {
       const offenders: { programId: string; institutionId: string; field: string; text: string }[] =
