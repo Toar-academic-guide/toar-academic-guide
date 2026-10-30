@@ -349,7 +349,7 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     expect(stored().scores.bagrut?.weightedAverage).toBeUndefined();
     expect(stored().scores.bagrut?.subjectRecord).toEqual(record);
     expect(academicBagrutAverage(stored().scores)).toBe(overallBagrutAverage(record));
-    expect(screen.getByText('9 מקצועות')).toBeTruthy();
+    expect(screen.getByText('הזנתם ציונים ב-9 מקצועות')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
     for (const [input] of state.evaluate.mock.calls) {
@@ -387,7 +387,7 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     withoutPsy();
     expect(stored().gradeMode).toBe('quick');
     expect(stored().scores.bagrut).toEqual({ weightedAverage: 95 });
-    expect(screen.getByText('ממוצע שהזנת: 95')).toBeTruthy();
+    expect(screen.getByText('הזנתם ממוצע: 95')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
     expect(state.evaluate).toHaveBeenLastCalledWith(expect.objectContaining({ bagrut: 95 }));
@@ -400,7 +400,9 @@ describe('summary Bagrut editing and exclusive submissions', () => {
       const scores = { bagrut: { weightedAverage: 110, subjectRecord: record } };
       seed(scores, mode);
       render(<StudyJourney initialStep="review" />);
-      expect(screen.getByText(mode === 'quick' ? 'ממוצע שהזנת: 110' : '9 מקצועות')).toBeTruthy();
+      expect(
+        screen.getByText(mode === 'quick' ? 'הזנתם ממוצע: 110' : 'הזנתם ציונים ב-9 מקצועות'),
+      ).toBeTruthy();
       expect(screen.getByText('הממוצע של כל מוסד מופיע בתוצאות').className).toBe('journey-helper');
       expect(stored().scores).toEqual(scores);
       fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
@@ -416,7 +418,7 @@ describe('summary Bagrut editing and exclusive submissions', () => {
     state.user = { id: 'test-account' };
     state.scores = { bagrut: { weightedAverage: 110, subjectRecord: record } };
     render(<StudyJourney initialStep="review" />);
-    expect(screen.getByText('9 מקצועות')).toBeTruthy();
+    expect(screen.getByText('הזנתם ציונים ב-9 מקצועות')).toBeTruthy();
     expect(stored().scores).toEqual(state.scores);
     fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
@@ -513,7 +515,7 @@ describe('saved field selection before paint', () => {
     );
     window.history.replaceState(null, '', '/app/calculator#review');
     render(<StudyJourney initialStep="subjects" />);
-    expect(screen.getByText('ממוצע שהזנת: 110')).toBeTruthy();
+    expect(screen.getByText('הזנתם ממוצע: 110')).toBeTruthy();
     expect(screen.queryByRole('textbox', { name: 'חיפוש תחום לימודים' })).toBeNull();
   });
 });
@@ -597,7 +599,7 @@ describe('unsubmitted per-subject work survives refresh', () => {
       window.history.replaceState(null, '', '/app/calculator#review');
       window.dispatchEvent(new PopStateEvent('popstate'));
     });
-    expect(screen.getByText('ממוצע שהזנת: 110')).toBeTruthy();
+    expect(screen.getByText('הזנתם ממוצע: 110')).toBeTruthy();
     fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
     await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
     expect(state.evaluate).toHaveBeenLastCalledWith(expect.objectContaining({ bagrut: 110 }));

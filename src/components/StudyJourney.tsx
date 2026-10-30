@@ -155,6 +155,7 @@ interface Draft {
   exactInProgress?: ExactInProgress;
   target?: number;
   gradeMode?: 'quick' | 'exact' | 'none';
+  bagrutInputIdentity?: string;
   psyMode?: 'score' | 'target' | 'none';
   selectedRowId?: string;
 }
@@ -204,6 +205,10 @@ function readDraft(): Draft | null {
       exactInProgress: exactInProgress.success ? exactInProgress.data : undefined,
       target: raw.target >= 200 && raw.target <= 800 ? raw.target : undefined,
       gradeMode,
+      bagrutInputIdentity:
+        gradeMode && typeof raw.bagrutInputIdentity === 'string'
+          ? raw.bagrutInputIdentity
+          : undefined,
       psyMode: ['score', 'target', 'none'].includes(raw.psyMode) ? raw.psyMode : undefined,
       selectedRowId: typeof raw.selectedRowId === 'string' ? raw.selectedRowId : undefined,
     };
@@ -364,17 +369,24 @@ export default function StudyJourney({
     importedProfile.current = profileIdentity;
     if (auth.user || !hadStoredDraft.current) {
       const scores = profile.academicScores ?? {};
-      setDraft((current) => ({
-        ...current,
-        scores,
-        gradeMode: scores.bagrut?.subjectRecord
-          ? 'exact'
-          : scores.bagrut?.weightedAverage
-            ? 'quick'
-            : 'none',
-        psyMode: scores.psychometric?.overall ? 'score' : 'none',
-        target: undefined,
-      }));
+      const profileGradeMode = scores.bagrut?.subjectRecord
+        ? 'exact'
+        : scores.bagrut?.weightedAverage
+          ? 'quick'
+          : 'none';
+      setDraft((current) => {
+        const keepBagrutInput = current.bagrutInputIdentity === profileIdentity;
+        return {
+          ...current,
+          scores: keepBagrutInput
+            ? { ...scores, bagrut: bagrutScoresForMode(current.scores, current.gradeMode).bagrut }
+            : scores,
+          gradeMode: keepBagrutInput ? current.gradeMode : profileGradeMode,
+          bagrutInputIdentity: keepBagrutInput ? current.bagrutInputIdentity : undefined,
+          psyMode: scores.psychometric?.overall ? 'score' : 'none',
+          target: undefined,
+        };
+      });
     }
   }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
   useIsomorphicLayoutEffect(() => {
@@ -575,7 +587,6 @@ export default function StudyJourney({
     },
     [],
   );
-  // Saved programmes use account grades, independently of the current journey or simulation.
   const evaluationScope =
     step === 'saved'
       ? 'saved'
@@ -597,9 +608,21 @@ export default function StudyJourney({
   );
   const usesSavedGrades =
     evaluationScope === 'saved' || (evaluationScope === 'detail' && detailOrigin === 'saved');
-  const evaluationScores = usesSavedGrades
-    ? (profile.academicScores ?? EMPTY.scores)
-    : journeyScores;
+  const evaluationScores = useMemo(
+    () =>
+      usesSavedGrades
+        ? draft.bagrutInputIdentity === profileIdentity
+          ? { ...profile.academicScores, bagrut: journeyScores.bagrut }
+          : (profile.academicScores ?? EMPTY.scores)
+        : journeyScores,
+    [
+      usesSavedGrades,
+      draft.bagrutInputIdentity,
+      profileIdentity,
+      profile.academicScores,
+      journeyScores,
+    ],
+  );
   const evaluationTarget = usesSavedGrades ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
     evaluationScope,
@@ -709,7 +732,7 @@ export default function StudyJourney({
     }
   }, [step, contactProgramId, contactInstitutionId, contactResultGroup]);
   const saveScores = async () => {
-    if (!(await updateProfile({ academicScores: draft.scores })))
+    if (!(await updateProfile({ academicScores: journeyScores })))
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
   };
   const selectRow = (row: JourneyRow, next: Step) => {
@@ -766,7 +789,7 @@ export default function StudyJourney({
     'psy-mode': 'יש לך ציון פסיכומטרי?',
     'psy-score': 'מה ציון הפסיכומטרי שלך?',
     'psy-target': 'לאיזה ציון את/ה מכוון/ת?',
-    review: 'מוכנים לגלות את האפשרויות שלך?',
+    review: 'מוכנים לגלות את האפשרויות שלכם?',
     results: 'האפשרויות שלך',
     detail: activeRow?.fieldName ?? 'פרטי המסלול',
     alternatives: 'עוד דרכים להתקבל',
@@ -1165,6 +1188,7 @@ export default function StudyJourney({
                 onClick={() => {
                   patch({
                     gradeMode: 'none',
+                    bagrutInputIdentity: profileIdentity,
                     exactInProgress: undefined,
                     scores: { ...draft.scores, bagrut: undefined },
                   });
@@ -1194,6 +1218,7 @@ export default function StudyJourney({
               event.preventDefault();
               patch({
                 gradeMode: 'quick',
+                bagrutInputIdentity: profileIdentity,
                 exactInProgress: undefined,
                 scores: {
                   ...draft.scores,
@@ -1231,6 +1256,7 @@ export default function StudyJourney({
             onComplete={(record) => {
               patch({
                 gradeMode: 'exact',
+                bagrutInputIdentity: profileIdentity,
                 exactInProgress: undefined,
                 scores: { ...draft.scores, bagrut: { subjectRecord: record } },
               });
@@ -1365,9 +1391,9 @@ export default function StudyJourney({
                 [
                   'בגרות',
                   draft.gradeMode === 'quick'
-                    ? `ממוצע שהזנת: ${journeyScores.bagrut?.weightedAverage ?? ''}`
+                    ? `הזנתם ממוצע: ${journeyScores.bagrut?.weightedAverage ?? ''}`
                     : draft.gradeMode === 'exact'
-                      ? `${journeyScores.bagrut?.subjectRecord?.subjects.length ?? 0} מקצועות`
+                      ? `הזנתם ציונים ב-${journeyScores.bagrut?.subjectRecord?.subjects.length ?? 0} מקצועות`
                       : 'ללא ציון כרגע',
                   draft.gradeMode === 'exact'
                     ? 'grades-exact'
@@ -1752,7 +1778,7 @@ export default function StudyJourney({
                   onClick={() =>
                     void evaluate(
                       savedRows.filter((row) => failedReports.includes(row.program.id)),
-                      profile.academicScores ?? EMPTY.scores,
+                      evaluationScores,
                       undefined,
                       true,
                     )
