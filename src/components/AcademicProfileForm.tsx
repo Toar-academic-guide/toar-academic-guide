@@ -1435,7 +1435,7 @@ export default function AcademicProfileForm({
               onClick={onSkip}
               className="text-sm text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              דלגו — אמלא מאוחר יותר
+              דלגו — אפשר למלא מאוחר יותר
             </button>
           </motion.div>
         </motion.div>

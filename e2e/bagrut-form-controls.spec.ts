@@ -1,5 +1,18 @@
 import { expect, test, type Page } from './fixtures';
 
+test('Sekhem applies sector-specific compulsory unit options', async ({ page }) => {
+  await page.goto('/sekhem-calculator');
+  await page.getByText('פרטי תעודת הבגרות', { exact: true }).click();
+  await page.getByRole('combobox', { name: 'מגזר', exact: true }).selectOption('ערבי');
+  await page.getByLabel('מקצוע 1', { exact: true }).fill('עברית');
+  await expect(page.getByLabel('יחידות 1', { exact: true }).locator('option')).toHaveText([
+    'בחירה',
+    '3',
+    '4',
+    '5',
+  ]);
+});
+
 for (const width of [375, 390, 1280]) {
   test(`Sekhem units placeholder fits in one subject row at ${width}px`, async ({
     page,

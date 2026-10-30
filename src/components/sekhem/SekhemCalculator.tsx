@@ -348,6 +348,7 @@ export default function SekhemCalculator({
         </div>
         <div ref={subjectFields} id="sekhem-bagrut-subjects" tabIndex={-1}>
           <BagrutSubjectRows
+            sector={sector}
             rows={rows}
             fieldErrors={fieldErrors}
             onChange={(next) => {

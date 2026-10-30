@@ -86,6 +86,18 @@ function restoreUnits(units: number, grade = 92) {
   );
 }
 
+it('uses the selected sector for compulsory subject unit options', () => {
+  render(<SekhemCalculator offerings={offerings} />);
+  fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+  fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+  expect(
+    Array.from(
+      screen.getByLabelText('יחידות 1').querySelectorAll('option'),
+      (option) => option.textContent,
+    ),
+  ).toEqual(['בחירה', '3', '4', '5']);
+});
+
 it.each([true, false])(
   'focuses a requested subject grade, adding its row when absent (existing=%s)',
   async (existing) => {
