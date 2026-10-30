@@ -12,9 +12,7 @@ export async function GET() {
   const startedAtMs = Date.now();
 
   try {
-    const { data, meta, cacheable } = await listCataloguePrograms({
-      includeBatchCCodeFallback: true,
-    });
+    const { data, meta } = await listCataloguePrograms({ includeBatchCCodeFallback: true });
     const { envelope, summary } = buildCatalogueSuccessResponse(
       'programs',
       data,
@@ -27,7 +25,7 @@ export async function GET() {
     return Response.json(envelope satisfies ApiEnvelope<CatalogueProgram[]>, {
       headers: {
         'Cache-Control':
-          meta.catalogueSource === 'database' && !meta.fallbackReason && cacheable !== false
+          meta.catalogueSource === 'database' && !meta.fallbackReason
             ? 'public, s-maxage=120, stale-while-revalidate=600'
             : 'no-store',
       },

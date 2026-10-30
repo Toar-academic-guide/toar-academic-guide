@@ -36,11 +36,12 @@ describe.each([
   });
 });
 
-it('does not CDN-cache programmes supplemented by the code registry', async () => {
+it('CDN-caches DB programmes supplemented by the code registry', async () => {
   mocks.load.mockResolvedValue({
     data: [],
     meta: { catalogueSource: 'database' },
-    cacheable: false,
   });
-  expect((await programs()).headers.get('cache-control')).toBe('no-store');
+  expect((await programs()).headers.get('cache-control')).toBe(
+    'public, s-maxage=120, stale-while-revalidate=600',
+  );
 });

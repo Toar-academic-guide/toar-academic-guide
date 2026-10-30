@@ -48,7 +48,6 @@ import { serializeInstitutionRow, serializeProgramRow } from './serializers';
 export interface CatalogueQueryResult<T> {
   data: T;
   meta: ApiMetaPayload;
-  cacheable?: boolean;
 }
 
 export interface CatalogueReadinessSnapshot {
@@ -538,9 +537,9 @@ export async function listCataloguePrograms(options?: {
     meta: resolution.meta,
   };
 
-  if (!options?.includeBatchCCodeFallback) return result;
-  const data = withBatchCCatalogueFallback(result.data);
-  return { ...result, data, ...(data.length > result.data.length ? { cacheable: false } : {}) };
+  return options?.includeBatchCCodeFallback
+    ? { ...result, data: withBatchCCatalogueFallback(result.data) }
+    : result;
 }
 
 export async function getRequirementIdsForProgram(programId: string): Promise<string[]> {
