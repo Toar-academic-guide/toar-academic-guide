@@ -79,7 +79,7 @@ export function buildSekhemInput(
   ] as const) {
     if (
       !validNumber(extraInputs[units] ?? '', 3, 5) ||
-      !validNumber(extraInputs[grade] ?? '', 50, 100)
+      !validNumber(extraInputs[grade] ?? '', 0, 100)
     ) {
       delete extraInputs[units];
       delete extraInputs[grade];

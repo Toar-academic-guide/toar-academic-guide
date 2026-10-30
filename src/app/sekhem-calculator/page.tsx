@@ -91,7 +91,7 @@ export default async function Page({
           <div>
             <h2 className="text-xl font-semibold">הסכם: המפתח לקבלה</h2>
             <p className="mt-2 text-(--text-body)">
-              כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.
+              כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון לכל תוכנית במחשבון.
             </p>
           </div>
           <div>
