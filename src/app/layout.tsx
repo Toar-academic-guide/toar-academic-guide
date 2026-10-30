@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/context/AuthContext';
 import SiteFooter from '@/components/SiteFooter';
@@ -7,6 +7,7 @@ import JsonLd from '@/components/seo/JsonLd';
 import { organizationLd, websiteLd } from '@/lib/seo/jsonLd';
 import { SITE_DESCRIPTION, SITE_URL } from '@/lib/site';
 import './globals.css';
+import '@/components/hero/heebo-font.css';
 
 export const metadata: Metadata = {
   applicationName: 'MyWay',
@@ -21,8 +22,35 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'he_IL',
     siteName: 'MyWay',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
   },
-  twitter: { card: 'summary' },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C1D45' },
+  ],
 };
 
 export default function RootLayout({
