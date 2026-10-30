@@ -7,6 +7,7 @@ vi.mock('@supabase/ssr', () => ({
   createServerClient: () => ({ auth: { getUser: mocks.getUser } }),
 }));
 vi.mock('@/lib/supabase/env', () => ({
+  SUPABASE_AUTH_COOKIE_NAME: 'sb-kfxcdbjeidczltkrjazk-auth-token',
   isSupabaseConfigured: true,
   getSupabaseEnv: () => ({
     supabaseUrl: 'https://example.supabase.co',
