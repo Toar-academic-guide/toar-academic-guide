@@ -1,6 +1,13 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { resetAdmissionsRouteRateLimitForTests } from '@/server/admissions/routes/rateLimit';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
+import { bagrutScoresForMode } from '@/lib/studyJourney';
+import type { AcademicScores } from '@/types';
+import type { SourceFreshnessStateRow } from '@/db/types';
+import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
 
 const mocks = vi.hoisted(() => ({
   headers: vi.fn(),
@@ -65,6 +72,117 @@ describe('admissions routes API', () => {
       unavailableFinalistCount: 0,
     });
     mocks.getAdmissionRouteCapability.mockReturnValue({ status: 'enabled' });
+  });
+
+  it('agrees on incomplete active quick inputs between the journey evaluator and TAU/BGU saved simulations', async () => {
+    const savedScores: AcademicScores = {
+      psychometric: { overall: 700, quantitative: 135, verbal: 120, english: 125 },
+      bagrut: {
+        weightedAverage: 110,
+        subjectRecord: {
+          schemaVersion: 1,
+          sector: 'jewish',
+          subjects: profile.subjectRecord.subjects,
+        },
+      },
+      admissions: {
+        activeBagrutPath: 'quick',
+        tauBagrutAverage: 110,
+        bguBagrutAverage: 110,
+        tauApplicationRequirementsConfirmed: true,
+        bguLanguageRequirementsConfirmed: true,
+      },
+    };
+    mocks.requireAuthenticatedUserId.mockResolvedValue('test-user');
+    mocks.getUserProfileSnapshot.mockResolvedValue({ academicScores: savedScores });
+    const activeScores = bagrutScoresForMode(savedScores, 'quick');
+    const extraInputs = admissionsExtraInputsFromAcademicScores(activeScores);
+    expect(activeScores.bagrut?.weightedAverage).toBe(110);
+    expect(extraInputs?.bagrutSubjectRecord).toBeUndefined();
+    expect(extraInputs?.mathUnits).toBeUndefined();
+    expect(extraInputs?.mathGrade).toBeUndefined();
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockRejectedValue(new Error('No live requests in parity test'));
+    const observed = [];
+    for (const [degreeId, institutionId] of [
+      ['tau_cs', 'tau'],
+      ['bgu_cs', 'bgu'],
+    ]) {
+      const program = getStaticCataloguePrograms().find((row) => row.id === degreeId)!;
+      const artifact = getProgramVerificationArtifact(`${degreeId}__${institutionId}`)!;
+      const checkedAt = new Date('2026-10-30T12:00:00Z');
+      // Isolate input completeness from live source health, as in evaluator.test.ts.
+      const freshness: SourceFreshnessStateRow = {
+        sourceId: artifact.contract.source.targetId,
+        sourceClass: 'api_static_json',
+        capability: 'decision_capable',
+        status: 'fresh',
+        proofLevel: 'exact_official',
+        decisionProvenance: 'verified_derivation',
+        reviewedSourceFingerprint: artifact.contract.sourceFingerprint,
+        lastCheckedAt: checkedAt,
+        lastSuccessfulCheckAt: checkedAt,
+        lastExactCheckAt: checkedAt,
+        lastChangedAt: null,
+        latestFailureReason: null,
+        blockedReason: null,
+        rawFingerprint: null,
+        normalizedFingerprint: artifact.contract.sourceFingerprint,
+        normalizedDecisionPayload: {},
+        latestReviewItemId: null,
+        nextAction: null,
+        createdAt: checkedAt,
+        updatedAt: checkedAt,
+      };
+      const report = await evaluateAdmissionsForProgram({
+        program: { ...program, linkedInstitutionIds: [institutionId] },
+        institutions: getStaticCatalogueInstitutions(),
+        input: {
+          degreeId,
+          psychometric: activeScores.psychometric?.overall,
+          bagrut: activeScores.bagrut?.weightedAverage,
+          extraInputs,
+        },
+        freshnessStatesBySourceId: new Map([[freshness.sourceId, freshness]]),
+        fetcher,
+        now: checkedAt,
+      });
+      const result = report.results.find((row) => row.linkedInstitutionId === institutionId)!;
+      const response = await POST(request({ degreeId, source: 'saved_profile' }));
+      const body = await response.json();
+      observed.push({
+        degreeId,
+        journeyKind: result.kind,
+        journeyDecision: result.decision,
+        missingSubjects: result.requiredInputs?.filter((key) =>
+          ['bagrut_subject_record', 'math_units', 'math_grade'].includes(key),
+        ),
+        simulationStatus: response.status,
+        simulationError: body.error?.code,
+      });
+    }
+    expect(observed).toEqual([
+      {
+        degreeId: 'tau_cs',
+        journeyKind: 'needs_input',
+        journeyDecision: 'unknown',
+        missingSubjects: ['bagrut_subject_record'],
+        simulationStatus: 422,
+        simulationError: 'ADMISSIONS_ROUTE_PROFILE_INCOMPLETE',
+      },
+      {
+        degreeId: 'bgu_cs',
+        journeyKind: 'needs_input',
+        journeyDecision: 'unknown',
+        missingSubjects: ['bagrut_subject_record'],
+        simulationStatus: 422,
+        simulationError: 'ADMISSIONS_ROUTE_PROFILE_INCOMPLETE',
+      },
+    ]);
+    expect(fetcher).not.toHaveBeenCalled();
+    expect(mocks.runTauComputerScienceRouteSimulation).not.toHaveBeenCalled();
+    expect(mocks.runBguComputerScienceProfileRouteSimulation).not.toHaveBeenCalled();
   });
 
   it.each(
