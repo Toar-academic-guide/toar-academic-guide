@@ -466,6 +466,7 @@ it('renders the approved subtitle and explanation in the existing FAQ slot', asy
   const heading = screen.getByRole('heading', { name: 'הסכם: המפתח לקבלה' });
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.',
+    'כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון לכל תוכנית במחשבון.', // Approved copy update, Jorje/Amit 2026-10-30
   );
+  expect(screen.queryByText('כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.')).toBeNull();
 });
