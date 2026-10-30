@@ -32,3 +32,58 @@ describe('RootLayout skip link', () => {
     expect(doc.querySelector('footer')?.textContent).toBe('Existing footer');
   });
 });
+
+describe('Hero 2.0 head assets', () => {
+  it('sets theme colours through viewport and shares the approved social image in both metadata exports', async () => {
+    const { metadata, viewport } = await import('./layout');
+    const home = await import('./page');
+    expect(viewport.themeColor).toEqual([
+      { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+      { media: '(prefers-color-scheme: dark)', color: '#0C1D45' },
+    ]);
+    expect(metadata.manifest).toBe('/site.webmanifest');
+    for (const value of [metadata, home.metadata]) {
+      expect(value.openGraph).toMatchObject({
+        images: [
+          {
+            url: expect.stringContaining('/og-image.png'),
+            width: 1200,
+            height: 630,
+            type: 'image/png',
+            alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+          },
+        ],
+      });
+      expect(value.twitter).toMatchObject({
+        card: 'summary_large_image',
+        images: [
+          {
+            url: expect.stringContaining('/og-image.png'),
+            alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+          },
+        ],
+      });
+    }
+  });
+});
+
+it('keeps Next file-convention app icons at the required intrinsic sizes', async () => {
+  const { readFileSync } = await import('node:fs');
+  for (const [path, size] of [
+    ['src/app/icon.png', 512],
+    ['src/app/apple-icon.png', 180],
+    ['public/icon-192.png', 192],
+    ['public/icon-512.png', 512],
+    ['public/icon-512-maskable.png', 512],
+  ] as const) {
+    const bytes = readFileSync(path);
+    expect(bytes.subarray(1, 4).toString()).toBe('PNG');
+    expect([bytes.readUInt32BE(16), bytes.readUInt32BE(20)]).toEqual([size, size]);
+  }
+  const favicon = readFileSync('src/app/favicon.ico');
+  expect(favicon.readUInt16LE(2)).toBe(1);
+  expect(favicon.readUInt16LE(4)).toBe(3);
+  expect([0, 1, 2].map((index) => favicon[6 + index * 16])).toEqual([16, 32, 48]);
+  const og = readFileSync('public/og-image.png');
+  expect([og.readUInt32BE(16), og.readUInt32BE(20)]).toEqual([1200, 630]);
+});

@@ -78,3 +78,34 @@ describe('Home catalogue cutover', () => {
     );
   });
 });
+
+describe('Homepage hero 2.0', () => {
+  it('renders the approved plural copy, exact separator, destinations and no funnel', () => {
+    window.history.replaceState(null, '', '/');
+    const { container } = render(<Home />);
+    const hero = container.querySelector('.hero-v2')!;
+    expect(hero).toBeTruthy();
+    expect(hero.querySelector('h1')?.textContent).toBe('הדרך ללימודים שלכם מתחילה כאן.');
+    expect(hero.querySelector('.hero-subline')?.textContent).toBe(
+      'בתוך ריבוי האפשרויות, MyWay עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
+    );
+    expect(hero.querySelector('bdi')?.getAttribute('dir')).toBe('ltr');
+    expect(hero.querySelector('.hero-intro')?.textContent).toBe(
+      'בוחרים תחום לימודים ומשווים בין אוניברסיטאות ומכללות בכל הארץ',
+    );
+    const primary = screen.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' });
+    expect(primary.getAttribute('href')).toBe('/app/calculator');
+    expect(primary.textContent).toBe('בדקו לאן אתם מתקבלים\n\n\n');
+    expect(
+      screen.getByRole('link', { name: 'לא בטוחים מה ללמוד? לשאלון' }).getAttribute('href'),
+    ).toBe('/app/assessment');
+    expect(hero.querySelector('canvas')?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('.journey-funnel')).toBeNull();
+    expect(
+      hero.querySelectorAll('small, .journey-funnel-cloud, .journey-funnel-stage'),
+    ).toHaveLength(0);
+    expect(container.querySelectorAll('main')).toHaveLength(1);
+    expect(container.querySelectorAll('#main')).toHaveLength(1);
+    expect(container.querySelector('#main-content')).toBeTruthy();
+  });
+});
