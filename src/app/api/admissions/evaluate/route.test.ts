@@ -172,18 +172,28 @@ describe('admissions evaluate route', () => {
     );
   });
 
-  it('evaluates 24 programmes as one rate-limited request with shared inputs and at most four workers', async () => {
+  it('evaluates 24 programmes as one rate-limited request with shared inputs, concurrent evaluators and at most eight calls per host', async () => {
     const degreeIds = Array.from({ length: 24 }, (_, i) => `programme-${i}`);
     hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: degreeIds.map((id) => ({ id })) });
     let active = 0;
     let peak = 0;
-    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
-      active++;
-      peak = Math.max(peak, active);
+    let sourceActive = 0;
+    let sourcePeak = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      sourcePeak = Math.max(sourcePeak, ++sourceActive);
       await new Promise((resolve) => setTimeout(resolve, 1));
-      active--;
-      return { input, results: [] };
+      sourceActive--;
+      return new Response('{}');
     });
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(
+      async ({ input, sourceContext }) => {
+        active++;
+        peak = Math.max(peak, active);
+        await sourceContext.fetcher('https://official.example/scores', { method: 'POST' });
+        active--;
+        return { input, results: [] };
+      },
+    );
     const applicant = {
       psychometric: 700,
       bagrut: 110,
@@ -200,7 +210,8 @@ describe('admissions evaluate route', () => {
     expect(data.failedDegreeIds).toEqual([]);
     for (const id of degreeIds)
       expect(data.reports[id].input).toEqual({ degreeId: id, ...applicant });
-    expect(peak).toBeLessThanOrEqual(4);
+    expect(peak).toBe(degreeIds.length);
+    expect(sourcePeak).toBe(8);
     expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledTimes(1);
     expect(hoistedMocks.listCatalogueInstitutions).toHaveBeenCalledTimes(1);
     // The batch consumed one quota slot, not twenty-four.

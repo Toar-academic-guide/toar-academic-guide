@@ -1,19 +1,55 @@
-import { describe, expect, it, vi } from 'vitest';
+// @vitest-environment jsdom
+import { render, screen, waitFor } from '@testing-library/react';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
-vi.mock('@/components/StudyJourney', () => ({ default: () => null }));
+vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
+vi.mock('next/navigation', () => ({
+  useRouter: () => ({ push: vi.fn() }),
+  usePathname: () => '/app/calculator',
+}));
+vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ user: null, loading: false }) }));
+vi.mock('@/hooks/useUserProfile', () => ({
+  useUserProfile: () => ({
+    hydrated: true,
+    initialProfileStatus: 'ready',
+    profile: {},
+    updateProfile: vi.fn(),
+  }),
+}));
+vi.mock('@/lib/catalogueClient', () => ({
+  fetchCataloguePrograms: async () => getStaticCataloguePrograms(),
+  fetchCatalogueInstitutions: async () => getStaticCatalogueInstitutions(),
+}));
+vi.mock('@/components/preloadJourneyExactGrades', () => ({ preloadJourneyExactGrades: vi.fn() }));
 import CalculatorPage, { metadata } from './page';
 
 describe('calculator programme query', () => {
+  beforeEach(() => {
+    window.sessionStorage.clear();
+    window.history.replaceState(null, '', '/app/calculator');
+  });
+  const selectedProgramId = () =>
+    JSON.parse(
+      window.sessionStorage.getItem('myway_study_journey_v2') ?? '{}',
+    ).selectedRowId?.split(':')[0];
   it('passes a single programme query to the journey', async () => {
-    const page = await CalculatorPage({ searchParams: Promise.resolve({ program: 'tau_cs' }) });
-    expect(page.props).toMatchObject({ initialStep: 'subjects', initialProgramId: 'tau_cs' });
+    window.history.replaceState(null, '', '/app/calculator?program=tau_cs');
+    const page = CalculatorPage();
+    render(page);
+    await waitFor(() =>
+      expect({
+        initialStep: page.props.initialStep,
+        initialProgramId: selectedProgramId(),
+      }).toMatchObject({ initialStep: 'subjects', initialProgramId: 'tau_cs' }),
+    );
   });
 
   it('ignores ambiguous repeated programme parameters', async () => {
-    const page = await CalculatorPage({
-      searchParams: Promise.resolve({ program: ['tau_cs', 'haifa_law'] }),
-    });
-    expect(page.props.initialProgramId).toBeUndefined();
+    window.history.replaceState(null, '', '/app/calculator?program=tau_cs&program=haifa_law');
+    render(CalculatorPage());
+    await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
+    expect(selectedProgramId()).toBeUndefined();
   });
 });
 
