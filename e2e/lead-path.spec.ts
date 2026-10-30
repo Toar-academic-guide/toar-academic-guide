@@ -29,22 +29,22 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'כן', exact: true }).waitFor();
     await page.getByRole('button', { name: 'כן', exact: true }).click();
     await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await page.getByRole('button', { name: 'יש לי ממוצע בגרות' }).click();
     await page.getByLabel('ממוצע בגרות', { exact: true }).fill('105.5');
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await page.getByRole('button', { name: 'כן, יש לי ציון', exact: true }).click();
     await page.getByLabel('ציון כללי', { exact: true }).fill('680');
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
-    await expect(page.getByText('בודקים את ההתאמה לציונים שלך…', { exact: true })).toBeHidden();
+    await expect(page.getByText('בודקים את ההתאמה לציונים שלכם…', { exact: true })).toBeHidden();
     const evaluatedPsychometric = width === 390 ? 750 : 680;
     if (width === 390) {
       await page.getByRole('button', { name: 'מה אם אשפר ציון?' }).click();
       await page.getByRole('spinbutton', { name: 'ציון יעד' }).fill('750');
       await page.getByRole('button', { name: 'לבדוק את האפשרויות' }).click();
-      await expect(page.getByText('בודקים את ההתאמה לציונים שלך…', { exact: true })).toBeHidden();
+      await expect(page.getByText('בודקים את ההתאמה לציונים שלכם…', { exact: true })).toBeHidden();
     }
     await page.evaluate(() =>
       window.history.replaceState(null, '', '/?utm_source=facebook#results'),
