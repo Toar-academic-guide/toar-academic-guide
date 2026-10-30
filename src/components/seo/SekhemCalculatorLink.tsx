@@ -23,10 +23,7 @@ export default function SekhemCalculatorLink({
     : '/sekhem-calculator';
   return (
     <p className="mt-3 text-sm">
-      <Link
-        href={href}
-        className="text-[var(--way-primary)] underline underline-offset-4"
-      >
+      <Link href={href} className="text-[var(--way-primary)] underline underline-offset-4">
         מחשבון סכם וסיכויי קבלה
       </Link>
     </p>
