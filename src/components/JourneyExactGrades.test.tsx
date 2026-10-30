@@ -536,7 +536,7 @@ describe('JourneyExactGrades PDF imports', () => {
         { label: 'מקצוע בדיקה א', units: 5, grade: 85, unmatched: true },
       ]);
       fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
-      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
       expect(onComplete).not.toHaveBeenCalled();
       const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
       expect(unknown.getAttribute('aria-invalid')).toBe('true');
@@ -546,7 +546,7 @@ describe('JourneyExactGrades PDF imports', () => {
       } else {
         fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 2' }));
       }
-      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
       expect(onComplete).toHaveBeenCalledOnce();
       expect(onComplete.mock.calls[0][0].subjects).toEqual([
         { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
@@ -607,7 +607,7 @@ describe('JourneyExactGrades PDF imports', () => {
   };
   const confirmAndContinue = () => {
     fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
   };
 
   it.each([
