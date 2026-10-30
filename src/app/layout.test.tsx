@@ -34,7 +34,7 @@ describe('RootLayout skip link', () => {
 });
 
 describe('Hero 2.0 head assets', () => {
-  it('sets theme colours through viewport and shares the approved social image in both metadata exports', async () => {
+  it('sets theme colours and Twitter images while leaving home Open Graph to the file convention', async () => {
     const { metadata, viewport } = await import('./layout');
     const home = await import('./page');
     expect(viewport.themeColor).toEqual([
@@ -42,23 +42,24 @@ describe('Hero 2.0 head assets', () => {
       { media: '(prefers-color-scheme: dark)', color: '#0C1D45' },
     ]);
     expect(metadata.manifest).toBe('/site.webmanifest');
+    expect(metadata.openGraph).toMatchObject({
+      images: [
+        {
+          url: '/opengraph-image.png',
+          width: 1200,
+          height: 630,
+          type: 'image/png',
+          alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+        },
+      ],
+    });
+    expect(home.metadata.openGraph).not.toHaveProperty('images');
     for (const value of [metadata, home.metadata]) {
-      expect(value.openGraph).toMatchObject({
-        images: [
-          {
-            url: expect.stringContaining('/og-image.png'),
-            width: 1200,
-            height: 630,
-            type: 'image/png',
-            alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
-          },
-        ],
-      });
       expect(value.twitter).toMatchObject({
         card: 'summary_large_image',
         images: [
           {
-            url: expect.stringContaining('/og-image.png'),
+            url: expect.stringContaining('/opengraph-image.png'),
             alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
           },
         ],
@@ -84,6 +85,9 @@ it('keeps Next file-convention app icons at the required intrinsic sizes', async
   expect(favicon.readUInt16LE(2)).toBe(1);
   expect(favicon.readUInt16LE(4)).toBe(3);
   expect([0, 1, 2].map((index) => favicon[6 + index * 16])).toEqual([16, 32, 48]);
-  const og = readFileSync('public/og-image.png');
+  const og = readFileSync('src/app/opengraph-image.png');
   expect([og.readUInt32BE(16), og.readUInt32BE(20)]).toEqual([1200, 630]);
+  expect(readFileSync('src/app/opengraph-image.alt.txt', 'utf8')).toBe(
+    'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+  );
 });

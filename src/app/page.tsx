@@ -19,15 +19,6 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'he_IL',
     siteName: 'MyWay',
-    images: [
-      {
-        url: absoluteUrl('/og-image.png'),
-        width: 1200,
-        height: 630,
-        type: 'image/png',
-        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
-      },
-    ],
     url: absoluteUrl('/'),
     title,
     description,
@@ -36,7 +27,7 @@ export const metadata: Metadata = {
     card: 'summary_large_image',
     images: [
       {
-        url: absoluteUrl('/og-image.png'),
+        url: absoluteUrl('/opengraph-image.png'),
         width: 1200,
         height: 630,
         type: 'image/png',

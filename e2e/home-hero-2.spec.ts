@@ -105,9 +105,13 @@ test('head declares the approved icons, manifest, theme colours and social image
   await expect(
     page.locator('meta[name="theme-color"][media="(prefers-color-scheme: dark)"]'),
   ).toHaveAttribute('content', '#0C1D45');
-  await expect(page.locator('meta[property="og:image"]')).toHaveAttribute(
+  const image = await page.locator('meta[property="og:image"]').getAttribute('content');
+  expect(new URL(image!).pathname).toBe('/opengraph-image.png');
+  await expect(page.locator('meta[property="og:image:width"]')).toHaveAttribute('content', '1200');
+  await expect(page.locator('meta[property="og:image:height"]')).toHaveAttribute('content', '630');
+  await expect(page.locator('meta[name="twitter:image"]')).toHaveAttribute(
     'content',
-    /\/og-image.png$/,
+    /\/opengraph-image.png$/,
   );
   await expect(page.locator('meta[property="og:image:alt"]')).toHaveAttribute(
     'content',
@@ -123,7 +127,7 @@ test('head declares the approved icons, manifest, theme colours and social image
   expect(paths.some((path) => path.startsWith('/favicon.ico'))).toBe(true);
   expect(paths.some((path) => path.startsWith('/icon.png'))).toBe(true);
   expect(paths.some((path) => path.startsWith('/apple-icon.png'))).toBe(true);
-  for (const path of [...paths, '/og-image.png']) {
+  for (const path of [...paths, image!]) {
     // Resolve production-origin social metadata against the local server for this check.
     expect(
       (await request.get(new URL(path, baseURL).pathname + new URL(path, baseURL).search)).status(),
