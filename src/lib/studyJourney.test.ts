@@ -16,6 +16,7 @@ import {
   selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
+  type JourneyRow,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
@@ -27,6 +28,86 @@ import type {
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 
 vi.mock('server-only', () => ({}));
+
+describe('groupJourneyRows BIU/Ariel last', () => {
+  const row = (fieldId: string, institutionId: string, institutionName = institutionId) =>
+    ({
+      id: `${fieldId}:${institutionId}`,
+      fieldId,
+      fieldName: fieldId,
+      institution: { id: institutionId, name: institutionName },
+    }) as JourneyRow;
+
+  it('stably partitions every field without moving field groups, including BIU/Ariel-only groups', () => {
+    const rows = [
+      row('cs', 'ariel'),
+      row('arts', 'biu'),
+      row('law', 'biu'),
+      row('cs', 'tau'),
+      row('cs', 'biu'),
+      row('law', 'huji'),
+      row('arts', 'ariel'),
+      row('cs', 'huji'),
+      row('cs', 'technion'),
+      row('law', 'ariel'),
+      row('law', 'tau'),
+    ];
+    const originalRows = [...rows];
+    const groups = groupJourneyRows(rows, 'field');
+
+    expect(groups.map((group) => group.id)).toEqual(['cs', 'arts', 'law']);
+    expect(groups.map((group) => group.rows.map((item) => item.institution.id))).toEqual([
+      ['tau', 'huji', 'technion', 'ariel', 'biu'],
+      ['biu', 'ariel'],
+      ['huji', 'tau', 'biu', 'ariel'],
+    ]);
+    expect(rows).toEqual(originalRows);
+  });
+
+  it('stably partitions institution groups while preserving programme order', () => {
+    const rows = [
+      row('cs', 'biu'),
+      row('cs', 'tau'),
+      row('law', 'ariel'),
+      row('cs', 'huji'),
+      row('law', 'tau'),
+      row('law', 'biu'),
+    ];
+    const groups = groupJourneyRows(rows, 'institution');
+
+    expect(groups.map((group) => group.id)).toEqual(['tau', 'huji', 'biu', 'ariel']);
+    expect(groups.map((group) => group.rows.map((item) => item.id))).toEqual([
+      ['cs:tau', 'law:tau'],
+      ['cs:huji'],
+      ['cs:biu', 'law:biu'],
+      ['law:ariel'],
+    ]);
+  });
+
+  it.each(['field', 'institution'] as const)(
+    'matches only exact institution ids in the %s view',
+    (groupBy) => {
+      const rows = [
+        row('cs', 'ariel'),
+        row('cs', 'mon_12341114114', 'הנדסאים אריאל'),
+        row('cs', 'biu'),
+        row('cs', 'mon_12341098184', 'מכינה אריאל'),
+        row('cs', 'other_ariel', 'אריאל'),
+        row('cs', 'tau'),
+      ];
+      const groups = groupJourneyRows(rows, groupBy);
+
+      expect(groups.flatMap((group) => group.rows.map((item) => item.institution.id))).toEqual([
+        'mon_12341114114',
+        'mon_12341098184',
+        'other_ariel',
+        'tau',
+        'ariel',
+        'biu',
+      ]);
+    },
+  );
+});
 
 it('never labels TAU architecture "אפשר להגיש מועמדות" when a floor fails', async () => {
   const program = {
