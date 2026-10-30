@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import type { ExactInProgress } from '@/lib/studyJourney';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { SECTORS } from '@/data/bagrutSubjects';
 import BagrutSubjectRows, { bagrutSubjectLabels } from './BagrutSubjectRows';
@@ -10,6 +11,8 @@ import {
   type BagrutWizardSubjectInput,
 } from '@/utils/bagrutSubjectRecord';
 import type { BagrutCertificateType, BagrutSector, BagrutSubjectRecord } from '@/types';
+
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
 const SECTOR_LABELS: Record<BagrutSector, string> = {
   jewish: 'יהודי',
@@ -42,33 +45,44 @@ const emptyRows = (sector: string): BagrutWizardSubjectInput[] =>
 
 export default function JourneyExactGrades({
   initialRecord,
+  initialProgress,
+  onProgress,
   onComplete,
 }: {
   initialRecord?: BagrutSubjectRecord;
+  initialProgress?: ExactInProgress;
+  onProgress?: (progress: ExactInProgress) => void;
   onComplete: (record: BagrutSubjectRecord) => void;
 }) {
   const [sector, setSector] = useState(
-    initialRecord ? SECTOR_LABELS[initialRecord.sector] : 'יהודי',
+    initialProgress?.sector ?? (initialRecord ? SECTOR_LABELS[initialRecord.sector] : 'יהודי'),
   );
   const [certificate, setCertificate] = useState<BagrutCertificateType | ''>(
-    initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : '',
+    initialProgress?.certificate ??
+      (initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : ''),
   );
   const [complete, setComplete] = useState(
-    initialRecord?.schemaVersion === 2 ? initialRecord.complete : false,
+    initialProgress?.complete ??
+      (initialRecord?.schemaVersion === 2 ? initialRecord.complete : false),
   );
   const [rows, setRows] = useState<BagrutWizardSubjectInput[]>(
     () =>
+      initialProgress?.rows ??
       initialRecord?.subjects.map((subject) => ({
         label: labelById.get(subject.subjectId) ?? subject.subjectId,
         units: subject.units,
         grade: subject.grade,
         assessmentKind: 'assessmentKind' in subject ? subject.assessmentKind : 'exam',
-      })) ?? emptyRows('יהודי'),
+      })) ??
+      emptyRows('יהודי'),
   );
   const [error, setError] = useState('');
   const [reading, setReading] = useState('');
-  const [imported, setImported] = useState(false);
-  const [reviewed, setReviewed] = useState(false);
+  const [imported, setImported] = useState(initialProgress?.imported ?? false);
+  const [reviewed, setReviewed] = useState(initialProgress?.reviewed ?? false);
+  useIsomorphicLayoutEffect(() => {
+    onProgress?.({ sector, certificate, complete, rows, imported, reviewed });
+  }, [sector, certificate, complete, rows, imported, reviewed, onProgress]);
   const change = (index: number, updates: Partial<BagrutWizardSubjectInput>) =>
     setRows((current) => current.map((row, i) => (i === index ? { ...row, ...updates } : row)));
   return (

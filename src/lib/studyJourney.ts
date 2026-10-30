@@ -1,4 +1,6 @@
 import type { AcademicScores } from '@/types';
+import { z } from 'zod';
+import { SECTORS } from '@/data/bagrutSubjects';
 import { admissionScoreGap } from './admissionScoreGap';
 import { formatSekhemNumber } from './sekhemResultPresentation';
 import { institutionLink } from '@/lib/institutionLinks';
@@ -12,6 +14,24 @@ import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/program
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import { isBatchBManualProgramId } from '@/data/admissions/batchBManualProgramIds';
+
+const unfinishedGradeNumber = z.union([z.number(), z.literal('')]);
+export const exactInProgressSchema = z.object({
+  sector: z.string().refine((value) => Object.hasOwn(SECTORS, value)),
+  certificate: z.enum(['', 'internal', 'external_1977_or_later', 'other']),
+  complete: z.boolean(),
+  rows: z.array(
+    z.object({
+      label: z.string(),
+      units: unfinishedGradeNumber,
+      grade: unfinishedGradeNumber,
+      assessmentKind: z.enum(['exam', 'final_project', 'combined']).optional(),
+    }),
+  ),
+  imported: z.boolean().default(false),
+  reviewed: z.boolean().default(false),
+});
+export type ExactInProgress = z.infer<typeof exactInProgressSchema>;
 
 /** Select the journey's committed Bagrut path without changing an imported account profile. */
 export function bagrutScoresForMode(

@@ -37,6 +37,8 @@ import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
   bagrutScoresForMode,
+  exactInProgressSchema,
+  type ExactInProgress,
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
@@ -150,6 +152,7 @@ interface Draft {
   locations: JourneyLocation[];
   types: InstitutionType[];
   scores: AcademicScores;
+  exactInProgress?: ExactInProgress;
   target?: number;
   gradeMode?: 'quick' | 'exact' | 'none';
   psyMode?: 'score' | 'target' | 'none';
@@ -175,6 +178,7 @@ function readDraft(): Draft | null {
     });
     if (!profile.success) return null;
     const scores = profile.data.academicScores ?? {};
+    const exactInProgress = exactInProgressSchema.safeParse(raw.exactInProgress);
     let gradeMode: Draft['gradeMode'] = ['quick', 'exact', 'none'].includes(raw.gradeMode)
       ? raw.gradeMode
       : undefined;
@@ -197,6 +201,7 @@ function readDraft(): Draft | null {
       locations: raw.locations,
       types: raw.types,
       scores,
+      exactInProgress: exactInProgress.success ? exactInProgress.data : undefined,
       target: raw.target >= 200 && raw.target <= 800 ? raw.target : undefined,
       gradeMode,
       psyMode: ['score', 'target', 'none'].includes(raw.psyMode) ? raw.psyMode : undefined,
@@ -372,7 +377,7 @@ export default function StudyJourney({
       }));
     }
   }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!ready) return;
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -521,6 +526,9 @@ export default function StudyJourney({
     }
     return Object.fromEntries(Object.entries(sets).map(([area, ids]) => [area, ids.size]));
   }, [allRows, selectedFieldIds, draft.types]);
+  const saveExactProgress = useCallback((exactInProgress: ExactInProgress) => {
+    setDraft((current) => ({ ...current, exactInProgress }));
+  }, []);
   const patch = (updates: Partial<Draft>) => setDraft((current) => ({ ...current, ...updates }));
   const patchScores = (updates: Partial<AcademicScores>) =>
     patch({ scores: { ...draft.scores, ...updates } });
@@ -1155,7 +1163,11 @@ export default function StudyJourney({
               </button>
               <button
                 onClick={() => {
-                  patch({ gradeMode: 'none', scores: { ...draft.scores, bagrut: undefined } });
+                  patch({
+                    gradeMode: 'none',
+                    exactInProgress: undefined,
+                    scores: { ...draft.scores, bagrut: undefined },
+                  });
                   go('psy-mode');
                 }}
               >
@@ -1182,6 +1194,7 @@ export default function StudyJourney({
               event.preventDefault();
               patch({
                 gradeMode: 'quick',
+                exactInProgress: undefined,
                 scores: {
                   ...draft.scores,
                   bagrut: {
@@ -1213,9 +1226,12 @@ export default function StudyJourney({
         {step === 'grades-exact' && ready && (
           <JourneyExactGrades
             initialRecord={draft.scores.bagrut?.subjectRecord}
+            initialProgress={draft.exactInProgress}
+            onProgress={saveExactProgress}
             onComplete={(record) => {
               patch({
                 gradeMode: 'exact',
+                exactInProgress: undefined,
                 scores: { ...draft.scores, bagrut: { subjectRecord: record } },
               });
               afterGrades();

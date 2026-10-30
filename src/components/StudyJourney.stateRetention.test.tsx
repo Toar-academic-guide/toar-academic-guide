@@ -452,6 +452,18 @@ describe('unsubmitted per-subject work survives refresh', () => {
     },
   );
 
+  it('prefers unsubmitted edits over the committed exact record without changing committed scores', async () => {
+    seed({ bagrut: { subjectRecord: record } }, 'exact');
+    const first = render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    editRows();
+    first.unmount();
+    render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    expectEdits();
+    expect(stored().scores.bagrut).toEqual({ subjectRecord: record });
+  });
+
   it('retains quick 110 for summary and evaluation while restoring unsubmitted subject work', async () => {
     seed({ bagrut: { weightedAverage: 110 } }, 'quick');
     const first = render(<StudyJourney initialStep="grade-mode" />);
