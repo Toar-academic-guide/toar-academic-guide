@@ -400,3 +400,188 @@ describe('saved field selection before paint', () => {
     expect(screen.queryByRole('textbox', { name: 'חיפוש תחום לימודים' })).toBeNull();
   });
 });
+
+describe('unsubmitted per-subject work survives refresh', () => {
+  const field = (label: string) => screen.getByLabelText(label, { selector: 'input' });
+  const rowNumber = (label: string) =>
+    (
+      screen
+        .getAllByLabelText(/^מקצוע /)
+        .filter((element) => element.tagName === 'INPUT') as HTMLInputElement[]
+    ).findIndex((input) => input.value === label) + 1;
+  const buffer = () => JSON.parse(sessionStorage.getItem(key)!).exactInProgress;
+  const editRows = () => {
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    for (const [label, units, grade] of [
+      ['אנגלית', '5', '95'],
+      ['מתמטיקה', '4', '88'],
+    ]) {
+      const index = rowNumber(label);
+      fireEvent.change(field(`יחידות ${index}`), { target: { value: units } });
+      fireEvent.change(field(`ציון ${index}`), { target: { value: grade } });
+    }
+  };
+  const expectEdits = () => {
+    expect(screen.getByLabelText('סוג תעודה')).toHaveProperty('value', 'internal');
+    for (const [label, units, grade] of [
+      ['אנגלית', '5', '95'],
+      ['מתמטיקה', '4', '88'],
+    ]) {
+      const index = rowNumber(label);
+      expect(field(`יחידות ${index}`)).toHaveProperty('value', units);
+      expect(field(`ציון ${index}`)).toHaveProperty('value', grade);
+    }
+  };
+
+  it.each([false, true])(
+    'restores every edit immediately after the last keystroke (hash restore: %s)',
+    async (hashRestore) => {
+      seed();
+      const first = render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      editRows();
+      // No timer or await between the last edit and the simulated reload.
+      fireEvent(window, new Event('pagehide'));
+      first.unmount();
+      if (hashRestore) window.history.replaceState(null, '', '/app/calculator#grades-exact');
+      render(<StudyJourney initialStep={hashRestore ? 'subjects' : 'grades-exact'} />);
+      await screen.findByLabelText('סוג תעודה');
+      expectEdits();
+      expect(stored().scores).toEqual({});
+      expect(buffer()).toMatchObject({ certificate: 'internal', imported: false, reviewed: false });
+    },
+  );
+
+  it('retains quick 110 for summary and evaluation while restoring unsubmitted subject work', async () => {
+    seed({ bagrut: { weightedAverage: 110 } }, 'quick');
+    const first = render(<StudyJourney initialStep="grade-mode" />);
+    fireEvent.click(screen.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }));
+    await screen.findByLabelText('סוג תעודה');
+    editRows();
+    first.unmount();
+    render(<StudyJourney initialStep="subjects" />);
+    await screen.findByLabelText('סוג תעודה');
+    expectEdits();
+    expect(stored().scores.bagrut).toEqual({ weightedAverage: 110 });
+    expect(stored().gradeMode).toBe('quick');
+    act(() => {
+      window.history.replaceState(null, '', '/app/calculator#review');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    expect(screen.getByText('ממוצע שהזנת: 110')).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+    expect(state.evaluate).toHaveBeenLastCalledWith(expect.objectContaining({ bagrut: 110 }));
+    expect(state.evaluate.mock.calls[0][0].extraInputs?.bagrutSubjectRecord).toBeUndefined();
+    expect(buffer()).toBeDefined();
+  });
+
+  it.each(['exact', 'quick', 'none'] as const)(
+    'clears the buffer on %s submission without mixing the committed paths',
+    async (mode) => {
+      seed({ bagrut: { weightedAverage: 110 } }, 'quick');
+      const first = render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      editRows();
+      expect(buffer()).toBeDefined();
+      first.unmount();
+      render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      expectEdits();
+      if (mode === 'exact') {
+        submit();
+        expect(stored().scores.bagrut?.weightedAverage).toBeUndefined();
+        expect(stored().scores.bagrut?.subjectRecord?.subjects).toEqual([
+          { subjectId: 'english', units: 5, grade: 95, assessmentKind: 'exam' },
+          { subjectId: 'mathematics', units: 4, grade: 88, assessmentKind: 'exam' },
+        ]);
+      } else {
+        back();
+        if (mode === 'quick') {
+          fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+          fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '95' } });
+          submit();
+          expect(stored().scores.bagrut).toEqual({ weightedAverage: 95 });
+        } else {
+          fireEvent.click(screen.getByRole('button', { name: /אין לי כרגע ציוני בגרות/ }));
+          expect(stored().scores.bagrut).toBeUndefined();
+        }
+      }
+      expect(buffer()).toBeUndefined();
+    },
+  );
+
+  it('restores sector, certificate, complete, assessments and PDF review flags without storing a file', async () => {
+    seed();
+    const first = render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    editRows();
+    fireEvent.click(screen.getByLabelText('הזנתי את כל המקצועות שמופיעים בתעודה'));
+    fireEvent.change(screen.getByLabelText('אנגלית', { selector: 'select' }), {
+      target: { value: 'combined' },
+    });
+    first.unmount();
+    const saved = JSON.parse(sessionStorage.getItem(key)!);
+    expect(saved.exactInProgress).toBeDefined();
+    saved.exactInProgress = {
+      ...saved.exactInProgress,
+      imported: true,
+      reviewed: false,
+      file: { name: 'never-persist.pdf' },
+    };
+    sessionStorage.setItem(key, JSON.stringify(saved));
+    render(<StudyJourney initialStep="grades-exact" />);
+    await screen.findByLabelText('סוג תעודה');
+    expectEdits();
+    expect(screen.getByLabelText('מגזר')).toHaveProperty('value', 'ערבי');
+    expect(screen.getByLabelText('הזנתי את כל המקצועות שמופיעים בתעודה')).toHaveProperty(
+      'checked',
+      true,
+    );
+    expect(screen.getByLabelText('אנגלית', { selector: 'select' })).toHaveProperty(
+      'value',
+      'combined',
+    );
+    const reviewed = screen.getByLabelText(
+      'בדקתי את הציונים שזוהו מול התעודה ותיקנתי או השלמתי את הנדרש',
+    );
+    expect(reviewed).toHaveProperty('checked', false);
+    expect(buffer()).not.toHaveProperty('file');
+    fireEvent.click(reviewed);
+    expect(buffer().reviewed).toBe(true);
+  });
+
+  it.each([
+    'corrupt',
+    { sector: 'לא מגזר', certificate: 'internal', complete: false, rows: [] },
+    { sector: 'יהודי', certificate: 'invalid', complete: false, rows: [] },
+    {
+      sector: 'יהודי',
+      certificate: 'internal',
+      complete: false,
+      rows: [{ label: 'אנגלית', units: {}, grade: 95 }],
+    },
+    {
+      sector: 'יהודי',
+      certificate: 'internal',
+      complete: false,
+      rows: [{ label: 'אנגלית', units: 5, grade: 95, assessmentKind: 'invalid' }],
+    },
+  ])(
+    'ignores a corrupt buffer and keeps the submitted quick path (%j)',
+    async (exactInProgress) => {
+      seed({ bagrut: { weightedAverage: 110 } }, 'quick');
+      sessionStorage.setItem(
+        key,
+        JSON.stringify({ ...JSON.parse(sessionStorage.getItem(key)!), exactInProgress }),
+      );
+      render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      expect(screen.getByLabelText('סוג תעודה')).toHaveProperty('value', '');
+      expect(field(`יחידות ${rowNumber('אנגלית')}`)).toHaveProperty('value', '3');
+      expect(field(`ציון ${rowNumber('אנגלית')}`)).toHaveProperty('value', '');
+      expect(stored().scores.bagrut).toEqual({ weightedAverage: 110 });
+    },
+  );
+});
