@@ -98,6 +98,7 @@ import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
   type MondayAdmissionEvidenceRecord,
 } from '@/data/admissions/mondayEvidence';
+import { studentExplanations } from '@/data/admissions/studentExplanations';
 import {
   ADMISSIONS_EVALUATOR_VERSION,
   createAdmissionsInputDigest,
@@ -2264,8 +2265,10 @@ function evaluateNonExactResult(args: {
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'מקור חסום',
-      explanation: entry.sourceTarget?.blockedReason ?? 'המקור הרשמי דורש דפדפן או תהליך ידני.',
-      nextAction: entry.sourceTarget?.nextAction ?? 'בדקו ישירות באתר המוסד.',
+      explanation:
+        hebrewStudentText(entry.sourceTarget?.blockedReason) ??
+        'המקור הרשמי דורש דפדפן או תהליך ידני.',
+      nextAction: hebrewStudentText(entry.sourceTarget?.nextAction) ?? 'בדקו ישירות באתר המוסד.',
     };
   }
 
@@ -2287,7 +2290,8 @@ function evaluateNonExactResult(args: {
   if (entry.capability === 'open_admission') {
     const defaultText =
       'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
-    const explanation = catalogueDescription(evidenceRecord?.decisionReason) || defaultText;
+    const explanation =
+      hebrewStudentText(studentExplanations[evidenceRecord?.itemId ?? '']?.text) ?? defaultText;
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -3506,6 +3510,10 @@ function unsupportedResult(
   };
 }
 
+function hebrewStudentText(text: string | null | undefined): string | undefined {
+  return text && /[א-ת]/.test(text) ? text : undefined;
+}
+
 function trackedMissingRuleResult(
   institution: CatalogueInstitution,
   entry: AdmissionsCapabilityEntry,
@@ -3527,8 +3535,8 @@ function trackedMissingRuleResult(
       ? `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}. מקור העבודה: ${evidence.itemName}.`
       : `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}.`,
     nextAction:
-      evidence?.nextAction ??
-      entry.sourceTarget?.nextAction ??
+      hebrewStudentText(evidence?.nextAction) ??
+      hebrewStudentText(entry.sourceTarget?.nextAction) ??
       'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
     evidenceItemId: evidence?.itemId,
     evidenceItemName: evidence?.itemName,
