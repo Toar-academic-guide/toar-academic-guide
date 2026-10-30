@@ -232,6 +232,103 @@ describe('unsubmitted quick average survives refresh', () => {
   });
 });
 
+describe('retained submitted Bagrut paths', () => {
+  it.each(['guest', 'account'] as const)(
+    'restores nine subjects after submitting quick 110 across reloads while evaluating only the active path (%s)',
+    async (identity) => {
+      state.user = identity === 'account' ? { id: 'test-account' } : null;
+      state.savedProgramIds = ['tau_cs'];
+      state.updateProfile.mockImplementation(async ({ academicScores }) => {
+        state.scores = structuredClone(academicScores);
+        return true;
+      });
+      const expectPayload = (mode: 'quick' | 'exact') => {
+        for (const [input] of state.evaluate.mock.calls) {
+          expect(input.bagrut).toBe(mode === 'quick' ? 110 : undefined);
+          expect(input.extraInputs?.bagrutSubjectRecord).toEqual(
+            mode === 'exact' ? record : undefined,
+          );
+        }
+      };
+      const evaluateSummary = async (mode: 'quick' | 'exact') => {
+        expect(
+          screen.getByText(mode === 'quick' ? 'הזנתם ממוצע: 110' : 'הזנתם ציונים ב-9 מקצועות'),
+        ).toBeTruthy();
+        state.evaluate.mockClear();
+        fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+        await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+        expectPayload(mode);
+      };
+      const evaluateSavedRetry = async (mode: 'quick' | 'exact') => {
+        state.evaluate
+          .mockClear()
+          .mockResolvedValueOnce({ reports: {}, failedDegreeIds: ['tau_cs'] });
+        act(() => {
+          window.location.hash = 'saved';
+          window.dispatchEvent(new PopStateEvent('popstate'));
+        });
+        fireEvent.click(await screen.findByRole('button', { name: 'לנסות שוב' }));
+        await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(2));
+        expectPayload(mode);
+      };
+
+      seed();
+      const first = render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      fillNineSubjects();
+      submit();
+      withoutPsy();
+      await evaluateSummary('exact');
+      first.unmount();
+
+      window.history.replaceState(null, '', '/app/calculator');
+      const second = render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+      fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '110' } });
+      submit();
+      withoutPsy();
+      await evaluateSummary('quick');
+      expect(state.updateProfile).toHaveBeenLastCalledWith({
+        academicScores: {
+          bagrut: { weightedAverage: 110, subjectRecord: record },
+          admissions: { activeBagrutPath: 'quick' },
+        },
+      });
+      await evaluateSavedRetry('quick');
+      second.unmount();
+
+      // Account restoration must work without any session copy of the grades.
+      if (identity === 'account') {
+        sessionStorage.clear();
+        seed();
+      }
+      window.history.replaceState(null, '', '/app/calculator');
+      const third = render(<StudyJourney initialStep="review" />);
+      expect(screen.getByText('הזנתם ממוצע: 110')).toBeTruthy();
+      editBagrut();
+      expect(screen.getByLabelText('ממוצע בגרות')).toHaveProperty('value', '110');
+      back();
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }));
+      await expectRecord();
+      submit();
+      withoutPsy();
+      await evaluateSummary('exact');
+      expect(state.updateProfile).toHaveBeenLastCalledWith({
+        academicScores: {
+          bagrut: { weightedAverage: 110, subjectRecord: record },
+          admissions: { activeBagrutPath: 'exact' },
+        },
+      });
+      await evaluateSavedRetry('exact');
+      third.unmount();
+      window.history.replaceState(null, '', '/app/calculator');
+      render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+      expect(screen.getByLabelText('ממוצע בגרות')).toHaveProperty('value', '110');
+    },
+  );
+});
+
 describe('last submitted Bagrut path across reloads', () => {
   const restores = (['guest', 'account'] as const).flatMap((identity) =>
     (['review', 'saved'] as const).map((surface) => ({ identity, surface })),
