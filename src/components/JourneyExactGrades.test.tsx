@@ -753,3 +753,57 @@ describe('JourneyExactGrades PDF imports', () => {
     expect(screen.getAllByText('נא לבדוק את שם המקצוע')).toHaveLength(expected.length);
   });
 });
+
+
+describe('saved-progress units stay locked', () => {
+  it.each([false, true])(
+    'locks restored units on sector and label changes and defaults only fresh rows (legacy auto flag: %s)',
+    (legacyAutoFlag) => {
+      const onProgress = vi.fn<(progress: ExactInProgress) => void>();
+      const rows = ['אנגלית', 'עברית'].map((label) => ({
+        label,
+        units: 2,
+        grade: 90,
+        assessmentKind: 'exam' as const,
+        ...(legacyAutoFlag ? { autoUnits: true } : {}),
+      }));
+      render(
+        <JourneyExactGrades
+          initialProgress={{
+            sector: 'יהודי',
+            certificate: 'internal',
+            complete: false,
+            rows,
+            imported: false,
+            reviewed: false,
+          }}
+          onProgress={onProgress}
+          onComplete={vi.fn()}
+        />,
+      );
+      fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+      expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
+      expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '2');
+      fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'מתמטיקה' } });
+      expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
+      fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+      expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '2');
+      fireEvent.change(screen.getByLabelText('מקצוע 3'), { target: { value: 'אנגלית' } });
+      expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '3');
+      fireEvent.change(screen.getByLabelText('מקצוע 3'), { target: { value: 'עברית' } });
+      expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '3');
+      for (const [progress] of onProgress.mock.calls) {
+        for (const row of progress.rows) expect(row).not.toHaveProperty('autoUnits');
+      }
+    },
+  );
+
+  it('saves fresh starter defaults without UI-only flags', () => {
+    const onProgress = vi.fn<(progress: ExactInProgress) => void>();
+    render(<JourneyExactGrades onProgress={onProgress} onComplete={vi.fn()} />);
+    const saved = onProgress.mock.calls.at(-1)![0];
+    expect(saved.rows.find((row) => row.label === 'אנגלית')?.units).toBe(3);
+    expect(saved.rows.find((row) => row.label === 'אזרחות')?.units).toBe(2);
+    for (const row of saved.rows) expect(row).not.toHaveProperty('autoUnits');
+  });
+});

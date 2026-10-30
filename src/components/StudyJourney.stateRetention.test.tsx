@@ -90,7 +90,7 @@ const stored = () =>
   };
 const back = () => fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
 const submit = () =>
-  fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+  fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
 const editBagrut = () =>
   fireEvent.click(
     within(screen.getByText('בגרות').closest('.journey-review > div')!).getByRole('button', {
