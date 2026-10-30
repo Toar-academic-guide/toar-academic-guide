@@ -95,8 +95,8 @@ describe('enquiry link integrity', () => {
     );
     expect(markup).toContain('השאירו פרטים</button>');
     expect(markup).not.toContain('רוצים תשובות ישר מהמוסד?');
-    const hero = markup.match(/<section\b[^>]*>.*?<\/section>/s)?.[0];
-    const dialog = markup.match(/<dialog\b[^>]*>.*?<\/dialog>/s)?.[0];
+    const hero = markup.match(/<section\b[^>]*>[\s\S]*?<\/section>/)?.[0];
+    const dialog = markup.match(/<dialog\b[^>]*>[\s\S]*?<\/dialog>/)?.[0];
     expect(hero).toBeDefined(); // Approved test update, Jorje 2026-10-30
     expect(dialog).toBeDefined(); // Approved test update, Jorje 2026-10-30
     expect(`${hero}${dialog}`).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/); // Approved test update, Jorje 2026-10-30
@@ -109,7 +109,7 @@ describe('enquiry link integrity', () => {
       'מסלול מתוגבר בתשלום',
       '<strong>מסלול מתוגבר בתשלום</strong>',
     );
-    const reading = markup.match(/<section\b[^>]*data-prep-content[^>]*>.*?<\/section>/s)?.[0];
+    const reading = markup.match(/<section\b[^>]*data-prep-content[^>]*>[\s\S]*?<\/section>/)?.[0];
     const renderedText = markup.replace(/<[^>]*>/g, '');
     expect(reading).toContain(`<p>${sentenceMarkup}</p>`); // Approved test update, Jorje 2026-10-30
     expect(renderedText).toContain(sentence); // Approved test update, Jorje 2026-10-30
