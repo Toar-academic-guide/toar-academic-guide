@@ -431,7 +431,9 @@ it.each(['enquiry_page', 'journey'])(
           surface={surface}
         />,
       );
-      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('רוצים תשובות ישר מהמוסד?');
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+        'רוצים תשובות ישר מהמוסד?',
+      );
       expect(screen.queryByText('הציון שלכם בפסיכומטרי מתחיל בהכנה')).toBeNull();
       const button = screen.getByRole('button', { name: 'שלחו וחברת הכנה תחזור אליכם' });
       expect(screen.queryByText('שלחו, והמוסד יחזור אליכם')).toBeNull();
