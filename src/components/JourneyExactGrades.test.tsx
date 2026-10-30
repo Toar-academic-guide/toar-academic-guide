@@ -476,3 +476,224 @@ describe('new-row defaults in journey', () => {
     expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
   });
 });
+
+describe('JourneyExactGrades PDF imports', () => {
+  const subjectInputs = () =>
+    screen.getAllByLabelText(/^מקצוע /, { selector: 'input' }) as HTMLInputElement[];
+  const upload = async (
+    subjects: { label: string; units: number; grade: number; unmatched?: boolean }[],
+  ) => {
+    const { readBagrutPdf } = await import('@/lib/bagrutPdf');
+    vi.mocked(readBagrutPdf).mockResolvedValueOnce(subjects);
+    fireEvent.change(screen.getByLabelText(/העלאת גיליון PDF/, { selector: 'input' }), {
+      target: { files: [new File(['synthetic'], 'synthetic.pdf', { type: 'application/pdf' })] },
+    });
+    await screen.findByText(/בדקתי את הציונים שזוהו/);
+  };
+
+  it.each([
+    { matched: 3, unmatched: 1, status: 'זוהו 3 מקצועות · 1 לא זוהה, נא לבדוק' },
+    { matched: 1, unmatched: 1, status: 'זוהה מקצוע אחד · 1 לא זוהה, נא לבדוק' },
+    { matched: 0, unmatched: 2, status: '2 לא זוהו, נא לבדוק' },
+    { matched: 0, unmatched: 1, status: '1 לא זוהה, נא לבדוק' },
+    { matched: 9, unmatched: 0, status: 'זוהו 9 מקצועות' },
+  ])(
+    'reports $matched matched and $unmatched unmatched PDF subjects',
+    async ({ matched, unmatched, status }) => {
+      render(<JourneyExactGrades onComplete={vi.fn()} />);
+      const labels = [
+        'מתמטיקה',
+        'אנגלית',
+        'פיסיקה',
+        'כימיה',
+        'ביולוגיה',
+        'תנ״ך',
+        'ספרות',
+        'היסטוריה',
+        'אזרחות',
+      ];
+      await upload([
+        ...labels.slice(0, matched).map((label) => ({ label, units: 5, grade: 90 })),
+        ...Array.from({ length: unmatched }, (_, i) => ({
+          label: `מקצוע בדיקה ${i === 0 ? 'א' : 'ב'}`,
+          units: 2,
+          grade: 80,
+          unmatched: true,
+        })),
+      ]);
+      expect(screen.getByRole('status').textContent).toBe(status);
+    },
+  );
+
+  it.each(['rename', 'delete'])(
+    'blocks reviewed unmatched PDF subjects until students %s the unknown row',
+    async (correction) => {
+      const onComplete = vi.fn();
+      render(<JourneyExactGrades onComplete={onComplete} />);
+      fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+      await upload([
+        { label: 'מתמטיקה', units: 5, grade: 90 },
+        { label: 'מקצוע בדיקה א', units: 5, grade: 85, unmatched: true },
+      ]);
+      fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      expect(onComplete).not.toHaveBeenCalled();
+      const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
+      expect(unknown.getAttribute('aria-invalid')).toBe('true');
+      expect(screen.getByText('נא לבדוק את שם המקצוע')).toBeTruthy();
+      if (correction === 'rename') {
+        fireEvent.change(unknown, { target: { value: 'פיזיקה' } });
+      } else {
+        fireEvent.click(screen.getByRole('button', { name: 'הסרת מקצוע 2' }));
+      }
+      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      expect(onComplete).toHaveBeenCalledOnce();
+      expect(onComplete.mock.calls[0][0].subjects).toEqual([
+        { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ...(correction === 'rename'
+          ? [{ subjectId: 'physics', units: 5, grade: 85, assessmentKind: 'exam' }]
+          : []),
+      ]);
+      expect(screen.queryByText('נא לבדוק את שם המקצוע')).toBeNull();
+    },
+  );
+
+  it('keeps entered math when a PDF contains only English and drops blank starters', async () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    const mathIndex = subjectInputs().findIndex((i) => i.value === 'מתמטיקה') + 1;
+    fireEvent.change(screen.getByLabelText(`ציון ${mathIndex}`), { target: { value: '94' } });
+    await upload([{ label: 'אנגלית', units: 5, grade: 85 }]);
+    expect(subjectInputs().map((i) => i.value)).toEqual(['מתמטיקה', 'אנגלית']);
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '94');
+    expect(screen.getByRole('status').textContent).toBe('זוהה מקצוע אחד');
+  });
+
+  it('overwrites normalized overlaps once and keeps unmatched names for correction', async () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    const bibleIndex = subjectInputs().findIndex((i) => i.value === 'תנ״ך') + 1;
+    fireEvent.change(screen.getByLabelText(`ציון ${bibleIndex}`), { target: { value: '64' } });
+    await upload([
+      { label: 'תנ"ך', units: 2, grade: 84 },
+      { label: 'מקצוע בדיקה עם ף', units: 4, grade: 55, unmatched: true },
+    ]);
+    expect(subjectInputs().map((i) => i.value)).toEqual(['תנ"ך', 'מקצוע בדיקה עם ף']);
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '84');
+    expect(screen.getByRole('status').textContent).toBe('זוהה מקצוע אחד · 1 לא זוהה, נא לבדוק');
+    const reviewed = screen.getByLabelText(/בדקתי את הציונים שזוהו/);
+    expect(reviewed).toHaveProperty('checked', false);
+    const unknown = screen.getByLabelText('מקצוע 2', { selector: 'input' });
+    expect(unknown.getAttribute('aria-invalid')).toBe('true');
+    const reviewMessage = document.getElementById(unknown.getAttribute('aria-describedby')!);
+    expect(reviewMessage?.textContent).toBe('נא לבדוק את שם המקצוע');
+    fireEvent.change(unknown, { target: { value: 'פיזיקה' } });
+    expect(unknown.getAttribute('aria-invalid')).toBeNull();
+    expect(screen.queryByText('נא לבדוק את שם המקצוע')).toBeNull();
+    fireEvent.click(reviewed);
+    await upload([{ label: 'תנ״ך', units: 2, grade: 85 }]);
+    expect(reviewed).toHaveProperty('checked', false);
+    expect(subjectInputs()).toHaveLength(2);
+  });
+  const enterManualSubject = (label: string, units: number, grade: number) => {
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    fireEvent.click(screen.getByRole('button', { name: /הוספת מקצוע/ }));
+    const index = subjectInputs().length;
+    fireEvent.change(screen.getByLabelText(`מקצוע ${index}`, { selector: 'input' }), {
+      target: { value: label },
+    });
+    fireEvent.change(screen.getByLabelText(`יחידות ${index}`), {
+      target: { value: String(units) },
+    });
+    fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: String(grade) } });
+  };
+  const confirmAndContinue = () => {
+    fireEvent.click(screen.getByLabelText(/בדקתי את הציונים שזוהו/));
+    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  };
+
+  it.each([
+    {
+      name: 'physics alias',
+      manualLabel: 'פיזיקה',
+      pdfLabel: 'פיסיקה',
+      manualGrade: 84,
+      pdfGrade: 90,
+      subjectId: 'physics',
+    },
+    {
+      name: 'reverse physics alias',
+      manualLabel: 'פיסיקה',
+      pdfLabel: 'פיזיקה',
+      manualGrade: 84,
+      pdfGrade: 90,
+      subjectId: 'physics',
+    },
+    {
+      name: 'canonical math',
+      manualLabel: 'מתמטיקה',
+      pdfLabel: 'מתמטיקה',
+      manualGrade: 80,
+      pdfGrade: 95,
+      subjectId: 'mathematics',
+    },
+  ])(
+    'merges $name with PDF units/grade and completes without a duplicate error',
+    async ({ manualLabel, pdfLabel, manualGrade, pdfGrade, subjectId }) => {
+      const onComplete = vi.fn();
+      render(<JourneyExactGrades onComplete={onComplete} />);
+      enterManualSubject(manualLabel, 4, manualGrade);
+      await upload([{ label: pdfLabel, units: 5, grade: pdfGrade }]);
+
+      expect(subjectInputs().map((input) => input.value)).toEqual([pdfLabel]);
+      expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '5');
+      expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', String(pdfGrade));
+      confirmAndContinue();
+
+      expect(screen.queryByRole('alert')).toBeNull();
+      expect(onComplete).toHaveBeenCalledOnce();
+      expect(onComplete.mock.calls[0][0].subjects).toEqual([
+        { subjectId, units: 5, grade: pdfGrade, assessmentKind: 'exam' },
+      ]);
+    },
+  );
+
+  it.each([
+    {
+      name: 'different unknown names',
+      manualLabel: 'מקצוע בדיקה א',
+      pdfLabels: ['מקצוע בדיקה ב'],
+      expected: [
+        { label: 'מקצוע בדיקה א', units: 4, grade: 84 },
+        { label: 'מקצוע בדיקה ב', units: 5, grade: 90 },
+      ],
+    },
+    {
+      name: 'repeated unknown name',
+      manualLabel: 'מקצוע בדיקה א',
+      pdfLabels: ['מקצוע בדיקה א', 'מקצוע בדיקה א'],
+      expected: [{ label: 'מקצוע בדיקה א', units: 5, grade: 90 }],
+    },
+    {
+      name: 'normalized unknown name',
+      manualLabel: '  מקצוע בדיקה ״א״  ',
+      pdfLabels: ['מקצוע   בדיקה "א" (רמה רגילה)'],
+      expected: [{ label: 'מקצוע   בדיקה "א" (רמה רגילה)', units: 5, grade: 90 }],
+    },
+  ])('merges $name only by normalized raw name', async ({ manualLabel, pdfLabels, expected }) => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    enterManualSubject(manualLabel, 4, 84);
+    await upload(pdfLabels.map((label) => ({ label, units: 5, grade: 90, unmatched: true })));
+
+    expect(subjectInputs().map((input) => input.value)).toEqual(expected.map((row) => row.label));
+    for (const [index, row] of expected.entries()) {
+      expect(screen.getByLabelText(`יחידות ${index + 1}`)).toHaveProperty(
+        'value',
+        String(row.units),
+      );
+      expect(screen.getByLabelText(`ציון ${index + 1}`)).toHaveProperty('value', String(row.grade));
+    }
+    confirmAndContinue();
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getAllByText('נא לבדוק את שם המקצוע')).toHaveLength(expected.length);
+  });
+});

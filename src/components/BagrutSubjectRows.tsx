@@ -3,7 +3,8 @@
 import { Fragment, useId } from 'react';
 import { Plus, Trash2 } from 'lucide-react';
 import { defaultUnitsFor, unitOptionsFor } from './bagrutUnitOptions';
-import { ALL_SUBJECTS, SECTORS } from '@/data/bagrutSubjects';
+import { bagrutSubjectLabels } from '@/utils/bagrutSubjectRecord';
+export { bagrutSubjectLabels } from '@/utils/bagrutSubjectRecord';
 import type { BagrutWizardSubjectInput } from '@/utils/bagrutSubjectRecord';
 
 export type BagrutSubjectRow = BagrutWizardSubjectInput & {
@@ -37,14 +38,7 @@ export function bagrutGradeError(grade: number | '') {
     : undefined;
 }
 
-export type BagrutFieldErrors = Partial<Record<'units' | 'grade', string>>[];
-
-export const bagrutSubjectLabels = [
-  ...new Set([
-    ...ALL_SUBJECTS,
-    ...Object.values(SECTORS).flatMap((items) => items.map((item) => item.n)),
-  ]),
-];
+export type BagrutFieldErrors = Partial<Record<'label' | 'units' | 'grade', string>>[];
 
 export default function BagrutSubjectRows({
   rows,
@@ -88,6 +82,15 @@ export default function BagrutSubjectRows({
                 <td>
                   <input
                     list={subjectListId}
+                    className={
+                      fieldErrors?.[index]?.label ? 'aria-invalid:border-[#8c2438]!' : undefined
+                    }
+                    aria-invalid={fieldErrors?.[index]?.label ? true : undefined}
+                    aria-describedby={
+                      fieldErrors?.[index]?.label
+                        ? `${subjectListId}-${index}-label-error`
+                        : undefined
+                    }
                     aria-label={`מקצוע ${index + 1}`}
                     value={row.label}
                     required={!isBlankRow(row)}
@@ -101,6 +104,14 @@ export default function BagrutSubjectRows({
                       })
                     }
                   />
+                  {fieldErrors?.[index]?.label && (
+                    <small
+                      id={`${subjectListId}-${index}-label-error`}
+                      className="text-right text-[#8c2438]"
+                    >
+                      {fieldErrors[index].label}
+                    </small>
+                  )}
                   {row.assessmentKind !== 'exam' && (
                     <small>
                       {row.assessmentKind === 'final_project' ? 'עבודת גמר' : 'ציון משולב'}
