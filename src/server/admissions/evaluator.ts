@@ -3521,7 +3521,6 @@ function trackedMissingRuleResult(
   const evidence = entry.evidence;
   const missingData = evidence?.missingData.length ? [...evidence.missingData] : ['official_rule'];
   const officialUrls = evidence?.officialUrls.length ? [...evidence.officialUrls] : [];
-  const readableMissing = missingData.join(', ');
 
   return {
     institution: publicInstitutionShape(institution),
@@ -3531,9 +3530,7 @@ function trackedMissingRuleResult(
     decision: 'unknown',
     confidence: evidence?.confidence ?? 'medium',
     sourceLabel: 'חסר כלל רשמי ממופה',
-    explanation: evidence
-      ? `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}. מקור העבודה: ${evidence.itemName}.`
-      : `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}.`,
+    explanation: 'עדיין חסר כלל רשמי כדי לתת החלטת קבלה.',
     nextAction:
       hebrewStudentText(evidence?.nextAction) ??
       hebrewStudentText(entry.sourceTarget?.nextAction) ??
