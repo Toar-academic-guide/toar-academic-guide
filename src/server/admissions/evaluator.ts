@@ -3537,7 +3537,9 @@ function trackedMissingRuleResult(
     nextAction:
       hebrewStudentText(evidence?.nextAction) ??
       hebrewStudentText(entry.sourceTarget?.nextAction) ??
-      'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.',
+      (institution.id === 'ariel'
+        ? 'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.'
+        : 'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.'),
     evidenceItemId: evidence?.itemId,
     evidenceItemName: evidence?.itemName,
     missingData,

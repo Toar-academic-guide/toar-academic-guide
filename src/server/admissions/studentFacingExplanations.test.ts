@@ -122,10 +122,29 @@ describe('student-facing evaluator explanations', () => {
     const sourceTarget = admissionsSourceTargets.find(
       (target) => target.id === 'ariel-browser-required',
     )!;
-    useEntry({ capability: 'tracked_missing_rule', evidence: ariel, sourceTarget });
-    expect((await evaluate()).results[0].nextAction).toBe(
+    const program = programs.find((candidate) => candidate.id === 'ariel_engineering')!;
+    expect(program.linkedInstitutionIds).toEqual(['ariel']);
+    vi.spyOn(matrix, 'buildAdmissionsCapabilityMatrix').mockReturnValue([
+      { institutionId: 'ariel', capability: 'tracked_missing_rule', evidence: ariel, sourceTarget },
+    ]);
+    expect((await evaluate(program)).results[0].nextAction).toBe(
       'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.',
     );
+  });
+
+  it('uses the generic fallback for a non-Ariel tracked rule without Hebrew next actions', async () => {
+    useEntry({
+      capability: 'tracked_missing_rule',
+      evidence: { ...openEvidence, nextAction: 'Internal next action.' },
+      sourceTarget: {
+        ...admissionsSourceTargets.find((target) => target.id === 'ariel-browser-required')!,
+        nextAction: 'Internal registry next action.',
+      },
+    });
+    const result = (await evaluate()).results[0];
+    expect(result.linkedInstitutionId).toBe('open_university');
+    expect(result.nextAction).toBe('צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.');
+    expect(result.nextAction).not.toContain('אריאל');
   });
 
   it('retains Hebrew registry copy and can use it after an English evidence next action', async () => {
