@@ -1,7 +1,12 @@
 import plainItems from './__fixtures__/bagrut-pdf/synthetic-plain-text-items.json';
 import { resolveBagrutWizardSubject } from '@/utils/bagrutSubjectRecord';
-import { describe, expect, it } from 'vitest';
-import { parseBagrutTable, parseSimpleBagrutLines, type PositionedItem } from './bagrutPdf';
+import { describe, expect, it, vi } from 'vitest';
+import {
+  parseBagrutTable,
+  parseSimpleBagrutLines,
+  readBagrutPdfBytes,
+  type PositionedItem,
+} from './bagrutPdf';
 
 const item = (str: string, x: number, y = 500, width = 15): PositionedItem => ({
   str,
@@ -153,7 +158,8 @@ it('assigns simple-line units and grades by range regardless of numeric order', 
   ]);
 });
 
-it('keeps positional low-grade rules and excludes dates, hours and invalid numeric ranges', () => {
+it('flags ambiguous low grades and excludes dates, hours and invalid numeric ranges', () => {
+  // Approved test update, Jorje 2026-10-30
   expect(
     parseSimpleBagrutLines([
       'מתמטיקה 4 5',
@@ -165,8 +171,109 @@ it('keeps positional low-grade rules and excludes dates, hours and invalid numer
       'אנגלית 5 101',
     ]),
   ).toEqual([
-    { label: 'מתמטיקה', units: 4, grade: 5 },
-    { label: 'אנגלית', units: 4, grade: 5 },
+    { label: 'מתמטיקה', units: '', grade: '', unmatched: true },
+    { label: 'אנגלית', units: '', grade: '', unmatched: true },
     { label: 'כימיה', units: 5, grade: 0 },
   ]);
+});
+
+describe('plain PDF units/grade order', () => {
+  it('imports a grade-first document including a grade of 10', () => {
+    expect(parseSimpleBagrutLines(['מתמטיקה 88 4', 'אנגלית 95 5', 'היסטוריה 10 2'])).toEqual([
+      { label: 'מתמטיקה', units: 4, grade: 88 },
+      { label: 'אנגלית', units: 5, grade: 95 },
+      { label: 'היסטוריה', units: 2, grade: 10 },
+    ]);
+  });
+
+  it('keeps a units-first document including a grade of 10', () => {
+    expect(parseSimpleBagrutLines(['מתמטיקה 4 88', 'אנגלית 5 95', 'היסטוריה 2 10'])).toEqual([
+      { label: 'מתמטיקה', units: 4, grade: 88 },
+      { label: 'אנגלית', units: 5, grade: 95 },
+      { label: 'היסטוריה', units: 2, grade: 10 },
+    ]);
+  });
+
+  it.each(['כימיה 0 5', '5 0 כימיה'])('imports reversed grade zero from %s', (line) => {
+    expect(parseSimpleBagrutLines([line])).toEqual([{ label: 'כימיה', units: 5, grade: 0 }]);
+  });
+
+  it('flags ambiguous numbers when the document has no clear rows', () => {
+    expect(parseSimpleBagrutLines(['מתמטיקה 3 4'])).toEqual([
+      { label: 'מתמטיקה', units: '', grade: '', unmatched: true },
+    ]);
+  });
+
+  it('flags ambiguous numbers when clear rows disagree on column order', () => {
+    expect(parseSimpleBagrutLines(['מתמטיקה 88 4', 'אנגלית 5 95', 'היסטוריה 3 4'])).toEqual([
+      { label: 'מתמטיקה', units: 4, grade: 88 },
+      { label: 'אנגלית', units: 5, grade: 95 },
+      { label: 'היסטוריה', units: '', grade: '', unmatched: true },
+    ]);
+  });
+
+  it('drops a plain row with units above five', () => {
+    expect(parseSimpleBagrutLines(['אנגלית 6 90'])).toEqual([]);
+  });
+
+  const readPositionedPlainItems = async (items: PositionedItem[]) => {
+    const { PDFDocument } = await import('pdf-lib');
+    const doc = await PDFDocument.create();
+    doc.addPage();
+    const page = {
+      cleanup: vi.fn(),
+      getTextContent: async () => ({
+        items: items.map(({ str, x, y, width }) => ({
+          str,
+          transform: [1, 0, 0, 1, x, y],
+          width,
+        })),
+      }),
+    };
+    const getDocument = vi.fn(() => ({
+      promise: Promise.resolve({ numPages: 1, getPage: async () => page }),
+      destroy: vi.fn(),
+    }));
+    const ocr = vi.fn(async () => []);
+    const found = await readBagrutPdfBytes(
+      await doc.save(),
+      { getDocument } as unknown as Pick<typeof import('pdfjs-dist'), 'getDocument'>,
+      () => {},
+      ocr,
+    );
+    expect(ocr).not.toHaveBeenCalled();
+    return found;
+  };
+
+  it('learns grade-first order for ambiguous separate items through the real line builder', async () => {
+    const items = [
+      item('4', 270),
+      item('מתמטיקה', 523, 500, 65),
+      item('88', 355),
+      item('5', 270, 480),
+      item('אנגלית', 523, 480, 65),
+      item('95', 355, 480),
+      item('2', 270, 460),
+      item('היסטוריה', 523, 460, 65),
+      item('4', 355, 460),
+    ];
+    expect(await readPositionedPlainItems(items)).toEqual([
+      { label: 'מתמטיקה', units: 4, grade: 88 },
+      { label: 'אנגלית', units: 5, grade: 95 },
+      { label: 'היסטוריה', units: 2, grade: 4 },
+    ]);
+  });
+
+  it.each(['combined span', 'separate items'])(
+    'imports five units and grade ten from a single-row PDF with %s',
+    async (shape) => {
+      const numbers =
+        shape === 'combined span'
+          ? [item('10 5', 355, 500, 100)]
+          : [item('5', 270), item('10', 355)];
+      expect(await readPositionedPlainItems([...numbers, item('מתמטיקה', 523, 500, 65)])).toEqual([
+        { label: 'מתמטיקה', units: 5, grade: 10 },
+      ]);
+    },
+  );
 });

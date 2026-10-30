@@ -482,10 +482,13 @@ describe('JourneyExactGrades PDF imports', () => {
   const subjectInputs = () =>
     screen.getAllByLabelText(/^מקצוע /, { selector: 'input' }) as HTMLInputElement[];
   const upload = async (
-    subjects: { label: string; units: number; grade: number; unmatched?: boolean }[],
+    subjects: { label: string; units: number | ''; grade: number | ''; unmatched?: boolean }[],
   ) => {
     const { readBagrutPdf } = await import('@/lib/bagrutPdf');
-    vi.mocked(readBagrutPdf).mockResolvedValueOnce(subjects);
+    // Phase A fixtures exercise flagged values before the parser's type is widened.
+    vi.mocked(readBagrutPdf).mockResolvedValueOnce(
+      subjects as Awaited<ReturnType<typeof readBagrutPdf>>,
+    );
     fireEvent.change(screen.getByLabelText(/העלאת גיליון PDF/, { selector: 'input' }), {
       target: { files: [new File(['synthetic'], 'synthetic.pdf', { type: 'application/pdf' })] },
     });
@@ -612,6 +615,64 @@ describe('JourneyExactGrades PDF imports', () => {
       expect(screen.queryByText('נא לבדוק את שם המקצוע')).toBeNull();
     },
   );
+
+  it('requires completing flagged PDF numbers before continuing with both subjects', async () => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
+    await upload([
+      { label: 'מתמטיקה', units: 5, grade: 90 },
+      { label: 'היסטוריה', units: '', grade: '', unmatched: true },
+    ]);
+
+    expect(screen.getByRole('status').textContent).toBe('זוהה מקצוע אחד · 1 לא זוהה, נא לבדוק');
+    expect(subjectInputs().map((input) => input.value)).toEqual(['מתמטיקה', 'היסטוריה']);
+    expect(screen.getByLabelText('יחידות 2')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('ציון 2')).toHaveProperty('value', '');
+    confirmAndContinue();
+    expect(onComplete).not.toHaveBeenCalled();
+    // Exercise the existing submit validation even when native required fields block a click.
+    fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
+    expect(onComplete).not.toHaveBeenCalled();
+    expect(screen.getByRole('alert').textContent).toBe(
+      'יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.',
+    );
+
+    fireEvent.change(screen.getByLabelText('יחידות 2'), { target: { value: '2' } });
+    fireEvent.change(screen.getByLabelText('ציון 2'), { target: { value: '88' } });
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        subjects: [
+          { subjectId: 'history', units: 2, grade: 88, assessmentKind: 'exam' },
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ],
+      }),
+    );
+  });
+
+  it('preserves manually entered history numbers when the PDF flags the same subject', async () => {
+    const onComplete = vi.fn();
+    render(<JourneyExactGrades onComplete={onComplete} />);
+    enterManualSubject('היסטוריה', 2, 88);
+    await upload([
+      { label: 'מתמטיקה', units: 5, grade: 90 },
+      { label: 'היסטוריה', units: '', grade: '', unmatched: true },
+    ]);
+
+    expect(subjectInputs().map((input) => input.value)).toEqual(['היסטוריה', 'מתמטיקה']);
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '88');
+    confirmAndContinue();
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith(
+      expect.objectContaining({
+        subjects: [
+          { subjectId: 'history', units: 2, grade: 88, assessmentKind: 'exam' },
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+        ],
+      }),
+    );
+  });
 
   it('keeps entered math when a PDF contains only English and drops blank starters', async () => {
     render(<JourneyExactGrades onComplete={vi.fn()} />);
