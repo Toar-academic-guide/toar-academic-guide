@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
+import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT, ENQUIRY_PREP_COPY } from '@/lib/enquiries';
 import { StrictMode } from 'react';
 import { INSTITUTIONS } from '@/data/institutions';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -38,7 +38,7 @@ describe('EnquiryForm source page', () => {
     fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
       target: { value: '0501234567' },
     });
-    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_PREP_COPY.button })); // Approved copy update, Jorje/Amit 2026-10-30
     await screen.findByRole('status');
     return JSON.parse(send.mock.calls[0][1].body).sourcePath;
   }
@@ -392,7 +392,7 @@ describe('EnquiryForm', () => {
       fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'בדיקת MyWay' } }); // Approved test update, Jorje 2026-10-26
       fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } }); // Approved test update, Jorje 2026-10-26
       // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
-      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button })); // Approved test update, Jorje 2026-10-26
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_PREP_COPY.button })); // Approved copy update, Jorje/Amit 2026-10-30
       await screen.findByRole('alert');
       expect(capture.mock.calls[1]).toEqual([
         'enquiry_submit_failed',
@@ -407,6 +407,56 @@ describe('EnquiryForm', () => {
       expect(capture).toHaveBeenCalledTimes(2);
     },
   );
+});
+
+it.each(['enquiry_page', 'journey'])(
+  'uses the prep button while idle and sending on %s, keeping the default intro',
+  async (surface) => {
+    let releaseSend!: (response: Response) => void;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(
+        () =>
+          new Promise<Response>((resolve) => {
+            releaseSend = resolve;
+          }),
+      ),
+    );
+    try {
+      render(
+        <EnquiryForm
+          programId="psychometric-preparation"
+          institutionId=""
+          title="הכנה לפסיכומטרי"
+          surface={surface}
+        />,
+      );
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('רוצים תשובות ישר מהמוסד?');
+      expect(screen.queryByText('הציון שלכם בפסיכומטרי מתחיל בהכנה')).toBeNull();
+      const button = screen.getByRole('button', { name: 'שלחו וחברת הכנה תחזור אליכם' });
+      expect(screen.queryByText('שלחו, והמוסד יחזור אליכם')).toBeNull();
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+        target: { value: 'בדיקת MyWay' },
+      });
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+        target: { value: '0501234567' },
+      });
+      fireEvent.click(button);
+      expect(screen.getByRole('button', { name: 'שלחו וחברת הכנה תחזור אליכם' })).toBe(button);
+      expect(button.getAttribute('aria-busy')).toBe('true');
+      expect(screen.queryByText('שלחו, והמוסד יחזור אליכם')).toBeNull();
+      releaseSend(Response.json({ data: { received: true } }, { status: 201 }));
+      await screen.findByRole('heading', { name: ENQUIRY_COPY.successTitle });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
+it('keeps the institution submit button copy unchanged', () => {
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  expect(screen.getByRole('button', { name: 'שלחו, והמוסד יחזור אליכם' })).toBeTruthy();
+  expect(screen.queryByText('שלחו וחברת הכנה תחזור אליכם')).toBeNull();
 });
 
 it('pins all approved R7g state copy and the revised button in one place', () => {
