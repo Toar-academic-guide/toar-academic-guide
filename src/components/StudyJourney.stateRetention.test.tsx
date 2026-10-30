@@ -11,6 +11,8 @@ const state = vi.hoisted(() => ({
   programs: vi.fn(),
   institutions: vi.fn(),
   evaluate: vi.fn(),
+  updateProfile: vi.fn(),
+  savedProgramIds: [] as string[],
   scores: {} as AcademicScores,
   user: null as null | { id: string },
 }));
@@ -24,8 +26,8 @@ vi.mock('@/hooks/useUserProfile', () => ({
   useUserProfile: () => ({
     hydrated: true,
     initialProfileStatus: 'ready',
-    profile: { academicScores: state.scores },
-    updateProfile: vi.fn().mockResolvedValue(true),
+    profile: { academicScores: state.scores, savedProgramIds: state.savedProgramIds },
+    updateProfile: state.updateProfile,
   }),
 }));
 vi.mock('@/lib/catalogueClient', () => ({
@@ -157,12 +159,127 @@ beforeEach(async () => {
   StudyJourney = (await import('./StudyJourney')).default;
   state.scores = {};
   state.user = null;
+  state.savedProgramIds = [];
+  state.updateProfile.mockReset().mockResolvedValue(true);
   state.programs.mockReset().mockResolvedValue(programs);
   state.institutions.mockReset().mockResolvedValue(getStaticCatalogueInstitutions());
   state.evaluate.mockReset().mockResolvedValue({ reports: {}, failedDegreeIds: [] });
   window.history.replaceState(null, '', '/app/calculator');
   sessionStorage.clear();
   vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
+});
+
+describe('last submitted Bagrut path across reloads', () => {
+  const restores = (['guest', 'account'] as const).flatMap((identity) =>
+    (['review', 'saved'] as const).map((surface) => ({ identity, surface })),
+  );
+
+  it.each(restores)(
+    'uses subjects after quick 110, evaluation and reload for $identity on $surface, including saved retry',
+    async ({ identity, surface }) => {
+      state.user = identity === 'account' ? { id: 'test-account' } : null;
+      state.savedProgramIds = ['tau_cs'];
+      state.updateProfile.mockImplementation(async ({ academicScores }) => {
+        state.scores = structuredClone(academicScores);
+        return true;
+      });
+      seed();
+      const first = render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+      fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '110' } });
+      submit();
+      withoutPsy();
+      fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      expect(state.scores.bagrut).toEqual({ weightedAverage: 110 });
+      first.unmount();
+
+      window.history.replaceState(null, '', '/app/calculator');
+      const second = render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }));
+      await screen.findByLabelText('סוג תעודה');
+      fillNineSubjects();
+      submit();
+      withoutPsy();
+      expect(stored().scores.bagrut).toEqual({ subjectRecord: record });
+      second.unmount(); // Reload before saving: the profile still contains the old quick 110.
+
+      state.evaluate.mockClear();
+      if (surface === 'saved')
+        state.evaluate.mockResolvedValueOnce({ reports: {}, failedDegreeIds: ['tau_cs'] });
+      window.history.replaceState(null, '', '/app/calculator');
+      render(<StudyJourney initialStep={surface} />);
+      expect(stored().gradeMode).toBe('exact');
+      if (surface === 'review') {
+        const summary = within(screen.getByText('בגרות').closest('.journey-review > div')!);
+        expect(summary.getByText(/9/).textContent).not.toContain('110');
+        fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      }
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      if (surface === 'saved') {
+        fireEvent.click(await screen.findByRole('button', { name: 'לנסות שוב' }));
+        await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(2));
+      }
+      for (const [input] of state.evaluate.mock.calls) {
+        expect(input.bagrut).toBeUndefined();
+        expect(input.extraInputs?.bagrutSubjectRecord).toEqual(record);
+        expect(JSON.stringify(input)).not.toContain('110');
+      }
+    },
+  );
+
+  it.each(restores)(
+    'uses quick 95 after subjects, evaluation and reload for $identity on $surface, including saved retry',
+    async ({ identity, surface }) => {
+      state.user = identity === 'account' ? { id: 'test-account' } : null;
+      state.savedProgramIds = ['tau_cs'];
+      state.updateProfile.mockImplementation(async ({ academicScores }) => {
+        state.scores = structuredClone(academicScores);
+        return true;
+      });
+      seed();
+      const first = render(<StudyJourney initialStep="grades-exact" />);
+      await screen.findByLabelText('סוג תעודה');
+      fillNineSubjects();
+      submit();
+      withoutPsy();
+      fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      expect(state.scores.bagrut).toEqual({ subjectRecord: record });
+      first.unmount();
+
+      window.history.replaceState(null, '', '/app/calculator');
+      const second = render(<StudyJourney initialStep="grade-mode" />);
+      fireEvent.click(screen.getByRole('button', { name: /יש לי ממוצע בגרות/ }));
+      fireEvent.change(screen.getByLabelText('ממוצע בגרות'), { target: { value: '95' } });
+      submit();
+      withoutPsy();
+      expect(stored().scores.bagrut).toEqual({ weightedAverage: 95 });
+      second.unmount(); // The saved profile still contains subjects from the first run.
+
+      state.evaluate.mockClear();
+      if (surface === 'saved')
+        state.evaluate.mockResolvedValueOnce({ reports: {}, failedDegreeIds: ['tau_cs'] });
+      window.history.replaceState(null, '', '/app/calculator');
+      render(<StudyJourney initialStep={surface} />);
+      expect(stored().gradeMode).toBe('quick');
+      if (surface === 'review') {
+        const summary = within(screen.getByText('בגרות').closest('.journey-review > div')!);
+        expect(summary.getByText(/95/).textContent).not.toContain('מקצועות');
+        fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      }
+      await waitFor(() => expect(state.evaluate).toHaveBeenCalled());
+      if (surface === 'saved') {
+        fireEvent.click(await screen.findByRole('button', { name: 'לנסות שוב' }));
+        await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(2));
+      }
+      for (const [input] of state.evaluate.mock.calls) {
+        expect(input.bagrut).toBe(95);
+        expect(input.extraInputs?.bagrutSubjectRecord).toBeUndefined();
+        expect(JSON.stringify(input)).not.toContain('subjectRecord');
+      }
+    },
+  );
 });
 
 describe('summary Bagrut editing and exclusive submissions', () => {
