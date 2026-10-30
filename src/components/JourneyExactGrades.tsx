@@ -197,11 +197,14 @@ export default function JourneyExactGrades({
                 for (const row of found) {
                   const key = subjectIdForWizardLabel(normalizeBagrutPdfSubject(row.label));
                   const previous = merged.get(key);
+                  const flagged = row.unmatched && row.units === '' && row.grade === '';
+                  if (flagged && previous) continue;
                   merged.set(key, {
                     label: row.label,
                     units: row.units,
                     grade: row.grade,
                     assessmentKind: previous?.assessmentKind ?? 'exam',
+                    ...(flagged ? { edited: true } : {}),
                   });
                 }
                 return [...merged.values()];
