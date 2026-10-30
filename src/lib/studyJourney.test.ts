@@ -6,6 +6,7 @@ import { catalogueAdmissionRequirements } from './catalogueDisplayText';
 import { describe, expect, it, vi } from 'vitest';
 import {
   toggleLocation,
+  bagrutScoresForMode,
   resultLabel,
   resultExplanation,
   showsOfficialNoCalculationNote,
@@ -515,3 +516,51 @@ it.each([
     expect(resultExplanation(apiResult, programId)).toBe(generic);
   },
 );
+
+describe('bagrutScoresForMode', () => {
+  const subjectRecord = {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+  };
+  const scores = {
+    bagrut: { weightedAverage: 110, subjectRecord },
+    psychometric: { overall: 650 },
+  };
+  it.each(['quick', 'exact', 'none'] as const)(
+    'aligns a stale profile marker with the newly submitted %s projection',
+    (mode) => {
+      const saved = { ...scores, admissions: { activeBagrutPath: 'quick' as const } };
+      const result = bagrutScoresForMode(saved, mode);
+      expect(result.admissions?.activeBagrutPath).toBe(mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(saved.admissions.activeBagrutPath).toBe('quick');
+    },
+  );
+  it.each(['quick', 'exact', 'none'] as const)(
+    'selects only the %s path without mutating scores',
+    (mode) => {
+      const result = bagrutScoresForMode(scores, mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(result.psychometric).toBe(scores.psychometric);
+      expect(scores.bagrut).toEqual({ weightedAverage: 110, subjectRecord });
+    },
+  );
+  it('preserves legacy scores with no chosen mode and tolerates missing bagrut', () => {
+    expect(bagrutScoresForMode(scores, undefined)).toBe(scores);
+    expect(bagrutScoresForMode({}, 'exact').bagrut).toBeUndefined();
+    expect(bagrutScoresForMode({}, 'quick').bagrut).toBeUndefined();
+  });
+});

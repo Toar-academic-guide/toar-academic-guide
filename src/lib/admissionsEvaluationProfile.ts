@@ -7,6 +7,20 @@ import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { BGU_SOCIAL_SCIENCE_PROFILE_KEYS } from './bguSocialScienceInputs';
 import { bagrutExamSubjects, overallBagrutAverage } from './bagrutSubjectRecord';
 
+function activeBagrut(scores: AcademicScores | undefined): AcademicScores['bagrut'] {
+  const bagrut = scores?.bagrut;
+  switch (scores?.admissions?.activeBagrutPath) {
+    case 'quick':
+      return { weightedAverage: bagrut?.weightedAverage };
+    case 'exact':
+      return { subjectRecord: bagrut?.subjectRecord };
+    case 'none':
+      return undefined;
+    default:
+      return bagrut;
+  }
+}
+
 /**
  * Converts the structured academic profile into the explicit input contract
  * used by admissions evaluators. Unknown Bagrut subjects are deliberately
@@ -15,7 +29,7 @@ import { bagrutExamSubjects, overallBagrutAverage } from './bagrutSubjectRecord'
 export function admissionsExtraInputsFromAcademicScores(
   academicScores: AcademicScores | undefined,
 ): AdmissionsExtraInputs | undefined {
-  const bagrutSubjectRecord = academicScores?.bagrut?.subjectRecord;
+  const bagrutSubjectRecord = activeBagrut(academicScores)?.subjectRecord;
   const subjectsById = new Map(
     bagrutExamSubjects(bagrutSubjectRecord).map((subject) => [subject.subjectId, subject]),
   );
@@ -101,5 +115,6 @@ export function admissionsExtraInputsFromAcademicScores(
 }
 
 export function academicBagrutAverage(scores: AcademicScores | undefined): number | undefined {
-  return scores?.bagrut?.weightedAverage ?? overallBagrutAverage(scores?.bagrut?.subjectRecord);
+  const bagrut = activeBagrut(scores);
+  return bagrut?.weightedAverage ?? overallBagrutAverage(bagrut?.subjectRecord);
 }
