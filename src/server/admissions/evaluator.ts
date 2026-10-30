@@ -77,6 +77,7 @@ import {
   exactSourceIdsForProgram,
   loadFreshnessStatesBySourceIds,
   type AdmissionsCapabilityEntry,
+  type FreshnessStatesLoadResult,
 } from './capabilityMatrix';
 import {
   evaluateHaifaProgrammePolicy,
@@ -113,7 +114,8 @@ import {
   evaluateBguComputerScienceGates,
   BGU_COMPUTER_SCIENCE_QUANTITATIVE_POLICY,
 } from './bguComputerSciencePolicy';
-import { withBoundedOfficialResponse } from '@/server/ingestion/boundedOfficialFetch';
+import { createSourceResponseFetcher } from '@/server/cache/sourceResponseCache';
+import type { EvaluationSourceContext } from './evaluationSources';
 import {
   isBguEngineeringProgram,
   resolveBguEngineeringInputs,
@@ -134,13 +136,37 @@ type AdmissionsEvaluationInput = AdmissionsEvaluationRequest & {
 };
 
 const MAX_CONCURRENT_EXACT_SOURCE_CALLS = 2;
-const OFFICIAL_SOURCE_TIMEOUT_MS = 5000;
 // Missing published conditions cannot be replaced by legacy claims of open admission.
 const incompleteRequirements = new Map(
   catalogueContentRepair.requirements
     .filter((row) => row.coverage === 'incomplete_published_requirements')
     .map((row) => [`${row.programId}:${row.institutionId}`, row]),
 );
+
+function evaluationSourceSelection(
+  program: CatalogueProgram,
+  extraInputs: AdmissionsEvaluationRequest['extraInputs'],
+) {
+  const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
+  const institutionPrograms = program.linkedInstitutionIds.map((institutionId) => ({
+    ...program,
+    id: program.id === 'medicine' ? canonicalProgramId(program.id, institutionId) : program.id,
+    linkedInstitutionIds: [institutionId],
+  }));
+  const exactSourceIds = institutionPrograms
+    .flatMap((targetProgram) => exactSourceIdsForProgram(targetProgram, extraInputs))
+    .filter((sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId);
+
+  return { institutionPrograms, exactSourceIds };
+}
+
+export function exactSourceIdsForEvaluation(
+  program: CatalogueProgram,
+  input: AdmissionsEvaluationRequest,
+): string[] {
+  return evaluationSourceSelection(program, normalizeEvaluationInputs(input).input.extraInputs)
+    .exactSourceIds;
+}
 
 export async function evaluateAdmissionsForProgram(args: {
   input: AdmissionsEvaluationRequest;
@@ -149,6 +175,8 @@ export async function evaluateAdmissionsForProgram(args: {
   fetcher?: typeof fetch;
   now?: Date;
   freshnessStatesBySourceId?: Map<string, SourceFreshnessStateRow>;
+  freshnessLoad?: FreshnessStatesLoadResult;
+  sourceContext?: EvaluationSourceContext;
 }): Promise<AdmissionsEvaluationReport> {
   const {
     input,
@@ -161,21 +189,14 @@ export async function evaluateAdmissionsForProgram(args: {
 
   const normalized = normalizeEvaluationInputs(input);
   const evaluationInput = normalized.input;
-  const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
-  const institutionPrograms = program.linkedInstitutionIds.map((institutionId) => ({
-    ...program,
-    id: program.id === 'medicine' ? canonicalProgramId(program.id, institutionId) : program.id,
-    linkedInstitutionIds: [institutionId],
-  }));
-  const exactSourceIds = institutionPrograms
-    .flatMap((targetProgram) =>
-      exactSourceIdsForProgram(targetProgram, evaluationInput.extraInputs),
-    )
-    .filter((sourceId) => sourceId !== codeReviewedWinter?.contract.source.targetId);
+  const { institutionPrograms, exactSourceIds } = evaluationSourceSelection(
+    program,
+    evaluationInput.extraInputs,
+  );
 
   const freshnessLoad = suppliedFreshnessStates
     ? { status: 'loaded' as const, states: suppliedFreshnessStates }
-    : await loadFreshnessStatesBySourceIds(exactSourceIds);
+    : (args.freshnessLoad ?? (await loadFreshnessStatesBySourceIds(exactSourceIds)));
   const capabilityEntries = institutionPrograms.flatMap((targetProgram) =>
     buildAdmissionsCapabilityMatrix({
       program: targetProgram,
@@ -201,7 +222,9 @@ export async function evaluateAdmissionsForProgram(args: {
     program,
     institutions,
     capabilityEntries,
-    fetcher,
+    fetcher: fetcher
+      ? (args.sourceContext?.forFetcher(fetcher) ?? createSourceResponseFetcher(fetcher))
+      : (args.sourceContext?.fetcher ?? createSourceResponseFetcher(fetch)),
     now,
   });
 
@@ -730,9 +753,7 @@ async function evaluateExactScores(args: {
 }): Promise<AdmissionsEvaluationResult> {
   const { input: requestedInput, program, institution, exactTarget, fetcher, now } = args;
 
-  const timedFetcher = withBoundedOfficialResponse(fetcher ?? fetch, {
-    timeoutMs: OFFICIAL_SOURCE_TIMEOUT_MS,
-  });
+  const timedFetcher = fetcher ?? fetch;
 
   try {
     if (exactTarget.sourceTarget.adapterId === 'bgu' && isBguEngineeringProgram(program.id)) {
