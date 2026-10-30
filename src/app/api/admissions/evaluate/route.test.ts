@@ -23,6 +23,7 @@ vi.mock('@/server/catalogue/queries', () => ({
 
 vi.mock('@/server/admissions/evaluator', () => ({
   evaluateAdmissionsForProgram: hoistedMocks.evaluateAdmissionsForProgram,
+  exactSourceIdsForEvaluation: () => [],
 }));
 
 vi.mock('server-only', () => ({}));
@@ -89,6 +90,8 @@ describe('admissions evaluate route', () => {
           expect(report.results[0]).not.toHaveProperty(key);
         }
         expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+          sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
           input: { degreeId: 'haifa_engineering', ...scores },
           program,
           institutions: [institution],
@@ -125,6 +128,8 @@ describe('admissions evaluate route', () => {
     for (const body of [{ degreeId: 'haifa_engineering' }, { degreeIds: ['haifa_engineering'] }]) {
       expect((await batchRequest(body)).status).toBe(200);
       expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+        freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+        sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
         input: { degreeId: 'haifa_engineering' },
         program,
         institutions: [institution],
@@ -144,6 +149,8 @@ describe('admissions evaluate route', () => {
       for (const body of [{ degreeId: aliasId }, { degreeIds: [aliasId] }]) {
         expect((await batchRequest(body)).status).toBe(200);
         expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+          sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
           input: { degreeId: canonicalId },
           program,
           institutions: expect.any(Array),

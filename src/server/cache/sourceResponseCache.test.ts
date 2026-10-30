@@ -7,12 +7,20 @@ const rules = 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_l
 const submit = 'https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_SubmitSekem';
 
 describe('student evaluation source response cache', () => {
-  beforeEach(() => { resetSourceResponseCache(); vi.useFakeTimers(); });
+  beforeEach(() => {
+    resetSourceResponseCache();
+    vi.useFakeTimers();
+  });
   afterEach(() => vi.useRealTimers());
 
   it('shares in-flight bytes and independent Response bodies across programmes and requests for five minutes', async () => {
     let resolve!: (response: Response) => void;
-    const fetcher = vi.fn<typeof fetch>(() => new Promise((done) => { resolve = done; }));
+    const fetcher = vi.fn<typeof fetch>(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
     const firstRequest = createSourceResponseFetcher(fetcher);
     const a = firstRequest(huji);
     const b = firstRequest(huji);
@@ -20,7 +28,10 @@ describe('student evaluation source response cache', () => {
     expect(fetcher).toHaveBeenCalledTimes(1);
     resolve(new Response('official bytes', { headers: { etag: 'source-version' } }));
     const responses = await Promise.all([a, b]);
-    expect(await Promise.all(responses.map((response) => response.text()))).toEqual(['official bytes', 'official bytes']);
+    expect(await Promise.all(responses.map((response) => response.text()))).toEqual([
+      'official bytes',
+      'official bytes',
+    ]);
     expect(responses[0].headers.get('etag')).toBe('source-version');
     expect(await (await createSourceResponseFetcher(fetcher)(huji)).text()).toBe('official bytes');
     expect(fetcher).toHaveBeenCalledTimes(1);
@@ -31,7 +42,11 @@ describe('student evaluation source response cache', () => {
   });
 
   it('never caches HTTP failures or network errors', async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response('down', { status: 500 })).mockRejectedValueOnce(new Error('offline')).mockImplementation(async () => new Response('ok'));
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response('down', { status: 500 }))
+      .mockRejectedValueOnce(new Error('offline'))
+      .mockImplementation(async () => new Response('ok'));
     const cached = createSourceResponseFetcher(fetcher);
     expect((await cached(huji)).status).toBe(500);
     await expect(cached(huji)).rejects.toThrow('offline');
@@ -40,7 +55,10 @@ describe('student evaluation source response cache', () => {
   });
 
   it('evicts a timed-out shared loader and retries', async () => {
-    const fetcher = vi.fn<typeof fetch>().mockImplementationOnce(() => new Promise(() => {})).mockImplementation(async () => new Response('retry'));
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockImplementationOnce(() => new Promise(() => {}))
+      .mockImplementation(async () => new Response('retry'));
     const cached = createSourceResponseFetcher(fetcher);
     const first = expect(cached(huji)).rejects.toThrow(/timed out/i);
     await vi.advanceTimersByTimeAsync(5001);
@@ -51,7 +69,12 @@ describe('student evaluation source response cache', () => {
 
   it('one caller abort does not kill another caller or its shared loader', async () => {
     let resolve!: (response: Response) => void;
-    const fetcher = vi.fn<typeof fetch>(() => new Promise((done) => { resolve = done; }));
+    const fetcher = vi.fn<typeof fetch>(
+      () =>
+        new Promise((done) => {
+          resolve = done;
+        }),
+    );
     const cached = createSourceResponseFetcher(fetcher);
     const controller = new AbortController();
     const aborted = expect(cached(huji, { signal: controller.signal })).rejects.toThrow();
@@ -66,7 +89,12 @@ describe('student evaluation source response cache', () => {
   });
 
   it('bounds cached response bodies and retries after oversized responses', async () => {
-    const fetcher = vi.fn<typeof fetch>().mockResolvedValueOnce(new Response('x', { headers: { 'content-length': String(2 * 1024 * 1024 + 1) } })).mockImplementation(async () => new Response('ok'));
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(
+        new Response('x', { headers: { 'content-length': String(2 * 1024 * 1024 + 1) } }),
+      )
+      .mockImplementation(async () => new Response('ok'));
     const cached = createSourceResponseFetcher(fetcher);
     await expect(cached(huji)).rejects.toThrow(/byte limit/);
     expect(await (await cached(huji)).text()).toBe('ok');
@@ -76,11 +104,18 @@ describe('student evaluation source response cache', () => {
   it('never caches score submissions, unknown endpoints, or applicant query parameters', async () => {
     const fetcher = vi.fn<typeof fetch>().mockImplementation(async () => new Response('ok'));
     const cached = createSourceResponseFetcher(fetcher);
-    for (const [url, init] of [[submit, { method: 'POST', body: 'score=synthetic' }], [rules + '&psychometric=synthetic', undefined], [huji + '?applicant=synthetic', undefined], ['https://unknown.example/rules', undefined]] as const) {
-      await cached(url, init); await cached(url, init);
+    for (const [url, init] of [
+      [submit, { method: 'POST', body: 'score=synthetic' }],
+      [rules + '&psychometric=synthetic', undefined],
+      [huji + '?applicant=synthetic', undefined],
+      ['https://unknown.example/rules', undefined],
+    ] as const) {
+      await cached(url, init);
+      await cached(url, init);
     }
     expect(fetcher).toHaveBeenCalledTimes(8);
-    await cached(rules); await cached(rules);
+    await cached(rules);
+    await cached(rules);
     expect(fetcher).toHaveBeenCalledTimes(9);
   });
 
@@ -89,7 +124,12 @@ describe('student evaluation source response cache', () => {
     await createSourceResponseFetcher(fetcher)(huji);
     const other = vi.fn<typeof fetch>().mockImplementation(async () => new Response('other'));
     expect(await (await createSourceResponseFetcher(other)(huji)).text()).toBe('other');
-    for (let i = 0; i < 2; i++) await runHujiAdmissionsProof({ fetcher, applicant: { bagrutAverage: 105, psychometric: 640 }, program: { id: 'huji_cs', name: 'CS', externalId: '521-3010' } });
+    for (let i = 0; i < 2; i++)
+      await runHujiAdmissionsProof({
+        fetcher,
+        applicant: { bagrutAverage: 105, psychometric: 640 },
+        program: { id: 'huji_cs', name: 'CS', externalId: '521-3010' },
+      });
     expect(fetcher).toHaveBeenCalledTimes(3);
   });
 });

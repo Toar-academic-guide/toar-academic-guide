@@ -19,16 +19,6 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: `${TITLE} | MyWay`, description: DESCRIPTION },
 };
 
-export default async function CalculatorPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ program?: string | string[] }>;
-}) {
-  const { program } = await searchParams;
-  return (
-    <StudyJourney
-      initialStep="subjects"
-      initialProgramId={typeof program === 'string' ? program : undefined}
-    />
-  );
+export default function CalculatorPage() {
+  return <StudyJourney initialStep="subjects" />;
 }

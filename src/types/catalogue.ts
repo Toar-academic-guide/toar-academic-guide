@@ -4,7 +4,7 @@ import type { FormulaType } from '@/types';
 
 export type CatalogueSourceMode = 'auto' | 'database' | 'static';
 export type CatalogueSource = 'database' | 'static';
-export type CatalogueSnapshotCacheStatus = 'hit' | 'miss';
+export type CatalogueSnapshotCacheStatus = 'hit' | 'stale' | 'miss';
 
 export interface CatalogueCalculatorConfig {
   formulaType: FormulaType;

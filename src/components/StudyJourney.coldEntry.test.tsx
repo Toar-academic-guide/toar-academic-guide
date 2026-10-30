@@ -1,13 +1,13 @@
 // @vitest-environment jsdom
-import { fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
-import { studyFields } from '@/lib/studyJourney';
 
 const state = vi.hoisted(() => ({
   programs: vi.fn(),
   institutions: vi.fn(),
-  evaluate: vi.fn(), preload: vi.fn(),
+  evaluate: vi.fn(),
+  preload: vi.fn(),
 }));
 vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
 vi.mock('next/navigation', () => ({
@@ -53,20 +53,31 @@ describe('calculator cold entry', () => {
   it('selects the URL programme exactly like an explicit initialProgramId', async () => {
     window.history.replaceState(null, '', '/app/calculator?program=huji_cs');
     render(<StudyJourney initialStep="subjects" />);
-    await waitFor(() => expect(JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!)).toMatchObject({ fields: ['cs'], selectedRowId: 'huji_cs:huji' }));
+    await waitFor(() =>
+      expect(JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!)).toMatchObject({
+        fields: ['cs'],
+        selectedRowId: 'huji_cs:huji',
+      }),
+    );
     expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false);
   });
 
-  it.each(['', '?program=huji_cs&program=tau_cs'])('preserves the empty chooser for absent/array programme queries: %s', async (query) => {
-    window.history.replaceState(null, '', '/app/calculator' + query);
-    render(<StudyJourney initialStep="subjects" />);
-    await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
-    expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', true);
-  });
+  it.each(['', '?program=huji_cs&program=tau_cs'])(
+    'preserves the empty chooser for absent/array programme queries: %s',
+    async (query) => {
+      window.history.replaceState(null, '', '/app/calculator' + query);
+      render(<StudyJourney initialStep="subjects" />);
+      await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
+      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', true);
+    },
+  );
 
   it('preloads the exact-grade chunk before effects for subjects entry', async () => {
     let preloadedAtCatalogueLoad = false;
-    state.programs.mockImplementationOnce(async () => { preloadedAtCatalogueLoad = state.preload.mock.calls.length > 0; return programs; });
+    state.programs.mockImplementationOnce(async () => {
+      preloadedAtCatalogueLoad = state.preload.mock.calls.length > 0;
+      return programs;
+    });
     render(<StudyJourney initialStep="subjects" />);
     expect(state.preload).toHaveBeenCalled();
     expect(preloadedAtCatalogueLoad).toBe(true);

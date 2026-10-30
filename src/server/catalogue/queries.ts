@@ -1,4 +1,5 @@
 import 'server-only';
+import { after } from 'next/server';
 
 import { withCanonicalInstitutionAliases } from '@/data/institutionAliases';
 
@@ -47,6 +48,7 @@ import { serializeInstitutionRow, serializeProgramRow } from './serializers';
 export interface CatalogueQueryResult<T> {
   data: T;
   meta: ApiMetaPayload;
+  cacheable?: boolean;
 }
 
 export interface CatalogueReadinessSnapshot {
@@ -91,16 +93,19 @@ interface CatalogueSourceResolution {
 
 interface DatabaseCatalogueSnapshotCache {
   expiresAt: number;
+  loadedAt: number;
   inFlight: Promise<DatabaseSnapshotLoadResult> | null;
   snapshot: DatabaseCatalogueSnapshot | null;
 }
 
-const DATABASE_CATALOGUE_SNAPSHOT_TTL_MS = 60_000;
+const DATABASE_CATALOGUE_SNAPSHOT_TTL_MS = 5 * 60_000;
+const DATABASE_CATALOGUE_SNAPSHOT_MAX_AGE_MS = 30 * 60_000;
 
 // This cache is intentionally process-local. It reduces duplicate snapshot
 // rebuilds on one server instance, but it is not a distributed freshness layer.
 const databaseCatalogueSnapshotCache: DatabaseCatalogueSnapshotCache = {
   expiresAt: 0,
+  loadedAt: 0,
   inFlight: null,
   snapshot: null,
 };
@@ -121,6 +126,7 @@ function createMeta(
 
 export function resetDatabaseCatalogueSnapshotCache() {
   databaseCatalogueSnapshotCache.expiresAt = 0;
+  databaseCatalogueSnapshotCache.loadedAt = 0;
   databaseCatalogueSnapshotCache.inFlight = null;
   databaseCatalogueSnapshotCache.snapshot = null;
 }
@@ -307,28 +313,39 @@ async function loadDatabaseCatalogueSnapshotWithCache(): Promise<DatabaseSnapsho
     };
   }
 
-  if (databaseCatalogueSnapshotCache.inFlight) {
-    return databaseCatalogueSnapshotCache.inFlight;
+  const staleSnapshot = databaseCatalogueSnapshotCache.snapshot;
+  const canServeStale =
+    staleSnapshot &&
+    now - databaseCatalogueSnapshotCache.loadedAt < DATABASE_CATALOGUE_SNAPSHOT_MAX_AGE_MS;
+  let refreshPromise = databaseCatalogueSnapshotCache.inFlight;
+  if (!refreshPromise) {
+    refreshPromise = (async () => {
+      const snapshot = await loadDatabaseCatalogueSnapshot();
+      const readiness = evaluateCatalogueReadiness(snapshot);
+      // Never overwrite the last good DB snapshot with degraded/fallback data.
+      if (readiness.isReady) {
+        databaseCatalogueSnapshotCache.snapshot = snapshot;
+        databaseCatalogueSnapshotCache.loadedAt = Date.now();
+        databaseCatalogueSnapshotCache.expiresAt = Date.now() + DATABASE_CATALOGUE_SNAPSHOT_TTL_MS;
+      } else if (canServeStale) {
+        throw buildReadinessError(getCatalogueSourceMode(), readiness);
+      }
+      return { cacheStatus: 'miss' as const, snapshot };
+    })().finally(() => {
+      databaseCatalogueSnapshotCache.inFlight = null;
+    });
+    databaseCatalogueSnapshotCache.inFlight = refreshPromise;
+    if (canServeStale) {
+      const background = refreshPromise.catch(() => undefined);
+      try {
+        after(() => background.then(() => {}));
+      } catch {
+        /* Scripts/tests have no request scope; the refresh is already running. */
+      }
+    }
   }
-
-  const refreshPromise = (async () => {
-    const snapshot = await loadDatabaseCatalogueSnapshot();
-    databaseCatalogueSnapshotCache.snapshot = snapshot;
-    databaseCatalogueSnapshotCache.expiresAt = Date.now() + DATABASE_CATALOGUE_SNAPSHOT_TTL_MS;
-
-    return {
-      cacheStatus: 'miss' as const,
-      snapshot,
-    };
-  })();
-
-  databaseCatalogueSnapshotCache.inFlight = refreshPromise;
-
-  try {
-    return await refreshPromise;
-  } finally {
-    databaseCatalogueSnapshotCache.inFlight = null;
-  }
+  if (canServeStale) return { cacheStatus: 'stale', snapshot: staleSnapshot };
+  return refreshPromise;
 }
 
 async function loadDatabaseCatalogueOrThrow(
@@ -521,9 +538,9 @@ export async function listCataloguePrograms(options?: {
     meta: resolution.meta,
   };
 
-  return options?.includeBatchCCodeFallback
-    ? { ...result, data: withBatchCCatalogueFallback(result.data) }
-    : result;
+  if (!options?.includeBatchCCodeFallback) return result;
+  const data = withBatchCCatalogueFallback(result.data);
+  return { ...result, data, ...(data.length > result.data.length ? { cacheable: false } : {}) };
 }
 
 export async function getRequirementIdsForProgram(programId: string): Promise<string[]> {
