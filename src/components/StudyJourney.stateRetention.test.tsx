@@ -841,7 +841,7 @@ describe('unsubmitted per-subject work survives refresh', () => {
     expect(buffer().reviewed).toBe(true);
     // Approved test update, Jorje 2026-10-30
     submit();
-    expect(stored().scores.bagrut?.subjectRecord?.complete).toBe(true);
+    expect(stored().scores.bagrut?.subjectRecord).toMatchObject({ complete: true });
   });
 
   it.each([
