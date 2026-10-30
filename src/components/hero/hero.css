@@ -4,7 +4,7 @@
   overflow: clip;
   min-height: 720px;
   background: #fff;
-  font-family: var(--font-heebo);
+  font-family: var(--font-sans);
   color: #172445;
   text-align: center;
   display: flex;
