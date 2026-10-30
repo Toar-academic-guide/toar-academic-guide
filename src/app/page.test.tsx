@@ -43,7 +43,9 @@ describe('Home catalogue cutover', () => {
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(screen.getByText('לא הצלחנו לטעון את המסלולים. נסו שוב.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'פיזיותרפיה' })).toBeNull();
-    expect((screen.getByRole('button', { name: 'המשך' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'המשיכו' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
   });
 
   it('shows one primary hero link directly to the calculator with a decorative spark', () => {
@@ -68,10 +70,10 @@ describe('Home catalogue cutover', () => {
       'בוחרים מה ללמוד,איפה ללמודואיך להתקבל.',
     );
     expect(hero.querySelector('p.journey-hero-intro')?.textContent).toBe(
-      'הדרך ללימודים שלך מתחילה כאן.',
+      'הדרך ללימודים שלכם מתחילה כאן.',
     );
     expect(hero.querySelector('p:not(.journey-hero-intro)')?.textContent).toBe(
-      'בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?',
+      'בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
     );
     expect(hero.querySelector('small')?.textContent).toBe(
       'אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.',

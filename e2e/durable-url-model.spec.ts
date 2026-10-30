@@ -27,7 +27,7 @@ test.describe('durable URL model', () => {
     await page.getByLabel('שעות פיזיקה בתעודת הנדסאי').fill('90');
     await page.getByLabel('ציון פיזיקה בתעודת הנדסאי', { exact: true }).fill('85');
     await page.getByLabel('כל נתוני ההנדסה הרלוונטיים הוזנו').check();
-    await page.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).click();
+    await page.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }).click();
     await expect(page).toHaveURL(/\/app\/assessment$/);
     await page.goto('/app/profile');
     await page.reload();

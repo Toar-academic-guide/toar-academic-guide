@@ -175,12 +175,53 @@ async function installMocks(
 
 async function fillProfile(page: Page) {
   for (let row = 1; row <= 4; row++) {
-    await page.getByRole('spinbutton', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
   }
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('700');
   await page.getByLabel('מילולי', { exact: true }).fill('130');
   await page.getByLabel('כמותי', { exact: true }).fill('140');
   await page.locator('#psychometric-english').fill('135');
+}
+
+async function restoreInvalidUnits(page: Page, rowIndex: number, units: number) {
+  await page.addInitScript(
+    ({ rowIndex, units }) => {
+      sessionStorage.setItem(
+        'myway:sekhem-calculator:v1',
+        JSON.stringify({
+          version: 1,
+          rows: [
+            ['מתמטיקה', 5, 92],
+            ['אנגלית', 5, 95],
+            ['הבעה עברית', 2, 88],
+            ['תנ״ך', 2, 85],
+            ['ספרות', 2, 90],
+            ['היסטוריה / תע״י', 2, 87],
+            ['אזרחות', 2, 93],
+            ['פיזיקה', 5, 90],
+            ['מדעי המחשב', 5, 94],
+          ].map(([label, storedUnits, grade], index) => ({
+            label,
+            units: index === rowIndex ? units : storedUnits,
+            grade,
+            assessmentKind: 'exam',
+          })),
+          sector: 'יהודי',
+          certificate: 'internal',
+          psychometric: '700',
+          verbal: '130',
+          quantitative: '140',
+          english: '135',
+          programId: '',
+          requiredKeys: [],
+          haifaValues: {},
+          reports: [],
+          failedIds: [],
+        }),
+      );
+    },
+    { rowIndex, units },
+  );
 }
 
 async function assertAlignedFields(root: Locator) {
@@ -294,7 +335,11 @@ for (const width of [1280, 390]) {
       });
       expect(batch.extraInputs?.bagrutSubjectRecord?.subjects).toHaveLength(4);
       for (const subject of batch.extraInputs!.bagrutSubjectRecord!.subjects) {
-        expect(subject).toMatchObject({ units: 5, grade: 90 });
+        // Approved test update, Jorje 2026-10-30
+        expect(subject).toMatchObject({
+          units: ['mathematics', 'english'].includes(subject.subjectId) ? 3 : 2,
+          grade: 90,
+        });
       }
       assertNoCompositePayload(batch);
     }
@@ -885,8 +930,12 @@ for (const width of [1280, 390]) {
       ['ציון 1', '101', 'ציון בין 0 ל-100'],
       ['יחידות 1', '0', 'יחידות בין 1 ל-5'],
     ]) {
+      if (label.startsWith('יחידות')) {
+        await restoreInvalidUnits(page, 0, Number(value));
+        await page.goto('/sekhem-calculator');
+      }
       const input = page.getByLabel(label, { exact: true });
-      await input.fill(value);
+      if (label.startsWith('ציון')) await input.fill(value);
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
       await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
@@ -903,7 +952,8 @@ for (const width of [1280, 390]) {
         body: await page.screenshot(),
         contentType: 'image/png',
       });
-      await input.fill(label.startsWith('ציון') ? '100' : '5');
+      if (label.startsWith('ציון')) await input.fill('100');
+      else await input.selectOption('5');
     }
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
@@ -933,17 +983,18 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     const mocks = await installMocks(page, baseURL);
     await page.goto('/app/calculator?program=tau_cs');
-    const next = page.getByRole('button', { name: 'המשך', exact: true });
+    const next = page.getByRole('button', { name: 'המשיכו', exact: true });
     await next.click();
     await next.click();
     await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
     await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
     const units = page.getByLabel('יחידות 1', { exact: true });
     const grade = page.getByLabel('ציון 1', { exact: true });
-    await expect(units).toHaveValue('');
+    // Approved test update, Jorje 2026-10-30
+    await expect(units).toHaveValue('2');
     await expect(grade).toHaveValue('');
     await assertAlignedFields(page.locator('.journey-grade-table'));
-    await units.fill('5');
+    await units.selectOption('5');
     await grade.fill('90');
     await expect(units).toHaveValue('5');
     await expect(grade).toHaveValue('90');
@@ -973,10 +1024,12 @@ for (const width of [1280, 390]) {
     }) => {
       await page.setViewportSize({ width, height: 900 });
       const mocks = await installMocks(page, baseURL);
+      if (field === 'units') await restoreInvalidUnits(page, 0, Number(value));
       await page.goto('/sekhem-calculator');
-      await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+      if (field === 'grade')
+        await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
       const input = page.getByLabel(label, { exact: true });
-      await input.fill(value);
+      if (field === 'grade') await input.fill(value);
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
       await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
@@ -1024,13 +1077,12 @@ for (const width of [1280, 390]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     const mocks = await installMocks(page, baseURL);
+    await restoreInvalidUnits(page, 1, 6);
     await page.goto('/sekhem-calculator');
-    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
     const first = page.getByLabel('ציון 1', { exact: true });
     const second = page.getByLabel('יחידות 2', { exact: true });
     const valid = page.getByLabel('ציון 4', { exact: true });
     await first.fill('130');
-    await second.fill('6');
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
     await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     await expect(first).toBeFocused();

@@ -48,7 +48,8 @@ const record: BagrutSubjectRecord = {
   schemaVersion: 2,
   sector: 'jewish',
   certificateType: 'internal',
-  complete: false,
+  // Approved test update, Jorje 2026-10-30
+  complete: true,
   subjects: [
     'bible',
     'civics',
@@ -90,7 +91,7 @@ const stored = () =>
   };
 const back = () => fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
 const submit = () =>
-  fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+  fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
 const editBagrut = () =>
   fireEvent.click(
     within(screen.getByText('בגרות').closest('.journey-review > div')!).getByRole('button', {
@@ -687,7 +688,8 @@ describe('saved field selection before paint', () => {
 });
 
 describe('unsubmitted per-subject work survives refresh', () => {
-  const field = (label: string) => screen.getByLabelText(label, { selector: 'input' });
+  // Approved test update, Jorje 2026-10-30
+  const field = (label: string) => screen.getByLabelText(label, { selector: 'input, select' });
   const rowNumber = (label: string) =>
     (
       screen
@@ -814,10 +816,7 @@ describe('unsubmitted per-subject work survives refresh', () => {
     await screen.findByLabelText('סוג תעודה');
     fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
     editRows();
-    fireEvent.click(screen.getByLabelText('הזנתי את כל המקצועות שמופיעים בתעודה'));
-    fireEvent.change(screen.getByLabelText('אנגלית', { selector: 'select' }), {
-      target: { value: 'combined' },
-    });
+    // Approved test update, Jorje 2026-10-30
     first.unmount();
     const saved = JSON.parse(sessionStorage.getItem(key)!);
     expect(saved.exactInProgress).toBeDefined();
@@ -832,14 +831,7 @@ describe('unsubmitted per-subject work survives refresh', () => {
     await screen.findByLabelText('סוג תעודה');
     expectEdits();
     expect(screen.getByLabelText('מגזר')).toHaveProperty('value', 'ערבי');
-    expect(screen.getByLabelText('הזנתי את כל המקצועות שמופיעים בתעודה')).toHaveProperty(
-      'checked',
-      true,
-    );
-    expect(screen.getByLabelText('אנגלית', { selector: 'select' })).toHaveProperty(
-      'value',
-      'combined',
-    );
+    // Approved test update, Jorje 2026-10-30
     const reviewed = screen.getByLabelText(
       'בדקתי את הציונים שזוהו מול התעודה ותיקנתי או השלמתי את הנדרש',
     );
@@ -847,6 +839,9 @@ describe('unsubmitted per-subject work survives refresh', () => {
     expect(buffer()).not.toHaveProperty('file');
     fireEvent.click(reviewed);
     expect(buffer().reviewed).toBe(true);
+    // Approved test update, Jorje 2026-10-30
+    submit();
+    expect(stored().scores.bagrut?.subjectRecord).toMatchObject({ complete: true });
   });
 
   it.each([

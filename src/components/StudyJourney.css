@@ -840,6 +840,9 @@
   .journey-grade-table th:nth-child(3) {
     width: 62px;
   }
+  .journey-grade-table th:nth-child(2) {
+    width: 82px;
+  }
   .journey-grade-table th:last-child {
     width: 44px;
   }

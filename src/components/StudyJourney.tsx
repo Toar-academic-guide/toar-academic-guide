@@ -244,7 +244,7 @@ function readDraft(): Draft | null {
 const toggle = <T,>(items: T[], value: T) =>
   items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
 function Primary({
-  children = 'המשך',
+  children = 'המשיכו',
   onClick,
   disabled = false,
 }: {
@@ -842,16 +842,17 @@ export default function StudyJourney({
   const titles: Record<Step, string> = {
     home: '',
     intent: 'אני יודע/ת מה אני רוצה ללמוד',
-    subjects: 'מה מעניין אותך ללמוד?',
-    regions: 'איפה את/ה רוצה ללמוד?',
+    subjects: 'מה מעניין אתכם ללמוד?',
+    regions: 'איפה אתם רוצים ללמוד?',
     'grade-mode': 'איך נבדוק את ציוני הבגרות?',
-    'grades-quick': 'מה ממוצע הבגרות שלך?',
-    'grades-exact': 'ציוני הבגרות שלך',
-    'psy-mode': 'יש לך ציון פסיכומטרי?',
-    'psy-score': 'מה ציון הפסיכומטרי שלך?',
-    'psy-target': 'לאיזה ציון את/ה מכוון/ת?',
+    'grades-quick': 'מה ממוצע הבגרות שלכם?',
+    'grades-exact': 'ציוני הבגרות שלכם',
+    'psy-mode': 'יש לכם ציון פסיכומטרי?',
+    'psy-score': 'מה ציון הפסיכומטרי שלכם?',
+    'psy-target': 'לאיזה ציון אתם מכוונים?',
     review: 'מוכנים לגלות את האפשרויות שלכם?',
-    results: 'האפשרויות שלך',
+    results: 'האפשרויות שלכם',
+
     detail: activeRow?.fieldName ?? 'פרטי המסלול',
     alternatives: 'עוד דרכים להתקבל',
     inquiry: 'בואו נעשה את הצעד הבא',
@@ -861,8 +862,8 @@ export default function StudyJourney({
     improve: 'מה יקרה אם נשפר את הציון?',
     plan: 'האפשרויות עם ציון היעד',
     missing: 'השלמת נתונים לחישוב',
-    questionnaire: 'מגלים מה מתאים לך',
-    'quiz-result': 'הכיוונים שמתאימים לך',
+    questionnaire: 'מגלים מה מתאים לכם',
+    'quiz-result': 'הכיוונים שמתאימים לכם',
     account: 'החשבון שלי',
   };
   const stageIndex = ['intent', 'subjects', 'questionnaire', 'quiz-result'].includes(step)
@@ -1020,7 +1021,7 @@ export default function StudyJourney({
                 עדיין לא
               </button>
             </div>
-            <p className="journey-helper">גם אם עוד לא החלטת, אפשר להתחיל.</p>
+            <p className="journey-helper">גם אם עוד לא החלטתם, אפשר להתחיל.</p>
           </>
         )}
         <dialog
@@ -1038,7 +1039,7 @@ export default function StudyJourney({
           </button>
           <Compass size={30} aria-hidden="true" />
           <h2>נמצא יחד כיוון?</h2>
-          <p>שאלון קצר יעזור לגלות מה מתאים לך.</p>
+          <p>שאלון קצר יעזור לגלות מה מתאים לכם.</p>
           <Primary
             onClick={() => {
               setQuizPrompt(false);
@@ -1066,7 +1067,7 @@ export default function StudyJourney({
               <input
                 className="way-input-unframed"
                 aria-label="חיפוש תחום לימודים"
-                placeholder="איזה תחום מעניין אותך?"
+                placeholder="איזה תחום מעניין אתכם?"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -1360,7 +1361,7 @@ export default function StudyJourney({
             )}
             {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">
-              <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשך'}</Primary>
+              <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשיכו'}</Primary>
             </div>
           </form>
         )}
@@ -1471,7 +1472,7 @@ export default function StudyJourney({
                 />
               </div>
             )}
-            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלכם…</p>}
             {failedReports.length > 0 && (
               <p role="alert">
                 חלק מהחישובים לא נטענו.{' '}
@@ -1758,7 +1759,7 @@ export default function StudyJourney({
         {step === 'saved' && (
           <section>
             {catalogueStatus}
-            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלכם…</p>}
             {failedReports.length > 0 && (
               <p role="alert">
                 חלק מהחישובים לא נטענו.{' '}
@@ -1780,7 +1781,7 @@ export default function StudyJourney({
             {!profile.savedProgramIds?.length ? (
               <div className="journey-empty">
                 <Bookmark size={36} />
-                <h2>כאן יישמרו המסלולים שמעניינים אותך</h2>
+                <h2>כאן יישמרו המסלולים שמעניינים אתכם</h2>
                 <Primary onClick={() => go('results')}>לגלות אפשרויות</Primary>
               </div>
             ) : (
