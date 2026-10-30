@@ -361,7 +361,7 @@ describe('account grades in the homepage journey', () => {
       fireEvent.change(screen.getByLabelText(`יחידות ${index}`), { target: { value: '5' } });
       fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: '90' } });
     }
-    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
     await waitFor(() => {
       const draft = JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!);
       expect(draft.scores.bagrut.weightedAverage).toBe(95);

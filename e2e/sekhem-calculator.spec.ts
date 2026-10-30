@@ -175,7 +175,7 @@ async function installMocks(
 
 async function fillProfile(page: Page) {
   for (let row = 1; row <= 4; row++) {
-    await page.getByRole('spinbutton', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
   }
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('700');
   await page.getByLabel('מילולי', { exact: true }).fill('130');
@@ -933,7 +933,7 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     const mocks = await installMocks(page, baseURL);
     await page.goto('/app/calculator?program=tau_cs');
-    const next = page.getByRole('button', { name: 'המשך', exact: true });
+    const next = page.getByRole('button', { name: 'המשיכו', exact: true });
     await next.click();
     await next.click();
     await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
@@ -943,7 +943,7 @@ for (const width of [1280, 390]) {
     await expect(units).toHaveValue('');
     await expect(grade).toHaveValue('');
     await assertAlignedFields(page.locator('.journey-grade-table'));
-    await units.fill('5');
+    await units.selectOption('5');
     await grade.fill('90');
     await expect(units).toHaveValue('5');
     await expect(grade).toHaveValue('90');

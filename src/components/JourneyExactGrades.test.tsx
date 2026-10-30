@@ -54,7 +54,7 @@ describe('JourneyExactGrades blank rows', () => {
     fillRow(rowNumber('מתמטיקה'), '5', '90');
     fillRow(rowNumber('אנגלית'), '5', '85');
   };
-  const submit = () => fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  const submit = () => fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
 
   it('starts compulsory one-unit-minimum subjects empty and keeps clearing a units field empty', () => {
     render(<JourneyExactGrades onComplete={vi.fn()} />);
@@ -131,7 +131,7 @@ describe('JourneyExactGrades blank rows', () => {
     render(<JourneyExactGrades onComplete={onComplete} />);
     fillMathAndEnglish();
 
-    expect(screen.getByRole('button', { name: 'המשך' }).closest('form')!.checkValidity()).toBe(
+    expect(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!.checkValidity()).toBe(
       true,
     );
     submit();
@@ -203,7 +203,7 @@ describe('JourneyExactGrades blank rows', () => {
     const onComplete = vi.fn();
     render(<JourneyExactGrades onComplete={onComplete} />);
     fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
-    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
 
     expect(onComplete).not.toHaveBeenCalled();
     expect(screen.getByRole('alert').textContent).toBe(
@@ -239,7 +239,7 @@ it.each(['final_project', 'combined'] as const)(
       screen.getByText(assessmentKind === 'final_project' ? 'עבודת גמר' : 'ציון משולב'),
     ).toBeTruthy();
     expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', '2');
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
     expect(onComplete).toHaveBeenCalledWith(expect.objectContaining({ complete: true, subjects }));
   },
 );
@@ -252,7 +252,7 @@ it('still requires review of PDF-imported grades before continuing', async () =>
     target: { files: [new File(['synthetic'], 'grades.pdf', { type: 'application/pdf' })] },
   });
   const review = await screen.findByRole('checkbox', { name: /בדקתי את הציונים שזוהו/ });
-  const form = screen.getByRole('button', { name: 'המשך' }).closest('form')!;
+  const form = screen.getByRole('button', { name: 'המשיכו' }).closest('form')!;
   fireEvent.submit(form);
   expect(onComplete).not.toHaveBeenCalled();
   expect(screen.getByRole('alert').textContent).toBe('יש לבדוק את הציונים שזוהו ולאשר אותם.');
@@ -290,7 +290,7 @@ it.each(['duplicate', 'invalid'])(
     fireEvent.change(screen.getByLabelText('ציון 2'), {
       target: { value: kind === 'duplicate' ? '90' : '101' },
     });
-    fireEvent.submit(screen.getByRole('button', { name: 'המשך' }).closest('form')!);
+    fireEvent.submit(screen.getByRole('button', { name: 'המשיכו' }).closest('form')!);
     expect(onComplete).not.toHaveBeenCalled();
     expect(screen.getByRole('alert').textContent).toBe(
       'יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.',
@@ -313,7 +313,7 @@ it('supplies a complete internal record to the unchanged BGU and TAU averages', 
   fireEvent.change(screen.getByLabelText('מקצוע 8'), { target: { value: 'כימיה' } });
   fireEvent.change(screen.getByLabelText('יחידות 8'), { target: { value: '5' } });
   fireEvent.change(screen.getByLabelText('ציון 8'), { target: { value: '90' } });
-  fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+  fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
   expect(onComplete).toHaveBeenCalledTimes(1);
   const record = onComplete.mock.calls[0][0];
   expect(record.complete).toBe(true);
@@ -354,12 +354,12 @@ it.each(['8.5', '-3', '85a', ' 90', '101'])(
       fireEvent.change(grade, { target: { value } });
       expect(grade.value).toBe(value);
     }
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
     expect(onComplete).not.toHaveBeenCalled();
     expect(grade.validationMessage).toBe('ציון בין 0 ל-100');
     expect(screen.getByText('ציון בין 0 ל-100')).toBeTruthy();
     fireEvent.change(grade, { target: { value: '90' } });
-    fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
     expect(onComplete).toHaveBeenCalledWith(
       expect.objectContaining({
         complete: true,

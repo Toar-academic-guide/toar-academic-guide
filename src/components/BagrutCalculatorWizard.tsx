@@ -262,7 +262,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
       {/* ── Step 1: Sector ───────────────────────────────────────────── */}
       {step === 1 && (
         <div className="p-4 sm:p-7">
-          <h3 className="mb-1 text-xl font-black text-slate-900">מאיזה מגזר תעודת הבגרות שלך?</h3>
+          <h3 className="mb-1 text-xl font-black text-slate-900">מאיזה מגזר תעודת הבגרות שלכם?</h3>
           <p className="mb-5 text-sm text-slate-500">
             הבחירה קובעת אילו מקצועות חובה יופיעו בשלב הבא
           </p>
@@ -300,7 +300,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
             </select>
           </label>
           <WizBtn onClick={() => goStep(2)} className="w-full">
-            המשך למקצועות חובה ←
+            המשיכו למקצועות חובה ←
           </WizBtn>
         </div>
       )}
@@ -371,7 +371,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
           </div>
           <div className="flex gap-3">
             <WizBtn onClick={() => goStep(3)} className="flex-1">
-              המשך למקצועות בחירה ←
+              המשיכו למקצועות בחירה ←
             </WizBtn>
             <WizBtn onClick={() => goStep(1)} ghost>
               → חזרה
@@ -413,7 +413,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   }
                 }}
                 className="flex shrink-0 items-center border-r border-[#bae6fd] bg-white px-4 text-[#0891b2] transition hover:bg-[#e0f9ff]"
-                aria-label="הצג רשימה מלאה"
+                aria-label="הציגו רשימה מלאה"
               >
                 <ChevronDown
                   size={16}
@@ -504,7 +504,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                   <button
                     type="button"
                     onClick={() => removeElective(i)}
-                    aria-label="הסר מקצוע"
+                    aria-label="הסירו מקצוע"
                     className="flex h-11 w-11 items-center justify-center rounded-lg text-slate-400 transition hover:bg-red-50 hover:text-red-500"
                   >
                     <X size={14} />
@@ -516,7 +516,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
 
           <div className="flex gap-3">
             <WizBtn onClick={calculateAndAdvance} className="flex-1">
-              חשב ממוצע בגרות ←
+              חשבו ממוצע בגרות ←
             </WizBtn>
             <WizBtn onClick={() => goStep(2)} ghost>
               → חזרה
@@ -528,7 +528,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
       {/* ── Step 4: Result ───────────────────────────────────────────── */}
       {step === 4 && (
         <div className="p-4 sm:p-7">
-          <h3 className="mb-4 text-xl font-black text-slate-900">אומדן ממוצע הציונים שלך</h3>
+          <h3 className="mb-4 text-xl font-black text-slate-900">אומדן ממוצע הציונים שלכם</h3>
 
           <div className="mb-4 rounded-2xl border border-[#b8c4ff] bg-[#eef4ff] py-6 text-center">
             <div className="text-5xl font-black tracking-tight text-slate-900">
@@ -554,7 +554,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
           </div>
 
           <div className="mb-4 rounded-xl border border-[#e0f9ff] bg-[#f8feff] px-4 py-3.5 text-xs leading-relaxed text-slate-500">
-            <strong className="font-bold text-slate-900">שים לב — זהו אומדן ראשוני בלבד.</strong>{' '}
+            <strong className="font-bold text-slate-900">שימו לב — זהו אומדן ראשוני בלבד.</strong>{' '}
             הוא מחושב מציונים ויחידות בלבד ואינו מחליף ממוצע בגרות משוקלל רשמי כולל בונוסים. הממוצע
             הקובע הוא תמיד זה שמחושב במשרד הרישום של כל מוסד.
           </div>
@@ -570,7 +570,7 @@ export default function BagrutCalculatorWizard({ onComplete, onStructuredComplet
                 }}
                 className="flex-1"
               >
-                השתמש/י באומדן זה ←
+                השתמשו באומדן זה ←
               </WizBtn>
             )}
             <WizBtn onClick={resetWizard} ghost>

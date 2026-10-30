@@ -2,7 +2,7 @@ import { expect, test, type Page } from './fixtures';
 import { studyFields } from '../src/lib/studyJourney';
 import type { CatalogueProgram } from '../src/types/catalogue';
 
-const next = (page: Page) => page.getByRole('button', { name: 'המשך', exact: true });
+const next = (page: Page) => page.getByRole('button', { name: 'המשיכו', exact: true });
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/enquiries', (route) => route.abort());
@@ -76,7 +76,7 @@ for (const width of [1280, 390]) {
         [4, '95'],
         [5, '90'],
       ] as const) {
-        await page.getByLabel(`יחידות ${index}`, { exact: true }).fill('5');
+        await page.getByLabel(`יחידות ${index}`, { exact: true }).selectOption('5');
         await page.getByLabel(`ציון ${index}`, { exact: true }).fill(grade);
       }
       await next(page).click();

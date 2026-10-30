@@ -515,7 +515,7 @@ export default function AcademicProfileForm({
         academicBagrutAverage(scores) === undefined ||
         !scores.bagrut?.subjectRecord?.subjects.length)
     ) {
-      setError('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.');
+      setError('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלכם.');
       setIsSaving(false);
       return;
     }
@@ -582,7 +582,7 @@ export default function AcademicProfileForm({
       await Promise.all(promises);
       const completed = await onComplete(scores);
       if (completed === false) {
-        setError('לא הצלחנו לשמור את הפרופיל שלך. אפשר לנסות שוב.');
+        setError('לא הצלחנו לשמור את הפרופיל שלכם. אפשר לנסות שוב.');
         setIsSaving(false);
       }
     } catch (caughtError: unknown) {
@@ -590,7 +590,7 @@ export default function AcademicProfileForm({
       setError(
         caughtError instanceof Error
           ? caughtError.message
-          : 'התרחשה שגיאה בשמירת המסמכים. אנא נסה שנית.',
+          : 'התרחשה שגיאה בשמירת המסמכים. אנא נסו שנית.',
       );
       setIsSaving(false);
     }
@@ -610,10 +610,11 @@ export default function AcademicProfileForm({
         >
           <div className="mb-8">
             <h1 className="text-2xl font-bold tracking-tight text-slate-900">
-              הזן את הנתונים האקדמיים שלך
+              הזינו את הנתונים האקדמיים שלכם
             </h1>
             <p className="mt-1.5 text-sm text-slate-400">
-              המידע יאפשר חישוב מדויק של סיכויי הקבלה שלך. כל השדות אופציונליים — מלא את מה שיש לך.
+              המידע יאפשר חישוב מדויק של סיכויי הקבלה שלכם. כל השדות אופציונליים — מלאו את מה שיש
+              לכם.
             </p>
             {alertContinuation ? (
               <p className="mt-3 rounded-xl border border-sky-200 bg-sky-50 px-3 py-2 text-xs font-semibold leading-5 text-sky-900">
@@ -731,7 +732,7 @@ export default function AcademicProfileForm({
                   <button
                     type="button"
                     disabled={isSaving}
-                    aria-label="הסר קובץ"
+                    aria-label="הסירו קובץ"
                     onClick={() => {
                       setPsyFile(null);
                       setPsyFileObject(null);
@@ -758,7 +759,7 @@ export default function AcademicProfileForm({
                   ].join(' ')}
                 >
                   <Upload size={14} />
-                  <span>העלה תדפיס פסיכומטרי (תמונה / PDF)</span>
+                  <span>העלו תדפיס פסיכומטרי (תמונה / PDF)</span>
                 </button>
               )}
             </div>
@@ -774,7 +775,7 @@ export default function AcademicProfileForm({
               <div>
                 <h2 className="text-sm font-semibold text-slate-800">ציוני בגרות</h2>
                 <p className="text-xs text-slate-400">
-                  הזן את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.
+                  הזינו את הממוצע הרשמי הכולל בונוסים. האשף למטה הוא כלי עזר בלבד.
                 </p>
               </div>
             </div>
@@ -796,8 +797,8 @@ export default function AcademicProfileForm({
                 className={`${inputBase} sm:max-w-xs disabled:cursor-not-allowed disabled:opacity-50`}
               />
               <p className="text-xs text-slate-400">
-                יש להזין את הממוצע הרשמי שחושב עבורך כולל בונוסים גנריים. האשף למטה נותן אומדן לצורך
-                בדיקה בלבד.
+                יש להזין את הממוצע הרשמי שחושב עבורכם כולל בונוסים גנריים. האשף למטה נותן אומדן
+                לצורך בדיקה בלבד.
               </p>
             </div>
 
@@ -815,7 +816,7 @@ export default function AcademicProfileForm({
                   onClick={() => setBagrutAverage(bagrutEstimate.toFixed(1))}
                   className="text-xs text-emerald-600 transition hover:text-emerald-800 disabled:opacity-50"
                 >
-                  העתק לשדה
+                  העתיקו לשדה
                 </button>
               </div>
             ) : null}
@@ -848,7 +849,7 @@ export default function AcademicProfileForm({
                   <button
                     type="button"
                     disabled={isSaving}
-                    aria-label="הסר קובץ"
+                    aria-label="הסירו קובץ"
                     onClick={() => {
                       setBagrutFile(null);
                       setBagrutFileObject(null);
@@ -875,7 +876,7 @@ export default function AcademicProfileForm({
                   ].join(' ')}
                 >
                   <Upload size={14} />
-                  <span>העלה גיליון ציוני בגרות (תמונה / PDF)</span>
+                  <span>העלו גיליון ציוני בגרות (תמונה / PDF)</span>
                 </button>
               )}
             </div>
@@ -894,8 +895,8 @@ export default function AcademicProfileForm({
                 ממוצעים רשמיים ונתוני קבלה (רשות)
               </h2>
               <p className="mt-1 text-xs leading-5 text-slate-500">
-                ממוצעים מוסדיים עשויים להיות שונים מהממוצע הכללי. הזן רק ממוצע רשמי שכבר חישבת; אל
-                תעתיק לכאן אוטומטית אומדן מהאשף.
+                ממוצעים מוסדיים עשויים להיות שונים מהממוצע הכללי. הזינו רק ממוצע רשמי שכבר חישבתם;
+                אל תעתיקו לכאן אוטומטית אומדן מהאשף.
               </p>
               <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
                 <a
@@ -1281,7 +1282,7 @@ export default function AcademicProfileForm({
               נתונים לקבלה לארכיטקטורה בטכניון (רשות)
             </h2>
             <p className="mt-1 text-xs leading-5 text-slate-500">
-              למסלול הבגרות הישראלי הרגיל בלבד, לשנת תשפ״ז (2026–2027). הזן את הממוצע הרשמי
+              למסלול הבגרות הישראלי הרגיל בלבד, לשנת תשפ״ז (2026–2027). הזינו את הממוצע הרשמי
               לארכיטקטורה, שבו אין כפל משקל במתמטיקה, ואת תוצאת בחינת הכניסה לארכיטקטורה. גם עמידה
               בסף אינה מבטיחה קבלה: הקבלה תלויה במקום פנוי.
             </p>
@@ -1401,7 +1402,7 @@ export default function AcademicProfileForm({
                 }}
                 className="rounded-full border border-slate-300 bg-white px-4 py-2 text-xs font-medium text-slate-700 transition hover:border-slate-400 hover:text-slate-900 disabled:cursor-not-allowed disabled:opacity-50"
               >
-                נקה נתונים מהמכשיר הזה
+                נקו נתונים מהמכשיר הזה
               </button>
             </div>
           </section>
@@ -1426,7 +1427,7 @@ export default function AcademicProfileForm({
               ].join(' ')}
             >
               {isSaving ? <Loader2 size={16} className="animate-spin" /> : null}
-              <span>{alertContinuation?.submitLabel ?? 'שמור והמשך לשאלון ←'}</span>
+              <span>{alertContinuation?.submitLabel ?? 'שמרו והמשיכו לשאלון ←'}</span>
             </button>
             <button
               type="button"
@@ -1434,7 +1435,7 @@ export default function AcademicProfileForm({
               onClick={onSkip}
               className="text-sm text-slate-400 transition hover:text-slate-600 disabled:cursor-not-allowed disabled:opacity-50"
             >
-              דלג — אמלא מאוחר יותר
+              דלגו — אמלא מאוחר יותר
             </button>
           </motion.div>
         </motion.div>

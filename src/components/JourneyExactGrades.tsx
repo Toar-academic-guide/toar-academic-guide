@@ -182,7 +182,7 @@ export default function JourneyExactGrades({
       )}
       <div className="journey-actions">
         <button className="journey-primary" disabled={!!reading}>
-          המשך
+          המשיכו
           <ArrowLeft size={18} />
         </button>
       </div>
