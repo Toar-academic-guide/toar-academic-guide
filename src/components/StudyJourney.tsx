@@ -73,6 +73,11 @@ import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupporte
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
+import { preloadJourneyExactGrades } from './preloadJourneyExactGrades';
+
+if (typeof window !== 'undefined' && window.location.hash === '#grades-exact') {
+  preloadJourneyExactGrades();
+}
 
 const CareerAssessment = dynamic(() => import('./CareerAssessment'));
 const JourneyExactGrades = dynamic(() => import('./JourneyExactGrades'));
@@ -224,6 +229,9 @@ export default function StudyJourney({
   browse?: ReactNode;
   initialProgramId?: string;
 }) {
+  if (initialStep === 'subjects') preloadJourneyExactGrades();
+  const [urlProgramId, setUrlProgramId] = useState<string>();
+  const selectedProgramId = initialProgramId ?? urlProgramId;
   const auth = useAuth();
   const router = useRouter();
   const {
@@ -279,6 +287,10 @@ export default function StudyJourney({
     [router],
   );
   useEffect(() => {
+    const queryPrograms = new URLSearchParams(window.location.search).getAll('program');
+    setUrlProgramId(
+      initialStep === 'subjects' && queryPrograms.length === 1 ? queryPrograms[0] : undefined,
+    );
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
     if (stored) {
@@ -373,18 +385,18 @@ export default function StudyJourney({
   const preselectedProgram = useRef<string | null>(null);
   useEffect(() => {
     if (
-      !initialProgramId ||
+      !selectedProgramId ||
       !ready ||
       catalogueLoading ||
-      preselectedProgram.current === initialProgramId
+      preselectedProgram.current === selectedProgramId
     )
       return;
     const field = fields.find((entry) =>
-      entry.programs.some((program) => program.id === initialProgramId),
+      entry.programs.some((program) => program.id === selectedProgramId),
     );
     if (!field) return;
-    const row = allRows.find((entry) => entry.program.id === initialProgramId);
-    preselectedProgram.current = initialProgramId;
+    const row = allRows.find((entry) => entry.program.id === selectedProgramId);
+    preselectedProgram.current = selectedProgramId;
     setDraft((current) => ({
       ...current,
       fields: [field.id],
@@ -393,7 +405,7 @@ export default function StudyJourney({
       selectedRowId: row?.id,
     }));
     setActiveId(row?.id ?? null);
-  }, [initialProgramId, ready, catalogueLoading, fields, allRows]);
+  }, [selectedProgramId, ready, catalogueLoading, fields, allRows]);
   const selectedRows = useMemo(
     () =>
       distinctRecommendations(allRows).filter(
