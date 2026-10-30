@@ -1,5 +1,7 @@
 'use client';
 
+import HomeHero from './hero/HomeHero';
+
 import AdmissionEstimate from './AdmissionEstimate';
 import { biuFloorVerdict, type BiuFloorResult } from '@/lib/biuFloorPresentation';
 
@@ -24,8 +26,6 @@ import {
   Check,
   ChevronDown,
   Compass,
-  GraduationCap,
-  MapPin,
   Search,
   SlidersHorizontal,
   X,
@@ -984,6 +984,8 @@ export default function StudyJourney({
         loginHref={buildLoginPath('/#' + step)}
       />
       <main
+        id="main-content"
+        tabIndex={-1}
         className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''} ${['subjects', 'grade-mode', 'grades-quick', 'grades-exact', 'psy-mode', 'psy-score', 'psy-target', 'review', 'detail', 'alternatives', 'quiz-result', 'improve', 'account', 'inquiry', 'offer'].includes(step) ? 'journey-main-narrow' : ''}`}
       >
         {step !== 'home' && (
@@ -1009,63 +1011,7 @@ export default function StudyJourney({
           </>
         )}
         {(message || syncError) && <p role="alert">{message || syncError}</p>}
-        {step === 'home' && (
-          <div className="journey-hero">
-            <div className="journey-hero-copy">
-              <p className="journey-hero-intro">
-                הדרך <strong>ללימודים שלך</strong> מתחילה כאן.
-              </p>
-              <h1 ref={heading} tabIndex={-1}>
-                <span className="journey-hero-line">
-                  בוחרים <em className="hero-what">מה</em> ללמוד,
-                </span>
-                <span className="journey-hero-line">
-                  <em className="hero-where">איפה</em> ללמוד
-                </span>
-                <span className="journey-hero-line">
-                  ו<em className="hero-how">איך</em> להתקבל.
-                </span>
-              </h1>
-              <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
-              <Link href="/app/calculator" className="journey-primary journey-hero-cta">
-                בדקו לאן אתם מתקבלים
-                <svg
-                  width="20"
-                  height="20"
-                  viewBox="0 0 24 24"
-                  aria-hidden="true"
-                  focusable="false"
-                >
-                  <path
-                    fill="currentColor"
-                    d="M10.2 3.6c1 7 2.5 8.7 9 10.2-6.5 1.3-8 3.2-9 9-1.2-5.8-2.9-7.6-9-9 6.2-1.3 7.9-3.2 9-10.2m10.2-2.4c.4 2.1 1.1 2.7 2.4 3-1.3.4-2 1-2.4 3-.4-2-1-2.6-2.4-3 1.4-.3 2-.9 2.4-3"
-                  />
-                </svg>
-              </Link>
-              <small>אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.</small>
-            </div>
-            <div className="journey-funnel" aria-label="מה ללמוד, איפה ללמוד ואיך להתקבל">
-              <div className="journey-funnel-cloud">
-                <span>מדעי המחשב</span>
-                <span>רפואה</span>
-                <span>פסיכולוגיה</span>
-              </div>
-              {[
-                { name: 'מה', text: 'בוחרים כיוון לימודים', Icon: Compass },
-                { name: 'איפה', text: 'משווים מוסדות ותוכניות', Icon: MapPin },
-                { name: 'איך', text: 'דרך קבלה מותאמת אישית', Icon: GraduationCap },
-              ].map(({ name, text, Icon }) => (
-                <div className="journey-funnel-stage" key={name}>
-                  <div>
-                    <strong>{name}</strong>
-                    <span>{text}</span>
-                  </div>
-                  <Icon size={31} aria-hidden="true" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {step === 'home' && <HomeHero heading={heading} />}
         {step === 'intent' && (
           <>
             <div className="journey-intent-options">

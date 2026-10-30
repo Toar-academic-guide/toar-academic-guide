@@ -1,0 +1,204 @@
+.hero-v2 {
+  position: relative;
+  isolation: isolate;
+  overflow: clip;
+  min-height: 720px;
+  background: #fff;
+  font-family: var(--font-heebo);
+  color: #172445;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding-block: 94px 48px;
+  padding-inline: 24px;
+  box-sizing: border-box;
+  width: 100vw;
+  margin-inline: calc(50% - 50vw);
+}
+.hero-v2 canvas,
+.hero-fallback {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: -1;
+  pointer-events: none;
+}
+.hero-fallback {
+  background:
+    radial-gradient(ellipse 55% 25% at 78% 72%, #8fbcf980, transparent 90%),
+    radial-gradient(ellipse 44% 26% at 14% 76%, #cec9ff95, transparent 90%);
+}
+.hero-v2 canvas {
+  opacity: 0;
+}
+.hero-v2[data-renderer='webgl'] canvas {
+  opacity: 1;
+}
+.hero-v2[data-renderer='webgl'] .hero-fallback {
+  display: none;
+}
+.study-journey .hero-v2 h1 {
+  position: relative;
+  max-width: 970px;
+  margin: 0;
+  font-size: 72px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -2.3px;
+  text-wrap: balance;
+  color: #172445;
+}
+.study-journey .hero-v2 h1 span {
+  letter-spacing: inherit;
+  background: linear-gradient(100deg, #2945cb, #6437c0);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+.hero-v2 .hero-subline {
+  max-width: 610px;
+  margin: 27px 0 0;
+  font-size: 20px;
+  line-height: 1.75;
+  font-weight: 400;
+  color: #435072;
+  text-wrap: balance;
+}
+.hero-v2 .hero-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 18px;
+  margin-top: 32px;
+}
+.hero-v2 .hero-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  min-height: 56px;
+  padding-block: 14px;
+  padding-inline: 25px;
+  border-radius: 12px;
+  background: #4765cc;
+  color: #fff;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.5;
+  text-decoration: none;
+  box-shadow: 0 8px 20px #2945cb1a;
+  transition: background 0.18s ease;
+  filter: none;
+  border: 0;
+  margin: 0;
+  width: auto;
+  cursor: pointer;
+}
+.hero-v2 .hero-primary:hover {
+  filter: none;
+  background: #3c57b7;
+}
+.hero-v2 .hero-primary svg {
+  width: 23px;
+  height: 23px;
+  flex: none;
+}
+.hero-v2 .hero-secondary {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #34456f;
+  font-size: 16px;
+  border: 0;
+  padding: 0;
+  margin: 0;
+  line-height: 1.5;
+  font-weight: 400;
+  text-decoration: underline;
+  text-underline-offset: 5px;
+  text-decoration-color: #34456f55;
+}
+.hero-v2 .hero-secondary:hover {
+  text-decoration-color: currentColor;
+}
+.study-journey .hero-v2 a:focus-visible {
+  outline: 3px solid #2945cb;
+  outline-offset: 5px;
+}
+.hero-v2 .hero-intro {
+  max-width: 650px;
+  margin: auto 0 0;
+  padding-top: 92px;
+  font-size: 17px;
+  line-height: 1.75;
+  color: #34456f;
+  text-wrap: balance;
+}
+.study-journey .hero-v2 ::selection {
+  background: #cec9ff;
+  color: #172445;
+}
+
+@media (min-width: 1500px) {
+  .hero-v2 {
+    min-height: 760px;
+  }
+}
+@media (max-width: 600px) {
+  .hero-v2 {
+    min-height: calc(100svh - 68px);
+    padding-block: 74px 55px;
+    padding-inline: 24px;
+  }
+  .study-journey .hero-v2 h1 {
+    font-size: 43px;
+    line-height: 1.24;
+    letter-spacing: -1.2px;
+    max-width: 350px;
+  }
+  .hero-v2 .hero-subline {
+    font-size: 18px;
+    line-height: 1.8;
+    margin-top: 24px;
+    max-width: 338px;
+  }
+  .hero-v2 .hero-actions {
+    margin-top: 29px;
+    gap: 15px;
+  }
+  .hero-v2 .hero-primary {
+    font-size: 17px;
+    min-height: 56px;
+    padding-inline: 23px;
+  }
+  .hero-v2 .hero-secondary {
+    font-size: 15px;
+  }
+  .hero-v2 .hero-intro {
+    font-size: 15px;
+    max-width: 310px;
+    padding-top: 115px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  html:has(.hero-v2) {
+    scroll-behavior: auto;
+  }
+  .hero-v2 .hero-primary {
+    transition: none;
+  }
+}
+
+/* Full viewport hero within the existing main landmark; catalogue keeps its live container. */
+.journey-main.journey-home {
+  padding-block-start: 0;
+}
+.hero-v2 .journey-hero-copy {
+  display: contents;
+}
+.hero-v2 a {
+  text-underline-offset: 5px;
+  outline: none;
+}
