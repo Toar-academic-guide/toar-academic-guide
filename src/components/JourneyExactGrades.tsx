@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { SECTORS } from '@/data/bagrutSubjects';
+import { normalizeBagrutPdfSubject } from '@/lib/bagrutPdfSubjectName';
 import BagrutSubjectRows, { bagrutSubjectLabels } from './BagrutSubjectRows';
 import {
   buildBagrutSubjectRecord,
@@ -67,6 +68,7 @@ export default function JourneyExactGrades({
   );
   const [error, setError] = useState('');
   const [reading, setReading] = useState('');
+  const [importStatus, setImportStatus] = useState('');
   const [imported, setImported] = useState(false);
   const [reviewed, setReviewed] = useState(false);
   const change = (index: number, updates: Partial<BagrutWizardSubjectInput>) =>
@@ -148,6 +150,7 @@ export default function JourneyExactGrades({
             event.target.value = '';
             if (!file) return;
             setError('');
+            setImportStatus('');
             setReading('קוראים את גיליון הציונים…');
             try {
               const { readBagrutPdf } = await import('@/lib/bagrutPdf');
@@ -156,7 +159,31 @@ export default function JourneyExactGrades({
                 setError('לא זוהו שורות ציונים ברורות. אפשר להזין או לתקן את הציונים כאן.');
                 return;
               }
-              setRows(found.map((row) => ({ ...row, assessmentKind: 'exam' })));
+              setRows((current) => {
+                const merged = new Map(
+                  current
+                    .filter((row) => !isBlankRow(row))
+                    .map((row) => [normalizeBagrutPdfSubject(row.label), row]),
+                );
+                for (const row of found) {
+                  const key = normalizeBagrutPdfSubject(row.label);
+                  const previous = merged.get(key);
+                  merged.set(key, {
+                    label: row.label,
+                    units: row.units,
+                    grade: row.grade,
+                    assessmentKind: previous?.assessmentKind ?? 'exam',
+                  });
+                }
+                return [...merged.values()];
+              });
+              const unmatched = found.filter((row) => row.unmatched).length;
+              setImportStatus(
+                (found.length === 1 ? 'זוהה מקצוע אחד' : `זוהו ${found.length} מקצועות`) +
+                  (unmatched
+                    ? ` · ${unmatched} ${unmatched === 1 ? 'לא זוהה' : 'לא זוהו'}, נא לבדוק`
+                    : ''),
+              );
               setImported(true);
               setReviewed(false);
               setComplete(false);
@@ -172,7 +199,11 @@ export default function JourneyExactGrades({
           }}
         />
       </label>
-      {reading && <p role="status">{reading}</p>}
+      {(reading || importStatus) && (
+        <p role="status" style={{ textAlign: 'right' }}>
+          {reading || importStatus}
+        </p>
+      )}
       {error && <p role="alert">{error}</p>}
       <BagrutSubjectRows rows={rows} onChange={setRows} isBlankRow={isBlankRow} />
       <details className="journey-field-group">

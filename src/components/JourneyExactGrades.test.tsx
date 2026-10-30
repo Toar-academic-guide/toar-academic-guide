@@ -201,3 +201,49 @@ describe('JourneyExactGrades blank rows', () => {
     );
   });
 });
+
+vi.mock('@/lib/bagrutPdf', () => ({ readBagrutPdf: vi.fn() }));
+
+describe('JourneyExactGrades PDF imports', () => {
+  const subjectInputs = () =>
+    screen.getAllByLabelText(/^מקצוע /, { selector: 'input' }) as HTMLInputElement[];
+  const upload = async (
+    subjects: { label: string; units: number; grade: number; unmatched?: boolean }[],
+  ) => {
+    const { readBagrutPdf } = await import('@/lib/bagrutPdf');
+    vi.mocked(readBagrutPdf).mockResolvedValueOnce(subjects);
+    fireEvent.change(screen.getByLabelText(/העלאת גיליון PDF/, { selector: 'input' }), {
+      target: { files: [new File(['synthetic'], 'synthetic.pdf', { type: 'application/pdf' })] },
+    });
+    await screen.findByText(/בדקתי את הציונים שזוהו/);
+  };
+
+  it('keeps entered math when a PDF contains only English and drops blank starters', async () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    const mathIndex = subjectInputs().findIndex((i) => i.value === 'מתמטיקה') + 1;
+    fireEvent.change(screen.getByLabelText(`ציון ${mathIndex}`), { target: { value: '94' } });
+    await upload([{ label: 'אנגלית', units: 5, grade: 85 }]);
+    expect(subjectInputs().map((i) => i.value)).toEqual(['מתמטיקה', 'אנגלית']);
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '94');
+    expect(screen.getByRole('status').textContent).toBe('זוהה מקצוע אחד');
+  });
+
+  it('overwrites normalized overlaps once and keeps unmatched names for correction', async () => {
+    render(<JourneyExactGrades onComplete={vi.fn()} />);
+    const bibleIndex = subjectInputs().findIndex((i) => i.value === 'תנ״ך') + 1;
+    fireEvent.change(screen.getByLabelText(`ציון ${bibleIndex}`), { target: { value: '64' } });
+    await upload([
+      { label: 'תנ"ך', units: 2, grade: 84 },
+      { label: 'מקצוע בדיקה עם ף', units: 4, grade: 55, unmatched: true },
+    ]);
+    expect(subjectInputs().map((i) => i.value)).toEqual(['תנ"ך', 'מקצוע בדיקה עם ף']);
+    expect(screen.getByLabelText('ציון 1')).toHaveProperty('value', '84');
+    expect(screen.getByRole('status').textContent).toBe('זוהו 2 מקצועות · 1 לא זוהה, נא לבדוק');
+    const reviewed = screen.getByLabelText(/בדקתי את הציונים שזוהו/);
+    expect(reviewed).toHaveProperty('checked', false);
+    fireEvent.click(reviewed);
+    await upload([{ label: 'תנ״ך', units: 2, grade: 85 }]);
+    expect(reviewed).toHaveProperty('checked', false);
+    expect(subjectInputs()).toHaveLength(2);
+  });
+});

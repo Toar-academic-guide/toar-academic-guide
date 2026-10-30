@@ -64,3 +64,11 @@ supabase/.temp/
 
 # local evidence exports
 /scratch/*.json
+
+# Transcripts are private; only synthetic fixtures and admissions evidence are tracked.
+*.[pP][dD][fF]
+!src/lib/__fixtures__/bagrut-pdf/*.pdf
+!docs/admissions-verification/**/*.pdf
+!docs/admissions-verification/*.pdf
+*.expected.json
+private/

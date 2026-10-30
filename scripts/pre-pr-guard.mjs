@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { disallowedPdfPaths } from './pdf-location-guard.mjs';
+
 import { findProductionSensitivePaths } from './production-sensitive-paths.mjs';
 
 const rootDir = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
@@ -105,6 +107,10 @@ const targetedTests = [
   'src/lib/__tests__/StudyJourney.technionWinter.test.tsx',
   'scripts/check-haifa-official-urls.test.ts',
   'src/lib/bagrutPdf.test.ts',
+  'src/lib/bagrutPdf.pipeline.test.ts',
+  'src/lib/bagrutPdf.ocr.test.ts',
+  'src/lib/bagrutPdfFontRepair.test.ts',
+  'scripts/pdf-location-guard.test.ts',
   'src/components/EnquiryForm.test.tsx',
   'src/app/api/enquiries/route.test.ts',
   'src/server/enquiries/repository.test.ts',
@@ -363,6 +369,21 @@ function assertAdmissionsEvidenceFresh() {
     );
   }
 }
+
+function assertPdfLocations() {
+  const tracked = git(['ls-files', '-z']);
+  if (tracked === null) {
+    console.error('Pre-PR guard: could not inspect tracked PDF locations.');
+    process.exit(1);
+  }
+  if (disallowedPdfPaths(tracked.split('\0').filter(Boolean)).length > 0) {
+    console.error('Pre-PR guard: PDF outside approved fixture/admissions directories. Remove it from the index.');
+    process.exit(1);
+  }
+}
+
+console.log('Pre-PR guard: checking PDF locations.');
+assertPdfLocations();
 
 const changedFiles = getChangedFiles();
 const highRiskChanges = [
