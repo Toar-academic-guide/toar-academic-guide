@@ -5,7 +5,7 @@ import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/li
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueProgram } from '@/types/catalogue';
-import EnquiryPage from './page';
+import EnquiryPage, { metadata } from './page';
 import failedLinks from './__fixtures__/failed-links.json';
 
 vi.mock('server-only', () => ({}));
@@ -67,6 +67,28 @@ beforeEach(() => {
 });
 
 describe('enquiry link integrity', () => {
+  it('renders the approved prep intro before the unchanged title and action', async () => {
+    const markup = await form('/enquiry?program=psychometric-preparation');
+    expect(markup).toContain('>הציון שלכם בפסיכומטרי מתחיל בהכנה</h1>');
+    expect(markup).toContain(
+      '<p class="mt-2">ברוב המוסדות בישראל, הציון הפסיכומטרי נכנס לסכם יחד עם ציוני הבגרות, ולכן הוא שווה הכנה רצינית. החל מדצמבר 2026 הבחינה כוללת שני תחומים בלבד: חשיבה מילולית וחשיבה כמותית, בציון של 200 עד 800. המרכז הארצי לבחינות ולהערכה כותב זאת במפורש: מי שמתכונן צפוי להשיג ציון גבוה יותר, והשיפור תלוי בעיקר ברצינות ובהשקעה. השאירו פרטים ותתחילו להתכונן נכון.</p><p class="mt-2">הכנה לפסיכומטרי</p>',
+    );
+    expect(markup).toContain('השאירו פרטים</button>');
+    expect(markup).not.toContain('רוצים תשובות ישר מהמוסד?');
+    expect(markup).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/);
+  });
+
+  it('keeps the institution enquiry intro unchanged', async () => {
+    const markup = await form('/enquiry?program=cs&institution=reichman');
+    expect(markup).toContain('>רוצים תשובות ישר מהמוסד?</h1>');
+    expect(markup).not.toContain('הציון שלכם בפסיכומטרי מתחיל בהכנה');
+    expect(markup).not.toContain('ברוב המוסדות בישראל');
+  });
+
+  it('keeps enquiry pages noindex with links followed', () => {
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+  });
+
   it.each([
     '/enquiry?program=accounting&institution=colman',
     '/enquiry?program=cs&institution=reichman',

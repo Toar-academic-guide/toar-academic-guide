@@ -109,7 +109,7 @@ describe('student-facing evaluator explanations', () => {
         capability: 'blocked',
         kind: 'unsupported',
         decision: 'unknown',
-        explanation: 'המקור הרשמי דורש דפדפן או תהליך ידני.',
+        explanation: 'המקור הרשמי דורש בדיקה ידנית באתר המוסד.',
         nextAction: 'בדקו ישירות באתר המוסד.',
       });
     },
@@ -124,7 +124,7 @@ describe('student-facing evaluator explanations', () => {
     )!;
     useEntry({ capability: 'tracked_missing_rule', evidence: ariel, sourceTarget });
     expect((await evaluate()).results[0].nextAction).toBe(
-      'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
+      'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.',
     );
   });
 

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import EnquiryForm from '@/components/EnquiryForm';
 import WayPageShell from '@/components/WayPageShell';
 import { getEnquiryTarget } from '@/lib/enquiryTarget';
+import { ENQUIRY_PREP_INTRO } from '@/lib/enquiries';
 
 export const dynamic = 'force-dynamic';
 
@@ -15,8 +16,9 @@ export default async function EnquiryPage({
 }) {
   const { program: programId, institution: institutionId = '' } = await searchParams;
   if (!programId) notFound();
+  const isPrep = programId === 'psychometric-preparation' && institutionId === '';
   let title: string;
-  if (programId === 'psychometric-preparation' && institutionId === '') {
+  if (isPrep) {
     title = 'הכנה לפסיכומטרי';
   } else {
     const target = await getEnquiryTarget(programId, institutionId);
@@ -32,7 +34,13 @@ export default async function EnquiryPage({
         >
           חזרה לאפשרויות שלי
         </Link>
-        <EnquiryForm programId={programId} institutionId={institutionId} title={title} />
+        <EnquiryForm
+          programId={programId}
+          institutionId={institutionId}
+          title={title}
+          heading={isPrep ? ENQUIRY_PREP_INTRO.heading : undefined}
+          intro={isPrep ? ENQUIRY_PREP_INTRO.body : undefined}
+        />
       </main>
     </WayPageShell>
   );

@@ -2267,7 +2267,7 @@ function evaluateNonExactResult(args: {
       sourceLabel: 'מקור חסום',
       explanation:
         hebrewStudentText(entry.sourceTarget?.blockedReason) ??
-        'המקור הרשמי דורש דפדפן או תהליך ידני.',
+        'המקור הרשמי דורש בדיקה ידנית באתר המוסד.',
       nextAction: hebrewStudentText(entry.sourceTarget?.nextAction) ?? 'בדקו ישירות באתר המוסד.',
     };
   }
@@ -3537,7 +3537,7 @@ function trackedMissingRuleResult(
     nextAction:
       hebrewStudentText(evidence?.nextAction) ??
       hebrewStudentText(entry.sourceTarget?.nextAction) ??
-      'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
+      'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.',
     evidenceItemId: evidence?.itemId,
     evidenceItemName: evidence?.itemName,
     missingData,
