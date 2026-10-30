@@ -475,8 +475,44 @@ describe('catalogue queries', () => {
     await listCataloguePrograms();
     vi.setSystemTime(new Date('2026-06-23T00:01:01Z'));
     const secondResult = await listCataloguePrograms();
+    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('hit');
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(1);
 
-    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('miss');
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const refreshedDataset = createDatabaseBackedDataset();
+    refreshedDataset.programs[0].name = 'Refreshed programme';
+    const refreshedDb = createMockDb(refreshedDataset).db;
+    const from = refreshedDb.select().from;
+    let firstTable = true;
+    hoistedMocks.getDb.mockReturnValue({
+      select: () => ({
+        from: (table: object) => {
+          const rows = from(table);
+          if (!firstTable) return rows;
+          firstTable = false;
+          return gate.then(() => rows.where());
+        },
+      }),
+    });
+    vi.setSystemTime(new Date('2026-06-23T00:05:01Z'));
+    const [stale, concurrent] = await Promise.all([
+      listCataloguePrograms(),
+      listCataloguePrograms(),
+    ]);
+    expect(stale.meta.catalogueSnapshotCacheStatus).toBe('stale');
+    expect(concurrent.data).toEqual(secondResult.data);
+    expect(stale.data).toEqual(secondResult.data);
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
+
+    // Complete the single refresh with the new snapshot, then read it as a hit.
+    release();
+    await vi.advanceTimersByTimeAsync(0);
+    const refreshed = await listCataloguePrograms();
+    expect(refreshed.data[0].name).toBe('Refreshed programme');
+    expect(refreshed.meta.catalogueSnapshotCacheStatus).toBe('hit');
     expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
   });
 });
