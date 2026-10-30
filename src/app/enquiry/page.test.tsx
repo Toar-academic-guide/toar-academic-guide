@@ -1,14 +1,18 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { metadata as rootMetadata } from '@/app/layout';
 import ProgramPage from '@/app/programs/[programId]/page';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
 import EnquiryPage, { metadata } from './page';
 import failedLinks from './__fixtures__/failed-links.json';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/context/AuthContext', () => ({ AuthProvider: () => null }));
+vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));
 vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -67,6 +71,22 @@ beforeEach(() => {
 });
 
 describe('enquiry link integrity', () => {
+  it('keeps free-course claims out of the site default description', () => {
+    expect(SITE_DESCRIPTION).not.toMatch(/חינם|בחינם/);
+  });
+
+  it('keeps free-course claims out of the resolved enquiry metadata', () => {
+    // Next merges route metadata shallowly: page fields replace layout fields.
+    const resolved = { ...rootMetadata, ...metadata };
+    expect(resolved.description).toBe(SITE_DESCRIPTION);
+    expect(resolved.description).not.toMatch(/חינם|בחינם/);
+    for (const social of [resolved.openGraph, resolved.twitter]) {
+      if (social?.description != null) {
+        expect(social.description).not.toMatch(/חינם|בחינם/);
+      }
+    }
+  });
+
   it('renders the approved prep intro before the unchanged title and action', async () => {
     const markup = await form('/enquiry?program=psychometric-preparation');
     expect(markup).toContain('>הציון שלכם בפסיכומטרי מתחיל בהכנה</h1>');

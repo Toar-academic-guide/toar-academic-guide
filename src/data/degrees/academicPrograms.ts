@@ -868,9 +868,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        '5 יח"ל מתמטיקה — חובה',
-        'ציון פסיכומטרי מינימלי: 650',
-        'ממוצע בגרות מינימלי: 85',
+        'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+        'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
       ],
       officialCalculatorUrl: HAIFA_CALCULATOR_URL,
       programUrl: HAIFA_PROGRAM_URLS.haifa_cs,

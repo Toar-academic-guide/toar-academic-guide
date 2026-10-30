@@ -34,6 +34,7 @@ vi.mock('@/server/catalogue/queries', () => ({
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
@@ -213,6 +214,24 @@ describe('ProgramPage', () => {
         expectedLink.toString(),
       );
     }
+  });
+
+  it('shows the regular Haifa CS cutoff and links to the sekhem calculator', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'haifa_cs' }) }),
+    );
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toContain(
+      'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+    );
+    expect(screen.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה' }).getAttribute('href')).toBe(
+      '/sekhem-calculator?program=haifa_cs',
+    );
+    expect(container.textContent).not.toMatch(
+      /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
+    );
+    expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
+    expect(screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/)).toBeTruthy();
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {

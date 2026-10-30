@@ -1,3 +1,6 @@
+import * as contentRepair from '@/data/admissions/catalogueContentRepair';
+import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
+import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
@@ -259,6 +262,109 @@ describe('catalogue serializers', () => {
       expect(result.linkedInstitutionIds).toEqual(['afeka']);
     },
   );
+
+  it.each([
+    'haifa_psychology',
+    'mon_12220708942_cs',
+    'huji_psychology',
+    'afeka_ee',
+    'afeka_softwareeng',
+    'afeka_cs',
+    'afeka_biomedical',
+    'ruppin_marine_bio',
+    'jerusalem_academy_graphic_design',
+    'jerusalem_academy_dance',
+    'rubin_classical',
+  ])('preserves the full serialized object for existing repaired ID %s', (id) => {
+    const seed = buildCatalogueSeed();
+    const sourceId =
+      id === 'jerusalem_academy_graphic_design'
+        ? 'jerusalem_academy_dance'
+        : id === 'mon_12220708942_cs'
+          ? 'braude_engineering'
+          : id;
+    const program = seed.programs.find((row) => row.id === sourceId)!;
+    expect(program).toBeDefined();
+    const requirements = seed.admissionRequirements.filter((row) => row.programId === sourceId);
+    const requirementIds = new Set(requirements.map((row) => row.id));
+    const repairSpy = vi.spyOn(contentRepair, 'applyCatalogueContentRepair');
+    try {
+      const result = serializeProgramRow({
+        program: { ...program, id } as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === sourceId,
+        ) as ProgramInstitutionRow[],
+        requirements: requirements as AdmissionRequirementRow[],
+        thresholds: seed.admissionThresholds.filter(
+          (row) => row.programId === sourceId,
+        ) as AdmissionThresholdRow[],
+        sourceUrls: seed.sourceUrls.filter(
+          (row) => row.admissionRequirementId && requirementIds.has(row.admissionRequirementId),
+        ) as SourceUrlRow[],
+        admissionFacts: seed.admissionFacts.filter((row) =>
+          requirementIds.has(row.admissionRequirementId),
+        ) as AdmissionFactRow[],
+        admissionAlternativePaths: seed.admissionAlternativePaths.filter((row) =>
+          requirementIds.has(row.admissionRequirementId),
+        ) as AdmissionAlternativePathRow[],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      expect(repairSpy).toHaveBeenCalledTimes(1);
+      const serialized = repairSpy.mock.calls[0][0];
+      // The previous repair branch, followed by the existing post-processing.
+      const before = applyJamdCurriculum(
+        applyEngineeringMathRequirements(contentRepair.applyCatalogueContentRepair(serialized)),
+      );
+      expect(result).toEqual(before);
+    } finally {
+      repairSpy.mockRestore();
+    }
+  });
+
+  it('repairs persisted Haifa CS notes while keeping all official Haifa URLs', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'haifa_cs';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        {
+          ...requirement,
+          specificAdmissionNotes: [
+            '5 יח"ל מתמטיקה — חובה',
+            'ציון פסיכומטרי מינימלי: 650',
+            'ממוצע בגרות מינימלי: 85',
+          ],
+        },
+      ] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: ['program', 'calculator'].map((kind) => ({
+        id: `old-cs-${kind}`,
+        admissionRequirementId: requirement.id,
+        kind,
+        url: `https://www.haifa.ac.il/index.php/he/${kind}`,
+      })) as SourceUrlRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    expect(result.institutionDetails![0]).toMatchObject({
+      specificAdmissionNotes: [
+        'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+        'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
+      ],
+      programUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',
+      calculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+      officialCalculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+    });
+    expect(result.thresholds).toEqual({ haifa: 700 });
+    expect(result.id).toBe(id);
+    expect(result.linkedInstitutionIds).toEqual(['haifa']);
+  });
 
   it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
     const seed = buildCatalogueSeed();
