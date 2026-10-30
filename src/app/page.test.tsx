@@ -62,22 +62,24 @@ describe('Home catalogue cutover', () => {
     expect(screen.queryByText('עזרו לי לבחור מה ללמוד')).toBeNull();
   });
 
+  // Approved test update, Jorje 2026-10-30
   it('preserves the hero heading, intro and supporting copy', () => {
     window.history.replaceState(null, '', '/');
     const { container } = render(<Home />);
-    const hero = container.querySelector('.journey-hero-copy')!;
+    const hero = container.querySelector('.hero-v2')!;
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'בוחרים מה ללמוד,איפה ללמודואיך להתקבל.',
-    );
-    expect(hero.querySelector('p.journey-hero-intro')?.textContent).toBe(
       'הדרך ללימודים שלכם מתחילה כאן.',
     );
-    expect(hero.querySelector('p:not(.journey-hero-intro)')?.textContent).toBe(
-      'בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
+    expect(hero.querySelector('.hero-subline')?.textContent).toBe(
+      'בתוך ריבוי האפשרויות, MyWay עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
     );
-    expect(hero.querySelector('small')?.textContent).toBe(
-      'אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.',
+    expect(hero.querySelector('.hero-intro')?.textContent).toBe(
+      'בוחרים תחום לימודים ומשווים בין אוניברסיטאות ומכללות בכל הארץ',
     );
+    expect(hero.querySelector('small')).toBeNull();
+    expect(
+      screen.queryByText('אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.'),
+    ).toBeNull();
   });
 });
 
