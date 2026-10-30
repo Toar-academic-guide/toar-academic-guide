@@ -29,7 +29,7 @@ export const admissionsEvaluationSchema = z.object({
       bagrutProfileSchemaVersion: z.union([z.literal(1), z.literal(2)]).optional(),
       bagrutSector: bagrutSectorSchema.optional(),
       mathUnits: z.number().int().min(3).max(5).optional(),
-      mathGrade: z.number().int().min(50).max(100).optional(),
+      mathGrade: z.number().int().min(0).max(100).optional(),
       englishUnits: z.number().int().min(3).max(5).optional(),
       englishGrade: z.number().int().min(50).max(100).optional(),
       physicsUnits: z.number().int().min(3).max(5).optional(),
