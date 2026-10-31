@@ -423,28 +423,50 @@ it('sends raw rows in batch mode, exposes no composite input and opens the reuse
 });
 
 it('shows optional Haifa fields only when requested, then removes them and their old overrides automatically', async () => {
+  // Approved test update, Jorje 2026-10-31
   fetchMock.mockResolvedValueOnce(
-    Response.json({ data: response(['haifa_bagrut_average', 'haifa_hebrew_qualification']) }),
+    Response.json({ data: response(['haifa_science_units', 'haifa_psychometric_month']) }),
   );
   render(<SekhemCalculator offerings={offerings} />);
-  expect(screen.queryByLabelText('ממוצע בגרות בחיפה')).toBeNull();
+  expect(screen.queryByLabelText('מספר היחידות המדעיות לסיעוד בחיפה')).toBeNull();
   examples();
   submit();
-  const average = await screen.findByLabelText('ממוצע בגרות בחיפה');
-  expect(average.hasAttribute('required')).toBe(false);
-  fireEvent.change(average, { target: { value: '105' } });
+  fireEvent.change(await screen.findByLabelText('מספר היחידות המדעיות לסיעוד בחיפה'), {
+    target: { value: '10' },
+  });
+  fireEvent.change(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה'), {
+    target: { value: '4' },
+  });
+  fireEvent.change(screen.getByLabelText('שנת הפסיכומטרי'), { target: { value: '2025' } });
   submit();
   await screen.findByText('הציונים עומדים בתנאי הקבלה');
-  expect(screen.queryByLabelText('ממוצע בגרות בחיפה')).toBeNull();
-  expect(screen.queryByLabelText('הבסיס לעמידה בדרישת העברית בחיפה')).toBeNull();
   submit();
-  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(3));
-  expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs.haifaBagrutAverage).toBe(
-    105,
-  );
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  for (const index of [1, 2])
+    expect(JSON.parse(String(fetchMock.mock.calls[index][1]?.body)).extraInputs).toMatchObject({
+      haifaScienceUnits: 10,
+      haifaPsychometricMonth: 4,
+      haifaPsychometricYear: 2025,
+    });
+  fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: '91' } });
+  expect(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה')).toHaveProperty('value', '');
+  expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '4');
+  expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '2025');
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
   expect(
-    JSON.parse(String(fetchMock.mock.calls[2][1]?.body)).extraInputs.haifaBagrutAverage,
+    JSON.parse(String(fetchMock.mock.calls[3][1]?.body)).extraInputs.haifaScienceUnits,
   ).toBeUndefined();
+  fireEvent.change(screen.getByLabelText('פסיכומטרי — ציון כללי', { exact: false }), {
+    target: { value: '701' },
+  });
+  expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '');
+  expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '');
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  const extras = JSON.parse(String(fetchMock.mock.calls[4][1]?.body)).extraInputs;
+  expect(extras.haifaPsychometricMonth).toBeUndefined();
+  expect(extras.haifaPsychometricYear).toBeUndefined();
 });
 
 it('invalidates old results when grades change and reports request failure honestly', async () => {
