@@ -82,6 +82,7 @@ const profiles: ProfileCase[] = [
       },
     },
     responses: tauCapture.responses.map((response) => response.body),
+    // Approved test update, Jorje 2026-10-31: preserve the independent TAU score and cutoff while updating Haifa legacy handling.
     expected: { kind: 'exact', decision: 'accepted', score: 730, threshold: 710 },
   },
   {
@@ -122,7 +123,13 @@ const profiles: ProfileCase[] = [
       },
     },
     responses: [{ data: {} }, haifaCapture.high.response],
-    expected: { kind: 'manual_gate', decision: 'eligible_to_apply', score: 806, threshold: 700 },
+    // Approved test update, Jorje 2026-10-31: a legacy Haifa average without subject rows cannot produce a score or verdict.
+    expected: {
+      kind: 'tracked_missing_rule',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+    },
   },
   {
     name: 'Technion official score and winter civil-engineering cutoff',
@@ -301,7 +308,12 @@ describe('real evaluator → batch POST → calculator result rows', () => {
               ? 'הציונים עומדים בתנאי הקבלה'
               : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
                 belowLabel;
-      expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
+      // Approved test update, Jorje 2026-10-31: the uncalculated legacy-only Haifa case shows its existing institution-check fallback.
+      expect(
+        within(row!).getByText(
+          profile.institutionId === 'haifa' ? 'חיפה: בדיקה אישית מול המוסד' : expectedVerdict,
+        ),
+      ).toBeTruthy();
       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
       for (const gate of result.additionalConditions ?? [])
         if (gate.status !== 'confirmed') expect(row!.textContent).toContain(gate.label);

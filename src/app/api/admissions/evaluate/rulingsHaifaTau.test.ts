@@ -264,9 +264,10 @@ it.each(['haifa_psychology', 'psychology'])(
     expect(
       normalizeEvaluationInputs({ degreeId: id, ...saved }).proxyInstitutions.has('haifa'),
     ).toBe(false);
+    // Approved test update, Jorje 2026-10-31: overall averages no longer create a Haifa institutional proxy.
     expect(
       normalizeEvaluationInputs({ degreeId: id, ...proxy }).proxyInstitutions.has('haifa'),
-    ).toBe(true);
+    ).toBe(false);
     const program = gapPrograms.find((program) => program.id === id)!;
     const { result } = await gapEvaluate(program, 'haifa', saved);
     const { result: proxyResult } = await gapEvaluate(program, 'haifa', proxy);
@@ -299,7 +300,8 @@ const mainSavedHaifaAnswers = [
       kind: 'exact',
       decision: 'below',
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-      score: 611,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 614,
       threshold: 700,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
@@ -344,7 +346,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
-      score: 620,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 623,
       threshold: 615,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-social_work.json
@@ -382,7 +385,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
-      score: 620,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 623,
       threshold: 550,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
@@ -406,7 +410,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
-      score: 620,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 623,
       threshold: 580,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-political_science.json
@@ -429,7 +434,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       decision: 'pending',
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-      score: 611,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 614,
       threshold: 630,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
@@ -452,7 +458,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-      score: 611,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 614,
       threshold: 610,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
@@ -489,7 +496,8 @@ const mainSavedHaifaAnswers = [
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
-      score: 620,
+      // Approved test update, Jorje 2026-10-31: the subject-derived 105.12 average replaces the saved 104 override.
+      score: 623,
       threshold: 540,
       requiredInputs: undefined,
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-sociology.json
@@ -575,6 +583,7 @@ it.each([
       const baseline = mainSavedHaifaAnswers.find((row) => row.ids.includes(program.id));
       expect(baseline, program.id).toBeDefined();
       const { result } = await gapEvaluate(program, 'haifa', saved);
+      // Approved test update, Jorje 2026-10-31: preserve full answer comparisons with the row-derived average in both catalogues.
       expect(savedHaifaAnswer(result), program.id).toStrictEqual(baseline!.result);
     }
   },
@@ -593,7 +602,8 @@ it.each(['haifa_communication', 'communication'])(
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
       decision: 'eligible_to_apply',
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
-      score: 620,
+      // Approved test update, Jorje 2026-10-31: communication uses the row-derived average and ignores the saved 104 override.
+      score: 623,
       threshold: 550,
       // Approved test update: Jorje 2026-10-29, ruling (a): real NITE input; sibling asserts Haifa calculator value via its own general score, capture in docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-communication.json
       explanation:
@@ -613,12 +623,24 @@ it.each([
   const applicants = haifaAverageApplicants(track);
   const program = gapPrograms.find((program) => program.id === 'haifa_infosystems')!;
   const { result } = await gapEvaluate(program, 'haifa', applicants[path]);
-  expect(result).toMatchObject({
-    capability: 'blocked',
-    kind: 'tracked_missing_rule',
-    sourceLabel: 'מיפוי המסלול טרם אומת',
-    officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
-  });
+  // Approved test update, Jorje 2026-10-31: proxy-only cases have no subject-derived average; the saved profile still uses its rows.
+  expect(result).toMatchObject(
+    path === 'proxy'
+      ? {
+          capability: 'tracked_missing_rule',
+          kind: 'tracked_missing_rule',
+          sourceLabel: 'אין מספיק מידע',
+          officialUrls: haifaSources,
+        }
+      : {
+          capability: 'blocked',
+          kind: 'tracked_missing_rule',
+          sourceLabel: 'מיפוי המסלול טרם אומת',
+          officialUrls: [
+            'https://admissions.haifa.ac.il/computer-information-science/program/3218/',
+          ],
+        },
+  );
 });
 
 it('saved Haifa infosystems without a track still asks for the track', async () => {
@@ -640,8 +662,10 @@ it.each(['1280', '390', '1280-retry', '390-retry'])(
     expect(degreeIds).toContain('haifa_cs');
     expect(profile).toEqual({ bagrut: 98, psychometric: 600 });
     const normalized = normalizeEvaluationInputs({ degreeId: 'haifa_cs', ...profile });
-    expect(normalized.input.extraInputs?.haifaBagrutAverage).toBe(98);
-    expect(normalized.proxyInstitutions.has('haifa')).toBe(true);
+    // Approved test update, Jorje 2026-10-31: the captured overall average cannot become a Haifa institutional average.
+    expect(normalized.input.extraInputs?.haifaBagrutAverage).toBeUndefined();
+    // Approved test update, Jorje 2026-10-31: captured average-only requests no longer create a Haifa proxy.
+    expect(normalized.proxyInstitutions.has('haifa')).toBe(false);
     const { result, fetcher } = await gapEvaluate(
       gapPrograms.find((program) => program.id === 'haifa_cs')!,
       'haifa',
@@ -674,12 +698,12 @@ it.each(qa.h2.allRequest.degreeIds)(
     );
     if (id === 'haifa_infosystems') {
       // Approved test update, Jorje 2026-10-29
+      // Approved test update, Jorje 2026-10-31: missing subject rows produce the honest no-calculation result before track mapping.
       expect(result).toMatchObject({
         kind: 'tracked_missing_rule',
-        capability: 'blocked',
-        explanation:
-          'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
-        officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+        capability: 'tracked_missing_rule',
+        explanation: HAIFA_NO_CALCULATION_NOTE,
+        officialUrls: haifaSources,
       });
     } else if (id === 'haifa_engineering') {
       // Approved test update, Jorje 2026-10-29

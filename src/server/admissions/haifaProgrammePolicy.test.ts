@@ -222,8 +222,10 @@ describe('current Haifa programme requirements', () => {
 });
 
 it.each([
-  ['saved', false, 104, 'blocked', 'מיפוי המסלול טרם אומת'],
-  ['proxy', true, 104, 'blocked', 'מיפוי המסלול טרם אומת'],
+  // Approved test update, Jorje 2026-10-31: a saved legacy average cannot establish the subject-derived Haifa average.
+  ['saved', false, 104, 'tracked_missing_rule', 'אין מספיק מידע'],
+  // Approved test update, Jorje 2026-10-31: a generic proxy cannot establish the subject-derived Haifa average.
+  ['proxy', true, 104, 'tracked_missing_rule', 'אין מספיק מידע'],
   ['no average', false, undefined, 'tracked_missing_rule', 'אין מספיק מידע'],
 ] as const)(
   'unresolved Haifa mapping with %s average preserves the appropriate policy',

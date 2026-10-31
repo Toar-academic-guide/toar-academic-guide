@@ -103,6 +103,7 @@ describe('AcademicProfileForm', () => {
     expect(await screen.findByText(/בדקו את נתוני חיפה/)).toBeTruthy();
   });
   it('loads and saves Haifa decimal average and actual years without generic scores', async () => {
+    // Approved test update, Jorje 2026-10-31: omit the retired Haifa average field and save only actual exam years.
     const onComplete = vi.fn();
     const admissions = {
       haifaBagrutAverage: 102.25,
@@ -117,17 +118,14 @@ describe('AcademicProfileForm', () => {
         initialScores={{ admissions }}
       />,
     );
-    expect(screen.getByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toHaveProperty(
-      'value',
-      '102.25',
-    );
+    expect(screen.queryByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toBeNull();
     fireEvent.change(screen.getByLabelText('שנת הזכאות לבגרות או השיפור האחרון בחיפה'), {
       target: { value: '2020' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
-        admissions: { ...admissions, haifaBagrutYear: 2020 },
+        admissions: { haifaBagrutYear: 2020, haifaPsychometricYear: 2026 },
       }),
     );
   });
@@ -450,6 +448,7 @@ describe('AcademicProfileForm', () => {
   });
 
   it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
+    // Approved test update, Jorje 2026-10-31: exclude the legacy Haifa average from saved admissions inputs.
     const onComplete = vi.fn();
 
     render(
@@ -494,7 +493,6 @@ describe('AcademicProfileForm', () => {
           tauApplicationRequirementsConfirmed: false,
           bguLanguageRequirementsConfirmed: false,
           tauMathPlacementScore: 0,
-          haifaBagrutAverage: 102.25,
           haifaBagrutYear: 2015,
           haifaPsychometricYear: 2026,
         },
@@ -1031,4 +1029,50 @@ it('Amit 07:33: legacy certificate fields render safely without full-bagrut cont
     'תעודת הקבלה לאוניברסיטת חיפה',
   ])
     expect(screen.queryByLabelText(label)).toBeNull();
+});
+
+it('never renders an institutional Haifa average for a stored profile', () => {
+  render(
+    <AcademicProfileForm
+      onComplete={vi.fn()}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      initialScores={{
+        admissions: {
+          haifaBagrutAverage: 102.25,
+          haifaBagrutYear: 2015,
+          haifaPsychometricYear: 2025,
+        },
+      }}
+    />,
+  );
+  expect(screen.queryByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toBeNull();
+  expect(screen.getByLabelText('שנת הבחינה הפסיכומטרית לחישוב בחיפה')).toHaveProperty(
+    'value',
+    '2025',
+  );
+});
+
+it('saves a profile without a legacy Haifa average override', async () => {
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      initialScores={{
+        admissions: {
+          haifaBagrutAverage: 102.25,
+          haifaBagrutYear: 2015,
+          haifaPsychometricYear: 2025,
+        },
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
+  await waitFor(() =>
+    expect(onComplete).toHaveBeenCalledWith({
+      admissions: { haifaBagrutYear: 2015, haifaPsychometricYear: 2025 },
+    }),
+  );
 });

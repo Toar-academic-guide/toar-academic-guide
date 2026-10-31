@@ -126,7 +126,10 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
       },
     });
     expect(result.requiredInputs).toBeUndefined();
-    expect(result).toMatchObject({ capability: 'exact', score: 701, threshold: 650 });
+    // Approved test update, Jorje 2026-10-31: NITE total cannot replace missing subject rows when the legacy average is ignored.
+    expect(result).toMatchObject({ capability: 'authority_unavailable', decision: 'unknown' });
+    // Approved test update, Jorje 2026-10-31: the ignored legacy average cannot establish a Haifa score or cutoff.
+    expect([result.score, result.threshold]).toEqual([undefined, undefined]);
     expect(fetcher).not.toHaveBeenCalled();
   });
   it('asks for the missing PM components on maths programmes', async () => {

@@ -63,6 +63,33 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     );
 }
 
+function haifaReasons(result: AdmissionsEvaluationResult): string[] {
+  if (result.linkedInstitutionId !== 'haifa') return [];
+  return [...new Set([result.explanation, result.estimationReason])]
+    .filter(
+      (text): text is string =>
+        typeof text === 'string' &&
+        Boolean(text.trim()) &&
+        /[א-ת]/.test(text) &&
+        !/[a-z_]|מיפוי|טרם אומת|מקור חסום|עדיין לא מחשבים כאן|ציון הקבלה חושב לפי נוסחת/i.test(
+          text,
+        ),
+    )
+    .map((text) => text.trim().replace(/מתואם|סכם|מצרף/g, 'ציון הקבלה'));
+}
+
+function renderHaifaReason(text: string) {
+  return text.split(/(\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*)/g).map((part, index) =>
+    index % 2 ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 function InstitutionGroup({
   entries,
   entry,
@@ -82,6 +109,8 @@ function InstitutionGroup({
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
   const presentation = resultPresentation(result);
+  const reasons = haifaReasons(result);
+  const resultText = numberless && reasons.length ? reasons[0] : presentation.text;
   const scoreOnly = presentation.text === null;
   // Accepted floor-only routes have one unambiguous line. A text-only manual gate
   // instead carries the actual returned gate, without a generic fallback sentence.
@@ -165,7 +194,11 @@ function InstitutionGroup({
                 data-result-reason={numberless ? '' : undefined}
                 className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
               >
-                {presentation.text}
+                {offering.institutionId === 'haifa' &&
+                resultText !== null &&
+                reasons.includes(resultText)
+                  ? renderHaifaReason(resultText)
+                  : resultText}
                 {presentation.actions?.map((action, index) => (
                   <span key={action.label}>
                     {index > 0 && ' וב'}
@@ -185,6 +218,13 @@ function InstitutionGroup({
                 {gate}
               </p>
             ))}
+            {reasons
+              .filter((reason) => reason !== resultText && !visibleGates.includes(reason))
+              .map((reason) => (
+                <p key={reason} data-result-reason className="mt-2 text-sm text-(--text-body)">
+                  {renderHaifaReason(reason)}
+                </p>
+              ))}
           </div>
         )}
       </div>

@@ -377,11 +377,7 @@ async function evaluateCapabilityEntries(args: {
     if (institution.id === 'haifa') {
       const { calculateHaifaBagrutAverage } =
         await import('@/data/admissions/haifaAdmissionFormula');
-      const average =
-        (!args.haifaAverageIsProxy ? input.extraInputs?.haifaBagrutAverage : undefined) ??
-        calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
-      if (average !== undefined)
-        input.extraInputs = { ...input.extraInputs, haifaBagrutAverage: average };
+      const average = calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
       if (
         average === undefined ||
         (program.id === 'haifa_infosystems' &&
@@ -1029,10 +1025,14 @@ async function evaluateExactScores(args: {
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
       if (requestedInput.psychometric === undefined)
         return requiredInputsResult(institution, ['psychometric_overall']);
-      const average = requestedInput.extraInputs?.haifaBagrutAverage;
+      const {
+        calculateHaifaAdmissionScore,
+        calculateHaifaBagrutAverage,
+        haifaUsesMathPsychometric,
+        HAIFA_FORMULA_SOURCE_URL,
+      } = await import('@/data/admissions/haifaAdmissionFormula');
+      const average = calculateHaifaBagrutAverage(requestedInput.extraInputs?.bagrutSubjectRecord);
       if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
-      const { calculateHaifaAdmissionScore, haifaUsesMathPsychometric, HAIFA_FORMULA_SOURCE_URL } =
-        await import('@/data/admissions/haifaAdmissionFormula');
       const policy = getHaifaProgrammePolicy(
         program.id,
         requestedInput.extraInputs?.haifaInformationSystemsTrack,
