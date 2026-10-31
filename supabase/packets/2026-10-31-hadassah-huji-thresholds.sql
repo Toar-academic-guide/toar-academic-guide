@@ -11,30 +11,37 @@
 -- https://go.tau.ac.il/he/med/ba/med-doc?v=new-info
 -- https://admissions.technion.ac.il/sechem-for-admission/
 -- https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/
--- Technion 92 is an estimated invitation threshold for the MOR test, not final admission.
+-- Technion intentionally untouched: Mario confirmed prod already has 92 on 2026-10-31.
+-- The static 92 remains an estimated MOR invitation threshold from the URLs above;
+-- captured in /workspace/codex-tasks/medicine-captures-2026-10-31/capture.md.
 -- https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=471&p_pat1=1&p_degree_level=8
 -- https://medicine.biu.ac.il/six_year_track_application_requirements
 -- https://www.jmc.ac.il/ and https://www.aac.ac.il/
 -- Hadassah desired strings match commit 6a54a26 / PR #353; old values below
--- come from main 2e43e5f's buildCatalogueSeed output. No #353 code is ported here.
+-- use Mario-confirmed live URLs and exact legacy values from 2e43e5f.
+-- Unconfirmed legacy rows must match the fail-closed checks below before any change.
 -- Scale rule: use a figure only on its column's scale; otherwise retain the row
 -- with NULL. Never put HUJI's 11–30 values into legacy 200–800 columns.
 
--- Read-only prechecks. The locked guards below abort on incompatible state.
+-- Read-only prechecks. No database connection or execution is part of this PR.
 SELECT table_schema, table_name, column_name, data_type, is_nullable
 FROM information_schema.columns
 WHERE table_schema = 'public' AND table_name = 'admission_thresholds'
   AND column_name = 'threshold_value';
 SELECT id, program_id, institution_id, university_id, threshold_kind, threshold_value
-FROM public.admission_thresholds
-WHERE program_id IN ('huji_biology', 'medicine', 'huji_medicine', 'tau_medicine', 'biu_medicine')
-ORDER BY id;
+FROM public.admission_thresholds WHERE id IN (
+  'huji_biology:huji:huji:sekhem',
+  'medicine:tau:tau:sekhem',
+  'medicine:huji:huji:sekhem',
+  'medicine:biu:biu:sekhem',
+  'huji_medicine:huji:huji:sekhem',
+  'tau_medicine:tau:tau:sekhem',
+  'biu_medicine:biu:biu:sekhem',
+  'medicine:bgu:bgu:sekhem') ORDER BY id;
 SELECT id, name, domain, program_url FROM public.institutions
-WHERE id IN ('hadassah', 'ashkelon') OR name = 'המרכז האקדמי הרב-תחומי ירושלים';
+WHERE id IN ('hadassah', 'ashkelon');
 SELECT id, name, institution_name FROM public.programs
-WHERE id = 'hadassah_general_academic'
-  OR name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%'
-  OR institution_name = 'המרכז האקדמי הרב-תחומי ירושלים';
+WHERE id = 'hadassah_general_academic';
 
 BEGIN ISOLATION LEVEL SERIALIZABLE;
 SET LOCAL lock_timeout = '5s';
@@ -53,51 +60,97 @@ BEGIN
   IF (SELECT count(*) FROM public.admission_thresholds WHERE program_id = 'huji_biology') <> 1 THEN
     RAISE EXCEPTION 'huji_biology must have exactly one threshold row';
   END IF;
-  IF (SELECT count(*) FROM public.admission_thresholds t JOIN (VALUES
-    ('huji_biology:huji:huji:sekhem', 'huji_biology', 'huji', 640),
-    ('medicine:tau:tau:sekhem', 'medicine', 'tau', 770),
-    ('medicine:huji:huji:sekhem', 'medicine', 'huji', 775),
-    ('medicine:technion:technion:sekhem', 'medicine', 'technion', 94),
-    ('medicine:biu:biu:sekhem', 'medicine', 'biu', 740),
-    ('huji_medicine:huji:huji:sekhem', 'huji_medicine', 'huji', 775),
-    ('tau_medicine:tau:tau:sekhem', 'tau_medicine', 'tau', 770),
-    ('biu_medicine:biu:biu:sekhem', 'biu_medicine', 'biu', 740)
-  ) old(id, program_id, institution_id, value)
-    ON t.id = old.id AND t.program_id = old.program_id
-      AND t.institution_id = old.institution_id AND t.university_id = old.institution_id
-      AND t.threshold_kind = 'sekhem' AND t.threshold_value = old.value) <> 8 THEN
-    RAISE EXCEPTION 'Expected eight unchanged legacy thresholds; inspect drift or prior application';
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'huji_biology:huji:huji:sekhem' AND threshold_value = 640
+      AND program_id = 'huji_biology' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'huji_biology:huji:huji:sekhem must retain threshold_value = 640 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'medicine:tau:tau:sekhem' AND threshold_value = 770
+      AND program_id = 'medicine' AND institution_id = 'tau'
+      AND university_id = 'tau' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'medicine:tau:tau:sekhem must retain threshold_value = 770 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'medicine:huji:huji:sekhem' AND threshold_value = 775
+      AND program_id = 'medicine' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'medicine:huji:huji:sekhem must retain threshold_value = 775 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'medicine:biu:biu:sekhem' AND threshold_value = 740
+      AND program_id = 'medicine' AND institution_id = 'biu'
+      AND university_id = 'biu' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'medicine:biu:biu:sekhem must retain threshold_value = 740 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'huji_medicine:huji:huji:sekhem' AND threshold_value = 775
+      AND program_id = 'huji_medicine' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'huji_medicine:huji:huji:sekhem must retain threshold_value = 775 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'tau_medicine:tau:tau:sekhem' AND threshold_value = 770
+      AND program_id = 'tau_medicine' AND institution_id = 'tau'
+      AND university_id = 'tau' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'tau_medicine:tau:tau:sekhem must retain threshold_value = 770 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE id = 'biu_medicine:biu:biu:sekhem' AND threshold_value = 740
+      AND program_id = 'biu_medicine' AND institution_id = 'biu'
+      AND university_id = 'biu' AND threshold_kind = 'sekhem') THEN
+    RAISE EXCEPTION 'biu_medicine:biu:biu:sekhem must retain threshold_value = 740 and its exact identity';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.institutions
+    WHERE id = 'hadassah' AND name = 'המרכז האקדמי הרב-תחומי ירושלים') THEN
+    RAISE EXCEPTION 'institutions.hadassah.name differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.institutions
+    WHERE id = 'hadassah' AND domain = 'macam.ac.il') THEN
+    RAISE EXCEPTION 'institutions.hadassah.domain differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.institutions
+    WHERE id = 'hadassah' AND program_url = 'https://www.macam.ac.il') THEN
+    RAISE EXCEPTION 'institutions.hadassah.program_url differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.institutions
+    WHERE id = 'ashkelon' AND domain = 'ac.il') THEN
+    RAISE EXCEPTION 'institutions.ashkelon.domain differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.institutions
+    WHERE id = 'ashkelon' AND program_url = 'https://www.ac.il') THEN
+    RAISE EXCEPTION 'institutions.ashkelon.program_url differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.programs
+    WHERE id = 'hadassah_general_academic' AND name = 'לימודים אקדמיים - המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah') THEN
+    RAISE EXCEPTION 'programs.hadassah_general_academic.name differs from the exact expected old value';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM public.programs
+    WHERE id = 'hadassah_general_academic' AND institution_name = 'המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah') THEN
+    RAISE EXCEPTION 'programs.hadassah_general_academic.institution_name differs from the exact expected old value';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.programs WHERE id = 'medicine')
     OR NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'bgu') THEN
     RAISE EXCEPTION 'Generic medicine and BGU must already exist';
   END IF;
+  IF EXISTS (SELECT 1 FROM public.program_institutions
+    WHERE program_id = 'medicine' AND institution_id = 'bgu') THEN
+    RAISE EXCEPTION 'medicine:bgu link must be absent; inspect existing membership before inserting';
+  END IF;
   IF EXISTS (SELECT 1 FROM public.admission_thresholds
-    WHERE (id = 'medicine:bgu:bgu:sekhem'
-      OR (program_id = 'medicine' AND institution_id = 'bgu'
-        AND university_id = 'bgu' AND threshold_kind = 'sekhem'))
-      AND NOT (id = 'medicine:bgu:bgu:sekhem' AND program_id = 'medicine'
-        AND institution_id = 'bgu' AND university_id = 'bgu'
-        AND threshold_kind = 'sekhem' AND threshold_value IS NOT DISTINCT FROM 735)) THEN
-    RAISE EXCEPTION 'Existing generic BGU medicine threshold differs; do not overwrite';
+    WHERE id = 'medicine:bgu:bgu:sekhem'
+      OR (program_id = 'medicine' AND institution_id = 'bgu' AND threshold_kind = 'sekhem')) THEN
+    RAISE EXCEPTION 'medicine:bgu:bgu:sekhem must be absent; inspect existing threshold before inserting';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'hadassah'
-    AND name IN ('המרכז האקדמי הרב-תחומי ירושלים', 'המרכז האקדמי הרב תחומי ירושלים')
-    AND domain IN ('macam.ac.il', 'jmc.ac.il')
-    AND program_url IN ('https://www.macam.ac.il', 'https://www.jmc.ac.il/'))
-    OR NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'ashkelon'
-      AND domain IN ('ac.il', 'aac.ac.il')
-      AND (program_url IS NULL OR program_url = 'https://www.aac.ac.il/')) THEN
-    RAISE EXCEPTION 'Institution fields differ from main / reviewed destination';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.programs WHERE id = 'hadassah_general_academic'
-    AND institution_id = 'hadassah'
-    AND name IN ('לימודים אקדמיים - המכללה האקדמית הדסה ירושלים',
-      'לימודים אקדמיים - המרכז האקדמי הרב-תחומי ירושלים',
-      'לימודים אקדמיים - המרכז האקדמי הרב תחומי ירושלים')
-    AND institution_name IN ('המכללה האקדמית הדסה ירושלים',
-      'המרכז האקדמי הרב-תחומי ירושלים', 'המרכז האקדמי הרב תחומי ירושלים')) THEN
-    RAISE EXCEPTION 'Hadassah programme identity differs; inspect before changing it';
+  -- No by-name sweep: an unexpected provider row needs a separately reviewed id.
+  IF EXISTS (SELECT 1 FROM public.institutions
+    WHERE name = 'המרכז האקדמי הרב-תחומי ירושלים' AND id <> 'hadassah')
+    OR EXISTS (SELECT 1 FROM public.programs
+      WHERE (name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%'
+        OR institution_name = 'המרכז האקדמי הרב-תחומי ירושלים')
+        AND id <> 'hadassah_general_academic') THEN
+    RAISE EXCEPTION 'Unexpected hyphenated Hadassah provider ids; inspect before any changes';
   END IF;
 END $precheck$;
 
@@ -107,50 +160,71 @@ CREATE SCHEMA hadassah_huji_20261031;
 REVOKE ALL ON SCHEMA hadassah_huji_20261031 FROM PUBLIC;
 CREATE TABLE hadassah_huji_20261031.thresholds_before AS
 SELECT * FROM public.admission_thresholds WHERE id IN (
-  'huji_biology:huji:huji:sekhem', 'medicine:tau:tau:sekhem',
-  'medicine:huji:huji:sekhem', 'medicine:technion:technion:sekhem',
-  'medicine:biu:biu:sekhem', 'huji_medicine:huji:huji:sekhem',
-  'tau_medicine:tau:tau:sekhem', 'biu_medicine:biu:biu:sekhem', 'medicine:bgu:bgu:sekhem');
+  'huji_biology:huji:huji:sekhem',
+  'medicine:tau:tau:sekhem',
+  'medicine:huji:huji:sekhem',
+  'medicine:biu:biu:sekhem',
+  'huji_medicine:huji:huji:sekhem',
+  'tau_medicine:tau:tau:sekhem',
+  'biu_medicine:biu:biu:sekhem',
+  'medicine:bgu:bgu:sekhem');
 CREATE TABLE hadassah_huji_20261031.institutions_before AS
-SELECT * FROM public.institutions WHERE id IN ('hadassah', 'ashkelon')
-  OR name = 'המרכז האקדמי הרב-תחומי ירושלים';
+SELECT * FROM public.institutions WHERE id IN ('hadassah', 'ashkelon');
 CREATE TABLE hadassah_huji_20261031.programs_before AS
-SELECT * FROM public.programs WHERE id = 'hadassah_general_academic'
-  OR name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%'
-  OR institution_name = 'המרכז האקדמי הרב-תחומי ירושלים';
+SELECT * FROM public.programs WHERE id = 'hadassah_general_academic';
 CREATE TABLE hadassah_huji_20261031.links_before AS
 SELECT * FROM public.program_institutions WHERE program_id = 'medicine' AND institution_id = 'bgu';
 
 UPDATE public.admission_thresholds SET threshold_value = NULL
-WHERE id = 'huji_biology:huji:huji:sekhem' AND threshold_value = 640;
+WHERE id = 'huji_biology:huji:huji:sekhem' AND threshold_value = 640
+      AND program_id = 'huji_biology' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = 726.44
-WHERE id = 'medicine:tau:tau:sekhem' AND threshold_value = 770;
+WHERE id = 'medicine:tau:tau:sekhem' AND threshold_value = 770
+      AND program_id = 'medicine' AND institution_id = 'tau'
+      AND university_id = 'tau' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = NULL
-WHERE id = 'medicine:huji:huji:sekhem' AND threshold_value = 775;
-UPDATE public.admission_thresholds SET threshold_value = 92
-WHERE id = 'medicine:technion:technion:sekhem' AND threshold_value = 94;
+WHERE id = 'medicine:huji:huji:sekhem' AND threshold_value = 775
+      AND program_id = 'medicine' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = NULL
-WHERE id = 'medicine:biu:biu:sekhem' AND threshold_value = 740;
+WHERE id = 'medicine:biu:biu:sekhem' AND threshold_value = 740
+      AND program_id = 'medicine' AND institution_id = 'biu'
+      AND university_id = 'biu' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = NULL
-WHERE id = 'huji_medicine:huji:huji:sekhem' AND threshold_value = 775;
+WHERE id = 'huji_medicine:huji:huji:sekhem' AND threshold_value = 775
+      AND program_id = 'huji_medicine' AND institution_id = 'huji'
+      AND university_id = 'huji' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = 726.44
-WHERE id = 'tau_medicine:tau:tau:sekhem' AND threshold_value = 770;
+WHERE id = 'tau_medicine:tau:tau:sekhem' AND threshold_value = 770
+      AND program_id = 'tau_medicine' AND institution_id = 'tau'
+      AND university_id = 'tau' AND threshold_kind = 'sekhem';
 UPDATE public.admission_thresholds SET threshold_value = NULL
-WHERE id = 'biu_medicine:biu:biu:sekhem' AND threshold_value = 740;
+WHERE id = 'biu_medicine:biu:biu:sekhem' AND threshold_value = 740
+      AND program_id = 'biu_medicine' AND institution_id = 'biu'
+      AND university_id = 'biu' AND threshold_kind = 'sekhem';
 
--- Main has no generic BGU relation/threshold: NULL was omitted by pair discovery.
--- Add the relation and row only if absent; preserve a pre-existing matching 735.
--- This adds catalogue membership, not an exact-verification claim for the alias.
+-- Exact expected old state for both inserts is absence, enforced under the lock.
+-- Neither absence has been independently confirmed on prod: Mario must inspect
+-- the prechecks. Even an existing matching 735 aborts before any mutation.
 INSERT INTO public.program_institutions (program_id, institution_id)
-VALUES ('medicine', 'bgu') ON CONFLICT DO NOTHING;
+SELECT 'medicine', 'bgu'
+WHERE NOT EXISTS (SELECT 1 FROM public.program_institutions
+  WHERE program_id = 'medicine' AND institution_id = 'bgu')
+ON CONFLICT DO NOTHING;
 INSERT INTO public.admission_thresholds
   (id, program_id, institution_id, university_id, threshold_kind, threshold_value)
 SELECT 'medicine:bgu:bgu:sekhem', 'medicine', 'bgu', 'bgu', 'sekhem', 735
-WHERE NOT EXISTS (SELECT 1 FROM public.admission_thresholds WHERE id = 'medicine:bgu:bgu:sekhem')
+WHERE NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+  WHERE id = 'medicine:bgu:bgu:sekhem'
+    OR (program_id = 'medicine' AND institution_id = 'bgu' AND threshold_kind = 'sekhem'))
 ON CONFLICT DO NOTHING;
 
+-- Historical enquiries remain immutable consent snapshots. Static maps are not
+-- database provider columns and are outside this packet's scope.
+
 UPDATE public.institutions SET name = 'המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE name = 'המרכז האקדמי הרב-תחומי ירושלים';
+WHERE id = 'hadassah' AND name = 'המרכז האקדמי הרב-תחומי ירושלים';
 UPDATE public.institutions SET domain = 'jmc.ac.il', updated_at = now()
 WHERE id = 'hadassah' AND domain = 'macam.ac.il';
 UPDATE public.institutions SET program_url = 'https://www.jmc.ac.il/', updated_at = now()
@@ -158,33 +232,23 @@ WHERE id = 'hadassah' AND program_url = 'https://www.macam.ac.il';
 UPDATE public.institutions SET domain = 'aac.ac.il', updated_at = now()
 WHERE id = 'ashkelon' AND domain = 'ac.il';
 UPDATE public.institutions SET program_url = 'https://www.aac.ac.il/', updated_at = now()
-WHERE id = 'ashkelon' AND program_url IS NULL;
-
+WHERE id = 'ashkelon' AND program_url = 'https://www.ac.il';
 UPDATE public.programs SET name = 'לימודים אקדמיים - המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE id = 'hadassah_general_academic' AND name = 'לימודים אקדמיים - המכללה האקדמית הדסה ירושלים';
+WHERE id = 'hadassah_general_academic' AND name = 'לימודים אקדמיים - המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah';
 UPDATE public.programs SET institution_name = 'המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE id = 'hadassah_general_academic' AND institution_name = 'המכללה האקדמית הדסה ירושלים';
--- These are the other stored name fields read by catalogue serializers; there is
--- no separate provider column. Exact old-string predicates cover legacy aliases.
-UPDATE public.programs SET name = replace(name, 'המרכז האקדמי הרב-תחומי ירושלים',
-  'המרכז האקדמי הרב תחומי ירושלים'), updated_at = now()
-WHERE name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%';
-UPDATE public.programs SET institution_name = 'המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE institution_name = 'המרכז האקדמי הרב-תחומי ירושלים';
--- Historical enquiries are immutable consent snapshots, not catalogue providers;
--- they are not rewritten. Static maps are outside this packet's database scope.
+WHERE id = 'hadassah_general_academic' AND institution_name = 'המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah';
 
 DO $verify$
 BEGIN
   IF (SELECT count(*) FROM public.admission_thresholds t JOIN (VALUES
     ('huji_biology:huji:huji:sekhem', NULL::numeric),
     ('medicine:tau:tau:sekhem', 726.44), ('medicine:huji:huji:sekhem', NULL::numeric),
-    ('medicine:technion:technion:sekhem', 92), ('medicine:biu:biu:sekhem', NULL::numeric),
+    ('medicine:biu:biu:sekhem', NULL::numeric),
     ('huji_medicine:huji:huji:sekhem', NULL::numeric),
     ('tau_medicine:tau:tau:sekhem', 726.44), ('biu_medicine:biu:biu:sekhem', NULL::numeric),
     ('medicine:bgu:bgu:sekhem', 735)
   ) expected(id, value) ON t.id = expected.id
-    AND t.threshold_value IS NOT DISTINCT FROM expected.value) <> 9 THEN
+    AND t.threshold_value IS NOT DISTINCT FROM expected.value) <> 8 THEN
     RAISE EXCEPTION 'Threshold verification failed';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.program_institutions
@@ -228,6 +292,8 @@ ROLLBACK;
 
 /*
 Rollback after a committed application: owner connection, ON_ERROR_STOP enabled.
+Exact prechecked backups restore Ashkelon program_url = 'https://www.ac.il' and
+domain = 'ac.il', and Hadassah program_url = 'https://www.macam.ac.il'.
 Keep the backup schema until the application and rollback window are signed off.
 BEGIN ISOLATION LEVEL SERIALIZABLE;
 SET LOCAL lock_timeout = '5s';
