@@ -26,6 +26,19 @@ const bguRecord: BagrutSubjectRecordV2 = {
 };
 
 describe('evaluation input derivation and provenance', () => {
+  it.each(['other', 'external_1977_or_later'] as const)(
+    'derives the BGU average from a non-internal %s certificate',
+    (certificateType) => {
+      const normalized = normalizeEvaluationInputs({
+        degreeId: 'bgu_cs',
+        extraInputs: { bagrutSubjectRecord: { ...bguRecord, certificateType } },
+      });
+
+      expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+      expect(normalized.reasons.bgu).toBeUndefined();
+    },
+  );
+
   it('uses the reviewed BGU worked example (111.9), deriving the generic unit average separately', () => {
     const source = { degreeId: 'bgu_cs', extraInputs: { bagrutSubjectRecord: bguRecord } };
     const before = structuredClone(source);

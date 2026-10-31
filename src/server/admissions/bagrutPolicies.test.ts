@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import type { BagrutSubjectRecordV2 } from '@/types';
 import { TAU_BAGRUT_AVERAGE_VERIFICATION } from '@/data/admissions/tauBagrutAverageVerification';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 
@@ -119,6 +120,35 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
 });
 
 describe('versioned admissions input policies', () => {
+  it.each(['other', 'external_1977_or_later'] as const)(
+    'calculates the same BGU average for an %s certificate as an internal certificate',
+    (certificateType) => {
+      const record: BagrutSubjectRecordV2 = {
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'internal',
+        complete: true,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'computer_science', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'hebrew_expression', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'history', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'literature', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'civics', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'bible', units: 2, grade: 85, assessmentKind: 'exam' },
+        ],
+      };
+      const internal = calculateBguBagrutAverage(record);
+      const result = calculateBguBagrutAverage({ ...record, certificateType });
+
+      expect(internal).toMatchObject({ state: 'calculated', average: 110 });
+      expect(result).toMatchObject({ state: 'calculated', average: 110 });
+      expect(result).toEqual(internal);
+    },
+  );
+
   it('reproduces the official BGU calculator sample and caps the optional average', () => {
     const result = calculateBguBagrutAverage({
       schemaVersion: 2,
