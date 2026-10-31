@@ -59,6 +59,10 @@ const booleanHaifaKeys = new Set([
   'haifaOtUnjustifiedAbsence',
   'haifaInformationSystemsPartnerRequirementsConfirmed',
 ]);
+const haifaAnswerDependencies = {
+  bagrut: ['haifaBagrutAverage', 'haifaScienceUnits'],
+  psychometric: ['haifaPsychometricMonth', 'haifaPsychometricYear'],
+} as const;
 
 function numericRowErrors(rows: BagrutSubjectRow[]): BagrutFieldErrors {
   return rows.map((row) => {
@@ -232,12 +236,16 @@ export default function SekhemCalculator({
     failedIds,
   ]);
 
-  function invalidate(keepRequired = false) {
+  function invalidate(dependencies: (keyof typeof haifaAnswerDependencies)[] = []) {
     generation.current++;
     setReports([]);
-    if (!keepRequired) {
-      setRequiredKeys([]);
-      setHaifaValues({});
+    if (dependencies.length) {
+      setHaifaValues((current) => {
+        const next = { ...current };
+        for (const dependency of dependencies)
+          for (const key of haifaAnswerDependencies[dependency]) delete next[key];
+        return next;
+      });
     }
     setFailedIds([]);
     setError('');
@@ -352,7 +360,15 @@ export default function SekhemCalculator({
             type="button"
             className="min-h-11 text-sm underline"
             onClick={() => {
-              invalidate();
+              invalidate([
+                'bagrut',
+                ...(psychometric !== '700' ||
+                verbal !== '130' ||
+                quantitative !== '140' ||
+                english !== '135'
+                  ? ['psychometric' as const]
+                  : []),
+              ]);
               setRows(exampleRows());
               setFieldErrors([]);
               setPsychometric('700');
@@ -370,7 +386,7 @@ export default function SekhemCalculator({
             rows={rows}
             fieldErrors={fieldErrors}
             onChange={(next) => {
-              invalidate();
+              invalidate(['bagrut']);
               setRows(next);
               if (fieldErrors.length) setFieldErrors(numericRowErrors(next));
             }}
@@ -385,7 +401,7 @@ export default function SekhemCalculator({
                 className="sekhem-input"
                 value={sector}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['bagrut']);
                   setSector(event.target.value);
                   setRows(rowsForSector(rows, event.target.value));
                 }}
@@ -401,7 +417,7 @@ export default function SekhemCalculator({
                 className="sekhem-input"
                 value={certificate}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['bagrut']);
                   setCertificate(event.target.value as BagrutCertificateType);
                 }}
               >
@@ -429,7 +445,7 @@ export default function SekhemCalculator({
           required
           value={psychometric}
           onChange={(event) => {
-            invalidate();
+            invalidate(['psychometric']);
             setPsychometric(event.target.value);
           }}
         />
@@ -455,7 +471,7 @@ export default function SekhemCalculator({
                 step={1}
                 value={field.value}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['psychometric']);
                   field.set(event.target.value);
                 }}
               />
@@ -487,7 +503,7 @@ export default function SekhemCalculator({
           keys={requiredKeys}
           values={haifaValues}
           onChange={(key, value) => {
-            invalidate(true);
+            invalidate();
             setHaifaValues((current) => ({ ...current, [key]: value }));
           }}
           disabled={busy}

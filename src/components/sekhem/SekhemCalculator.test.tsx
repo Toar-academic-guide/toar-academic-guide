@@ -61,6 +61,77 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
 
+async function answerHaifaFollowUps() {
+  fetchMock.mockResolvedValueOnce(
+    Response.json({
+      data: response([
+        'haifa_psychometric_month',
+        'haifa_psychometric_year',
+        'haifa_hebrew_qualification',
+        'haifa_bagrut_average',
+        'haifa_science_units',
+      ]),
+    }),
+  );
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(await screen.findByLabelText('חודש הבחינה הפסיכומטרית לחיפה'), {
+    target: { value: '4' },
+  });
+  for (const [label, value] of [
+    ['שנת הפסיכומטרי', '2025'],
+    ['ממוצע בגרות בחיפה', '104'],
+    ['מספר היחידות המדעיות לסיעוד בחיפה', '10'],
+    ['הבסיס לעמידה בדרישת העברית בחיפה', 'hebrew_school'],
+  ])
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+}
+
+it.each([
+  ['ציון 1', '91'],
+  ['מגזר', 'ערבי'],
+  ['סוג תעודה', 'internal'],
+])(
+  'keeps Haifa sitting answers after unrelated %s edits and clears derived bagrut answers',
+  async (label, value) => {
+    await answerHaifaFollowUps();
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+    expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '4');
+    expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '2025');
+    expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '');
+    expect(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה')).toHaveProperty('value', '');
+    submit();
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs).toMatchObject({
+      haifaPsychometricMonth: 4,
+      haifaPsychometricYear: 2025,
+      haifaHebrewQualification: 'hebrew_school',
+    });
+  },
+);
+
+it.each([
+  ['פסיכומטרי — ציון כללי', '701'],
+  ['מילולי', '131'],
+  ['כמותי', '141'],
+  ['אנגלית', '136'],
+])('clears only Haifa sitting answers when %s changes', async (label, value) => {
+  await answerHaifaFollowUps();
+  fireEvent.change(screen.getByLabelText(label, { exact: label !== 'פסיכומטרי — ציון כללי' }), {
+    target: { value },
+  });
+  expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '');
+  expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '');
+  expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '104');
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  const extras = JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs;
+  expect(extras.haifaPsychometricMonth).toBeUndefined();
+  expect(extras.haifaPsychometricYear).toBeUndefined();
+  expect(extras.haifaHebrewQualification).toBe('hebrew_school');
+});
+
 // Invalid select values can only arrive from a restored record, not from its options.
 function restoreUnits(units: number, grade = 92) {
   sessionStorage.setItem(
