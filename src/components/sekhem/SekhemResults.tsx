@@ -78,6 +78,18 @@ function haifaReasons(result: AdmissionsEvaluationResult): string[] {
     .map((text) => text.trim().replace(/מתואם|סכם|מצרף/g, 'ציון הקבלה'));
 }
 
+function renderHaifaReason(text: string) {
+  return text.split(/(\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*)/g).map((part, index) =>
+    index % 2 ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 function InstitutionGroup({
   entries,
   entry,
@@ -182,7 +194,11 @@ function InstitutionGroup({
                 data-result-reason={numberless ? '' : undefined}
                 className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
               >
-                {resultText}
+                {offering.institutionId === 'haifa' &&
+                resultText !== null &&
+                reasons.includes(resultText)
+                  ? renderHaifaReason(resultText)
+                  : resultText}
                 {presentation.actions?.map((action, index) => (
                   <span key={action.label}>
                     {index > 0 && ' וב'}
@@ -206,7 +222,7 @@ function InstitutionGroup({
               .filter((reason) => reason !== resultText && !visibleGates.includes(reason))
               .map((reason) => (
                 <p key={reason} data-result-reason className="mt-2 text-sm text-(--text-body)">
-                  {reason}
+                  {renderHaifaReason(reason)}
                 </p>
               ))}
           </div>

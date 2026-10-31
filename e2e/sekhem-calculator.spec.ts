@@ -161,9 +161,11 @@ async function installMocks(
         inputDigest: 'browser-response-contract',
         input: { ...input, degreeId },
         program: { id: degreeId, name: degreeId },
-        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage).map(
-          (row) => (decorate ? decorate(row) : row),
-        ),
+        // Approved test update, Jorje 2026-10-31: resolve Haifa follow-ups from the Hebrew answer instead of the removed average.
+        results: apiResults(
+          degreeId,
+          requestHaifa && !batch.extraInputs?.haifaHebrewQualification,
+        ).map((row) => (decorate ? decorate(row) : row)),
       };
       response[degreeId] = report;
       reports.set(degreeId, report);
@@ -559,12 +561,13 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await fillProfile(page);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the Haifa average field is removed, including its fill and required-field check.
+  await expect(average).toHaveCount(0);
   await expect(hebrew).toBeVisible();
-  await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   ]);
   await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
   const haifa = page.getByTestId('institution-haifa');
@@ -574,22 +577,31 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   ).toHaveAttribute('href', `/programs/${selectedProgram}`);
   await expect(page.getByTestId('institution-haifa')).toContainText(
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   );
-  await average.fill('104');
   await hebrew.selectOption('hebrew_school');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toHaveCount(0);
-  await expect(hebrew).toHaveCount(0);
+  // Approved test update, Jorje 2026-10-31: retain the answered Hebrew qualification across recalculation.
+  await expect(hebrew).toHaveValue('hebrew_school');
   await expect(page.getByTestId('institution-haifa')).toContainText('706');
-  expect(mocks.batches.some((batch) => batch.extraInputs?.haifaBagrutAverage === 104)).toBe(true);
+  // Approved test update, Jorje 2026-10-31: never forward a removed Haifa average override.
+  expect(mocks.batches.every((batch) => batch.extraInputs?.haifaBagrutAverage === undefined)).toBe(
+    true,
+  );
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('701');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the removed Haifa average field stays absent after editing a score.
+  await expect(average).toHaveCount(0);
   expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaBagrutAverage');
-  expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaHebrewQualification');
+  // Approved test update, Jorje 2026-10-31: a psychometric edit preserves the independent Hebrew qualification.
+  expect(mocks.batches.at(-1)!.extraInputs).toHaveProperty(
+    'haifaHebrewQualification',
+    'hebrew_school',
+  );
   expect(mocks.submissions).toHaveLength(0);
 });
 

@@ -51,6 +51,38 @@ it('shows a Haifa floor reason alongside returned scores', () => {
   expect(screen.getByText(explanation)).toBeTruthy();
 });
 
+it('keeps a Haifa waiting range in left-to-right order within its reason', () => {
+  const explanation = 'ציון הקבלה נמצא בטווח ההמתנה 680–699; נדרשת החלטת החוג.';
+  const source = report('haifa', {
+    score: 694,
+    threshold: 700,
+    explanation,
+  });
+  source.input.degreeId = source.program.id = 'haifa_cs';
+  render(
+    <SekhemResults
+      reports={[source]}
+      offerings={[
+        {
+          ...offerings[0],
+          programId: 'haifa_cs',
+          institutionId: 'haifa',
+          programName: 'מדעי המחשב',
+        },
+      ]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+
+  const row = screen.getByTestId('result-haifa_cs-haifa');
+  const ranges = Array.from(row.querySelectorAll('[dir="ltr"]')).filter(
+    (element) => element.textContent === '680–699',
+  );
+  expect(ranges).toHaveLength(1);
+  expect(ranges[0].textContent).toBe('680–699');
+  expect(row.querySelector('[data-result-reason]')?.textContent).toBe(explanation);
+});
+
 it('shows returned Haifa year assumptions without internal diagnostic text', () => {
   const estimationReason = 'שנת הפסיכומטרי לא נמסרה; החישוב מניח את מחזור 2026.';
   render(

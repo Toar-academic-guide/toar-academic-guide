@@ -89,16 +89,19 @@ describe('evaluation input derivation and provenance', () => {
       bagrut: 105,
       psychometric: 650,
     });
+    // Approved test update, Jorje 2026-10-31: never manufacture a Haifa average proxy; retain both cycle defaults.
     expect(normalized.input.extraInputs).toMatchObject({
       bguBagrutAverage: 105,
       tauBagrutAverage: 105,
-      haifaBagrutAverage: 105,
       colmanBagrutAverage: 105,
       haifaBagrutYear: HAIFA_ADMISSION_YEAR,
       haifaPsychometricYear: HAIFA_ADMISSION_YEAR,
     });
-    for (const id of ['bgu', 'tau', 'haifa', 'colman'])
+    // Approved test update, Jorje 2026-10-31: Haifa no longer uses the overall average as an institutional proxy.
+    for (const id of ['bgu', 'tau', 'colman'])
       expect(normalized.reasons[id].join(' ')).toContain('105');
+    // Approved test update, Jorje 2026-10-31: retain year assumptions without introducing a Haifa average.
+    expect(normalized.input.extraInputs.haifaBagrutAverage).toBeUndefined();
     expect(normalized.input.extraInputs.bagrutSubjectRecord).toBeUndefined();
     expect(normalized.input.extraInputs.psychometricMath).toBeUndefined();
     expect(normalized.input.extraInputs.haifaAdmissionQualification).toBeUndefined();

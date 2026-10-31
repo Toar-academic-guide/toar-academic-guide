@@ -249,7 +249,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
         ...args,
         freshnessStatesBySourceId: new Map([[sourceId, state]]),
       });
-      expect(entry.capability).toBe('exact');
+      // Approved test update, Jorje 2026-10-31: a reviewed track still requires subject rows instead of a legacy average.
+      expect(entry.capability).toBe('needs_input');
       expect(entry.exactTarget?.program.externalId).toBe(artifact.contract.officialProgramId);
       expect(entry.pairVerification?.liveProof.sourceFingerprint).toBe(
         artifact.contract.sourceFingerprint,
@@ -642,7 +643,8 @@ describe('buildAdmissionsCapabilityMatrix', () => {
     });
 
     const haifaEntry = entries.find((entry) => entry.institutionId === 'haifa');
-    expect(haifaEntry?.capability).toBe('exact');
+    // Approved test update, Jorje 2026-10-31: a supplied Haifa average does not satisfy the missing subject-derived average.
+    expect(haifaEntry?.capability).toBe('needs_input');
   });
 
   it('returns open_admission for Open University', () => {

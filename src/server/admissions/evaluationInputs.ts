@@ -31,7 +31,6 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
   for (const [institution, key, calculator] of [
     ['bgu', 'bguBagrutAverage', calculateBguBagrutAverage],
     ['tau', 'tauBagrutAverage', calculateTauBagrutAverage],
-    ['haifa', 'haifaBagrutAverage', undefined],
     ['colman', 'colmanBagrutAverage', undefined],
   ] as const) {
     if (extraInputs[key] !== undefined) continue;

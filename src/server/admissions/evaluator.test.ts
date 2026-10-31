@@ -113,8 +113,14 @@ it.each([
     now: new Date('2026-10-29T12:00:00Z'),
   });
   const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
-  expect(result).toMatchObject({ capability: 'exact', score: profile.score, threshold: 700 });
-  expect(result.scoreAssessment).toBe(profile.assessment);
+  // Approved test update, Jorje 2026-10-31: legacy-only Haifa CS profiles have no calculated admission result.
+  expect(result).toMatchObject({ capability: 'tracked_missing_rule', decision: 'unknown' });
+  // Approved test update, Jorje 2026-10-31: ignored averages cannot establish a score, cutoff or score assessment.
+  expect([result.score, result.threshold, result.scoreAssessment]).toEqual([
+    undefined,
+    undefined,
+    undefined,
+  ]);
   expect(fetcher).not.toHaveBeenCalled();
 });
 
@@ -850,10 +856,11 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       fetcher,
     });
+    // Approved test update, Jorje 2026-10-31: an overall average without subject rows cannot establish Haifa mapping eligibility.
     expect(result.results[0]).toMatchObject({
-      capability: 'blocked',
+      capability: 'tracked_missing_rule',
       decision: 'unknown',
-      sourceLabel: 'מיפוי המסלול טרם אומת',
+      sourceLabel: 'אין מספיק מידע',
     });
     expect(result.results[0].score).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
@@ -898,12 +905,16 @@ describe('evaluateAdmissionsForProgram', () => {
           fetcher,
           now: new Date('2026-09-28T20:00:00Z'),
         });
+        // Approved test update, Jorje 2026-10-31: both captured legacy-average bands lack subject rows and remain uncalculated.
         expect(result.results[0]).toMatchObject({
-          capability: 'exact',
-          score: fixture.expected.score,
-          threshold: 680,
-          decision: band === 'high' ? 'eligible_to_apply' : 'below',
+          capability: 'tracked_missing_rule',
+          decision: 'unknown',
         });
+        // Approved test update, Jorje 2026-10-31: neither legacy-average capture supplies a calculated score or cutoff.
+        expect([result.results[0].score, result.results[0].threshold]).toEqual([
+          undefined,
+          undefined,
+        ]);
       }
     },
   );
@@ -1305,8 +1316,10 @@ describe('evaluateAdmissionsForProgram', () => {
   });
 
   it.each([
-    { year: 2015, bagrut: 115, score: 702, decision: 'eligible_to_apply' },
-    { year: 2020, bagrut: undefined, score: 699, decision: 'pending' },
+    // Approved test update, Jorje 2026-10-31: an actual 2015 year does not make the ignored legacy average usable.
+    { year: 2015, bagrut: 115, score: undefined, decision: 'unknown' },
+    // Approved test update, Jorje 2026-10-31: an actual 2020 year does not make the ignored legacy average usable.
+    { year: 2020, bagrut: undefined, score: undefined, decision: 'unknown' },
   ])(
     'uses the Haifa average and actual year $year, preserving $decision',
     async ({ year, bagrut, score, decision }) => {
@@ -1343,7 +1356,8 @@ describe('evaluateAdmissionsForProgram', () => {
       });
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       expect(fetcher).not.toHaveBeenCalled();
-      expect(report.results[0]).toMatchObject({ score, decision });
+      // Approved test update, Jorje 2026-10-31: preserve each year case while asserting the missing-row result.
+      expect([report.results[0].score, report.results[0].decision]).toEqual([score, decision]);
     },
   );
 
@@ -1366,11 +1380,14 @@ describe('evaluateAdmissionsForProgram', () => {
     });
     expect(fetcher).not.toHaveBeenCalled();
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    // Approved test update, Jorje 2026-10-31: missing subject rows take precedence over later year and qualification questions.
     expect(report.results[0]).toMatchObject({
-      kind: 'needs_input',
+      kind: 'tracked_missing_rule',
       // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
-      requiredInputs: ['math_units', 'math_grade', 'haifa_hebrew_qualification'],
+      decision: 'unknown',
     });
+    // Approved test update, Jorje 2026-10-31: ignored averages do not advance to later Haifa follow-up inputs.
+    expect(report.results[0].requiredInputs).toBeUndefined();
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -4929,12 +4946,16 @@ it.each([
     return;
   }
   // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-  expect(report.results[0].score).toBe(proxy ? 806 : defaulted ? 699 : 702);
-  expect(report.results[0].estimated === true).toBe(defaulted);
+  // Approved test update, Jorje 2026-10-31: no subject-derived average means no score for any of these legacy-average cases.
+  expect(report.results[0].score).toBeUndefined();
+  // Approved test update, Jorje 2026-10-31: uncalculated Haifa results do not carry an estimated-score flag.
+  expect(report.results[0].estimated === true).toBe(false);
   if (defaulted) {
-    expect(report.results[0].estimationReason).toContain('שנת הבגרות');
+    // Approved test update, Jorje 2026-10-31: cycle assumptions are not presented as a calculated-score reason without usable rows.
+    expect(report.results[0].estimationReason).toBeUndefined();
     if (proxy) expect(report.results[0].estimationReason).toContain('הממוצע הכללי');
-    else expect(report.results[0].estimationReason).not.toContain('הממוצע הכללי');
+    // Approved test update, Jorje 2026-10-31: ignored legacy averages produce no calculated-score provenance.
+    else expect(report.results[0].estimationReason).toBeUndefined();
   } else expect(report.results[0].estimationReason).toBeUndefined();
 });
 

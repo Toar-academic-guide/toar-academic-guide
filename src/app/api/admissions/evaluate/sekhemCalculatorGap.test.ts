@@ -190,7 +190,8 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
       gapApplicant(haifaContinuation),
     );
     // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-    expect(result).toMatchObject({ kind: 'exact', score: 606 });
+    // Approved test update, Jorje 2026-10-31: compute from the supplied subject rows instead of the legacy Haifa average.
+    expect(result).toMatchObject({ kind: 'exact', score: 614 });
     // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
     expect(fetcher).not.toHaveBeenCalled();
   });

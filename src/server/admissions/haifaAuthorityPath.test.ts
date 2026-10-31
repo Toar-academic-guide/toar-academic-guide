@@ -95,13 +95,15 @@ it('withholds the real Haifa CS vector when database authority is unavailable de
     now: new Date('2026-10-29T12:00:00Z'),
   });
   expect(report.results).toHaveLength(1);
+  // Approved test update, Jorje 2026-10-31: missing subject rows prevent scoring independently of database authority.
   expect(report.results[0]).toMatchObject({
     linkedInstitutionId: 'haifa',
-    capability: 'authority_unavailable',
-    kind: 'authority_unavailable',
+    capability: 'tracked_missing_rule',
+    kind: 'tracked_missing_rule',
     decision: 'unknown',
-    degradationReason: 'pair_verification_incomplete',
   });
+  // Approved test update, Jorje 2026-10-31: ignoring the legacy average reports missing calculation inputs rather than an authority degradation.
+  expect(report.results[0].degradationReason).toBeUndefined();
   expect(report.results[0].score).toBeUndefined();
   expect(offline.getDb).toHaveBeenCalled();
   expect(offline.fetch).not.toHaveBeenCalled();
