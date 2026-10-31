@@ -629,9 +629,10 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     region: 'center',
   },
   {
+    // Official site: https://www.aac.ac.il/.
     id: 'ashkelon',
     name: 'המכללה האקדמית אשקלון',
-    domain: 'ac.il',
+    domain: 'aac.ac.il',
     region: 'south',
   },
   {

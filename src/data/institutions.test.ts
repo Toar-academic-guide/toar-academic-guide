@@ -3,6 +3,10 @@ import { describe, expect, it } from 'vitest';
 import { mondayAdmissionsEvidence } from './admissions/mondayEvidence';
 import { INSTITUTIONS, INSTITUTION_BY_ID } from './institutions';
 
+it('uses aac.ac.il as the bare Ashkelon domain', () => {
+  expect(INSTITUTION_BY_ID.ashkelon.domain).toBe('aac.ac.il');
+});
+
 describe('Hadassah institution identity', () => {
   it('uses jmc.ac.il as the bare Hadassah domain', () => {
     expect(INSTITUTION_BY_ID.hadassah.domain).toBe('jmc.ac.il');
