@@ -3,6 +3,20 @@ import { describe, expect, it } from 'vitest';
 import { mondayAdmissionsEvidence } from './admissions/mondayEvidence';
 import { INSTITUTIONS, INSTITUTION_BY_ID } from './institutions';
 
+describe('Hadassah institution identity', () => {
+  it('uses jmc.ac.il as the bare Hadassah domain', () => {
+    expect(INSTITUTION_BY_ID.hadassah.domain).toBe('jmc.ac.il');
+  });
+
+  it('does not assign the unrelated macam.ac.il domain to any institution', () => {
+    expect(INSTITUTIONS.some((institution) => institution.domain === 'macam.ac.il')).toBe(false);
+  });
+
+  it('uses the official Hadassah name without a hyphen', () => {
+    expect(INSTITUTION_BY_ID.hadassah.name).toBe('המרכז האקדמי הרב תחומי ירושלים');
+  });
+});
+
 describe('dynamic Monday-derived institutions', () => {
   it('creates an institution row for every Monday evidence record', () => {
     const institutionLookup = INSTITUTION_BY_ID as Record<string, (typeof INSTITUTIONS)[number]>;

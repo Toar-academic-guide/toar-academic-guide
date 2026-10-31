@@ -621,10 +621,11 @@ export const INSTITUTIONS: InstitutionRecord[] = [
     region: 'north',
   },
   {
-    // Formerly Hadassah College Jerusalem — renamed to MACAM
+    // Formerly Hadassah Academic College; now המרכז האקדמי הרב תחומי ירושלים.
+    // Official site: https://www.jmc.ac.il/ (hac.ac.il 301-redirects there).
     id: 'hadassah',
-    name: 'המרכז האקדמי הרב-תחומי ירושלים',
-    domain: 'macam.ac.il',
+    name: 'המרכז האקדמי הרב תחומי ירושלים',
+    domain: 'jmc.ac.il',
     region: 'center',
   },
   {
