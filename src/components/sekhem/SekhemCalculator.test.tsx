@@ -424,7 +424,7 @@ it('sends raw rows in batch mode, exposes no composite input and opens the reuse
 });
 
 it('shows optional Haifa fields only when requested, then removes them and their old overrides automatically', async () => {
-  // Approved test update, Jorje 2026-10-31
+  // Approved test update, Jorje 2026-10-31: preserve science-unit and sitting-date answers until their dependent inputs change.
   fetchMock.mockResolvedValueOnce(
     Response.json({ data: response(['haifa_science_units', 'haifa_psychometric_month']) }),
   );
