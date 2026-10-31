@@ -503,7 +503,11 @@ describe('Technion medicine estimated MOR invitation threshold', () => {
       expect(result.threshold).toBeUndefined();
       expect(result.scoreAssessment).toBeUndefined();
       expect(result.deltaNeeded).toBeUndefined();
-      expect(resultLabel(result)).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      expect(resultLabel(result)).toEqual({
+        label: `הסכם שלכם: ${score.toLocaleString('he-IL', { maximumFractionDigits: 2 })}`,
+        group: 'explore',
+      });
       expect(fetcher).toHaveBeenCalledTimes(2);
     },
   );
@@ -4958,7 +4962,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
         scoreAssessment: 'meets_threshold',
         estimated: true,
       });
-      expect(resultLabel(result)).toEqual({ label: 'הציונים עומדים בסף', group: 'match' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+      expect(resultLabel(result)).toEqual({ label: 'עוברים את הסף ✓', group: 'match' });
       expect(result.additionalConditions ?? []).toEqual([]);
       expect(result.explanation).not.toContain('יש לאשר זכאות לבגרות מלאה');
       expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
@@ -5109,7 +5114,8 @@ describe('TAU architecture manual screening', () => {
     expect(result.officialUrls).toContain(url);
     expect(resultExplanation(result, 'architecture')).toBe(result.explanation);
     expect(resultLabel(result, false, false, 'architecture').label).toBe(
-      result.decision === 'below' ? 'לא עומד/ת בתנאי הסף' : 'נדרש מיון נוסף',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+      result.decision === 'below' ? 'לא עומד/ת בתנאי הסף' : 'השלב הבא: מיון במוסד',
     );
     expect(result.explanation).not.toMatch(/679|629|600|תיק עבודות|ראיון/);
     return result;
@@ -5142,7 +5148,8 @@ describe('TAU architecture manual screening', () => {
         sourceUrl: 'https://go.tau.ac.il/he/ba/admissions',
       }),
     ]);
-    expect(resultLabel(result)).toEqual({ label: 'נדרש מיון נוסף', group: 'explore' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+    expect(resultLabel(result)).toEqual({ label: 'השלב הבא: מיון במוסד', group: 'explore' });
   });
 
   it.each([

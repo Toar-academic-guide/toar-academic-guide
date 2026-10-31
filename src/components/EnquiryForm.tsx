@@ -4,7 +4,13 @@ import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
 import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
-import { ENQUIRY_COPY as COPY, ENQUIRY_PREP_CONSENT, type EnquiryInput } from '@/lib/enquiries';
+import { getEnquiryOrigin } from '@/lib/leadAttribution';
+import {
+  ENQUIRY_COPY as COPY,
+  ENQUIRY_PREP_CONSENT,
+  ENQUIRY_PREP_COPY,
+  type EnquiryInput,
+} from '@/lib/enquiries';
 
 const CONSENT_COLOR = '#666666';
 const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
@@ -13,6 +19,8 @@ export default function EnquiryForm({
   programId,
   institutionId,
   title,
+  heading = 'רוצים תשובות ישר מהמוסד?',
+  intro,
   onBack,
   surface = 'enquiry_page',
   evaluationInput,
@@ -20,10 +28,14 @@ export default function EnquiryForm({
   programId: string;
   institutionId: string;
   title: string;
+  heading?: string;
+  intro?: string;
   onBack?: () => void;
   surface?: string;
   evaluationInput?: EnquiryInput['evaluationInput'];
 }) {
+  const buttonCopy =
+    programId === 'psychometric-preparation' && institutionId === '' ? ENQUIRY_PREP_COPY : COPY;
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const nameField = useRef<HTMLInputElement>(null);
@@ -104,7 +116,10 @@ export default function EnquiryForm({
       phone,
       programId,
       institutionId,
-      sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
+      sourcePath: (
+        (window.location.pathname === '/enquiry' && getEnquiryOrigin()) ||
+        window.location.pathname
+      ).slice(0, 300),
       consent: true,
       prepConsent: values.has('prepConsent'),
       attribution: getSessionAttribution(),
@@ -144,14 +159,15 @@ export default function EnquiryForm({
   return (
     <>
       <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
-        <h1 className="text-2xl font-bold">רוצה לשמוע עוד?</h1>
+        <h1 className="text-2xl font-bold">{heading}</h1>
+        {intro && <p className="mt-2">{intro}</p>}
         <p className="mt-2">{title}</p>
         <button
           type="button"
           className="way-button-primary mt-4 px-6 py-3"
           onClick={() => setOpen(true)}
         >
-          יצירת קשר
+          השאירו פרטים
         </button>
       </section>
       {open && (
@@ -327,8 +343,8 @@ export default function EnquiryForm({
                 {status === 'failed'
                   ? COPY.retry
                   : status === 'sending'
-                    ? COPY.loadingButton
-                    : COPY.button}
+                    ? buttonCopy.loadingButton
+                    : buttonCopy.button}
               </button>
               {status === 'sending' && (
                 <p role="status" className="sr-only">

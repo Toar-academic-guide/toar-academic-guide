@@ -97,13 +97,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
-                בדיקת סיכויי קבלה{' '}
+                בדקו אם אתם מתקבלים{' '}
               </ProgramTrackedLink>
               <Link
                 href={ROUTES.assessment}
                 className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                התאמה אישית{' '}
+                מה מתאים לי?{' '}
               </Link>
             </div>
           </div>
@@ -123,22 +123,20 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
                     href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
                   >
-                    יצירת קשר{' '}
+                    קבלו שיחה מהמוסד{' '}
                   </ProgramTrackedLink>
                 </div>
               ))}
             </div>
           </section>
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
-            <SekhemCalculatorLink
-              data={data}
-              sources={institutionRequirementSources}
-              offerings={calculatorOfferings}
-            />{' '}
-            {program.isListed === false ? (
-              <p className="mt-4 text-sm text-slate-600">אין כרגע מידע עדכני על המסלול.</p>
-            ) : (
+          {program.isListed !== false && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
+              <SekhemCalculatorLink
+                data={data}
+                sources={institutionRequirementSources}
+                offerings={calculatorOfferings}
+              />{' '}
               <div className="mt-4 space-y-6">
                 {institutions.length === 0 && (
                   <AdmissionRequirements
@@ -258,8 +256,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   );
                 })}
               </div>
-            )}
-          </section>{' '}
+            </section>
+          )}{' '}
           <RelatedPrograms {...related} />
         </section>
       </main>

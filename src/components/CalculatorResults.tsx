@@ -577,7 +577,7 @@ export default function CalculatorResults({
     manualGateBelow: { label: 'מתחת לסף', bg: 'bg-[#FCD34D]' },
     requirementsOnly: { label: 'תנאי קבלה', bg: 'bg-teal-200' },
     trackedMissingRule: { label: 'חסר אימות רשמי', bg: 'bg-amber-200' },
-    unsupported: { label: 'אין מספיק מידע', bg: 'bg-slate-300' },
+    unsupported: { label: 'בדיקה אישית מול המוסד', bg: 'bg-slate-300' },
   } as const;
 
   const isCertificateProgram =
@@ -779,8 +779,8 @@ export default function CalculatorResults({
                   const footnote = acceptedManualGateFootnote(result);
                   let config: { label: string; bg: string } = result.scoreAssessment
                     ? result.scoreAssessment === 'meets_threshold'
-                      ? { ...STATUS_CONFIG.exactAccepted, label: 'הציונים עומדים בסף' }
-                      : { ...STATUS_CONFIG.exactBelow, label: 'הציונים מתחת לסף' }
+                      ? { ...STATUS_CONFIG.exactAccepted, label: resultLabel(result).label }
+                      : { ...STATUS_CONFIG.exactBelow, label: resultLabel(result).label }
                     : result.kind === 'exact'
                       ? result.decision === 'accepted'
                         ? { ...STATUS_CONFIG.exactAccepted, label: acceptedLabel() }
@@ -879,11 +879,13 @@ export default function CalculatorResults({
                               <p className="mt-1 text-xs font-semibold text-slate-700">
                                 {result.sourceLabel}
                               </p>
-                              <p className="mt-1 text-xs leading-relaxed text-slate-500 [overflow-wrap:anywhere]">
-                                {sourceLinks
-                                  ? resultExplanation(result, degreeId)
-                                  : result.explanation}
-                              </p>
+                              {result.explanation !== 'אין כרגע מידע עדכני על המסלול.' && (
+                                <p className="mt-1 text-xs leading-relaxed text-slate-500 [overflow-wrap:anywhere]">
+                                  {sourceLinks
+                                    ? resultExplanation(result, degreeId)
+                                    : result.explanation}
+                                </p>
+                              )}
                             </>
                           )}
                           {result.floorChecks && (

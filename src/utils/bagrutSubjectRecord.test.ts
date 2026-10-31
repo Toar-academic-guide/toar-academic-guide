@@ -1,9 +1,29 @@
 import { describe, expect, it } from 'vitest';
 
-import { buildBagrutSubjectRecord } from './bagrutSubjectRecord';
+import {
+  buildBagrutSubjectRecord,
+  resolveBagrutWizardSubject,
+  subjectIdForWizardLabel,
+} from './bagrutSubjectRecord';
 import { userProfileSchema } from '@/server/user/profileSchema';
 
 describe('buildBagrutSubjectRecord', () => {
+  it('never emits a non-catalogue subject id and cannot mark discarded unknown rows complete', () => {
+    const record = buildBagrutSubjectRecord({
+      sectorLabel: 'יהודי',
+      complete: true,
+      subjects: [
+        { label: 'מתמטיקה', units: 5, grade: 90 },
+        { label: 'מקצוע בדיקה א', units: 5, grade: 85 },
+        { label: 'subject_unknown', units: 5, grade: 85 },
+      ],
+    });
+    expect(record.subjects).toEqual([
+      { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+    ]);
+    expect(record.complete).toBe(false);
+  });
+
   it.each(['פיסיקה', 'פיזיקה'])('recognizes the physics picker spelling %s', (label) => {
     const record = buildBagrutSubjectRecord({
       sectorLabel: 'יהודי',
@@ -110,5 +130,29 @@ describe('buildBagrutSubjectRecord', () => {
       complete: false,
       subjects: [{ subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' }],
     });
+  });
+});
+
+describe('shared wizard/PDF subject resolution', () => {
+  it.each(['פיזיקה', 'פיסיקה', '  פיזיקה (רמה מוגברת)  '])(
+    'resolves %s to the same canonical physics subject',
+    (label) => {
+      expect(resolveBagrutWizardSubject(label)).toEqual({ subjectId: 'physics', label: 'פיסיקה' });
+      expect(subjectIdForWizardLabel(label)).toBe('physics');
+    },
+  );
+  it.each(['היסטוריה ותע״י', 'הסטוריה ותע"י', 'היסטוריה / תעי'])(
+    'shares the history alias %s with manual entry',
+    (label) => {
+      expect(resolveBagrutWizardSubject(label)?.subjectId).toBe('history');
+      expect(subjectIdForWizardLabel(label)).toBe('history');
+    },
+  );
+  it('resolves catalogue electives without changing their persisted IDs and leaves unknown names unresolved', () => {
+    const label = 'גלוף עץ עצוב וטכנולוגיה';
+    const before = `subject_${Array.from(label, (c) => c.codePointAt(0)!.toString(16)).join('_')}`;
+    expect(resolveBagrutWizardSubject(label)).toEqual({ subjectId: before, label });
+    expect(subjectIdForWizardLabel(label)).toBe(before);
+    expect(resolveBagrutWizardSubject('מקצוע בדיקה עם ף')).toBeUndefined();
   });
 });

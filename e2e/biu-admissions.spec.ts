@@ -131,7 +131,10 @@ for (const width of [390, 1440]) {
       await expect(explanation).toHaveCSS('text-align', 'right');
       await expect(explanation).not.toContainText(/מתואם|מצרף|סכם/);
       const main = page.getByRole('main');
-      await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(
+        main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+      ).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       await expect(main).not.toContainText(/requirements_only|ingestion|needs_input|manual_gate/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(

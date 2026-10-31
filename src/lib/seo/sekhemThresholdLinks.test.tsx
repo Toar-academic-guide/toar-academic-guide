@@ -21,7 +21,11 @@ import {
 import * as jsonLd from './jsonLd';
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { canonicalProgramId } from './programAliases';
-import { calculatorOfferings, sekhemPairSupport } from '@/lib/sekhemCalculatorSupport';
+import {
+  calculatorOfferings,
+  loadSekhemCalculatorOfferings,
+  sekhemPairSupport,
+} from '@/lib/sekhemCalculatorSupport';
 import ProgramPage from '@/app/programs/[programId]/page';
 
 // Independent rendered-copy oracle: a named composite followed by a cutoff.
@@ -84,6 +88,7 @@ describe('published-threshold calculator links', () => {
   });
 
   it('renders a contextual programme link only when a threshold is published', async () => {
+    const offerings = await loadSekhemCalculatorOfferings();
     for (const [id, expected] of [
       ['haifa_nursing', true],
       ['ariel_nutrition', false],
@@ -93,7 +98,9 @@ describe('published-threshold calculator links', () => {
     ] as const) {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
-      const html = renderToStaticMarkup(<SekhemCalculatorLink data={data} sources={sources} />);
+      const html = renderToStaticMarkup(
+        <SekhemCalculatorLink data={data} sources={sources} offerings={offerings} />,
+      );
       if (expected) expect(html).toContain(`href="/sekhem-calculator?program=${id}"`);
       else expect(html).toBe('');
     }
@@ -128,7 +135,9 @@ describe('published-threshold calculator links', () => {
             ['score', 'gate'].includes(sekhemPairSupport(source.program, id) ?? '') &&
             containsRenderedThreshold(source.requirements.join(' ')),
         ),
-        linked: !!section.querySelector(`a[href="/sekhem-calculator?program=${program.id}"]`),
+        linked: !!section.querySelector(
+          `a[href="/sekhem-calculator?program=${program.id}"], a[href="/sekhem-calculator"]`,
+        ),
       });
     }
     const linked = rows
@@ -142,7 +151,8 @@ describe('published-threshold calculator links', () => {
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
-    expect(linked).toHaveLength(41);
+    // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
+    expect(linked).toHaveLength(42);
     expect(linked).toEqual(
       expect.arrayContaining([
         'haifa_infosystems',

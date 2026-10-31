@@ -2,8 +2,45 @@ import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVer
 import { HUJI_MEDICINE_PROFILE_KEYS, HUJI_MEDICINE_REQUIRED_INPUTS } from './hujiMedicineInputs';
 import { describe, expect, it } from 'vitest';
 
-import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
+import {
+  academicBagrutAverage,
+  admissionsExtraInputsFromAcademicScores,
+} from './admissionsEvaluationProfile';
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
+
+describe('active Bagrut path with both saved inputs', () => {
+  it.each(['quick', 'exact', 'none'] as const)(
+    'uses only the active %s path for profile evaluation without forwarding the marker',
+    (activeBagrutPath) => {
+      const subjectRecord = {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: false,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+          { subjectId: 'physics', units: 5, grade: 80, assessmentKind: 'exam' as const },
+        ],
+      };
+      const scores = {
+        bagrut: { weightedAverage: 110, subjectRecord },
+        psychometric: { overall: 700, english: 120 },
+        admissions: { activeBagrutPath },
+      };
+      expect(academicBagrutAverage(scores)).toBe(
+        activeBagrutPath === 'quick' ? 110 : activeBagrutPath === 'exact' ? 85 : undefined,
+      );
+      const extra = admissionsExtraInputsFromAcademicScores(scores);
+      expect(extra?.bagrutSubjectRecord).toEqual(
+        activeBagrutPath === 'exact' ? subjectRecord : undefined,
+      );
+      expect(extra?.mathGrade).toBe(activeBagrutPath === 'exact' ? 90 : undefined);
+      expect(extra?.psychometricEnglish).toBe(120);
+      expect(extra).not.toHaveProperty('activeBagrutPath');
+      expect(scores.bagrut).toEqual({ weightedAverage: 110, subjectRecord });
+    },
+  );
+});
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
   it('forwards the Colman average and false certificate confirmation', () => {

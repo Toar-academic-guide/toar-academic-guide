@@ -23,6 +23,18 @@ export const metadata: Metadata = {
     title,
     description,
   },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: absoluteUrl('/opengraph-image.png'),
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
+  },
 };
 
 export default function Home() {

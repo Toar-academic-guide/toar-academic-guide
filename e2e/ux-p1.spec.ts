@@ -2,7 +2,7 @@ import { expect, test, type Page } from './fixtures';
 import { studyFields } from '../src/lib/studyJourney';
 import type { CatalogueProgram } from '../src/types/catalogue';
 
-const next = (page: Page) => page.getByRole('button', { name: 'המשך', exact: true });
+const next = (page: Page) => page.getByRole('button', { name: 'המשיכו', exact: true });
 
 test.beforeEach(async ({ page }) => {
   await page.route('**/api/enquiries', (route) => route.abort());
@@ -61,7 +61,7 @@ for (const width of [1280, 390]) {
       }
     });
 
-    test('blank compulsory units stay empty and are excluded from the submitted grades', async ({
+    test('untouched compulsory rows show default units and are excluded from the submitted grades when no grade is entered', async ({
       page,
     }) => {
       await page.goto('/app/calculator?program=tau_cs');
@@ -71,12 +71,16 @@ for (const width of [1280, 390]) {
       await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
       await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
       for (const index of [1, 2, 3, 6, 7])
-        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('');
+        // Approved test update, Jorje 2026-10-30
+        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('2');
+      for (const index of [4, 5])
+        // Approved test update, Jorje 2026-10-30
+        await expect(page.getByLabel(`יחידות ${index}`, { exact: true })).toHaveValue('3');
       for (const [index, grade] of [
         [4, '95'],
         [5, '90'],
       ] as const) {
-        await page.getByLabel(`יחידות ${index}`, { exact: true }).fill('5');
+        await page.getByLabel(`יחידות ${index}`, { exact: true }).selectOption('5');
         await page.getByLabel(`ציון ${index}`, { exact: true }).fill(grade);
       }
       await next(page).click();
@@ -100,7 +104,8 @@ for (const width of [1280, 390]) {
       page,
     }) => {
       await page.goto('/programs/tau_cs');
-      await page.getByRole('link', { name: 'בדיקת סיכויי קבלה', exact: true }).click();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+      await page.getByRole('link', { name: 'בדקו אם אתם מתקבלים', exact: true }).click();
       await expect(page).toHaveURL(/\/app\/calculator\?program=tau_cs$/);
       await expect(next(page)).toBeEnabled();
       await expect(

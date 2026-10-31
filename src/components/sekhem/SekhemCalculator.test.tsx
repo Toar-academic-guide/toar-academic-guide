@@ -57,8 +57,46 @@ function examples() {
   fireEvent.click(screen.getByRole('button', { name: 'ערכים לדוגמה' }));
 }
 function submit() {
-  fireEvent.click(screen.getByRole('button', { name: 'לחשב את הסכם' }));
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
+  fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
+
+// Invalid select values can only arrive from a restored record, not from its options.
+function restoreUnits(units: number, grade = 92) {
+  sessionStorage.setItem(
+    'myway:sekhem-calculator:v1',
+    JSON.stringify({
+      version: 1,
+      rows: [
+        { label: 'מתמטיקה', units, grade, assessmentKind: 'exam' },
+        { label: 'אנגלית', units: 5, grade: 95, assessmentKind: 'exam' },
+      ],
+      sector: 'יהודי',
+      certificate: 'internal',
+      psychometric: '700',
+      verbal: '130',
+      quantitative: '140',
+      english: '135',
+      programId: '',
+      requiredKeys: [],
+      haifaValues: {},
+      reports: [],
+      failedIds: [],
+    }),
+  );
+}
+
+it('uses the selected sector for compulsory subject unit options', () => {
+  render(<SekhemCalculator offerings={offerings} />);
+  fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+  fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+  expect(
+    Array.from(
+      screen.getByLabelText('יחידות 1').querySelectorAll('option'),
+      (option) => option.textContent,
+    ),
+  ).toEqual(['בחירה', '3', '4', '5']);
+});
 
 it.each([true, false])(
   'focuses a requested subject grade, adding its row when absent (existing=%s)',
@@ -192,7 +230,8 @@ it('sends raw rows in batch mode, exposes no composite input and opens the reuse
     ].join(' ');
     expect(name).not.toMatch(/סכם|מתואם|מצרף|ציון משוקלל/);
   }
-  fireEvent.click(screen.getByRole('button', { name: 'קבלת מידע על התוכנית' }));
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  fireEvent.click(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' }));
   const dialog = screen.getByRole('dialog');
   expect(dialog.textContent).toContain('אוניברסיטת חיפה');
   expect(screen.getByRole('checkbox')).toHaveProperty('checked', false);
@@ -459,9 +498,12 @@ it.each([
   ['ציון 1', '90.5'],
   ['יחידות 1', '4.5'],
 ])('focuses the first invalid grade or units field without evaluating (%s=%s)', (label, value) => {
+  if (label.startsWith('יחידות')) restoreUnits(Number(value));
   render(<SekhemCalculator offerings={offerings} />);
-  examples();
-  fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  if (label.startsWith('ציון')) {
+    examples();
+    fireEvent.change(screen.getByLabelText(label), { target: { value } });
+  }
   fireEvent.change(screen.getByLabelText('ציון 2'), { target: { value: '101' } });
   submit();
   const input = screen.getByLabelText(label);
@@ -477,10 +519,8 @@ it.each([
 });
 
 it('focuses units before grade when both fields in the first row are invalid', () => {
+  restoreUnits(150, 150);
   render(<SekhemCalculator offerings={offerings} />);
-  examples();
-  for (const label of ['יחידות 1', 'ציון 1'])
-    fireEvent.change(screen.getByLabelText(label), { target: { value: '150' } });
   submit();
   expect(document.activeElement).toBe(screen.getByLabelText('יחידות 1'));
   expect(fetchMock).not.toHaveBeenCalled();
@@ -493,6 +533,8 @@ it.each([
   render(<SekhemCalculator offerings={offerings} />);
   examples();
   fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: String(grade) } });
+  if (units === 1)
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'כימיה' } });
   fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: String(units) } });
   submit();
   await screen.findByText('הציונים עומדים בתנאי הקבלה');
@@ -541,3 +583,78 @@ it('restores failed programme IDs for an explicit retry without evaluating on mo
   await screen.findByText('הציונים עומדים בתנאי הקבלה');
   expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).degreeIds).toEqual(['haifa_cs']);
 });
+
+it('keeps the free-use line directly after the action without the removed estimate block', () => {
+  const { container } = render(<SekhemCalculator offerings={offerings} />);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27, 28)
+  const button = screen.getByRole('button', { name: 'חשבו את הסכם שלי' });
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27, 28)
+  expect(button.nextElementSibling?.textContent).toBe('חינם, בלי הרשמה');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+  expect(container.textContent).not.toContain('ממוצע הבגרות מחושב לפי כללי המוסד כשאפשר');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
+  expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
+});
+
+it('new-row defaults: starts math/English at 3, electives at 2 and strips UI fields from session and evaluation', async () => {
+  render(<SekhemCalculator offerings={offerings} />);
+  for (const [index, units] of [
+    [1, '3'],
+    [2, '3'],
+    [3, '2'],
+    [4, '2'],
+  ]) {
+    expect(screen.getByLabelText(`יחידות ${index}`)).toHaveProperty('value', units);
+    fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: '90' } });
+  }
+  const saved = JSON.parse(sessionStorage.getItem('myway:sekhem-calculator:v1')!);
+  for (const row of saved.rows)
+    expect(Object.keys(row).sort()).toEqual(['assessmentKind', 'grade', 'label', 'units']);
+  fireEvent.change(screen.getByLabelText(/פסיכומטרי — ציון כללי/), { target: { value: '700' } });
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  const body = JSON.parse(String(fetchMock.mock.calls[0][1]?.body));
+  expect(body.extraInputs.bagrutSubjectRecord.subjects).toEqual([
+    { subjectId: 'computer_science', units: 2, grade: 90, assessmentKind: 'exam' },
+    { subjectId: 'english', units: 3, grade: 90, assessmentKind: 'exam' },
+    { subjectId: 'mathematics', units: 3, grade: 90, assessmentKind: 'exam' },
+    { subjectId: 'physics', units: 2, grade: 90, assessmentKind: 'exam' },
+  ]);
+});
+
+it.each(['ערבי', 'דרוזי'])(
+  'new-row defaults: recomputes Hebrew in %s and on subsequent sector switches',
+  (sector) => {
+    render(<SekhemCalculator offerings={offerings} />);
+    fireEvent.change(screen.getByLabelText('מקצוע 3'), { target: { value: 'עברית' } });
+    expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '2');
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: sector } });
+    expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '3');
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'יהודי' } });
+    expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', '2');
+  },
+);
+
+it.each(['4', ''])(
+  'new-row defaults: preserves picked units %j across label and sector changes',
+  (value) => {
+    render(<SekhemCalculator offerings={offerings} />);
+    fireEvent.change(screen.getByLabelText('יחידות 3'), { target: { value } });
+    fireEvent.change(screen.getByLabelText('מקצוע 3'), { target: { value: 'עברית' } });
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(screen.getByLabelText('יחידות 3')).toHaveProperty('value', value);
+  },
+);
+
+it.each([2, 4])(
+  'new-row defaults: preserves saved session units %s across label and sector changes',
+  (units) => {
+    restoreUnits(units);
+    render(<SekhemCalculator offerings={offerings} />);
+    fireEvent.change(screen.getByLabelText('מקצוע 1'), { target: { value: 'עברית' } });
+    fireEvent.change(screen.getByLabelText('מגזר'), { target: { value: 'ערבי' } });
+    expect(screen.getByLabelText('יחידות 1')).toHaveProperty('value', String(units));
+    const saved = JSON.parse(sessionStorage.getItem('myway:sekhem-calculator:v1')!);
+    expect(saved.rows[0]).toEqual({ label: 'עברית', units, grade: 92, assessmentKind: 'exam' });
+  },
+);

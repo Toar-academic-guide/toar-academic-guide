@@ -8,7 +8,7 @@ export const ENQUIRY_PREP_CONSENT =
   'אני רוצה שפרטיי יועברו גם לחברת הכנה לפסיכומטרי, שתפנה אליי בטלפון, SMS או WhatsApp לגבי קורסים והטבות. אני מאשר/ת שגילי 18 ומעלה.';
 
 export const ENQUIRY_COPY = {
-  button: 'שליחת פרטים',
+  button: 'שלחו, והמוסד יחזור אליכם',
   nameLabel: 'שם',
   phoneLabel: 'טלפון נייד',
   namePlaceholder: 'שם מלא',
@@ -17,7 +17,7 @@ export const ENQUIRY_COPY = {
   actionNotice: 'בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי {institution_le} בלבד',
   privacyLink: 'מדיניות פרטיות',
   loadingLive: 'שולחים את הפנייה',
-  loadingButton: 'שליחת פרטים',
+  loadingButton: 'שלחו, והמוסד יחזור אליכם',
   successTitle: 'הפנייה נשלחה',
   successLive: 'הפנייה נשלחה',
   successBody: '{institution_me} יחזרו אליך בטלפון.',
@@ -25,6 +25,16 @@ export const ENQUIRY_COPY = {
   retry: 'ניסיון נוסף',
   nameError: 'נא להזין שם',
   phoneError: 'מספר נייד לא תקין',
+} as const;
+
+export const ENQUIRY_PREP_INTRO = {
+  heading: 'הציון שלכם בפסיכומטרי מתחיל בהכנה',
+  body: 'ברוב המוסדות בישראל, הציון הפסיכומטרי נכנס לסכם יחד עם ציוני הבגרות, ולכן הוא שווה הכנה רצינית. החל מדצמבר 2026 הבחינה כוללת שני תחומים בלבד: חשיבה מילולית וחשיבה כמותית, בציון של 200 עד 800. המרכז הארצי לבחינות ולהערכה כותב זאת במפורש: מי שמתכונן צפוי להשיג ציון גבוה יותר, והשיפור תלוי בעיקר ברצינות ובהשקעה. השאירו פרטים ותתחילו להתכונן נכון.',
+} as const;
+
+export const ENQUIRY_PREP_COPY = {
+  button: 'שלחו וחברת הכנה תחזור אליכם',
+  loadingButton: 'שלחו וחברת הכנה תחזור אליכם',
 } as const;
 
 export interface EnquiryInput {

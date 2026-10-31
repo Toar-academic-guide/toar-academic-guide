@@ -1009,7 +1009,7 @@ for (const record of mondayAdmissionsEvidence) {
           estimatedStudentsPerYear: 'לא ידוע',
           quantitativeMinRequirement: null,
           englishMinRequirement: null,
-          // limitations/decisionReason remain internal in mondayAdmissionsEvidence.
+          // Do not copy evidence limitations/decisionReason into catalogue text.
           // Reviewed programme copy is applied below by catalogueContentRepair.
           specificAdmissionNotes: record.limitations.length
             ? ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.']

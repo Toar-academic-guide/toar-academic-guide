@@ -148,7 +148,7 @@ export function selectRequirementTiles({
       ];
     if (threshold !== Number(cumulative[1]) || psychometric !== Number(cumulative[2]))
       return { reason: 'changed' };
-    const qualifier = /ריאיון|ראיון|מיון/.test(cumulative[3]) ? ['לצורך מיון, ללא הבטחת קבלה'] : [];
+    const qualifier = /ריאיון|ראיון|מיון/.test(cumulative[3]) ? ['הסף לשלב המיון'] : [];
     return {
       model: {
         semantics: 'cumulative',

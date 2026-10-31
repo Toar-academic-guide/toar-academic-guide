@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
+import { ENQUIRY_COPY, ENQUIRY_PREP_CONSENT, ENQUIRY_PREP_COPY } from '@/lib/enquiries';
 import { StrictMode } from 'react';
 import { INSTITUTIONS } from '@/data/institutions';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
@@ -8,7 +8,125 @@ import EnquiryForm from './EnquiryForm';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
 
 const { capture } = vi.hoisted(() => ({ capture: vi.fn() }));
-vi.mock('posthog-js', () => ({ default: { capture } }));
+vi.mock('posthog-js', () => ({ default: { capture, init: vi.fn() } }));
+
+describe('EnquiryForm source page', () => {
+  const key = 'myway_enquiry_origin_v1';
+  beforeEach(async () => {
+    await import('../../instrumentation-client');
+    sessionStorage.clear();
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue('');
+    window.history.replaceState(null, '', '/enquiry');
+  });
+  afterEach(() => {
+    sessionStorage.clear();
+    vi.unstubAllGlobals();
+    window.history.replaceState(null, '', '/');
+  });
+
+  async function submitSource() {
+    const send = vi
+      .fn()
+      .mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 }));
+    vi.stubGlobal('fetch', send);
+    render(
+      <EnquiryForm programId="psychometric-preparation" institutionId="" title="הכנה לפסיכומטרי" />,
+    );
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+      target: { value: 'בדיקת MyWay' },
+    });
+    fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+      target: { value: '0501234567' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: ENQUIRY_PREP_COPY.button })); // Approved copy update, Jorje/Amit 2026-10-30
+    await screen.findByRole('status');
+    return JSON.parse(send.mock.calls[0][1].body).sourcePath;
+  }
+
+  it.each(['/psychometric-dates', '/sekhem-calculator', '/'])(
+    'records header link soft navigation from %s',
+    async (origin) => {
+      window.history.replaceState(null, '', origin);
+      const { onRouterTransitionStart } = await import('../../instrumentation-client');
+      onRouterTransitionStart('/enquiry?program=psychometric-preparation', 'push');
+      window.history.replaceState(null, '', '/enquiry?program=psychometric-preparation');
+      expect(await submitSource()).toBe(origin);
+    },
+  );
+
+  it.each(['replace', 'traverse'] as const)('records %s transitions as well', async (type) => {
+    window.history.replaceState(null, '', '/sekhem-calculator');
+    const { onRouterTransitionStart } = await import('../../instrumentation-client');
+    onRouterTransitionStart('/enquiry?program=psychometric-preparation', type);
+    window.history.replaceState(null, '', '/enquiry');
+    expect(await submitSource()).toBe('/sekhem-calculator');
+  });
+
+  it.each(['', 'https://evil.example/programs/cs'])(
+    'records /enquiry on a direct visit with referrer %s',
+    async (referrer) => {
+      vi.spyOn(document, 'referrer', 'get').mockReturnValue(referrer);
+      window.history.replaceState(null, '', '/enquiry?program=psychometric-preparation#private');
+      expect(await submitSource()).toBe('/enquiry');
+    },
+  );
+
+  it.each([
+    'garbage',
+    '/not-a-page',
+    '/enquiry-fake',
+    'https://evil.example/x',
+    '//evil.example/x',
+  ])('falls back to /enquiry for invalid stored origin %s', async (value) => {
+    sessionStorage.setItem(key, value);
+    expect(await submitSource()).toBe('/enquiry');
+  });
+
+  it.each(['/programs/cs?x=1', '/programs/cs#y', '/programs/cs?x=1#y'])(
+    'submits bare stored origin from %s',
+    async (value) => {
+      sessionStorage.setItem(key, value);
+      expect(await submitSource()).toBe('/programs/cs');
+    },
+  );
+
+  it('records a bare same-origin referrer on a full load', async () => {
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue(
+      `${window.location.origin}/programs/cs?x=1#y`,
+    );
+    expect(await submitSource()).toBe('/programs/cs');
+  });
+
+  it('keeps embedded forms on their own bare path despite stored origin and referrer', async () => {
+    sessionStorage.setItem(key, '/psychometric-dates');
+    vi.spyOn(document, 'referrer', 'get').mockReturnValue(
+      `${window.location.origin}/sekhem-calculator`,
+    );
+    window.history.replaceState(null, '', '/programs/cs#score');
+    expect(await submitSource()).toBe('/programs/cs');
+  });
+
+  it('does not reuse a soft navigation origin after a fresh document load', async () => {
+    const { onRouterTransitionStart } = await import('../../instrumentation-client');
+    window.history.replaceState(null, '', '/psychometric-dates');
+    onRouterTransitionStart('/enquiry?program=psychometric-preparation', 'push');
+    expect(sessionStorage.getItem(key)).toBe('/psychometric-dates');
+    window.history.replaceState(null, '', '/enquiry');
+    vi.resetModules();
+    await import('../../instrumentation-client');
+    expect(await submitSource()).toBe('/enquiry');
+  });
+
+  it('clears origin when a later soft transition goes elsewhere', async () => {
+    const { onRouterTransitionStart } = await import('../../instrumentation-client');
+    window.history.replaceState(null, '', '/psychometric-dates');
+    onRouterTransitionStart('/enquiry', 'push');
+    window.history.replaceState(null, '', '/enquiry');
+    onRouterTransitionStart('/about', 'push');
+    expect(sessionStorage.getItem(key)).toBeNull();
+    expect(await submitSource()).toBe('/enquiry');
+  });
+});
 
 describe('EnquiryForm', () => {
   beforeEach(() => {
@@ -274,7 +392,7 @@ describe('EnquiryForm', () => {
       fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'בדיקת MyWay' } }); // Approved test update, Jorje 2026-10-26
       fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } }); // Approved test update, Jorje 2026-10-26
       // Approved test update, Jorje 2026-10-26: removed checkbox tick (institution consent = button press)
-      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button })); // Approved test update, Jorje 2026-10-26
+      fireEvent.click(screen.getByRole('button', { name: ENQUIRY_PREP_COPY.button })); // Approved copy update, Jorje/Amit 2026-10-30
       await screen.findByRole('alert');
       expect(capture.mock.calls[1]).toEqual([
         'enquiry_submit_failed',
@@ -291,6 +409,58 @@ describe('EnquiryForm', () => {
   );
 });
 
+it.each(['enquiry_page', 'journey'])(
+  'uses the prep button while idle and sending on %s, keeping the default intro',
+  async (surface) => {
+    let releaseSend!: (response: Response) => void;
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockImplementation(
+        () =>
+          new Promise<Response>((resolve) => {
+            releaseSend = resolve;
+          }),
+      ),
+    );
+    try {
+      render(
+        <EnquiryForm
+          programId="psychometric-preparation"
+          institutionId=""
+          title="הכנה לפסיכומטרי"
+          surface={surface}
+        />,
+      );
+      expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+        'רוצים תשובות ישר מהמוסד?',
+      );
+      expect(screen.queryByText('הציון שלכם בפסיכומטרי מתחיל בהכנה')).toBeNull();
+      const button = screen.getByRole('button', { name: 'שלחו וחברת הכנה תחזור אליכם' });
+      expect(screen.queryByText('שלחו, והמוסד יחזור אליכם')).toBeNull();
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.nameLabel), {
+        target: { value: 'בדיקת MyWay' },
+      });
+      fireEvent.change(screen.getByLabelText(ENQUIRY_COPY.phoneLabel), {
+        target: { value: '0501234567' },
+      });
+      fireEvent.click(button);
+      expect(screen.getByRole('button', { name: 'שלחו וחברת הכנה תחזור אליכם' })).toBe(button);
+      expect(button.getAttribute('aria-busy')).toBe('true');
+      expect(screen.queryByText('שלחו, והמוסד יחזור אליכם')).toBeNull();
+      releaseSend(Response.json({ data: { received: true } }, { status: 201 }));
+      await screen.findByRole('heading', { name: ENQUIRY_COPY.successTitle });
+    } finally {
+      vi.unstubAllGlobals();
+    }
+  },
+);
+
+it('keeps the institution submit button copy unchanged', () => {
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  expect(screen.getByRole('button', { name: 'שלחו, והמוסד יחזור אליכם' })).toBeTruthy();
+  expect(screen.queryByText('שלחו וחברת הכנה תחזור אליכם')).toBeNull();
+});
+
 it('pins all approved R7g state copy and the revised button in one place', () => {
   // Approved test update, Jorje 2026-10-29 (consent wording item c)
   expect(ENQUIRY_PREP_CONSENT).toBe(
@@ -299,9 +469,11 @@ it('pins all approved R7g state copy and the revised button in one place', () =>
   expect(ENQUIRY_COPY).toMatchObject({
     namePlaceholder: 'שם מלא',
     phonePlaceholder: 'מספר טלפון',
-    button: 'שליחת פרטים',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 19)
+    button: 'שלחו, והמוסד יחזור אליכם',
     loadingLive: 'שולחים את הפנייה',
-    loadingButton: 'שליחת פרטים',
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 19)
+    loadingButton: 'שלחו, והמוסד יחזור אליכם',
     successTitle: 'הפנייה נשלחה',
     successLive: 'הפנייה נשלחה',
     successBody: '{institution_me} יחזרו אליך בטלפון.',
@@ -438,4 +610,12 @@ it.each([
   expect(button.previousElementSibling?.textContent).toBe(
     `בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי ${prefixed} בלבד`,
   );
+});
+
+it('uses the approved enquiry opening and action', () => {
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 17)
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('רוצים תשובות ישר מהמוסד?');
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 18)
+  expect(screen.getByRole('button', { name: 'השאירו פרטים' })).toBeTruthy();
 });

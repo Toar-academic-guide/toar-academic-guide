@@ -61,10 +61,25 @@ describe('SiteFooter', () => {
     expect(email?.querySelector('bdi[dir="ltr"]')?.textContent).toBe('info@findmyway.co.il');
     expect(container.textContent).toContain('יצירת קשר');
     expect(container.textContent).toContain(
-      'בדיקת סיכויי קבלה לתוכניות לימודים לתואר, לפי הנתונים שהזנת.',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 32)
+      'הציונים שלכם. התואר שלכם. הדרך שלכם.',
     );
-    expect(container.textContent).toContain('התוצאות הן הערכה בלבד; ההחלטה על קבלה היא של המוסד');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 31)
+    expect(container.textContent).not.toContain(
+      'התוצאות הן הערכה בלבד; ההחלטה על קבלה היא של המוסד',
+    );
     expect(container.querySelector('p bdi[dir="ltr"]')?.textContent).toBe('© 2026 MyWay');
     expect(container.textContent).not.toMatch(/\d{9}/);
   });
+});
+
+it('removes the disclaimer paragraph and its exclusive flex spacing', () => {
+  const footer = footerMarkup();
+  const copyright = footer.querySelector('p bdi[dir="ltr"]')!.parentElement!;
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 31)
+  expect(copyright.parentElement!.children).toHaveLength(1);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 31)
+  expect(copyright.parentElement!.className).not.toMatch(/gap-|justify-between/);
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 31)
+  expect([...footer.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
 });

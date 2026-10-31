@@ -112,4 +112,60 @@ describe('private enquiry Slack notifications', () => {
       'private provider response',
     );
   });
+
+  it.each([
+    ['unticked', { prepConsent: false }],
+    [
+      'forged unticked evidence',
+      {
+        prepConsent: false,
+        prepConsentText: 'forged attestation',
+        prepConsentAt: new Date('2000-01-01'),
+      },
+    ],
+    ['missing stored age attestation', { prepConsent: true, prepConsentText: null }],
+    [
+      'obsolete stored age attestation',
+      { prepConsent: true, prepConsentText: 'obsolete attestation' },
+    ],
+  ])('keeps %s prep notification contact-free and internal', async (_label, evidence) => {
+    const lead = {
+      ...enquiry,
+      programId: 'psychometric-preparation',
+      programName: 'הכנה לפסיכומטרי',
+      institutionId: '',
+      institutionName: '',
+      resultStatus: 'unknown' as const,
+      ...evidence,
+    };
+    await notifyEnquiry(lead, null);
+    expect(fetch).toHaveBeenCalledOnce();
+    const [url, options] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('https://slack.com/api/chat.postMessage');
+    const payload = JSON.parse(options?.body as string);
+    expect(payload).toEqual({
+      channel: 'C_LEADS',
+      text: [
+        'program_id: psychometric-preparation',
+        'program_name: הכנה לפסיכומטרי',
+        'institution_id: ',
+        'institution_name: ',
+        'result_status: unknown',
+        'utm_source: tiktok',
+      ].join('\n'),
+      blocks: [],
+      unfurl_links: false,
+      unfurl_media: false,
+    });
+    for (const value of [
+      enquiry.name,
+      enquiry.phone,
+      enquiry.email,
+      enquiry.message,
+      'forged attestation',
+      'obsolete attestation',
+    ]) {
+      expect(options?.body).not.toContain(value);
+    }
+  });
 });

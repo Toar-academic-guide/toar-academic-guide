@@ -3,7 +3,7 @@ import StudyJourney from '@/components/StudyJourney';
 
 const TITLE = 'מחשבון סיכויי קבלה לתואר';
 const DESCRIPTION =
-  'מחשבון סיכויי קבלה של MyWay: בדיקת סיכויי קבלה ראשונית לתואר לפי ממוצע הבגרות והפסיכומטרי שהזנתם, מול תנאי הקבלה שפרסמו המוסדות. ההחלטה המחייבת אצל המוסד.';
+  'מזינים בגרות ופסיכומטרי, ורואים לאן אתם מתקבלים. חינם, בלי הרשמה, מול תנאי הקבלה הרשמיים.';
 
 export const metadata: Metadata = {
   title: TITLE,
@@ -19,16 +19,6 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: `${TITLE} | MyWay`, description: DESCRIPTION },
 };
 
-export default async function CalculatorPage({
-  searchParams,
-}: {
-  searchParams: Promise<{ program?: string | string[] }>;
-}) {
-  const { program } = await searchParams;
-  return (
-    <StudyJourney
-      initialStep="subjects"
-      initialProgramId={typeof program === 'string' ? program : undefined}
-    />
-  );
+export default function CalculatorPage() {
+  return <StudyJourney initialStep="subjects" />;
 }
