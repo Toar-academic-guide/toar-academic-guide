@@ -13,7 +13,7 @@ const NAV_GROUPS = [
     label: 'מחשבונים',
     links: [
       { label: 'מחשבון סכם', href: '/sekhem-calculator' },
-      { label: 'בדיקת סיכויי קבלה', href: ROUTES.calculator },
+      { label: 'בדיקת סיכויי קבלה', href: '/sekhem-calculator' },
     ],
   },
   {
@@ -201,7 +201,11 @@ export default function PublicNavBar({
       </NavItem>
       <nav aria-label="ניווט ראשי" className={styles.navigation}>
         <div id={linksId} className={styles.links}>
-          <Link href={ROUTES.calculator} className={styles.question}>
+          <Link
+            href="/sekhem-calculator"
+            className={styles.question}
+            aria-current={pathname === '/sekhem-calculator' ? 'page' : undefined}
+          >
             מה הסיכויים שלי?{' '}
           </Link>
           {NAV_GROUPS.map((group) => (
@@ -237,7 +241,7 @@ export default function PublicNavBar({
                 hidden={openDropdown !== group.id}
               >
                 {group.links.map(({ label, href }) => (
-                  <li key={href}>
+                  <li key={label}>
                     <Link
                       href={href}
                       aria-current={pathname === href.split('?')[0] ? 'page' : undefined}

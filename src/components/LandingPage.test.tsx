@@ -138,7 +138,7 @@ describe('LandingPage calculator', () => {
     );
 
     expect(screen.getByRole('link', { name: 'מה הסיכויים שלי?' }).getAttribute('href')).toBe(
-      '/app/calculator',
+      '/sekhem-calculator',
     );
   });
 
