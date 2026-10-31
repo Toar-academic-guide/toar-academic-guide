@@ -32,7 +32,7 @@ export const BGU_BAGRUT_PROFILE_POLICY = {
   id: 'bgu-bagrut-profile',
   version: 'bgu-bagrut-profile-2026-09-29',
   sourceUrl:
-    'https://www.bgu.ac.il/media/0mdl0p0x/%D7%99%D7%93%D7%99%D7%A2%D7%95%D7%9F-%D7%AA%D7%A9%D7%A4%D7%96-%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F-%D7%A0%D7%9B%D7%95%D7%9F-%D7%9C%D7%99%D7%95%D7%9D-01012026-%D7%9C%D7%90%D7%AA%D7%A8.pdf',
+    'https://www.bgu.ac.il/media/0p3ppz0n/%D7%99%D7%93%D7%99%D7%A2%D7%95%D7%9F-%D7%AA%D7%95%D7%90%D7%A8-%D7%A8%D7%90%D7%A9%D7%95%D7%9F.pdf',
   calculatorUrl: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
   recordSchemaVersion: 2 as const,
 };
@@ -274,10 +274,6 @@ export function calculateBguBagrutAverage(record: BagrutSubjectRecord): BguBagru
   if (!record.complete) {
     return needsInput(policyVersion, ['bagrut_certificate_complete']);
   }
-  if (record.certificateType !== 'internal') {
-    return needsInput(policyVersion, ['bagrut_certificate_type']);
-  }
-
   const exams = record.subjects.filter((subject) => subject.assessmentKind === 'exam');
   const examBySubjectId = new Map(exams.map((subject) => [subject.subjectId, subject]));
   const requiredSubjectIds = new Set(['english', 'mathematics', 'history', 'civics']);

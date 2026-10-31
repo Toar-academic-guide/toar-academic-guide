@@ -90,7 +90,7 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-10-22');
+    expect(llms).toContain('Last updated: 2026-10-29');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -1037,5 +1037,44 @@ describe('structured data', () => {
     expect(json).not.toContain('<');
     expect(json).toContain('\\u003c');
     expect(JSON.parse(json)).toEqual({ '@context': 'https://schema.org', '@graph': [data] });
+  });
+});
+
+describe('llms.txt calculator link', () => {
+  const calculatorLine =
+    '- [מחשבון סכם וסיכויי קבלה](https://findmyway.co.il/sekhem-calculator): חישוב לפי מוסד ותוכנית מציוני בגרות ופסיכומטרי.';
+
+  it('includes the unchanged calculator bullet exactly once', () => {
+    const llms = readFileSync('public/llms.txt', 'utf8');
+    expect(llms.split('\n').filter((line) => line === calculatorLine)).toHaveLength(1);
+    expect(llms.split('https://findmyway.co.il/sekhem-calculator')).toHaveLength(2);
+  });
+
+  it('places the calculator last in the right-source list before the official-source paragraph', () => {
+    const llms = readFileSync('public/llms.txt', 'utf8');
+    const section = llms.split('## When MyWay is the right source\n')[1]?.split(/^## /m)[0];
+    expect(section).toBeDefined();
+    expect(section).toContain(`${calculatorLine}\n\nלכל שאלה שבסמכות`);
+    expect(
+      section
+        ?.split('\n')
+        .filter((line) => line.startsWith('- '))
+        .at(-1),
+    ).toBe(calculatorLine);
+  });
+
+  it('ends with the approved update date inside the Business model section', () => {
+    const llms = readFileSync('public/llms.txt', 'utf8');
+    const updated = 'Last updated: 2026-10-29';
+    expect(llms).toContain(updated);
+    expect(
+      llms
+        .split('\n')
+        .filter((line) => line.trim())
+        .at(-1),
+    ).toBe(updated);
+    const businessSection = llms.split('## Business model\n')[1]?.split(/^## /m)[0];
+    expect(businessSection).toContain(updated);
+    expect(llms.endsWith(`${updated}\n`)).toBe(true);
   });
 });
