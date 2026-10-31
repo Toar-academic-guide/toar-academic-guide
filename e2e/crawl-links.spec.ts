@@ -18,20 +18,12 @@ function anchors(html: string): string[] {
   return [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => match[1]);
 }
 
-// PM trim spec: 12 subjects + 8 institutions on the homepage, collapsed by default.
-test('homepage browse links are in raw HTML inside a collapsed details', async ({ request }) => {
+// Approved test update, Jorje 2026-10-31
+test('homepage keeps the hero CTA and footer links in raw HTML', async ({ request }) => {
   const response = await request.get('/');
   expect(response.status()).toBe(200);
   const html = await response.text();
   expect(html).toContain('בדקו לאן אתם מתקבלים');
-  const browse = html.split('aria-labelledby="browse-title"')[1] ?? '';
-  const details = browse.slice(browse.indexOf('<details'), browse.indexOf('</details>'));
-  expect(details.startsWith('<details>')).toBe(true);
-  const hrefs = anchors(details);
-  expect(hrefs.filter((href) => /^\/programs\/[^/]+$/.test(href))).toHaveLength(12);
-  expect(hrefs.filter((href) => /^\/institutions\/[^/]+$/.test(href))).toHaveLength(8);
-  expect(hrefs).toContain('/programs');
-  expect(hrefs).toContain('/institutions');
   const footer = anchors(html.split('<footer')[1] ?? '');
   expect(footer).toEqual([
     '/',
@@ -159,7 +151,8 @@ for (const [id, hub, minimum] of [
 }
 
 for (const width of [320, 390, 768, 1024, 1440]) {
-  test(`browse links stay collapsed, readable and right-aligned at ${width}px`, async ({
+  // Approved test update, Jorje 2026-10-31
+  test(`hero and footer subject navigation work without overflow at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
@@ -171,15 +164,7 @@ for (const width of [320, 390, 768, 1024, 1440]) {
         .getByRole('link', { name: 'בדקו לאן אתם מתקבלים', exact: true }),
     ).toHaveAttribute('href', '/app/calculator');
     await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toHaveCount(0);
-    const browse = page.locator('section[aria-labelledby="browse-title"]');
-    await expect(browse).toBeVisible();
-    await expect(browse).toHaveCSS('text-align', 'right');
     await expect(page.getByRole('navigation')).toHaveCount(3);
-    const subjects = browse.locator('a[href^="/programs/"]');
-    await expect(subjects.first()).toBeHidden();
-    await browse.locator('summary').click();
-    await expect(subjects).toHaveCount(12);
-    await expect(subjects.first()).toBeVisible();
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
       true,
     );
@@ -197,19 +182,14 @@ for (const width of [320, 390, 768, 1024, 1440]) {
   });
 }
 
-test('collapsed browse links and the subject index work without JavaScript', async ({
-  browser,
-  baseURL,
-}) => {
+// Approved test update, Jorje 2026-10-31
+test('footer links and the subject index work without JavaScript', async ({ browser, baseURL }) => {
   const page = await browser.newPage({
     javaScriptEnabled: false,
     viewport: { width: 390, height: 900 },
   });
   try {
     await page.goto(`${baseURL}/`);
-    const browse = page.locator('section[aria-labelledby="browse-title"]');
-    await browse.locator('summary').click();
-    await expect(browse.locator('a[href^="/institutions/"]').first()).toBeVisible();
     await page.getByRole('contentinfo').getByRole('link', { name: 'תחומי לימוד' }).click();
     await expect(page).toHaveURL(/\/programs$/);
     await page.getByRole('link', { name: 'מדעי המחשב', exact: true }).click();

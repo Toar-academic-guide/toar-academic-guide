@@ -287,11 +287,9 @@ function Chips<T extends string>({
 
 export default function StudyJourney({
   initialStep = 'home',
-  browse,
   initialProgramId,
 }: {
   initialStep?: Step;
-  browse?: ReactNode;
   initialProgramId?: string;
 }) {
   if (initialStep === 'subjects') preloadJourneyExactGrades();
@@ -1960,7 +1958,6 @@ export default function StudyJourney({
             )}
           </section>
         )}
-        {step === 'home' && browse}
       </main>
     </WayPageShell>
   );
