@@ -1,4 +1,5 @@
 import { admissionScoreGap } from './admissionScoreGap';
+import { bagrutSubjectLabelForId } from '@/utils/bagrutSubjectRecord';
 import type {
   AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
@@ -10,6 +11,17 @@ export function formatSekhemNumber(value: number, institutionId: string): string
 }
 
 const inputLabels: Partial<Record<AdmissionsRequiredInput, string>> = {
+  medicine_certificate_language: 'שפת תעודת הבגרות',
+  medicine_psychometric_date: 'מועד הפסיכומטרי',
+  medicine_english_exempt: 'ציון אנגלית או פטור מוכר',
+  medicine_hebrew_basis: 'ידיעת העברית',
+  medicine_hebrew_score: 'ציון יע״ל / יעלנט',
+  bagrut_certificate_complete: 'יתר ציוני תעודת הבגרות',
+  bagrut_certificate_units: 'יתר המקצועות להשלמת 20 יחידות לפחות',
+  bagrut_certificate_type: 'סוג תעודת הבגרות',
+  bagrut_foreign_language: 'אנגלית בהיקף 4 יחידות או השפה הזרה החלופית בתעודה',
+  bagrut_final_project_subject: 'שם המקצוע של עבודת הגמר וסוג הציון בפרטי התעודה',
+  bagrut_combined_subjects: 'פירוט המקצועות והיחידות מספח תעודת הבגרות',
   haifa_bagrut_average: 'ממוצע הבגרות בחיפה',
   bagrut_subject_record: 'יחידות וציונים בכל מקצועות הבגרות',
   bagrut_average: 'ממוצע הבגרות',
@@ -80,6 +92,11 @@ const psychometricLabels: Record<string, string> = {
 function requiredActions(result: AdmissionsEvaluationResult): InputAction[] {
   const actions: InputAction[] = [];
   for (const key of new Set(result.requiredInputs ?? [])) {
+    if (key.startsWith('bagrut_subject:')) {
+      const label = bagrutSubjectLabelForId(key.slice('bagrut_subject:'.length));
+      if (label) actions.push({ label, target: { subject: label, field: 'grade' } });
+      continue;
+    }
     const [subject, field] = key.split('_');
     if (subjects[subject] && (field === 'grade' || field === 'units')) {
       if (
@@ -123,6 +140,10 @@ export function resultSourceReason(result: AdmissionsEvaluationResult): string {
 
 export function resultInputReasons(result: AdmissionsEvaluationResult): string[] {
   return [...new Set(result.requiredInputs ?? [])].flatMap((key) => {
+    if (key.startsWith('bagrut_subject:')) {
+      const label = bagrutSubjectLabelForId(key.slice('bagrut_subject:'.length));
+      return label ? [`השלימו יחידות וציון ב${label}`] : [];
+    }
     if (!inputLabels[key]) return [];
     return [`הוסיפו את ${inputLabels[key]} וקבלו את ציון הקבלה`];
   });
@@ -144,6 +165,17 @@ type CardPresentation = {
 
 /** A verdict never implies that the API returned a calculated score. */
 export function resultPresentation(result: AdmissionsEvaluationResult): CardPresentation {
+  if (result.stage === 'academic') {
+    if (result.score === undefined)
+      return {
+        text: resultInputReasons(result).join(' ') || result.explanation,
+        actions: requiredActions(result),
+      };
+    if (result.decision === 'below')
+      return { text: 'טרם עומדים בדרישות השלב האקדמי', tone: 'negative' };
+    if (result.decision === 'pending') return { text: 'הציון עומד בסף האקדמי; נותר להשלים פרטים' };
+    return { text: 'עומדים בדרישות השלב האקדמי', tone: 'positive' };
+  }
   const score = Number.isFinite(result.score);
   const threshold = Number.isFinite(result.threshold);
   // An exact score without a cutoff establishes no admission verdict.

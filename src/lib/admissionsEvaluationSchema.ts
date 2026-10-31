@@ -8,6 +8,7 @@ import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
+import { medicineAcademicInputsShape } from './medicineAcademicInputs';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 import {
   admissionsBagrutSubjectRecordSchema,
@@ -21,6 +22,7 @@ export const admissionsEvaluationSchema = z.object({
   bagrutAverageEstimated: z.literal(true).optional(),
   extraInputs: z
     .object({
+      ...medicineAcademicInputsShape,
       bguEngineering: bguEngineeringSchema.optional(),
       psychometricMath: z.number().int().min(50).max(150).optional(),
       psychometricVerbal: z.number().int().min(50).max(150).optional(),
