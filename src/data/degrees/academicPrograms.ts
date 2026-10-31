@@ -129,6 +129,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
       officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+      programUrl: 'https://info.huji.ac.il/bachelor/Life-Sciences',
     },
   ],
   huji_socialwork: [
@@ -403,6 +404,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ממוצע בגרות ≥ 100 — מומלץ'],
       officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+      programUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=new-info',
     },
   ],
   tau_accounting: [
@@ -515,7 +517,11 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-100 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ראיון אישי — מחייב', 'ממוצע בגרות ≥ 100 — מומלץ מאוד'],
+      specificAdmissionNotes: [
+        '92 — סף זימון משוער למבחן מו״ר.',
+        'ראיון אישי — מחייב',
+        'ממוצע בגרות ≥ 100 — מומלץ מאוד',
+      ],
       officialCalculatorUrl: 'https://admissions.technion.ac.il/',
     },
   ],
@@ -1529,7 +1535,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 640, technion: null, bgu: null },
+    // Official cutoff 19 uses HUJI's 11–30 scale, not this legacy 200–800 column.
+    // https://info.huji.ac.il/bachelor/Life-Sciences
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_biology'],
   },
   {
@@ -1555,7 +1563,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 775, technion: null, bgu: null },
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_medicine'],
   },
 
@@ -1722,7 +1730,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 770, huji: null, technion: null, bgu: null },
+    thresholds: { tau: 726.44, huji: null, technion: null, bgu: null },
     institutionDetails: D['tau_medicine'],
   },
 
@@ -2281,7 +2289,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { biu: 740 },
+    thresholds: { biu: null },
     institutionDetails: D['biu_medicine'],
   },
   {

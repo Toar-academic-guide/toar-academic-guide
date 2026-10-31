@@ -163,6 +163,7 @@ const REVIEWED_PAIR_IDS_BY_INSTITUTION: Record<FormulaBackedInstitutionId, reado
     'education__bgu',
     'ee__bgu',
     'me__bgu',
+    'medicine__bgu',
     'occupational_therapy__bgu',
     'physiotherapy__bgu',
     'political_science__bgu',
@@ -263,6 +264,11 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
  * like an implementation omission.
  */
 const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = {
+  medicine__bgu: {
+    url: 'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=471&p_pat1=1&p_degree_level=8',
+    reason:
+      'BGU publishes a medicine invitation threshold of 735 with a psychometric floor of 680. The generic medicine alias has no programme-specific evaluator target or controlled score-and-verdict replay; only bgu_medicine has that proof. This pair remains withheld and adds no exact coverage.',
+  },
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:

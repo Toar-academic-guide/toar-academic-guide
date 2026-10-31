@@ -66,13 +66,15 @@ describe('formula-backed pair catalogue', () => {
     expect(inventory.errors).toEqual([]);
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds CS, EE and social work to the denominator.
     // Approved test update, Jorje 2026-10-28
-    expect(inventory.total).toBe(143);
+    // Approved test update, Jorje 2026-10-31: generic BGU medicine adds one pair while HUJI retains independent cutoff authority.
+    expect(inventory.total).toBe(144);
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten routed pairs.
     // Approved test update, Jorje 2026-10-28
     expect(inventory.totalsByInstitution).toEqual({
       tau: 33,
       huji: 28,
-      bgu: 28,
+      // Approved test update, Jorje 2026-10-31: the generic medicine listing adds one BGU pair without new exact coverage.
+      bgu: 29,
       haifa: 27,
       technion: 14,
       colman: 1,
