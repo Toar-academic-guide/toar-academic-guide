@@ -9,6 +9,8 @@ import {
   type HaifaAdmissionsInputs,
 } from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import type { BagrutSubjectRecord } from '@/types';
+import { calculateHaifaBagrutAverage } from '@/data/admissions/haifaAdmissionFormula';
 
 export function requestedHaifaKeys(
   required: AdmissionsRequiredInput[],
@@ -29,24 +31,25 @@ export default function RequiredAdmissionsInputs({
   values,
   onChange,
   disabled,
+  bagrutSubjectRecord,
+  onBagrutFocus,
 }: {
   keys: (keyof HaifaAdmissionsInputs)[];
   values: HaifaQualificationValues;
   onChange: (key: keyof HaifaAdmissionsInputs, value: string) => void;
   disabled: boolean;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  onBagrutFocus?: () => void;
 }) {
-  if (!keys.length) return null;
-  const visibleKeys = keys.includes('haifaPsychometricMonth')
-    ? [...keys, 'haifaPsychometricYear' as const]
-    : keys;
+  const needsBagrutRows =
+    keys.includes('haifaBagrutAverage') &&
+    calculateHaifaBagrutAverage(bagrutSubjectRecord) === undefined;
+  const qualificationKeys = keys.filter((key) => key !== 'haifaBagrutAverage');
+  const visibleKeys = qualificationKeys.includes('haifaPsychometricMonth')
+    ? [...qualificationKeys, 'haifaPsychometricYear' as const]
+    : qualificationKeys;
+  if (!visibleKeys.length && !needsBagrutRows) return null;
   const numeric = [
-    {
-      key: 'haifaBagrutAverage' as const,
-      label: 'ממוצע בגרות בחיפה',
-      min: 50,
-      max: 130,
-      step: 0.1,
-    },
     {
       key: 'haifaBagrutYear' as const,
       label: 'שנת הבגרות',
@@ -57,6 +60,16 @@ export default function RequiredAdmissionsInputs({
   ];
   return (
     <div className="mt-5 grid gap-4">
+      {needsBagrutRows && (
+        <button
+          type="button"
+          className="min-h-11 text-right text-sm underline underline-offset-4"
+          onClick={onBagrutFocus}
+          disabled={disabled}
+        >
+          השלימו ציוני בגרות
+        </button>
+      )}
       {numeric
         .filter((field) => keys.includes(field.key))
         .map((field) => (

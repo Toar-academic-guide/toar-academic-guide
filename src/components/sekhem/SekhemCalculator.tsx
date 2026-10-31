@@ -9,7 +9,7 @@ import BagrutSubjectRows, {
 } from '@/components/BagrutSubjectRows';
 import { defaultUnitsFor } from '@/components/bagrutUnitOptions';
 import EnquiryForm from '@/components/EnquiryForm';
-import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
+import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import { institutionShortName, type ResultInputTarget } from '@/lib/sekhemResultPresentation';
 import { readSekhemSession, writeSekhemSession } from '@/lib/sekhemCalculatorSession';
 import { SECTORS } from '@/data/bagrutSubjects';
@@ -277,7 +277,9 @@ export default function SekhemCalculator({
         certificate,
       });
       const extras = Object.fromEntries(
-        HAIFA_PROFILE_KEYS.filter((key) => haifaValues[key]?.trim()).map((key) => {
+        HAIFA_PROFILE_KEYS.filter(
+          (key) => key !== 'haifaBagrutAverage' && haifaValues[key]?.trim(),
+        ).map((key) => {
           const value = haifaValues[key];
           if (numericHaifaKeys.has(key)) return [key, Number(value)];
           if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
@@ -498,6 +500,13 @@ export default function SekhemCalculator({
         <RequiredAdmissionsInputs
           keys={requiredKeys}
           values={haifaValues}
+          bagrutSubjectRecord={buildBagrutSubjectRecord({
+            sectorLabel: sector,
+            certificateType: certificate,
+            complete: true,
+            subjects: subjectRowValues(rows),
+          })}
+          onBagrutFocus={() => focusResultInput({ inputId: 'sekhem-bagrut-subjects' })}
           onChange={(key, value) => {
             invalidate();
             setHaifaValues((current) => ({ ...current, [key]: value }));

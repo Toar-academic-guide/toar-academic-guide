@@ -68,7 +68,6 @@ async function answerHaifaFollowUps() {
         'haifa_psychometric_month',
         'haifa_psychometric_year',
         'haifa_hebrew_qualification',
-        'haifa_bagrut_average',
         'haifa_science_units',
       ]),
     }),
@@ -81,7 +80,6 @@ async function answerHaifaFollowUps() {
   });
   for (const [label, value] of [
     ['שנת הפסיכומטרי', '2025'],
-    ['ממוצע בגרות בחיפה', '104'],
     ['מספר היחידות המדעיות לסיעוד בחיפה', '10'],
     ['הבסיס לעמידה בדרישת העברית בחיפה', 'hebrew_school'],
   ])
@@ -116,7 +114,6 @@ it.each([
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
     expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '4');
     expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '2025');
-    expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '');
     expect(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה')).toHaveProperty('value', '');
     submit();
     await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
@@ -125,6 +122,9 @@ it.each([
       haifaPsychometricYear: 2025,
       haifaHebrewQualification: 'hebrew_school',
     });
+    expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs).not.toHaveProperty(
+      'haifaScienceUnits',
+    );
   },
 );
 
@@ -140,13 +140,14 @@ it.each([
   });
   expect(screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה')).toHaveProperty('value', '');
   expect(screen.getByLabelText('שנת הפסיכומטרי')).toHaveProperty('value', '');
-  expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '104');
+  expect(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה')).toHaveProperty('value', '10');
   submit();
   await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
   const extras = JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs;
   expect(extras.haifaPsychometricMonth).toBeUndefined();
   expect(extras.haifaPsychometricYear).toBeUndefined();
   expect(extras.haifaHebrewQualification).toBe('hebrew_school');
+  expect(extras.haifaScienceUnits).toBe(10);
 });
 
 it('asks the infosystems track once and retains answered keys through later follow-ups and recalculation', async () => {
@@ -611,7 +612,10 @@ it('qualifies programme options with institution names without changing values o
 });
 
 it('restores the complete draft and last results after remount', async () => {
-  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  // Approved test update, Jorje 2026-10-31: persist a Hebrew qualification instead of the removed Haifa average field.
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_bagrut_average', 'haifa_hebrew_qualification']) }),
+  );
   const view = render(<SekhemCalculator offerings={offerings} />);
   examples();
   fireEvent.change(screen.getByLabelText('יחידות 1'), { target: { value: '4' } });
@@ -619,8 +623,12 @@ it('restores the complete draft and last results after remount', async () => {
   fireEvent.change(screen.getByLabelText('סוג תעודה'), { target: { value: 'internal' } });
   fireEvent.change(screen.getByLabelText('תוכנית לימודים'), { target: { value: 'haifa_cs' } });
   submit();
-  fireEvent.change(await screen.findByLabelText('ממוצע בגרות בחיפה'), { target: { value: '104' } });
-  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  fireEvent.change(await screen.findByLabelText('הבסיס לעמידה בדרישת העברית בחיפה'), {
+    target: { value: 'hebrew_school' },
+  });
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_bagrut_average', 'haifa_hebrew_qualification']) }),
+  );
   submit();
   await screen.findByTestId('institution-haifa');
   act(() => window.dispatchEvent(new Event('pagehide')));
@@ -636,7 +644,7 @@ it('restores the complete draft and last results after remount', async () => {
     ['כמותי', '140'],
     ['אנגלית', '135'],
     ['פסיכומטרי — ציון כללי', '700'],
-    ['ממוצע בגרות בחיפה', '104'],
+    ['הבסיס לעמידה בדרישת העברית בחיפה', 'hebrew_school'],
   ])
     expect(
       screen.getByLabelText(label, { exact: label !== 'פסיכומטרי — ציון כללי' }),
@@ -743,15 +751,23 @@ it.each(['missing', 'duplicate'])('preserves the generic row error for %s rows',
 });
 
 it('keeps required fields and answers while persisting cleared results after a required-input edit', async () => {
-  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  // Approved test update, Jorje 2026-10-31: edit a Hebrew qualification instead of the removed Haifa average field.
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_bagrut_average', 'haifa_hebrew_qualification']) }),
+  );
   const view = render(<SekhemCalculator offerings={offerings} />);
   examples();
   submit();
-  fireEvent.change(await screen.findByLabelText('ממוצע בגרות בחיפה'), { target: { value: '104' } });
+  fireEvent.change(await screen.findByLabelText('הבסיס לעמידה בדרישת העברית בחיפה'), {
+    target: { value: 'hebrew_school' },
+  });
   expect(screen.queryByTestId('institution-haifa')).toBeNull();
   view.unmount();
   render(<SekhemCalculator offerings={offerings} />);
-  expect(screen.getByLabelText('ממוצע בגרות בחיפה')).toHaveProperty('value', '104');
+  expect(screen.getByLabelText('הבסיס לעמידה בדרישת העברית בחיפה')).toHaveProperty(
+    'value',
+    'hebrew_school',
+  );
   expect(screen.queryByTestId('institution-haifa')).toBeNull();
   expect(fetchMock).toHaveBeenCalledTimes(1);
 });
@@ -846,3 +862,39 @@ it.each([2, 4])(
     expect(saved.rows[0]).toEqual({ label: 'עברית', units, grade: 92, assessmentKind: 'exam' });
   },
 );
+
+it('never submits a legacy Haifa average restored from calculator storage', async () => {
+  restoreUnits(5);
+  const saved = JSON.parse(sessionStorage.getItem('myway:sekhem-calculator:v1')!);
+  saved.requiredKeys = ['haifaBagrutAverage'];
+  saved.haifaValues = { haifaBagrutAverage: '104' };
+  sessionStorage.setItem('myway:sekhem-calculator:v1', JSON.stringify(saved));
+  render(<SekhemCalculator offerings={offerings} />);
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(1));
+  expect(JSON.parse(String(fetchMock.mock.calls[0][1]?.body)).extraInputs).not.toHaveProperty(
+    'haifaBagrutAverage',
+  );
+});
+
+it('routes a missing Haifa average to bagrut rows when the certificate cannot be calculated', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  render(<SekhemCalculator offerings={offerings} />);
+  for (let index = 1; index <= 4; index++)
+    fireEvent.change(screen.getByLabelText(`ציון ${index}`), { target: { value: '90' } });
+  fireEvent.change(screen.getByLabelText(/פסיכומטרי — ציון כללי/), { target: { value: '700' } });
+  submit();
+  fireEvent.click(await screen.findByRole('button', { name: 'השלימו ציוני בגרות' }));
+  expect(document.activeElement).toBe(document.getElementById('sekhem-bagrut-subjects'));
+  expect(screen.queryByLabelText('ממוצע בגרות בחיפה')).toBeNull();
+});
+
+it('ignores an average request when complete subject rows already produce the Haifa average', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_bagrut_average']) }));
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  await screen.findByTestId('institution-haifa');
+  expect(screen.queryByLabelText('ממוצע בגרות בחיפה')).toBeNull();
+  expect(screen.queryByRole('button', { name: 'השלימו ציוני בגרות' })).toBeNull();
+});
