@@ -46,7 +46,6 @@ export function admissionsExtraInputsFromAcademicScores(
     ...Object.fromEntries(
       TAU_PHYSIOTHERAPY_PROFILE_KEYS.map((key) => [key, academicScores?.admissions?.[key]]),
     ),
-    haifaBagrutAverage: academicScores?.admissions?.haifaBagrutAverage,
     haifaBagrutYear: academicScores?.admissions?.haifaBagrutYear,
     haifaPsychometricYear: academicScores?.admissions?.haifaPsychometricYear,
     haifaPsychometricMonth: academicScores?.admissions?.haifaPsychometricMonth,

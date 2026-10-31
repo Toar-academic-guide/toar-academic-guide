@@ -44,6 +44,28 @@ describe('admissions evaluate route', () => {
       }),
     );
 
+  it('accepts a legacy Haifa average override in batch requests without stripping it', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],
+    });
+    const extraInputs = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2024,
+    };
+    const response = await batchRequest({
+      degreeIds: ['haifa_cs'],
+      psychometric: 700,
+      extraInputs,
+    });
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: { degreeId: 'haifa_cs', psychometric: 700, extraInputs },
+      }),
+    );
+  });
+
   it.each([
     { batch: false, missingInstitution: false },
     { batch: false, missingInstitution: true },
