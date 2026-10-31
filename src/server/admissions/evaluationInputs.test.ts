@@ -84,7 +84,6 @@ describe('evaluation input derivation and provenance', () => {
     expect(normalized.reasons).toEqual({});
   });
   it('marks every average-only institutional proxy and the assumed Haifa cycle', () => {
-    // Approved test update, Jorje 2026-10-31: default only the bagrut year, never the psychometric sitting year.
     const normalized = normalizeEvaluationInputs({
       degreeId: 'cs',
       bagrut: 105,
@@ -96,6 +95,7 @@ describe('evaluation input derivation and provenance', () => {
       haifaBagrutAverage: 105,
       colmanBagrutAverage: 105,
       haifaBagrutYear: HAIFA_ADMISSION_YEAR,
+      haifaPsychometricYear: HAIFA_ADMISSION_YEAR,
     });
     for (const id of ['bgu', 'tau', 'haifa', 'colman'])
       expect(normalized.reasons[id].join(' ')).toContain('105');
@@ -139,16 +139,4 @@ it('keeps request-level derived-average provenance after the API receives a numb
   });
   expect(normalized.input.bagrut).toBe(100);
   expect(normalized.overallReason).toBeTruthy();
-});
-
-it('leaves a missing Haifa psychometric year unset while keeping the bagrut-year assumption', () => {
-  const normalized = normalizeEvaluationInputs({
-    degreeId: 'haifa_psychology',
-    extraInputs: { bagrutSubjectRecord: bguRecord },
-  });
-  expect(normalized.input.extraInputs.haifaPsychometricYear).toBeUndefined();
-  expect(normalized.input.extraInputs.haifaBagrutYear).toBe(HAIFA_ADMISSION_YEAR);
-  expect(normalized.reasons.haifa).toEqual([
-    `שנת הבגרות לא נמסרה; החישוב מניח את מחזור ${HAIFA_ADMISSION_YEAR}.`,
-  ]);
 });

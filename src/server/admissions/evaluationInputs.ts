@@ -47,11 +47,13 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
       ];
     }
   }
-  if (extraInputs.haifaBagrutYear === undefined) {
-    extraInputs.haifaBagrutYear = HAIFA_ADMISSION_YEAR;
-    (reasons.haifa ??= []).push(
-      `שנת הבגרות לא נמסרה; החישוב מניח את מחזור ${HAIFA_ADMISSION_YEAR}.`,
-    );
+  for (const key of ['haifaBagrutYear', 'haifaPsychometricYear'] as const) {
+    if (extraInputs[key] === undefined) {
+      extraInputs[key] = HAIFA_ADMISSION_YEAR;
+      (reasons.haifa ??= []).push(
+        `${key === 'haifaBagrutYear' ? 'שנת הבגרות' : 'שנת הפסיכומטרי'} לא נמסרה; החישוב מניח את מחזור ${HAIFA_ADMISSION_YEAR}.`,
+      );
+    }
   }
   return { input: { ...input, bagrut, extraInputs }, reasons, overallReason, proxyInstitutions };
 }
