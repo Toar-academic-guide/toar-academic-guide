@@ -407,6 +407,17 @@ export function resultExplanation(
   }
 }
 
+export const LAST_SORTED_INSTITUTION_IDS: ReadonlySet<string> = new Set(['biu', 'ariel']);
+
+function stablePartitionLast<T>(items: T[], goesLast: (item: T) => boolean): T[] {
+  const first: T[] = [];
+  const last: T[] = [];
+  for (const item of items) {
+    (goesLast(item) ? last : first).push(item);
+  }
+  return [...first, ...last];
+}
+
 export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institution') {
   const groups = new Map<string, { id: string; name: string; rows: JourneyRow[] }>();
   for (const row of rows) {
@@ -420,7 +431,16 @@ export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institu
         rows: [row],
       });
   }
-  return [...groups.values()];
+  const groupedRows = [...groups.values()];
+  if (groupBy === 'institution') {
+    return stablePartitionLast(groupedRows, (group) => LAST_SORTED_INSTITUTION_IDS.has(group.id));
+  }
+  return groupedRows.map((group) => ({
+    ...group,
+    rows: stablePartitionLast(group.rows, (row) =>
+      LAST_SORTED_INSTITUTION_IDS.has(row.institution.id),
+    ),
+  }));
 }
 
 export { institutionLink as officialUrl } from '@/lib/institutionLinks';
