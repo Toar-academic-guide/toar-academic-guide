@@ -88,6 +88,23 @@ async function answerHaifaFollowUps() {
     fireEvent.change(screen.getByLabelText(label), { target: { value } });
 }
 
+it('submits the answered sitting year when the API only requests the psychometric month', async () => {
+  fetchMock.mockResolvedValueOnce(Response.json({ data: response(['haifa_psychometric_month']) }));
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(await screen.findByLabelText('חודש הבחינה הפסיכומטרית לחיפה'), {
+    target: { value: '4' },
+  });
+  fireEvent.change(screen.getByLabelText('שנת הפסיכומטרי'), { target: { value: '2025' } });
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs).toMatchObject({
+    haifaPsychometricYear: 2025,
+    haifaPsychometricMonth: 4,
+  });
+});
+
 it.each([
   ['ציון 1', '91'],
   ['מגזר', 'ערבי'],
@@ -130,6 +147,84 @@ it.each([
   expect(extras.haifaPsychometricMonth).toBeUndefined();
   expect(extras.haifaPsychometricYear).toBeUndefined();
   expect(extras.haifaHebrewQualification).toBe('hebrew_school');
+});
+
+it('asks the infosystems track once and retains answered keys through later follow-ups and recalculation', async () => {
+  const requestedTracks: boolean[] = [];
+  fetchMock.mockImplementation(async (_url, init) => {
+    const { extraInputs } = JSON.parse(String(init?.body));
+    const missing: AdmissionsRequiredInput[] = !extraInputs.haifaInformationSystemsTrack
+      ? ['haifa_information_systems_track']
+      : extraInputs.haifaInformationSystemsPartnerRequirementsConfirmed === undefined
+        ? ['haifa_information_systems_partner_requirements']
+        : !extraInputs.haifaHebrewQualification
+          ? ['haifa_hebrew_qualification']
+          : [];
+    requestedTracks.push(missing.includes('haifa_information_systems_track'));
+    const data = response(missing);
+    const report = data.reports.haifa_cs;
+    report.input.degreeId = 'haifa_infosystems';
+    report.program.id = 'haifa_infosystems';
+    data.reports = { haifa_infosystems: report };
+    return Response.json({ data });
+  });
+  render(
+    <SekhemCalculator
+      offerings={[{ ...offerings[0], programId: 'haifa_infosystems', programName: 'מערכות מידע' }]}
+    />,
+  );
+  examples();
+  submit();
+  fireEvent.change(await screen.findByLabelText('מסלול מערכות מידע בחיפה'), {
+    target: { value: 'dual_major' },
+  });
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' })).toHaveProperty(
+      'disabled',
+      false,
+    ),
+  );
+  fireEvent.change(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?'), {
+    target: { value: 'true' },
+  });
+  submit();
+  fireEvent.change(await screen.findByLabelText('הבסיס לעמידה בדרישת העברית בחיפה'), {
+    target: { value: 'hebrew_school' },
+  });
+  submit();
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(5));
+  await screen.findByText('הציונים עומדים בתנאי הקבלה');
+  expect(requestedTracks).toEqual([true, false, false, false, false]);
+  expect(JSON.parse(String(fetchMock.mock.calls[4][1]?.body)).extraInputs).toMatchObject({
+    haifaInformationSystemsTrack: 'dual_major',
+    haifaInformationSystemsPartnerRequirementsConfirmed: true,
+    haifaHebrewQualification: 'hebrew_school',
+  });
+});
+
+it('submits the infosystems partner answer revealed by the track before the API requests it', async () => {
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_information_systems_track']) }),
+  );
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  fireEvent.change(await screen.findByLabelText('מסלול מערכות מידע בחיפה'), {
+    target: { value: 'dual_major' },
+  });
+  fireEvent.change(screen.getByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?'), {
+    target: { value: 'true' },
+  });
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  expect(JSON.parse(String(fetchMock.mock.calls[1][1]?.body)).extraInputs).toMatchObject({
+    haifaInformationSystemsTrack: 'dual_major',
+    haifaInformationSystemsPartnerRequirementsConfirmed: true,
+  });
 });
 
 // Invalid select values can only arrive from a restored record, not from its options.

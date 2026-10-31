@@ -13,12 +13,14 @@ import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 export function requestedHaifaKeys(
   required: AdmissionsRequiredInput[],
 ): (keyof HaifaAdmissionsInputs)[] {
-  return HAIFA_PROFILE_KEYS.filter((key) =>
-    required.includes(
-      key
-        .replace(/Confirmed$/, '')
-        .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
-    ),
+  return HAIFA_PROFILE_KEYS.filter(
+    (key) =>
+      (key === 'haifaPsychometricYear' && required.includes('haifa_psychometric_month')) ||
+      required.includes(
+        key
+          .replace(/Confirmed$/, '')
+          .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
+      ),
   );
 }
 
@@ -34,6 +36,9 @@ export default function RequiredAdmissionsInputs({
   disabled: boolean;
 }) {
   if (!keys.length) return null;
+  const visibleKeys = keys.includes('haifaPsychometricMonth')
+    ? [...keys, 'haifaPsychometricYear' as const]
+    : keys;
   const numeric = [
     {
       key: 'haifaBagrutAverage' as const,
@@ -45,13 +50,6 @@ export default function RequiredAdmissionsInputs({
     {
       key: 'haifaBagrutYear' as const,
       label: 'שנת הבגרות',
-      min: 1948,
-      max: HAIFA_ADMISSION_YEAR,
-      step: 1,
-    },
-    {
-      key: 'haifaPsychometricYear' as const,
-      label: 'שנת הפסיכומטרי',
       min: 1948,
       max: HAIFA_ADMISSION_YEAR,
       step: 1,
@@ -81,7 +79,7 @@ export default function RequiredAdmissionsInputs({
         values={values}
         onChange={onChange}
         disabled={disabled}
-        visibleKeys={keys}
+        visibleKeys={visibleKeys}
         compact
         inputClassName="sekhem-input"
       />

@@ -34,3 +34,28 @@ it('renders optional requested Hebrew score and date without a whole questionnai
   expect(change).toHaveBeenCalledWith('haifaHebrewScore', '120');
   expect(screen.getByLabelText('תאריך מבחן העברית בחיפה')).toBeTruthy();
 });
+
+it('requests the sitting year whenever Haifa requests the psychometric month', () => {
+  expect(requestedHaifaKeys(['haifa_psychometric_month'])).toEqual([
+    'haifaPsychometricYear',
+    'haifaPsychometricMonth',
+  ]);
+});
+
+it('shows the sitting year next to the month in the same follow-up step', () => {
+  const change = vi.fn();
+  render(
+    <RequiredAdmissionsInputs
+      keys={['haifaPsychometricMonth']}
+      values={{ haifaPsychometricMonth: '4', haifaPsychometricYear: '2025' }}
+      onChange={change}
+      disabled={false}
+    />,
+  );
+  const month = screen.getByLabelText('חודש הבחינה הפסיכומטרית לחיפה');
+  const year = screen.getByLabelText('שנת הפסיכומטרי');
+  expect(year).toHaveProperty('value', '2025');
+  expect(month.parentElement?.parentElement?.contains(year)).toBe(true);
+  fireEvent.change(year, { target: { value: '2024' } });
+  expect(change).toHaveBeenCalledWith('haifaPsychometricYear', '2024');
+});

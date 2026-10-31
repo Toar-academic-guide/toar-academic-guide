@@ -16,6 +16,7 @@ import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
   haifaProfileInputsSchema,
+  HAIFA_PROFILE_KEYS,
   HAIFA_NUMERIC_QUALIFICATION_KEYS,
 } from '@/lib/haifaAdmissionsInputs';
 import { buildSekhemInput, type CalculatorOffering } from '@/lib/sekhemCalculator';
@@ -276,14 +277,12 @@ export default function SekhemCalculator({
         certificate,
       });
       const extras = Object.fromEntries(
-        requiredKeys
-          .filter((key) => haifaValues[key]?.trim())
-          .map((key) => {
-            const value = haifaValues[key];
-            if (numericHaifaKeys.has(key)) return [key, Number(value)];
-            if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
-            return [key, value];
-          }),
+        HAIFA_PROFILE_KEYS.filter((key) => haifaValues[key]?.trim()).map((key) => {
+          const value = haifaValues[key];
+          if (numericHaifaKeys.has(key)) return [key, Number(value)];
+          if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
+          return [key, value];
+        }),
       );
       applicant.extraInputs = {
         ...applicant.extraInputs,
@@ -326,12 +325,9 @@ export default function SekhemCalculator({
             .flatMap((result) => result.requiredInputs ?? []),
         ),
       );
-      setRequiredKeys(keys);
-      setHaifaValues((current) =>
-        Object.fromEntries(
-          keys.filter((key) => current[key] !== undefined).map((key) => [key, current[key]]),
-        ),
-      );
+      setRequiredKeys((current) => [
+        ...new Set([...current.filter((key) => haifaValues[key]?.trim()), ...keys]),
+      ]);
       setFailedIds(failed);
       if (failed.length) setError('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.');
     } catch {
