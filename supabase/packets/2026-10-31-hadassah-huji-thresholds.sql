@@ -17,9 +17,13 @@
 -- https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=471&p_pat1=1&p_degree_level=8
 -- https://medicine.biu.ac.il/six_year_track_application_requirements
 -- https://www.jmc.ac.il/ and https://www.aac.ac.il/
--- Hadassah desired strings match commit 6a54a26 / PR #353; old values below
--- use Mario-confirmed live URLs and exact legacy values from 2e43e5f.
--- Unconfirmed legacy rows must match the fail-closed checks below before any change.
+-- Guards use only Mario's read-only prod report of 2026-10-31.
+-- Biology 640 is not in Mario's 2026-10-31 list — needs confirmation; retain its
+-- briefed UPDATE with the fail-closed per-row guard. No live value is inferred.
+-- Hadassah target spelling: המרכז האקדמי הרב תחומי ירושלים (official JMC about
+-- page, /על-המרכז/אודות/על-המרכז/). Curl received a WAF challenge; official
+-- page text was verified with the web fetch. Raw evidence is outside the repo:
+-- /workspace/codex-tasks/hac-jmc-evidence-2026-10-31/.
 -- Scale rule: use a figure only on its column's scale; otherwise retain the row
 -- with NULL. Never put HUJI's 11–30 values into legacy 200–800 columns.
 
@@ -40,12 +44,10 @@ FROM public.admission_thresholds WHERE id IN (
   'medicine:bgu:bgu:sekhem') ORDER BY id;
 SELECT id, name, domain, program_url FROM public.institutions
 WHERE id IN ('hadassah', 'ashkelon');
-SELECT id, name, institution_name FROM public.programs
-WHERE id = 'hadassah_general_academic';
 
 BEGIN ISOLATION LEVEL SERIALIZABLE;
 SET LOCAL lock_timeout = '5s';
-LOCK TABLE public.admission_thresholds, public.institutions, public.programs,
+LOCK TABLE public.admission_thresholds, public.institutions,
   public.program_institutions IN SHARE ROW EXCLUSIVE MODE;
 
 DO $precheck$
@@ -122,35 +124,17 @@ BEGIN
     WHERE id = 'ashkelon' AND program_url = 'https://www.ac.il') THEN
     RAISE EXCEPTION 'institutions.ashkelon.program_url differs from the exact expected old value';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.programs
-    WHERE id = 'hadassah_general_academic' AND name = 'לימודים אקדמיים - המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah') THEN
-    RAISE EXCEPTION 'programs.hadassah_general_academic.name differs from the exact expected old value';
-  END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.programs
-    WHERE id = 'hadassah_general_academic' AND institution_name = 'המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah') THEN
-    RAISE EXCEPTION 'programs.hadassah_general_academic.institution_name differs from the exact expected old value';
-  END IF;
   IF NOT EXISTS (SELECT 1 FROM public.programs WHERE id = 'medicine')
     OR NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'bgu') THEN
     RAISE EXCEPTION 'Generic medicine and BGU must already exist';
   END IF;
-  IF EXISTS (SELECT 1 FROM public.program_institutions
-    WHERE program_id = 'medicine' AND institution_id = 'bgu') THEN
-    RAISE EXCEPTION 'medicine:bgu link must be absent; inspect existing membership before inserting';
-  END IF;
-  IF EXISTS (SELECT 1 FROM public.admission_thresholds
-    WHERE id = 'medicine:bgu:bgu:sekhem'
-      OR (program_id = 'medicine' AND institution_id = 'bgu' AND threshold_kind = 'sekhem')) THEN
-    RAISE EXCEPTION 'medicine:bgu:bgu:sekhem must be absent; inspect existing threshold before inserting';
-  END IF;
-  -- No by-name sweep: an unexpected provider row needs a separately reviewed id.
-  IF EXISTS (SELECT 1 FROM public.institutions
-    WHERE name = 'המרכז האקדמי הרב-תחומי ירושלים' AND id <> 'hadassah')
-    OR EXISTS (SELECT 1 FROM public.programs
-      WHERE (name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%'
-        OR institution_name = 'המרכז האקדמי הרב-תחומי ירושלים')
-        AND id <> 'hadassah_general_academic') THEN
-    RAISE EXCEPTION 'Unexpected hyphenated Hadassah provider ids; inspect before any changes';
+  IF EXISTS (SELECT 1 FROM public.admission_thresholds t
+    WHERE (t.id = 'medicine:bgu:bgu:sekhem'
+      OR (t.program_id = 'medicine' AND t.institution_id = 'bgu'
+        AND t.university_id = 'bgu' AND t.threshold_kind = 'sekhem'))
+      AND ROW(t.id, t.program_id, t.institution_id, t.university_id, t.threshold_kind, t.threshold_value)
+        IS DISTINCT FROM ROW('medicine:bgu:bgu:sekhem', 'medicine', 'bgu', 'bgu', 'sekhem', 735::numeric)) THEN
+    RAISE EXCEPTION 'medicine:bgu:bgu:sekhem conflicts with the confirmed identity/value 735';
   END IF;
 END $precheck$;
 
@@ -170,10 +154,14 @@ SELECT * FROM public.admission_thresholds WHERE id IN (
   'medicine:bgu:bgu:sekhem');
 CREATE TABLE hadassah_huji_20261031.institutions_before AS
 SELECT * FROM public.institutions WHERE id IN ('hadassah', 'ashkelon');
-CREATE TABLE hadassah_huji_20261031.programs_before AS
-SELECT * FROM public.programs WHERE id = 'hadassah_general_academic';
 CREATE TABLE hadassah_huji_20261031.links_before AS
 SELECT * FROM public.program_institutions WHERE program_id = 'medicine' AND institution_id = 'bgu';
+CREATE TABLE hadassah_huji_20261031.inserted_rows (
+  table_name text NOT NULL,
+  row_id text NOT NULL,
+  row_data jsonb NOT NULL,
+  PRIMARY KEY (table_name, row_id)
+);
 
 UPDATE public.admission_thresholds SET threshold_value = NULL
 WHERE id = 'huji_biology:huji:huji:sekhem' AND threshold_value = 640
@@ -204,21 +192,32 @@ WHERE id = 'biu_medicine:biu:biu:sekhem' AND threshold_value = 740
       AND program_id = 'biu_medicine' AND institution_id = 'biu'
       AND university_id = 'biu' AND threshold_kind = 'sekhem';
 
--- Exact expected old state for both inserts is absence, enforced under the lock.
--- Neither absence has been independently confirmed on prod: Mario must inspect
--- the prechecks. Even an existing matching 735 aborts before any mutation.
+-- Mario confirmed the exact BGU threshold row already exists at 735.
+-- Matching rows are no-ops; only conflicting threshold identity/data aborts.
+-- Link existence is UNCONFIRMED: insert if absent, otherwise leave it unchanged.
+WITH inserted AS (
 INSERT INTO public.program_institutions (program_id, institution_id)
 SELECT 'medicine', 'bgu'
 WHERE NOT EXISTS (SELECT 1 FROM public.program_institutions
   WHERE program_id = 'medicine' AND institution_id = 'bgu')
-ON CONFLICT DO NOTHING;
+ON CONFLICT DO NOTHING
+RETURNING *
+)
+INSERT INTO hadassah_huji_20261031.inserted_rows (table_name, row_id, row_data)
+SELECT 'program_institutions', 'medicine:bgu', to_jsonb(inserted) FROM inserted;
+WITH inserted AS (
 INSERT INTO public.admission_thresholds
   (id, program_id, institution_id, university_id, threshold_kind, threshold_value)
 SELECT 'medicine:bgu:bgu:sekhem', 'medicine', 'bgu', 'bgu', 'sekhem', 735
 WHERE NOT EXISTS (SELECT 1 FROM public.admission_thresholds
   WHERE id = 'medicine:bgu:bgu:sekhem'
-    OR (program_id = 'medicine' AND institution_id = 'bgu' AND threshold_kind = 'sekhem'))
-ON CONFLICT DO NOTHING;
+    OR (program_id = 'medicine' AND institution_id = 'bgu'
+      AND university_id = 'bgu' AND threshold_kind = 'sekhem'))
+ON CONFLICT DO NOTHING
+RETURNING *
+)
+INSERT INTO hadassah_huji_20261031.inserted_rows (table_name, row_id, row_data)
+SELECT 'admission_thresholds', 'medicine:bgu:bgu:sekhem', to_jsonb(inserted) FROM inserted;
 
 -- Historical enquiries remain immutable consent snapshots. Static maps are not
 -- database provider columns and are outside this packet's scope.
@@ -233,10 +232,6 @@ UPDATE public.institutions SET domain = 'aac.ac.il', updated_at = now()
 WHERE id = 'ashkelon' AND domain = 'ac.il';
 UPDATE public.institutions SET program_url = 'https://www.aac.ac.il/', updated_at = now()
 WHERE id = 'ashkelon' AND program_url = 'https://www.ac.il';
-UPDATE public.programs SET name = 'לימודים אקדמיים - המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE id = 'hadassah_general_academic' AND name = 'לימודים אקדמיים - המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah';
-UPDATE public.programs SET institution_name = 'המרכז האקדמי הרב תחומי ירושלים', updated_at = now()
-WHERE id = 'hadassah_general_academic' AND institution_name = 'המכללה האקדמית הדסה ירושלים' AND institution_id = 'hadassah';
 
 DO $verify$
 BEGIN
@@ -251,24 +246,19 @@ BEGIN
     AND t.threshold_value IS NOT DISTINCT FROM expected.value) <> 8 THEN
     RAISE EXCEPTION 'Threshold verification failed';
   END IF;
-  IF NOT EXISTS (SELECT 1 FROM public.program_institutions
-    WHERE program_id = 'medicine' AND institution_id = 'bgu') THEN
+  IF (SELECT count(*) FROM public.program_institutions
+    WHERE program_id = 'medicine' AND institution_id = 'bgu') <> 1 THEN
     RAISE EXCEPTION 'Generic BGU medicine link is missing';
+  END IF;
+  IF (SELECT count(*) FROM public.institutions WHERE id IN ('hadassah', 'ashkelon')) <> 2 THEN
+    RAISE EXCEPTION 'Expected exactly two target institutions';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'hadassah'
     AND name = 'המרכז האקדמי הרב תחומי ירושלים' AND domain = 'jmc.ac.il'
     AND program_url = 'https://www.jmc.ac.il/')
     OR NOT EXISTS (SELECT 1 FROM public.institutions WHERE id = 'ashkelon'
-      AND domain = 'aac.ac.il' AND program_url = 'https://www.aac.ac.il/')
-    OR NOT EXISTS (SELECT 1 FROM public.programs WHERE id = 'hadassah_general_academic'
-      AND name = 'לימודים אקדמיים - המרכז האקדמי הרב תחומי ירושלים'
-      AND institution_name = 'המרכז האקדמי הרב תחומי ירושלים') THEN
-    RAISE EXCEPTION 'Institution/programme identity verification failed';
-  END IF;
-  IF EXISTS (SELECT 1 FROM public.institutions WHERE name = 'המרכז האקדמי הרב-תחומי ירושלים')
-    OR EXISTS (SELECT 1 FROM public.programs WHERE institution_name = 'המרכז האקדמי הרב-תחומי ירושלים'
-      OR name LIKE '%המרכז האקדמי הרב-תחומי ירושלים%') THEN
-    RAISE EXCEPTION 'A hyphenated Hadassah provider/name field remains';
+      AND domain = 'aac.ac.il' AND program_url = 'https://www.aac.ac.il/') THEN
+    RAISE EXCEPTION 'Institution identity verification failed';
   END IF;
 END $verify$;
 
@@ -278,15 +268,12 @@ SELECT * FROM public.admission_thresholds WHERE id IN
   (SELECT id FROM hadassah_huji_20261031.thresholds_before) OR id = 'medicine:bgu:bgu:sekhem';
 CREATE TABLE hadassah_huji_20261031.institutions_after AS
 SELECT * FROM public.institutions WHERE id IN (SELECT id FROM hadassah_huji_20261031.institutions_before);
-CREATE TABLE hadassah_huji_20261031.programs_after AS
-SELECT * FROM public.programs WHERE id IN (SELECT id FROM hadassah_huji_20261031.programs_before);
 CREATE TABLE hadassah_huji_20261031.links_after AS
 SELECT * FROM public.program_institutions WHERE program_id = 'medicine' AND institution_id = 'bgu';
 
 -- Verification output for Mario's application record.
 SELECT id, threshold_value FROM hadassah_huji_20261031.thresholds_after ORDER BY id;
 SELECT id, name, domain, program_url FROM hadassah_huji_20261031.institutions_after ORDER BY id;
-SELECT id, name, institution_name FROM hadassah_huji_20261031.programs_after ORDER BY id;
 SELECT * FROM hadassah_huji_20261031.links_after;
 ROLLBACK;
 
@@ -294,17 +281,24 @@ ROLLBACK;
 Rollback after a committed application: owner connection, ON_ERROR_STOP enabled.
 Exact prechecked backups restore Ashkelon program_url = 'https://www.ac.il' and
 domain = 'ac.il', and Hadassah program_url = 'https://www.macam.ac.il'.
+Restore only rows changed by this packet, guarded by id and packet-written values.
+Before any restore, the drift guard requires every saved after-image to be intact;
+an exception aborts this transaction. Inserted_rows records only actual RETURNING
+rows, so a no-op insert creates no deletion authority. Each DELETE also matches
+the recorded complete row and refuses to remove a row present in the before-image.
+If this packet inserted the BGU link while its 735 threshold already existed,
+restore refuses to remove that link: the remaining threshold requires it (0014).
+Resolve that membership separately; do not bypass the guard.
 Keep the backup schema until the application and rollback window are signed off.
 BEGIN ISOLATION LEVEL SERIALIZABLE;
 SET LOCAL lock_timeout = '5s';
-LOCK TABLE public.admission_thresholds, public.institutions, public.programs,
+LOCK TABLE public.admission_thresholds, public.institutions,
   public.program_institutions IN SHARE ROW EXCLUSIVE MODE;
 DO $rollback_guard$
 DECLARE table_pair text[]; live_rows jsonb; saved_rows jsonb;
 BEGIN
   FOREACH table_pair SLICE 1 IN ARRAY ARRAY[
-    ['admission_thresholds', 'thresholds_after'], ['institutions', 'institutions_after'],
-    ['programs', 'programs_after']
+    ['admission_thresholds', 'thresholds_after'], ['institutions', 'institutions_after']
   ] LOOP
     EXECUTE format('SELECT jsonb_agg(to_jsonb(t) ORDER BY t.id) FROM public.%I t
       WHERE t.id IN (SELECT id FROM hadassah_huji_20261031.%I)', table_pair[1], table_pair[2]) INTO live_rows;
@@ -319,17 +313,82 @@ BEGIN
   SELECT jsonb_agg(to_jsonb(t)) INTO saved_rows FROM hadassah_huji_20261031.links_after t;
   IF live_rows IS DISTINCT FROM saved_rows THEN RAISE EXCEPTION 'BGU link drift'; END IF;
 END $rollback_guard$;
-DELETE FROM public.admission_thresholds t WHERE t.id = 'medicine:bgu:bgu:sekhem'
+DELETE FROM public.admission_thresholds t
+USING hadassah_huji_20261031.inserted_rows i
+WHERE t.id = 'medicine:bgu:bgu:sekhem'
+  AND i.table_name = 'admission_thresholds' AND i.row_id = t.id
+  AND to_jsonb(t) = i.row_data
   AND NOT EXISTS (SELECT 1 FROM hadassah_huji_20261031.thresholds_before b WHERE b.id = t.id);
-DELETE FROM public.program_institutions t WHERE t.program_id = 'medicine' AND t.institution_id = 'bgu'
-  AND NOT EXISTS (SELECT 1 FROM hadassah_huji_20261031.links_before);
+DO $restore_link_guard$
+BEGIN
+  IF EXISTS (SELECT 1 FROM hadassah_huji_20261031.inserted_rows
+    WHERE table_name = 'program_institutions' AND row_id = 'medicine:bgu')
+    AND EXISTS (SELECT 1 FROM public.admission_thresholds
+      WHERE program_id = 'medicine' AND institution_id = 'bgu') THEN
+    RAISE EXCEPTION 'Cannot remove inserted medicine:bgu link while thresholds reference it (0014 scope)';
+  END IF;
+END $restore_link_guard$;
+DELETE FROM public.program_institutions t
+USING hadassah_huji_20261031.inserted_rows i
+WHERE t.program_id = 'medicine' AND t.institution_id = 'bgu'
+  AND i.table_name = 'program_institutions' AND i.row_id = 'medicine:bgu'
+  AND to_jsonb(t) = i.row_data
+  AND NOT EXISTS (SELECT 1 FROM hadassah_huji_20261031.links_before)
+  AND NOT EXISTS (SELECT 1 FROM public.admission_thresholds
+    WHERE program_id = 'medicine' AND institution_id = 'bgu');
 UPDATE public.admission_thresholds t SET threshold_value = b.threshold_value
-  FROM hadassah_huji_20261031.thresholds_before b WHERE t.id = b.id;
+  FROM hadassah_huji_20261031.thresholds_before b
+  JOIN hadassah_huji_20261031.thresholds_after a ON a.id = b.id
+  WHERE t.id = b.id AND t.id = a.id
+    AND t.threshold_value IS NOT DISTINCT FROM a.threshold_value
+    AND to_jsonb(t) IS NOT DISTINCT FROM to_jsonb(a)
+    AND b.threshold_value IS DISTINCT FROM a.threshold_value
+    AND t.id <> 'medicine:bgu:bgu:sekhem';
 UPDATE public.institutions t SET name = b.name, domain = b.domain,
   program_url = b.program_url, updated_at = b.updated_at
-  FROM hadassah_huji_20261031.institutions_before b WHERE t.id = b.id;
-UPDATE public.programs t SET name = b.name, institution_name = b.institution_name, updated_at = b.updated_at
-  FROM hadassah_huji_20261031.programs_before b WHERE t.id = b.id;
+  FROM hadassah_huji_20261031.institutions_before b
+  JOIN hadassah_huji_20261031.institutions_after a ON a.id = b.id
+  WHERE t.id = b.id AND t.id = a.id
+    AND t.name IS NOT DISTINCT FROM a.name
+    AND t.domain IS NOT DISTINCT FROM a.domain
+    AND t.program_url IS NOT DISTINCT FROM a.program_url
+    AND to_jsonb(t) IS NOT DISTINCT FROM to_jsonb(a)
+    AND ROW(b.name, b.domain, b.program_url) IS DISTINCT FROM ROW(a.name, a.domain, a.program_url);
+DO $verify_restore$
+DECLARE table_pair text[]; live_rows jsonb; saved_rows jsonb; inserted record;
+BEGIN
+  FOREACH table_pair SLICE 1 IN ARRAY ARRAY[
+    ['admission_thresholds', 'thresholds_before'], ['institutions', 'institutions_before']
+  ] LOOP
+    EXECUTE format('SELECT jsonb_agg(to_jsonb(t) ORDER BY t.id) FROM public.%I t
+      WHERE t.id IN (SELECT id FROM hadassah_huji_20261031.%I)', table_pair[1], table_pair[2]) INTO live_rows;
+    EXECUTE format('SELECT jsonb_agg(to_jsonb(t) ORDER BY t.id) FROM hadassah_huji_20261031.%I t',
+      table_pair[2]) INTO saved_rows;
+    IF live_rows IS DISTINCT FROM saved_rows THEN
+      RAISE EXCEPTION 'Restore does not equal the before-image in %', table_pair[1];
+    END IF;
+  END LOOP;
+  SELECT jsonb_agg(to_jsonb(t)) INTO live_rows FROM public.program_institutions t
+    WHERE program_id = 'medicine' AND institution_id = 'bgu';
+  SELECT jsonb_agg(to_jsonb(t)) INTO saved_rows FROM hadassah_huji_20261031.links_before t;
+  IF live_rows IS DISTINCT FROM saved_rows THEN
+    RAISE EXCEPTION 'Restored BGU membership differs from before-image';
+  END IF;
+  FOR inserted IN SELECT * FROM hadassah_huji_20261031.inserted_rows LOOP
+    IF inserted.table_name = 'admission_thresholds' THEN
+      IF EXISTS (SELECT 1 FROM public.admission_thresholds WHERE id = inserted.row_id) THEN
+        RAISE EXCEPTION 'Inserted row remains after restore: %', inserted.row_id;
+      END IF;
+    ELSIF inserted.table_name = 'program_institutions' THEN
+      IF EXISTS (SELECT 1 FROM public.program_institutions
+        WHERE program_id = 'medicine' AND institution_id = 'bgu') THEN
+        RAISE EXCEPTION 'Inserted row remains after restore: %', inserted.row_id;
+      END IF;
+    ELSE
+      RAISE EXCEPTION 'Unknown inserted-row table: %', inserted.table_name;
+    END IF;
+  END LOOP;
+END $verify_restore$;
 COMMIT;
 Repeat the precheck SELECTs to confirm restoration. Do not rerun the forward packet.
 */
