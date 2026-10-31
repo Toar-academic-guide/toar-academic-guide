@@ -33,7 +33,7 @@ for (const width of [390, 1280]) {
         );
         await expect(nav.locator('a[href="/app/calculator"]')).toHaveCount(0);
         if (path === '/') {
-          await expect(page.locator('a.journey-hero-cta')).toHaveAttribute(
+          await expect(page.locator('.journey-hero-copy a.journey-primary')).toHaveAttribute(
             'href',
             '/app/calculator',
           );
