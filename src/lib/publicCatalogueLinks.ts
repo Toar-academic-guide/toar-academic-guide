@@ -113,8 +113,6 @@ const loadCatalogueLinks = cache(async () => {
   return { catalogue, ...buildSubjectHubs(catalogue) };
 });
 
-export const HOME_SUBJECT_COUNT = 12;
-
 export async function getPublicBrowseLinks() {
   const { publishedHubs } = await loadCatalogueLinks();
   return { hubs: publishedHubs };

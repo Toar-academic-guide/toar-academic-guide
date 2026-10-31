@@ -1,9 +1,5 @@
 import Link from 'next/link';
-import {
-  getPublicBrowseLinks,
-  HOME_SUBJECT_COUNT,
-  type SubjectHub,
-} from '@/lib/publicCatalogueLinks';
+import type { SubjectHub } from '@/lib/publicCatalogueLinks';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
 const linkStyle =
@@ -21,50 +17,6 @@ export function HubLinks({ hubs }: { hubs: SubjectHub[] }) {
       ))}
     </ul>
   );
-}
-
-// Collapsed by default: the anchors stay in the server HTML inside a native
-// <details>, so crawlers and no-JS visitors still get them.
-export function CatalogueBrowse({ hubs }: { hubs: SubjectHub[] }) {
-  return (
-    <section
-      dir="rtl"
-      aria-labelledby="browse-title"
-      className="mx-auto mt-12 w-full max-w-6xl border-t border-[var(--border)] px-4 py-8 text-right sm:px-6"
-    >
-      <details>
-        <summary className="cursor-pointer py-2">
-          <h2 id="browse-title" className="inline text-xl font-bold">
-            מה ואיפה ללמוד{' '}
-          </h2>{' '}
-        </summary>{' '}
-        <div className="mt-6">
-          <div className="mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold">תחומי לימוד </h3>
-            <Link className={`${linkStyle} text-sm`} href="/programs">
-              כל התחומים{' '}
-            </Link>
-          </div>
-          <HubLinks hubs={hubs.slice(0, HOME_SUBJECT_COUNT)} />
-        </div>
-      </details>
-    </section>
-  );
-}
-
-// Catalogue links must never take the homepage down: if the catalogue read
-// fails the browse block is omitted and the hero and CTA still render.
-async function browseLinksOrNull() {
-  try {
-    return await getPublicBrowseLinks();
-  } catch {
-    return null;
-  }
-}
-
-export async function HomeBrowse() {
-  const links = await browseLinksOrNull();
-  return links ? <CatalogueBrowse {...links} /> : null;
 }
 
 // A plain <footer> (contentinfo landmark), not a second <nav>: the header keeps

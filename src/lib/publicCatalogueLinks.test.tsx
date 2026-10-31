@@ -8,7 +8,7 @@ import SubjectIndexPage, { metadata as subjectIndexMetadata } from '@/app/progra
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
-import { CatalogueBrowse, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
 import SiteFooter from '@/components/SiteFooter';
 import { getPublicBrowseLinks, getPublicRelatedPrograms } from './publicCatalogueLinks';
 
@@ -49,25 +49,16 @@ function paths(markup: string): string[] {
 }
 
 describe('server-rendered crawl paths', () => {
-  it('keeps subject hubs in collapsed homepage and browse HTML without institution links', async () => {
-    const links = await getPublicBrowseLinks();
+  // Approved test update, Jorje 2026-10-31: replaces deleted test "keeps subject hubs in collapsed homepage and browse HTML without institution links".
+  it('homepage has no browse section or study-field links', async () => {
     const home = await ssr(<Home />);
-    const browse = renderToStaticMarkup(<CatalogueBrowse {...links} />);
+    expect(home).not.toContain('browse-title');
+    expect(home).not.toContain('מה ואיפה ללמוד');
+    expect(home).not.toContain('<details');
+    expect(paths(home).filter((href) => /^\/programs\/[^/]+$/.test(href))).toHaveLength(0);
+    expect(paths(home).filter((href) => /^\/institutions\/[^/]+$/.test(href))).toHaveLength(0);
+    expect(home).not.toContain('כל התחומים');
     expect(home).toContain('בדקו לאן אתם מתקבלים');
-    expect(browse).toContain('dir="rtl"');
-    for (const html of [home, browse]) {
-      expect(paths(html).filter((href) => href.startsWith('/institutions/'))).toHaveLength(0);
-      const details = html.slice(html.indexOf('<details'), html.indexOf('</details>'));
-      expect(details.startsWith('<details>')).toBe(true);
-      expect(details).not.toMatch(/<details[^>]*\bopen\b/);
-      expect(paths(details).filter((href) => href.startsWith('/programs/'))).toEqual(
-        links.hubs.slice(0, 12).map((hub) => `/programs/${hub.id}`),
-      );
-      expect(paths(details)).toContain('/programs');
-      expect(paths(details)).not.toContain('/institutions');
-      expect(details).not.toContain('מוסדות לימוד');
-      expect(details).not.toContain('כל המוסדות');
-    }
   });
 
   it('links SiteFooter to home, email, catalogue, saved programs and legal pages', () => {
@@ -86,9 +77,8 @@ describe('server-rendered crawl paths', () => {
     ]);
   });
 
-  it('keeps the homepage CTA and SiteFooter links when the catalogue read fails', async () => {
-    const failure = () => Promise.reject(new Error('database unavailable'));
-    queries.listCataloguePrograms.mockImplementationOnce(failure);
+  // Approved test update, Jorje 2026-10-31
+  it('renders the homepage CTA and SiteFooter links with no browse section', async () => {
     const home = await ssr(<Home />);
     expect(home).toContain('בדקו לאן אתם מתקבלים');
     expect(home).not.toContain('browse-title');

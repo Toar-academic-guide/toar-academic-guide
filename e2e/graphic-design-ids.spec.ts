@@ -94,19 +94,15 @@ for (const width of [390, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-  test(`homepage retains subject links without institution links in collapsed browse at ${width}px`, async ({
+  // Approved test update, Jorje 2026-10-31
+  test(`homepage has no subject or institution page links outside the footer at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    const browse = page.locator('details').filter({ has: page.locator('a[href="/programs"]') });
-    await expect(browse).not.toHaveAttribute('open');
-    await expect(browse.locator('a[href^="/institutions/"]')).toHaveCount(0);
-    const links = browse.locator('a[href^="/programs/"]');
-    await expect(links).toHaveCount(12);
-    await expect(links.first()).toBeHidden();
-    await browse.locator('summary').click();
-    await expect(links.first()).toBeVisible();
+    await expect(
+      page.locator('a[href^="/programs/"]:not(footer a), a[href^="/institutions/"]:not(footer a)'),
+    ).toHaveCount(0);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);
