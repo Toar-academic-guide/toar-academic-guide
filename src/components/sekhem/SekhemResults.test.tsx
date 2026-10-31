@@ -15,6 +15,62 @@ const institution = (id: string) => ({
   region: 'מרכז',
   domain: 'university',
 });
+
+it.each([
+  ['below', 'נדרש פסיכומטרי כללי 650 לפחות.'],
+  ['tracked_missing_rule', 'לא ניתן לחשב את ציון הקבלה בחיפה עם פסיכומטרי מלפני יותר מ־10 שנים.'],
+  ['needs_input', 'יש להשלים את חודש הבחינה הפסיכומטרית.'],
+] as const)('shows the returned Haifa reason for a numberless %s result', (kind, explanation) => {
+  render(
+    <SekhemResults
+      reports={[
+        report('haifa', {
+          kind: kind === 'below' ? 'exact' : kind,
+          decision: kind === 'below' ? 'below' : 'unknown',
+          score: undefined,
+          threshold: undefined,
+          explanation,
+        }),
+      ]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByTestId('result-psychology-haifa').textContent).toBe(explanation);
+});
+
+it('shows a Haifa floor reason alongside returned scores', () => {
+  const explanation = 'דרישת העברית במסלול זה: ציון 120 לפחות או פטור מוכר.';
+  render(
+    <SekhemResults
+      reports={[report('haifa', { decision: 'below', explanation })]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByText(explanation)).toBeTruthy();
+});
+
+it('shows returned Haifa year assumptions without internal diagnostic text', () => {
+  const estimationReason = 'שנת הפסיכומטרי לא נמסרה; החישוב מניח את מחזור 2026.';
+  render(
+    <SekhemResults
+      reports={[
+        report('haifa', {
+          estimated: true,
+          estimationReason,
+          explanation: 'haifa_psychometric_year: missing',
+        }),
+      ]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByText(estimationReason)).toBeTruthy();
+  expect(screen.getByTestId('result-psychology-haifa').textContent).not.toContain(
+    'haifa_psychometric_year',
+  );
+});
 function report(
   id: string,
   values: Partial<AdmissionsEvaluationResult> = {},
