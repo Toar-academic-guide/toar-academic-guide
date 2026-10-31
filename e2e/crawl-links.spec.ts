@@ -18,7 +18,7 @@ function anchors(html: string): string[] {
   return [...html.matchAll(/<a\b[^>]*href="([^"]+)"/g)].map((match) => match[1]);
 }
 
-// PM trim spec: 12 subjects + 8 institutions on the homepage, collapsed by default.
+// Homepage subject links remain in the server HTML, collapsed by default.
 test('homepage browse links are in raw HTML inside a collapsed details', async ({ request }) => {
   const response = await request.get('/');
   expect(response.status()).toBe(200);
@@ -29,9 +29,9 @@ test('homepage browse links are in raw HTML inside a collapsed details', async (
   expect(details.startsWith('<details>')).toBe(true);
   const hrefs = anchors(details);
   expect(hrefs.filter((href) => /^\/programs\/[^/]+$/.test(href))).toHaveLength(12);
-  expect(hrefs.filter((href) => /^\/institutions\/[^/]+$/.test(href))).toHaveLength(8);
+  expect(hrefs.filter((href) => href.startsWith('/institutions/'))).toHaveLength(0);
   expect(hrefs).toContain('/programs');
-  expect(hrefs).toContain('/institutions');
+  expect(hrefs).not.toContain('/institutions');
   const footer = anchors(html.split('<footer')[1] ?? '');
   expect(footer).toEqual([
     '/',
@@ -208,8 +208,10 @@ test('collapsed browse links and the subject index work without JavaScript', asy
   try {
     await page.goto(`${baseURL}/`);
     const browse = page.locator('section[aria-labelledby="browse-title"]');
+    await expect(browse.locator('details')).not.toHaveAttribute('open');
     await browse.locator('summary').click();
-    await expect(browse.locator('a[href^="/institutions/"]').first()).toBeVisible();
+    await expect(browse.locator('a[href^="/programs/"]').first()).toBeVisible();
+    await expect(browse.locator('a[href^="/institutions/"]')).toHaveCount(0);
     await page.getByRole('contentinfo').getByRole('link', { name: 'תחומי לימוד' }).click();
     await expect(page).toHaveURL(/\/programs$/);
     await page.getByRole('link', { name: 'מדעי המחשב', exact: true }).click();

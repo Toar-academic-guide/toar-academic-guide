@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import {
   getPublicBrowseLinks,
-  HOME_INSTITUTION_COUNT,
   HOME_SUBJECT_COUNT,
   type SubjectHub,
 } from '@/lib/publicCatalogueLinks';
@@ -26,13 +25,7 @@ export function HubLinks({ hubs }: { hubs: SubjectHub[] }) {
 
 // Collapsed by default: the anchors stay in the server HTML inside a native
 // <details>, so crawlers and no-JS visitors still get them.
-export function CatalogueBrowse({
-  hubs,
-  institutions,
-}: {
-  hubs: SubjectHub[];
-  institutions: CatalogueInstitution[];
-}) {
+export function CatalogueBrowse({ hubs }: { hubs: SubjectHub[] }) {
   return (
     <section
       dir="rtl"
@@ -53,24 +46,6 @@ export function CatalogueBrowse({
             </Link>
           </div>
           <HubLinks hubs={hubs.slice(0, HOME_SUBJECT_COUNT)} />
-          <div className="mt-8 mb-4 flex items-center justify-between gap-4">
-            <h3 className="text-lg font-bold">מוסדות לימוד </h3>
-            <Link className={`${linkStyle} text-sm`} href="/institutions">
-              כל המוסדות{' '}
-            </Link>
-          </div>
-          <ul className="grid gap-x-6 gap-y-2 text-sm sm:grid-cols-2 lg:grid-cols-4">
-            {institutions.slice(0, HOME_INSTITUTION_COUNT).map((institution) => (
-              <li key={institution.id}>
-                <Link
-                  className={linkStyle}
-                  href={`/institutions/${encodeURIComponent(institution.id)}`}
-                >
-                  {institution.name}{' '}
-                </Link>
-              </li>
-            ))}
-          </ul>
         </div>
       </details>
     </section>

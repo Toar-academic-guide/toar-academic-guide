@@ -94,16 +94,17 @@ for (const width of [390, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-  test(`homepage retains eight university links in collapsed browse at ${width}px`, async ({
+  test(`homepage retains subject links without institution links in collapsed browse at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const browse = page.locator('details').filter({ has: page.locator('a[href="/programs"]') });
     await expect(browse).not.toHaveAttribute('open');
-    const links = browse.locator('a[href^="/institutions/"]');
-    await expect(links).toHaveCount(8);
-    await expect(browse.locator('a[href="/institutions/spieldocs"]')).toHaveCount(0);
+    await expect(browse.locator('a[href^="/institutions/"]')).toHaveCount(0);
+    const links = browse.locator('a[href^="/programs/"]');
+    await expect(links).toHaveCount(12);
+    await expect(links.first()).toBeHidden();
     await browse.locator('summary').click();
     await expect(links.first()).toBeVisible();
     expect(

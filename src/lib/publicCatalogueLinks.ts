@@ -8,7 +8,6 @@ import {
 } from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import type { CatalogueProgram } from '@/types/catalogue';
-import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 
 export interface SubjectHub {
   id: string;
@@ -115,54 +114,10 @@ const loadCatalogueLinks = cache(async () => {
 });
 
 export const HOME_SUBJECT_COUNT = 12;
-export const HOME_INSTITUTION_COUNT = 8;
-
-export function rankDegreeInstitutions(
-  catalogue: Pick<PublicCatalogue, 'institutions' | 'programs' | 'generalProgramIds'>,
-) {
-  const directory = getInstitutionDirectoryItems();
-  const counts = new Map<string, Set<string>>();
-  for (const program of catalogue.programs) {
-    if (
-      program.isListed === false ||
-      program.id.startsWith('mon_') ||
-      canonicalProgramId(program.id) !== program.id ||
-      catalogue.generalProgramIds.has(program.id)
-    )
-      continue;
-    for (const id of program.linkedInstitutionIds) {
-      const ids = counts.get(id) ?? new Set<string>();
-      ids.add(program.id);
-      counts.set(id, ids);
-    }
-  }
-  return catalogue.institutions
-    .map((institution) => ({
-      institution,
-      count: counts.get(institution.id)?.size ?? 0,
-      degree: directory.some(
-        (item) => item.id === institution.id && item.credentials.includes('academic_degree'),
-      ),
-      university: directory.some(
-        (item) => item.id === institution.id && item.categories.includes('universities'),
-      ),
-    }))
-    .filter((row) => row.degree && row.count > 0 && !row.institution.id.startsWith('mon_'))
-    .sort(
-      (a, b) =>
-        Number(b.university) - Number(a.university) ||
-        b.count - a.count ||
-        a.institution.id.localeCompare(b.institution.id),
-    )
-    .map((row) => row.institution);
-}
 
 export async function getPublicBrowseLinks() {
-  const { catalogue, publishedHubs } = await loadCatalogueLinks();
-  return {
-    hubs: publishedHubs,
-    institutions: rankDegreeInstitutions(catalogue).slice(0, HOME_INSTITUTION_COUNT),
-  };
+  const { publishedHubs } = await loadCatalogueLinks();
+  return { hubs: publishedHubs };
 }
 
 /** Every published subject hub, alphabetical, for the /programs index. */
