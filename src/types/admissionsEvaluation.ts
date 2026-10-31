@@ -1,4 +1,5 @@
 import type { TauPhysiotherapyInputs } from '@/lib/tauPhysiotherapyInputs';
+import type { MedicineAcademicInputs, MedicineRequiredInput } from '@/lib/medicineAcademicInputs';
 import type { BguHealthInputs } from '@/lib/bguHealthInputs';
 import type { BguQuantitativeInputs } from '@/lib/bguQuantitativeInputs';
 import type { BguPsychologyInputs } from '@/lib/bguPsychologyInputs';
@@ -42,6 +43,14 @@ export type AdmissionsEvaluationCapability =
 export type AdmissionsConfidence = 'high' | 'medium' | 'low';
 
 export type AdmissionsRequiredInput =
+  | MedicineRequiredInput
+  | `bagrut_subject:${string}`
+  | 'bagrut_certificate_complete'
+  | 'bagrut_certificate_type'
+  | 'bagrut_certificate_units'
+  | 'bagrut_foreign_language'
+  | 'bagrut_final_project_subject'
+  | 'bagrut_combined_subjects'
   | HujiMedicineRequiredInput
   | 'bgu_engineering_details'
   | 'bgu_engineering_physics_course'
@@ -136,7 +145,8 @@ export interface AdmissionsExtraInputs
     BguHealthInputs,
     TauPhysiotherapyInputs,
     HaifaAdmissionsInputs,
-    HujiMedicineInputs {
+    HujiMedicineInputs,
+    MedicineAcademicInputs {
   bguEngineering?: BguEngineeringInputs;
   technionArchitectureBagrutAverage?: number;
   technionArchitectureExamScore?: number;
@@ -267,6 +277,9 @@ export interface FloorCheckRow {
 }
 
 export interface AdmissionsEvaluationResult {
+  stage?: 'academic';
+  admissionCycle?: string;
+  registrationStatus?: 'closed' | 'open' | 'unknown';
   estimated?: boolean;
   estimationReason?: string;
   institution: Pick<

@@ -40,7 +40,11 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
   const labels =
     result.additionalConditions
       ?.filter((condition) => condition.status !== 'confirmed')
-      .map((condition) => condition.label) ?? [];
+      .map((condition) =>
+        result.stage === 'academic'
+          ? `${condition.status === 'unmet' ? 'לא מתקיים' : 'חסר מידע'}: ${condition.label}`
+          : condition.label,
+      ) ?? [];
   // Text-only routes (including HUJI Kidum) deliberately have no numerical fields.
   const namesGate = /ראיון|ריאיון|מבחן|תיק עבודות|אודישן|ראויים לקידום|האגודה לקידום/;
   if (result.kind === 'manual_gate' && !labels.length && namesGate.test(result.explanation)) {
@@ -121,7 +125,11 @@ function InstitutionGroup({
     result.decision !== 'below' &&
     result.scoreAssessment !== 'below_threshold';
   const visibleGates =
-    scoreOnly || acceptedWithoutNumbers || result.decision === 'below' ? [] : gates;
+    result.stage === 'academic'
+      ? gates
+      : scoreOnly || acceptedWithoutNumbers || result.decision === 'below'
+        ? []
+        : gates;
   const textOnlyGate = numberless && visibleGates.length > 0 && result.kind === 'manual_gate';
   return (
     <section
@@ -176,13 +184,19 @@ function InstitutionGroup({
                     {formatSekhemNumber(result.score!, offering.institutionId)}
                   </span>
                   <span className="text-sm text-(--text-body)">
-                    {result.kind === 'estimated' ? 'ציון הקבלה המשוער' : 'ציון הקבלה'}
+                    {result.stage === 'academic'
+                      ? (result.scoreLabel ?? 'ציון אקדמי')
+                      : result.kind === 'estimated'
+                        ? 'ציון הקבלה המשוער'
+                        : 'ציון הקבלה'}
                   </span>
                 </div>
               )}
               {threshold && (
                 <div>
-                  <span className="block text-sm text-(--text-body)">סף קבלה</span>
+                  <span className="block text-sm text-(--text-body)">
+                    {result.stage === 'academic' ? 'סף אקדמי' : 'סף קבלה'}
+                  </span>
                   <span data-result-number="threshold" dir="ltr" className="tabular-nums">
                     {formatSekhemNumber(result.threshold!, offering.institutionId)}
                   </span>
@@ -218,6 +232,15 @@ function InstitutionGroup({
                 {gate}
               </p>
             ))}
+            {result.stage === 'academic' && (
+              <div className="mt-3 space-y-2 text-sm text-(--text-body)">
+                {result.scoreAssessment === 'below_threshold' && <p>הציון נמוך מהסף האקדמי.</p>}
+                <p>
+                  תשפ״ז (2026–2027){result.registrationStatus === 'closed' ? ' · ההרשמה סגורה' : ''}
+                </p>
+                <p>{result.nextAction}</p>
+              </div>
+            )}
             {reasons
               .filter((reason) => reason !== resultText && !visibleGates.includes(reason))
               .map((reason) => (

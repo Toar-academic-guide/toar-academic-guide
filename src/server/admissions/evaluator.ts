@@ -1,6 +1,8 @@
 import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
+import { getMedicineAcademicVerification } from './capabilityMatrix';
+import { evaluateMedicineAcademicStage } from './medicineAcademicEvaluation';
 import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateAfekaPublishedRoutes } from './afekaPublishedRoutesEvaluation';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
@@ -303,6 +305,7 @@ function withVerifiedAdmissionInformation(
   entry: AdmissionsCapabilityEntry | undefined,
   input: AdmissionsEvaluationRequest,
 ): AdmissionsEvaluationResult {
+  if (result.stage === 'academic') return result;
   if (entry?.formulaPairScope === 'excluded' || entry?.pairVerification?.state !== 'exact')
     return result;
 
@@ -371,6 +374,25 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (getMedicineAcademicVerification(program.id, institution.id, input.extraInputs)) {
+      if (
+        entry.freshnessState &&
+        ['blocked', 'failed', 'changed_needs_review'].includes(entry.freshnessState.status)
+      ) {
+        results[index] = evaluateNonExactResult({
+          input,
+          program,
+          institution,
+          entry: { ...entry, capability: 'authority_unavailable' },
+        });
+      } else {
+        exactTasks.push(async () => {
+          results[index] = await evaluateMedicineAcademicStage({ input, institution, fetcher });
+        });
+      }
       continue;
     }
 

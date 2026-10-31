@@ -1,4 +1,5 @@
 import 'server-only';
+import { isMedicineAcademicPair } from './medicineAcademicInputs';
 import { cache } from 'react';
 import { canonicalProgramId, canonicalProgramPath } from './seo/programAliases';
 import { HAIFA_INFORMATION_SYSTEMS_TRACK_ARTIFACTS } from '@/data/admissions/haifaInformationSystemsVerification';
@@ -97,6 +98,7 @@ export function sekhemPairSupport(
   )
     return undefined;
   if (isBatchBManualProgram(program.id, institutionId)) return 'gate';
+  if (isMedicineAcademicPair(program.id, institutionId)) return 'score';
   const pairId = `${program.id}__${institutionId}`;
   const verification = getFormulaPairVerificationEntry(pairId);
   if (verifiedTrackPairIds.has(pairId)) return 'score';

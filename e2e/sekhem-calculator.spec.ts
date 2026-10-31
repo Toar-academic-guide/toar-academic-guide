@@ -1135,3 +1135,33 @@ for (const width of [1280, 390]) {
     expect(mocks.submissions).toHaveLength(0);
   });
 }
+
+for (const width of [1280, 390]) {
+  test(`medicine academic HUJI result and missing-details correction at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/sekhem-calculator?program=huji_medicine');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 9', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 8', exact: true }).click();
+    for (let row = 1; row <= 7; row++)
+      await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('spinbutton', { name: 'פסיכומטרי — ציון כללי', exact: true }).fill('750');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    const results = page.getByRole('region', { name: 'הסכם לפי מוסד ותוכנית', exact: true });
+    await expect(results).toContainText('24.366');
+    await expect(results).toContainText('25.186');
+    await expect(results).toContainText('חסר מידע: פסיכומטרי');
+    await page.locator('#medicinePsychometricDate').fill('2025-12-01');
+    await page.locator('#medicineHebrewBasis').selectOption('hebrew_school');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    await expect(results).toContainText('24.366');
+    await expect(results).not.toContainText('חסר מידע');
+    await expect(results).toContainText('ההרשמה סגורה');
+    await expect(page.getByLabel(/מו״ר|מרק״ם|ממוצע הבגרות הרשמי/)).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('#medicinePsychometricDate')).toHaveValue('2025-12-01');
+    await expect(results).toContainText('24.366');
+  });
+}

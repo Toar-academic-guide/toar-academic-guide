@@ -26,6 +26,28 @@ const bguRecord: BagrutSubjectRecordV2 = {
 };
 
 describe('evaluation input derivation and provenance', () => {
+  it('uses medicine subjects over stale institutional values and never proxies missing subjects', () => {
+    const normalized = normalizeEvaluationInputs({
+      degreeId: 'medicine',
+      bagrut: 120,
+      extraInputs: {
+        medicineStage: 'academic',
+        bagrutSubjectRecord: bguRecord,
+        tauBagrutAverage: 60,
+        bguBagrutAverage: 60,
+        hujiBagrutAverage: 60,
+      },
+    });
+    expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+    expect(normalized.input.extraInputs.tauBagrutAverage).not.toBe(60);
+    const missing = normalizeEvaluationInputs({
+      degreeId: 'medicine',
+      bagrut: 120,
+      extraInputs: { medicineStage: 'academic', tauBagrutAverage: 120 },
+    });
+    expect(missing.input.extraInputs.tauBagrutAverage).toBeUndefined();
+    expect(missing.input.extraInputs.bguBagrutAverage).toBeUndefined();
+  });
   it.each(['other', 'external_1977_or_later'] as const)(
     'derives the BGU average from a non-internal %s certificate',
     (certificateType) => {

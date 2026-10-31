@@ -1,4 +1,8 @@
-import { resultInputReasons, sekhemBelowLabel } from './sekhemResultPresentation';
+import {
+  resultInputReasons,
+  sekhemBelowLabel,
+  resultPresentation,
+} from './sekhemResultPresentation';
 import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
 import {
   buildBagrutSubjectRecord,
@@ -69,6 +73,7 @@ export function buildSekhemInput(
       ...(profile.english ? { english: parse(profile.english, 50, 150) } : {}),
     },
   })!;
+  extraInputs.medicineStage = 'academic';
   // The legacy paired HTTP fields have narrower ranges than raw subject rows.
   // Preserve every raw row, including failed grades, while omitting invalid projections.
   for (const [units, grade] of [
@@ -89,6 +94,7 @@ export function buildSekhemInput(
 }
 
 export function resultVerdict(result: AdmissionsEvaluationResult): string {
+  if (result.stage === 'academic') return resultPresentation(result).text ?? '';
   if (result.kind === 'needs_input')
     return resultInputReasons(result).join(' ') || 'השלימו פרטים וקבלו את ציון הקבלה';
   if (result.decision === 'accepted' || result.scoreAssessment === 'meets_threshold')
