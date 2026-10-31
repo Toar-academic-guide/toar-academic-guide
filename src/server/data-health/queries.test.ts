@@ -347,11 +347,13 @@ describe('summarizeDataHealthRows', () => {
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
     // Approved test update, Jorje 2026-10-28
     expect(report.formulaVerification).toMatchObject({
-      total: 143,
+      // Approved test update, Jorje 2026-10-31: generic BGU medicine adds one inventory pair.
+      total: 144,
       // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
       exact: 125,
       // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
-      withheld: 17,
+      // Approved test update, Jorje 2026-10-31: generic BGU medicine is withheld, so exact coverage stays at 125.
+      withheld: 18,
       isComplete: false,
     });
     expect(report.admissionRoutes).toMatchObject({

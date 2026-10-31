@@ -25,6 +25,22 @@ function makeProgram(overrides: Partial<Program> = {}): Program {
 }
 
 describe('formulaBackedPairInventory', () => {
+  it('distinguishes authoritative, withheld and unmapped NULL legacy pairs', () => {
+    const inventory = buildFormulaBackedPairInventory([
+      makeProgram({ id: 'medicine', thresholds: { huji: null, biu: null } }),
+      makeProgram({ id: 'unmapped_program', thresholds: { huji: null } }),
+    ]);
+
+    expect(inventory.pairs).toEqual([
+      expect.objectContaining({ id: 'medicine__huji', cutoff: null }),
+    ]);
+    // Approved test update, Jorje 2026-10-31: retain generic BIU medicine only in the excluded catalogue inventory, without exact coverage.
+    expect(inventory.excludedPairs).toEqual([
+      expect.objectContaining({ id: 'medicine__biu', cutoff: null }),
+    ]);
+    expect(inventory.errors).toEqual([]);
+  });
+
   it('includes exactly the encoded BIU pairs and keeps future and deferred programmes excluded', () => {
     const inventory = buildFormulaBackedPairInventory([
       ...allPrograms,

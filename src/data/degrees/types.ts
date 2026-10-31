@@ -150,6 +150,8 @@ export interface Program {
   commonPairings?: string[];
   // ── Sekhem-track fields (required when admissionType === 'sekhem') ─────────
   thresholds?: Record<UniversityId, number | null>;
+  /** Keep these institution links when their static threshold key is present but NULL. */
+  nullThresholdLinks?: InstitutionId[];
   isTauEngineering?: boolean;
   directPsychometric?: Partial<Record<UniversityId, number>>;
   minimumPsychometric?: Partial<Record<UniversityId, number>>;
