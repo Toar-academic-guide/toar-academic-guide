@@ -873,7 +873,9 @@ for (const record of mondayAdmissionsEvidence) {
 
     const detailId = `${progId}:${instId}`;
     const publicInstitutionName =
-      instId === 'braude' ? INSTITUTION_BY_ID.braude.name : record.displayName;
+      instId === 'braude' || instId === 'hadassah'
+        ? INSTITUTION_BY_ID[instId].name
+        : record.displayName;
     const primarySourceUrl =
       MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
     const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;

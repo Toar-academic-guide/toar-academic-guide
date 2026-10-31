@@ -3,11 +3,34 @@ import { describe, expect, it } from 'vitest';
 import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
 import repair from '../admissions/catalogueContentRepair.json';
-import { INSTITUTIONS } from '../institutions';
+import { INSTITUTIONS, INSTITUTION_BY_ID } from '../institutions';
 import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
+
+describe('curated Hadassah programme name', () => {
+  const program = allPrograms.find((row) => row.id === 'hadassah_general_academic')!;
+
+  it('uses the official curated Hadassah institution name', () => {
+    expect(program.institution).toBe('המרכז האקדמי הרב תחומי ירושלים');
+    expect(program.institution).toBe(INSTITUTION_BY_ID.hadassah.name);
+  });
+
+  it('ends the Hadassah programme name with the curated institution name', () => {
+    expect(program.name.endsWith(` - ${INSTITUTION_BY_ID.hadassah.name}`)).toBe(true);
+  });
+
+  it('uses the curated Hadassah name in institution details', () => {
+    expect(program.institutionDetails?.[0]?.institutionName).toBe(INSTITUTION_BY_ID.hadassah.name);
+  });
+
+  it('keeps the former Hadassah name out of all Hadassah programme names', () => {
+    const hadassahPrograms = allPrograms.filter((row) => row.institutionId === 'hadassah');
+    expect(hadassahPrograms.length).toBeGreaterThan(0);
+    expect(hadassahPrograms.filter((row) => row.name.includes('הדסה'))).toEqual([]);
+  });
+});
 
 it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
   'keeps %s alternative routes out of legacy cumulative facts',
