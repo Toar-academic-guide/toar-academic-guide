@@ -1,0 +1,483 @@
+{
+  "base": "eada3c15dde10ed77b4da011bf7757a4fc5b061c",
+  "items": {
+    "accounting": "implemented, focused green; one-line evaluator diff",
+    "haifaWording": "implemented, focused green; universal API/server regex restored",
+    "terminologySweep": "FIXED: Jorje scoped the contract to the three PR318-owned strings; inherited47/21 offenders remain documented follow-up, and the two superseded universal tests are removed."
+  },
+  "officialAccounting": {
+    "path": "docs/admissions-verification/evidence/2026-10-29-bugs-first-official.json",
+    "sha256": "af4f46eea662c09365b9aa8e878bdad3665d19fa7bd2a4ed71d46c631b400ba0",
+    "capturedAt": "2026-10-28T19:00:03.772687+00:00",
+    "pointer": "tauGraphqlCalls[2].response.data.getLastScore.body.hatama_nihul",
+    "value": "688",
+    "mapping": "accounting/tau_accounting -> hatama_nihul, node11815, externalId121111050000; existing reviewed mappings in capabilityMatrix.ts and TAU_ACCOUNTING_CONTRACT",
+    "bonusFlag": "reali10=1 in the existing captured envelope affects engineering/exact-sciences output, not hatama_nihul; the accounting request remains reali10=0"
+  },
+  "redFirst": {
+    "firstCommand": "npx vitest run src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts src/app/api/admissions/evaluate/batchC.test.ts src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts src/server/admissions/batchCUnsupportedPathEvaluation.test.ts src/data/admissions/publicCatalogueCopy.test.ts",
+    "failed": 8,
+    "passed": 185,
+    "accountingFailure": "expected bagrut109.14, received92.1; expected639 to be688",
+    "haifaFailure": "old sentence differs from the exact new sentence; no kinds or gates changed",
+    "copySweepFailures": "static47 strings; runtime21 fields"
+  },
+  "greenFocused": {
+    "files": 4,
+    "tests": 188
+  },
+  "remotePublished": false,
+  "committed": true,
+  "inheritedMainCopyFollowUp": [
+    {
+      "test": " src/data/admissions/publicCatalogueCopy.test.ts > public catalogue admission copy > contains no institutional-composite terms in any affected served admission copy",
+      "offenders": [
+        {
+          "id": "datascience",
+          "text": "סכם 91 להנדסת נתונים ומידע בחורף תשפ״ז, בשקלול בגרות ופסיכומטרי. הסף למחזור הבא טרם פורסם."
+        },
+        {
+          "id": "datascience",
+          "text": "בטבלת חורף תשפ״ז מופיעים גם אפיקי בגרות מצוינת, בגרות ובחינת סיווג במתמטיקה, וריאיון לצד סכם. לכל אפיק תנאים נפרדים."
+        },
+        {
+          "id": "occupational_therapy",
+          "text": "סכם 610 לפחות לזימון למיון; בטווח 595–609 הזימון נתון לשיקול דעת החוג."
+        },
+        {
+          "id": "occupational_therapy",
+          "text": "סכם 620 לפחות וגם פסיכומטרי 600 לפחות לצורך זימון לריאיון אישי."
+        },
+        {
+          "id": "architecture",
+          "text": "סכם ארכיטקטורה 85 פורסם לסמסטר חורף תשפ״ז. הוא משלב בגרות, פסיכומטרי ובחינת כניסה; זה אינו סף שפורסם למחזור הבא."
+        },
+        {
+          "id": "communication",
+          "text": "סכם 550 לפחות; ציונים 500–549 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "communication",
+          "text": "סכם 500–549 מאפשר גם מסלול אופק או בחינת כניסה בציון 75, בכפוף לדרישות השפה."
+        },
+        {
+          "id": "communication",
+          "text": "במסלול הדו־מחלקתי בבאר שבע: סכם 520 לפחות או פסיכומטרי 520 לפחות."
+        },
+        {
+          "id": "communication",
+          "text": "אפשר לבקש דיון בחריגים עד 20 נקודות מתחת לסף הסכם או הפסיכומטרי, או עד 5 נקודות מתחת לממוצע הבגרות. נדרשות דרישות השפה, מכתב התאמה ומקום פנוי; האישור אינו אוטומטי."
+        },
+        {
+          "id": "political_science",
+          "text": "במסלול הדו־מחלקתי בבאר שבע: סכם 500 לפחות או פסיכומטרי 500 לפחות."
+        },
+        {
+          "id": "political_science",
+          "text": "אפשר לבקש דיון בחריגים עד 20 נקודות מתחת לסף הסכם או הפסיכומטרי, או עד 5 נקודות מתחת לממוצע הבגרות. נדרשות דרישות השפה, מכתב התאמה ומקום פנוי; האישור אינו אוטומטי."
+        },
+        {
+          "id": "education",
+          "text": "במסלול הדו־מחלקתי בבאר שבע: סכם 520 לפחות או פסיכומטרי 520 לפחות."
+        },
+        {
+          "id": "education",
+          "text": "אפשר לבקש דיון בחריגים עד 20 נקודות מתחת לסף הסכם או הפסיכומטרי, או עד 5 נקודות מתחת לממוצע הבגרות. נדרשות דרישות השפה, מכתב התאמה ומקום פנוי; האישור אינו אוטומטי."
+        },
+        {
+          "id": "physiotherapy",
+          "text": "סכם 667 לפחות וגם פסיכומטרי 667 לפחות לצורך מיון לזימון לריאיון; הזימון נקבע לפי הציונים הגבוהים ביותר לאחר פסיכומטרי אפריל."
+        },
+        {
+          "id": "physiotherapy",
+          "text": "הקבלה מבוססת על סכם וריאיון אישי. העמידה בתנאי הסף מאפשרת מועמדות ואינה מבטיחה זימון לריאיון או קבלה."
+        },
+        {
+          "id": "physiotherapy",
+          "text": "חלופות לבגרות בחישוב הסכם: מכינה במדעי הטבע או המדעים המדויקים בממוצע 85, לימודים אקדמיים בהיקף 40 שעות סמסטריאליות בממוצע 80, או תואר קודם בממוצע 80, בהתאם לכללי המחלקה."
+        },
+        {
+          "id": "bgu_psychology",
+          "text": "סכם 650 לפחות וגם פסיכומטרי 650 לפחות. אפיק נוסף: סכם 680 לפחות או פסיכומטרי 680 לפחות."
+        },
+        {
+          "id": "bgu_business",
+          "text": "בניהול חד־מחלקתי במגמות מימון, שיווק או יזמות: סכם 580 לפחות או פסיכומטרי 580 לפחות; ללא פסיכומטרי נדרש ממוצע בגרות 103 לפחות."
+        },
+        {
+          "id": "bgu_business",
+          "text": "בניהול דו־מחלקתי: סכם 600 לפחות או פסיכומטרי 600 לפחות; ללא פסיכומטרי נדרש ממוצע בגרות 105 לפחות."
+        },
+        {
+          "id": "haifa_psychology",
+          "text": "סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "haifa_psychology",
+          "text": "תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה."
+        },
+        {
+          "id": "haifa_nursing",
+          "text": "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות"
+        },
+        {
+          "id": "haifa_nursing",
+          "text": "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות"
+        },
+        {
+          "id": "haifa_accounting",
+          "text": "סכם 680 לפחות; ציונים 660–679 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "haifa_communication",
+          "text": "סכם 550 לפחות; ציונים 500–549 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "haifa_communication",
+          "text": "סכם 500–549 מאפשר גם מסלול אופק או בחינת כניסה בציון 75, בכפוף לדרישות השפה."
+        },
+        {
+          "id": "haifa_politicalscience",
+          "text": "סכם 580 ומעלה; 520–579 בטווח המתנה. חלופה ללא פסיכומטרי: בגרות מלאה בממוצע משוקלל 102 ומעלה."
+        },
+        {
+          "id": "haifa_politicalscience",
+          "text": "בתוכנית הדו־שנתית נדרשים סכם 580, אנגלית ברמת בסיסי ועברית 120 לפחות."
+        },
+        {
+          "id": "haifa_infosystems",
+          "text": "סכם 680 לפחות; ציונים 650–679 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "haifa_infosystems",
+          "text": "במסלול אופק: סכם 630–679 ועמידה בדרישות המתמטיקה והשפה; ייתכנו בחינת כניסה או ריאיון. יש לעבור 3 קורסים בממוצע משוקלל 70 לפחות בסמסטר הראשון כדי להתקבל מן המניין."
+        },
+        {
+          "id": "haifa_sociology",
+          "text": "סכם 540 לפחות; ציונים 520–539 נמצאים בטווח ההמתנה."
+        },
+        {
+          "id": "biu_psychology",
+          "text": "במסלול הדו־חוגי: סכם 75. במסלול החד־חוגי: סכם 75 וגם פסיכומטרי 680 לפחות."
+        },
+        {
+          "id": "biu_psychology",
+          "text": "נדרש ציון פסיכומטרי; הסכם משקלל אותו עם ממוצע הבגרות לפי חישוב בר־אילן."
+        },
+        {
+          "id": "reichman_cs",
+          "text": "ציון מתואם 705 ומעלה ופסיכומטרי 660 ומעלה, או ממוצע בגרות 108 ומעלה, או פסיכומטרי 720 ומעלה עם זכאות לבגרות."
+        },
+        {
+          "id": "reichman_cs",
+          "text": "במסלולי מתואם ובגרות: מתמטיקה 5 יחידות בציון 85 ומעלה. במסלול בגרות נדרשות גם 5 יחידות בפיזיקה, כימיה, ביולוגיה או מדעי המחשב (לא תכנון מערכות) בציון 85 ומעלה."
+        },
+        {
+          "id": "reichman_psychology",
+          "text": "ציון מתואם 620 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 640 ומעלה עם זכאות לבגרות."
+        },
+        {
+          "id": "reichman_law",
+          "text": "ציון מתואם 650 ומעלה ופסיכומטרי 610 ומעלה, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 ומעלה עם זכאות לבגרות."
+        },
+        {
+          "id": "reichman_business",
+          "text": "ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות"
+        },
+        {
+          "id": "reichman_business",
+          "text": "אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה"
+        },
+        {
+          "id": "reichman_business",
+          "text": "ציון מתואם 630 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 700 לפחות"
+        },
+        {
+          "id": "reichman_business",
+          "text": "אנגלית 4 יחידות לפחות; במסלולי בגרות 100 ומתואם: מתמטיקה ברמת 3 יחידות בציון 100; במסלול הפסיכומטרי: כמותי 125 ומעלה"
+        },
+        {
+          "id": "reichman_economics",
+          "text": "ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות"
+        },
+        {
+          "id": "reichman_economics",
+          "text": "ציון מתואם 600 לפחות המחושב מהבגרות והפסיכומטרי, או ממוצע בגרות 100 ומעלה, או פסיכומטרי 680 לפחות"
+        },
+        {
+          "id": "afeka_biomedical",
+          "text": "סיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי). סכם מעל 180 ומסלולי לימודים קודמים אינם נבדקים בחישוב."
+        },
+        {
+          "id": "afeka_biomedical",
+          "text": "סיווג אנגלית ברמת מתחילים/בסיסי לפני תחילת הלימודים (אמירנט או ציון האנגלית בפסיכומטרי). סכם מעל 180 ומסלולי לימודים קודמים אינם נבדקים בחישוב."
+        },
+        {
+          "id": "bgu_accounting",
+          "text": "במסלול כלכלה וחשבונאות: פסיכומטרי 620 לפחות וסכם כמותי 620 לפחות. אפיק נוסף: סכם כמותי 660 ופסיכומטרי 580 לפחות."
+        },
+        {
+          "id": "bgu_accounting",
+          "text": "במחזור תשפ״ז מכסת המתקבלים התמלאה; מועמדים שעומדים בתנאים יכולים להירשם לרשימת המתנה. בעלי ציונים עד 20 נקודות מתחת לספי הפסיכומטרי והסכם יכולים להיבחן כחריגים, בכפוף לשפה ולמקום פנוי."
+        }
+      ]
+    },
+    {
+      "test": " src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > serves no institutional-composite terms on any affected institution card",
+      "offenders": [
+        {
+          "id": "cs",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "ee",
+          "institution": "bgu",
+          "path": "result.explanation",
+          "text": "לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה."
+        },
+        {
+          "id": "ee",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "me",
+          "institution": "bgu",
+          "path": "result.explanation",
+          "text": "לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה."
+        },
+        {
+          "id": "law",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "physiotherapy",
+          "institution": "tau",
+          "path": "result.sourceLabel",
+          "text": "סכם ותנאי הגשה רשמיים לפיזיותרפיה בתל אביב"
+        },
+        {
+          "id": "physiotherapy",
+          "institution": "tau",
+          "path": "result.explanation",
+          "text": "לא ניתן לאמת כרגע את הסכם או תנאי הפיזיותרפיה מול המקור הרשמי."
+        },
+        {
+          "id": "criminology",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "technion_medicine",
+          "institution": "technion",
+          "path": "result.sourceLabel",
+          "text": "סכם לרפואה"
+        },
+        {
+          "id": "technion_medicine",
+          "institution": "technion",
+          "path": "result.scoreLabel",
+          "text": "סכם"
+        },
+        {
+          "id": "bgu_ee",
+          "institution": "bgu",
+          "path": "result.explanation",
+          "text": "לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה."
+        },
+        {
+          "id": "bgu_me",
+          "institution": "bgu",
+          "path": "result.explanation",
+          "text": "לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה."
+        },
+        {
+          "id": "bgu_industrial",
+          "institution": "bgu",
+          "path": "result.explanation",
+          "text": "לסכם הנדסה בבן־גוריון נדרשים מקצועות הבגרות וכל ציוני המכינה או ההנדסאי הרלוונטיים, וגם מצב השלמת הפיזיקה."
+        },
+        {
+          "id": "biu_cs",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_law",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_ee",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_lifesciences",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_biotech",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_computational_bio",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_socialwork",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        },
+        {
+          "id": "biu_criminology",
+          "institution": "biu",
+          "path": "result.institution.calculatorConfig.scaleDescription",
+          "text": "סכם 200–800"
+        }
+      ]
+    }
+  ],
+  "additionalInheritedMainCopyFollowUp": [
+    {
+      "file": "src/components/UniversityCard.tsx",
+      "line": 71,
+      "text": "הסכם שלך",
+      "disposition": "pre-existing main label, explicitly excluded by Jorje"
+    }
+  ],
+  "scopedCopyRedFirst": {
+    "command": "npx vitest run src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts src/lib/__tests__/TechnionMedicineComparison.test.tsx src/components/CalculatorResults.test.tsx src/components/StudyJourney.account.test.tsx",
+    "failed": 15,
+    "passed": 59,
+    "failures": [
+      {
+        "test": "src/components/CalculatorResults.test.tsx > renders one medicine comparison for sekem 95 without an admission verdict",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 95, מעל סף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/CalculatorResults.test.tsx > renders one medicine comparison for sekem 84.5 without an admission verdict",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/CalculatorResults.test.tsx > renders one medicine comparison for sekem 92 without an admission verdict",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 92, בסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/CalculatorResults.test.tsx > CalculatorResults > renders the estimated medicine MOR invitation threshold without an admission verdict or improvement gap",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one medicine comparison for sekem 95",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 95, מעל סף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one medicine comparison for sekem 84.5",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one medicine comparison for sekem 92",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 92, בסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one medicine comparison for sekem 95.125",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 95.13, מעל סף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one comparison directly under the medicine list chip for sekem 98.9",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 98.9, מעל סף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one comparison directly under the medicine list chip for sekem 92",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 92, בסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/components/StudyJourney.account.test.tsx > account grades in the homepage journey > shows one comparison directly under the medicine list chip for sekem 73.9",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 73.9, מתחת לסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/lib/__tests__/TechnionMedicineComparison.test.tsx > describes the medicine invitation boundary at 92",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 92, בסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/lib/__tests__/TechnionMedicineComparison.test.tsx > describes the medicine invitation boundary at 92.1",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 92.1, מעל סף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/lib/__tests__/TechnionMedicineComparison.test.tsx > describes the medicine invitation boundary at 91.9",
+        "failure": "TestingLibraryElementError: Unable to find an element with the text: ציון הקבלה שלך 91.9, מתחת לסף הזימון המשוער (92). This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible."
+      },
+      {
+        "test": "src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > uses student terminology in the three admission-copy strings introduced by PR318",
+        "failure": "AssertionError: expected [ …(2) ] to deeply equal []"
+      }
+    ],
+    "note": "The no-score negative-comparison assertion already passed and remains preservation coverage; it is not claimed as a red proof."
+  },
+  "scopedCopyGreen": {
+    "files": 9,
+    "tests": 396
+  },
+  "historicalBroadGuard": {
+    "command": "env -u DATABASE_URL npm run guard:pre-pr",
+    "passed": false,
+    "passedTests": 3194,
+    "failedTests": 2,
+    "passedFiles": 128,
+    "failedFiles": 2,
+    "failures": [
+      "publicCatalogueCopy.test.ts: contains no institutional-composite terms in any affected served admission copy",
+      "rulingsHaifaTau.test.ts: serves no institutional-composite terms on any affected institution card"
+    ],
+    "reason": "Existing public terminology in ownership-fenced paths; no exemptions or skipped tests",
+    "lintPassed": true,
+    "typecheckPassed": true
+  },
+  "finalGuard": {
+    "command": "env -u DATABASE_URL npm run guard:pre-pr",
+    "passed": true,
+    "passedTests": 3195,
+    "passedFiles": 130,
+    "lintPassed": true,
+    "typecheckPassed": true,
+    "prettierPassed": true,
+    "bypassed": false
+  },
+  "studentCopyChanges": [
+    {
+      "file": "src/components/TechnionMedicineComparison.tsx",
+      "line": 8,
+      "before": "הסכם שלך ${formatJourneyScore(score)}, ${relation} הזימון המשוער (${threshold})",
+      "after": "ציון הקבלה שלך ${formatJourneyScore(score)}, ${relation} הזימון המשוער (${threshold})"
+    },
+    {
+      "file": "src/data/admissions/formulaBackedVerificationLedger.ts",
+      "before": "מבוססת על סכם 650 לפחות",
+      "after": "מבוססת על ציון קבלה 650 לפחות"
+    },
+    {
+      "file": "src/server/admissions/haifaProgrammePolicy.ts",
+      "before": "עדיין לא מחשבים את הסכם של חיפה כאן",
+      "after": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה"
+    }
+  ],
+  "startingLocalHead": "eada3c15dde10ed77b4da011bf7757a4fc5b061c",
+  "scopeCorrection": "Jorje explicitly removed inherited main copy from scope and directed deletion of the two unshipped universal sweep tests. One scoped test protects all three PR-owned strings; BatchC regexes remain universal.",
+  "implementationCommit": "bf2a752e74bb61756743081702e3bff18014e4e0"
+}

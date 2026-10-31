@@ -1,25 +1,113 @@
+import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
+import qaReplay from '../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
 import braudeCsFixture from './__fixtures__/braudeCsCatalogue.json';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import { catalogueAdmissionRequirements } from './catalogueDisplayText';
 import { describe, expect, it, vi } from 'vitest';
 import {
   toggleLocation,
+  bagrutScoresForMode,
   resultLabel,
   resultExplanation,
+  showsOfficialNoCalculationNote,
   groupJourneyRows,
   studyFields,
   matchesStudyField,
   selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
+  type JourneyRow,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
 import { PROGRAM_CANONICAL_ALIASES } from './seo/programAliases';
-import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
+import type {
+  AdmissionsEvaluationInput as AdmissionsEvaluationRequest,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 
 vi.mock('server-only', () => ({}));
+
+describe('groupJourneyRows BIU/Ariel last', () => {
+  const row = (fieldId: string, institutionId: string, institutionName = institutionId) =>
+    ({
+      id: `${fieldId}:${institutionId}`,
+      fieldId,
+      fieldName: fieldId,
+      institution: { id: institutionId, name: institutionName },
+    }) as JourneyRow;
+
+  it('stably partitions every field without moving field groups, including BIU/Ariel-only groups', () => {
+    const rows = [
+      row('cs', 'ariel'),
+      row('arts', 'biu'),
+      row('law', 'biu'),
+      row('cs', 'tau'),
+      row('cs', 'biu'),
+      row('law', 'huji'),
+      row('arts', 'ariel'),
+      row('cs', 'huji'),
+      row('cs', 'technion'),
+      row('law', 'ariel'),
+      row('law', 'tau'),
+    ];
+    const originalRows = [...rows];
+    const groups = groupJourneyRows(rows, 'field');
+
+    expect(groups.map((group) => group.id)).toEqual(['cs', 'arts', 'law']);
+    expect(groups.map((group) => group.rows.map((item) => item.institution.id))).toEqual([
+      ['tau', 'huji', 'technion', 'ariel', 'biu'],
+      ['biu', 'ariel'],
+      ['huji', 'tau', 'biu', 'ariel'],
+    ]);
+    expect(rows).toEqual(originalRows);
+  });
+
+  it('stably partitions institution groups while preserving programme order', () => {
+    const rows = [
+      row('cs', 'biu'),
+      row('cs', 'tau'),
+      row('law', 'ariel'),
+      row('cs', 'huji'),
+      row('law', 'tau'),
+      row('law', 'biu'),
+    ];
+    const groups = groupJourneyRows(rows, 'institution');
+
+    expect(groups.map((group) => group.id)).toEqual(['tau', 'huji', 'biu', 'ariel']);
+    expect(groups.map((group) => group.rows.map((item) => item.id))).toEqual([
+      ['cs:tau', 'law:tau'],
+      ['cs:huji'],
+      ['cs:biu', 'law:biu'],
+      ['law:ariel'],
+    ]);
+  });
+
+  it.each(['field', 'institution'] as const)(
+    'matches only exact institution ids in the %s view',
+    (groupBy) => {
+      const rows = [
+        row('cs', 'ariel'),
+        row('cs', 'mon_12341114114', 'הנדסאים אריאל'),
+        row('cs', 'biu'),
+        row('cs', 'mon_12341098184', 'מכינה אריאל'),
+        row('cs', 'other_ariel', 'אריאל'),
+        row('cs', 'tau'),
+      ];
+      const groups = groupJourneyRows(rows, groupBy);
+
+      expect(groups.flatMap((group) => group.rows.map((item) => item.institution.id))).toEqual([
+        'mon_12341114114',
+        'mon_12341098184',
+        'other_ariel',
+        'tau',
+        'ariel',
+        'biu',
+      ]);
+    },
+  );
+});
 
 it('never labels TAU architecture "אפשר להגיש מועמדות" when a floor fails', async () => {
   const program = {
@@ -54,7 +142,8 @@ it('never labels TAU architecture "אפשר להגיש מועמדות" when a fl
       expect(result.decision).toBe('unknown');
       expect(result.floorChecks).toHaveLength(3);
       expect(result.floorChecks!.every((floor) => floor.status === 'pass')).toBe(true);
-      expect(label).toBe('נדרש מיון נוסף');
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+      expect(label).toBe('השלב הבא: מיון במוסד');
     }
   }
 });
@@ -88,7 +177,8 @@ it.each([
     expect(result.floorChecks?.find((floor) => floor.label === floorLabel)?.status).toBe('missing');
     const { label } = resultLabel(result, false, false, 'architecture');
     expect(label).not.toBe('אפשר להגיש מועמדות');
-    expect(label).toBe('נדרש מיון נוסף');
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+    expect(label).toBe('השלב הבא: מיון במוסד');
   },
 );
 
@@ -108,14 +198,17 @@ it.each(['exact', 'estimated'] as const)(
       nextAction: 'בדקו באתר המוסד',
     };
     expect(resultLabel(result, false, false, 'haifa_sociology')).toEqual({
-      label: 'אין הכרעת קבלה',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      label: 'הסכם שלכם: 520',
       group: 'explore',
     });
     expect(
       resultLabel({ ...result, linkedInstitutionId: 'technion' }, false, false, 'technion_cs'),
-    ).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+    ).toEqual({ label: 'הסכם שלכם: 520', group: 'explore' });
     expect(resultLabel(result, false, false, 'technion_medicine')).toEqual({
-      label: 'אין הכרעת קבלה',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      label: 'הסכם שלכם: 520',
       group: 'explore',
     });
   },
@@ -259,12 +352,14 @@ describe('approved journey', () => {
     expect(resultLabel(result)).toEqual({ label: 'מתקבלים', group: 'match' });
     expect(resultExplanation(result, 'ono_nursing')).toBe(result.explanation);
     expect(resultLabel({ ...result, decision: 'pending' })).toEqual({
-      label: 'הציונים עומדים בסף',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+      label: 'עוברים את הסף ✓',
       group: 'match',
     });
     expect(
       resultLabel({ ...result, decision: 'below', scoreAssessment: 'below_threshold' }),
-    ).toEqual({ label: 'הציונים מתחת לסף', group: 'improve' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+    ).toEqual({ label: 'עוד לא בסף', group: 'improve' });
     expect(
       resultLabel({ ...result, decision: 'eligible_to_apply', scoreAssessment: undefined }),
     ).toEqual({ label: 'אפשר להגיש מועמדות', group: 'match' });
@@ -387,4 +482,166 @@ it('QA block 1: mon_12220708942_cs result detail retains published CS conditions
   for (const floor of ['75', '600', '115', '580']) expect(requirements.join(' ')).toContain(floor);
   expect(detail?.programUrl).toBe('https://w3.braude.ac.il/intrested/');
   expect(program).toEqual(braudeCsFixture.program);
+});
+
+describe('H1 showsOfficialNoCalculationNote', () => {
+  it.each(['tracked_missing_rule', 'authority_unavailable'] as const)(
+    'recognizes the Haifa note with official sources for %s only',
+    (kind) => {
+      const result = {
+        ...qaReplay.h1.result,
+        kind,
+        capability: kind,
+      } as AdmissionsEvaluationResult;
+      expect(showsOfficialNoCalculationNote(result)).toBe(true);
+      for (const explanation of [
+        'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        'סף המחשבון אינו תואם את הסף שפורסם למסלול.',
+      ]) {
+        expect(showsOfficialNoCalculationNote({ ...result, explanation })).toBe(false);
+      }
+      expect(
+        showsOfficialNoCalculationNote({
+          ...qaReplay.h1.bgu.result,
+          kind,
+          capability: kind,
+        } as AdmissionsEvaluationResult),
+      ).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: [] })).toBe(false);
+      expect(showsOfficialNoCalculationNote({ ...result, officialUrls: undefined })).toBe(false);
+    },
+  );
+
+  it.each([
+    'exact',
+    'estimated',
+    'needs_input',
+    'manual_gate',
+    'requirements_only',
+    'unsupported',
+    'degraded',
+    'open_admission',
+  ] as const)('does not hide the chip for %s even with the note and official sources', (kind) => {
+    expect(
+      showsOfficialNoCalculationNote({ ...qaReplay.h1.result, kind } as AdmissionsEvaluationResult),
+    ).toBe(false);
+  });
+
+  it('does not hide the chip before a result is available', () => {
+    expect(showsOfficialNoCalculationNote(undefined)).toBe(false);
+  });
+});
+
+// H1: keep the real captured API explanation instead of substituting generic copy.
+it.each(['tracked_missing_rule', 'authority_unavailable'] as const)(
+  'H1 preserves the API explanation for %s at both institutions',
+  (kind) => {
+    for (const captured of [qaReplay.h1.result, qaReplay.h1.bgu.result]) {
+      expect(
+        resultExplanation({ ...captured, kind, capability: kind } as AdmissionsEvaluationResult),
+      ).toBe(captured.explanation);
+    }
+  },
+);
+
+it.each([
+  ['medicine', 'tau', 'authority_unavailable'],
+  ['tau_medicine', 'tau', 'authority_unavailable'],
+  ['physiotherapy', 'tau', 'authority_unavailable'],
+  ['colmgmt_cs', 'colman', 'authority_unavailable'],
+  ['colmgmt_cs', 'colman', 'tracked_missing_rule'],
+] as const)(
+  'H1 Latin ledger fallback for %s at %s (%s)',
+  async (programId, institutionId, kind) => {
+    const program = getStaticCataloguePrograms().find((p) => p.id === programId)!;
+    const institution = getStaticCatalogueInstitutions().find((i) => i.id === institutionId)!;
+    const evaluation = await evaluateAdmissionsForProgram({
+      program: { ...program, linkedInstitutionIds: [institutionId] },
+      institutions: [institution],
+      input: {
+        ...qaReplay.h1.request,
+        degreeId: programId,
+      } as unknown as AdmissionsEvaluationRequest,
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockRejectedValue(new Error('No live requests in H1 regression')),
+      now: new Date('2026-10-29T00:00:00Z'),
+    });
+    // The named routes currently hit earlier Hebrew requirements/policy gates.
+    // Retain the evaluator's result shape and real links; replay the existing English
+    // ledger note as an unavailable API result, without inventing prose or live evidence.
+    const apiResult: AdmissionsEvaluationResult = {
+      ...evaluation.results[0],
+      kind,
+      capability: kind,
+      degradationReason: undefined,
+      officialUrls: evaluation.results[0].officialUrls ?? [
+        FORMULA_BACKED_VERIFICATION_LEDGER.find(
+          (row) => row.pairId === `${programId}__${institutionId}`,
+        )!.sourceUrl,
+      ],
+      explanation: FORMULA_BACKED_VERIFICATION_LEDGER.find(
+        (row) => row.pairId === `${programId}__${institutionId}`,
+      )!.reason,
+    };
+    expect(apiResult.kind).toBe(kind);
+    expect(apiResult.explanation).toMatch(/[a-zA-Z]/);
+    expect(apiResult.officialUrls?.length).toBeGreaterThan(0);
+    const generic =
+      kind === 'authority_unavailable'
+        ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+        : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 6)
+          'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
+
+    expect(resultExplanation(apiResult, programId)).toBe(generic);
+  },
+);
+
+describe('bagrutScoresForMode', () => {
+  const subjectRecord = {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+  };
+  const scores = {
+    bagrut: { weightedAverage: 110, subjectRecord },
+    psychometric: { overall: 650 },
+  };
+  it.each(['quick', 'exact', 'none'] as const)(
+    'aligns a stale profile marker with the newly submitted %s projection',
+    (mode) => {
+      const saved = { ...scores, admissions: { activeBagrutPath: 'quick' as const } };
+      const result = bagrutScoresForMode(saved, mode);
+      expect(result.admissions?.activeBagrutPath).toBe(mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(saved.admissions.activeBagrutPath).toBe('quick');
+    },
+  );
+  it.each(['quick', 'exact', 'none'] as const)(
+    'selects only the %s path without mutating scores',
+    (mode) => {
+      const result = bagrutScoresForMode(scores, mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(result.psychometric).toBe(scores.psychometric);
+      expect(scores.bagrut).toEqual({ weightedAverage: 110, subjectRecord });
+    },
+  );
+  it('preserves legacy scores with no chosen mode and tolerates missing bagrut', () => {
+    expect(bagrutScoresForMode(scores, undefined)).toBe(scores);
+    expect(bagrutScoresForMode({}, 'exact').bagrut).toBeUndefined();
+    expect(bagrutScoresForMode({}, 'quick').bagrut).toBeUndefined();
+  });
 });

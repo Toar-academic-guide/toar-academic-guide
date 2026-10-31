@@ -3,6 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/rateLimit';
 import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
+import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
 const hoistedMocks = vi.hoisted(() => ({
   listCataloguePrograms: vi.fn(),
@@ -22,11 +23,16 @@ vi.mock('@/server/catalogue/queries', () => ({
 
 vi.mock('@/server/admissions/evaluator', () => ({
   evaluateAdmissionsForProgram: hoistedMocks.evaluateAdmissionsForProgram,
+  exactSourceIdsForEvaluation: () => [],
 }));
 
 vi.mock('server-only', () => ({}));
 
 import { POST } from './route';
+
+const { evaluateAdmissionsForProgram: evaluateAdmissionsForProgramActual } = await vi.importActual<
+  typeof import('@/server/admissions/evaluator')
+>('@/server/admissions/evaluator');
 
 describe('admissions evaluate route', () => {
   const batchRequest = (body: unknown) =>
@@ -37,6 +43,99 @@ describe('admissions evaluate route', () => {
         body: JSON.stringify(body),
       }),
     );
+
+  it.each([
+    { batch: false, missingInstitution: false },
+    { batch: false, missingInstitution: true },
+    { batch: true, missingInstitution: false },
+    { batch: true, missingInstitution: true },
+  ])(
+    'returns numberless unsupported with the real evaluator for missing haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
+    async ({ batch, missingInstitution }) => {
+      const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!;
+      const institution = getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!;
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [] });
+      hoistedMocks.listCatalogueInstitutions.mockResolvedValue({
+        data: missingInstitution ? [] : [institution],
+      });
+      const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected network call'));
+      hoistedMocks.evaluateAdmissionsForProgram.mockImplementation((args) =>
+        evaluateAdmissionsForProgramActual({
+          ...args,
+          fetcher,
+          freshnessStatesBySourceId: new Map(),
+        }),
+      );
+
+      for (const scores of [{}, { bagrut: 120, psychometric: 800 }]) {
+        const response = await batchRequest({
+          ...(batch
+            ? { degreeIds: ['haifa_engineering', 'not_a_real_programme_xyz'] }
+            : { degreeId: 'haifa_engineering' }),
+          ...scores,
+        });
+        expect(response.status).toBe(200);
+        const { data } = await response.json();
+        if (batch) expect(data.failedDegreeIds).toEqual(['not_a_real_programme_xyz']);
+        const report = batch ? data.reports.haifa_engineering : data;
+        expect(report.program.id).toBe('haifa_engineering');
+        expect(report.results).toHaveLength(1);
+        expect(report.results[0]).toMatchObject({
+          linkedInstitutionId: 'haifa',
+          capability: 'unsupported',
+          kind: 'unsupported',
+          decision: 'unknown',
+        });
+        for (const key of ['score', 'threshold', 'requiredInputs', 'scoreAssessment']) {
+          expect(report.results[0]).not.toHaveProperty(key);
+        }
+        expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+          sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
+          input: { degreeId: 'haifa_engineering', ...scores },
+          program,
+          institutions: [institution],
+        });
+      }
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
+
+  it.each(['not_a_real_programme_xyz', 'tau_datascience'])(
+    'returns 404 for missing non-Batch C programme %s even if it exists in the code catalogue',
+    async (degreeId) => {
+      hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [] });
+      const response = await batchRequest({ degreeId });
+      expect(response.status).toBe(404);
+      await expect(response.json()).resolves.toMatchObject({
+        error: { code: 'ADMISSIONS_PROGRAM_NOT_FOUND' },
+      });
+      expect(hoistedMocks.evaluateAdmissionsForProgram).not.toHaveBeenCalled();
+    },
+  );
+
+  it('preserves Batch C DB programme and institution rows for single and batch requests', async () => {
+    const program = {
+      ...getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!,
+      name: 'DB programme',
+    };
+    const institution = {
+      ...getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!,
+      name: 'DB institution',
+    };
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: [program] });
+    hoistedMocks.listCatalogueInstitutions.mockResolvedValue({ data: [institution] });
+    for (const body of [{ degreeId: 'haifa_engineering' }, { degreeIds: ['haifa_engineering'] }]) {
+      expect((await batchRequest(body)).status).toBe(200);
+      expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+        freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+        sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
+        input: { degreeId: 'haifa_engineering' },
+        program,
+        institutions: [institution],
+      });
+    }
+  });
 
   it.each(
     Object.entries(PROGRAM_CANONICAL_ALIASES).filter(([aliasId]) => !BATCH_B_PROGRAMS[aliasId]),
@@ -50,6 +149,8 @@ describe('admissions evaluate route', () => {
       for (const body of [{ degreeId: aliasId }, { degreeIds: [aliasId] }]) {
         expect((await batchRequest(body)).status).toBe(200);
         expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({
+          freshnessLoad: { status: 'loaded', states: expect.any(Map) },
+          sourceContext: expect.objectContaining({ fetcher: expect.any(Function) }),
           input: { degreeId: canonicalId },
           program,
           institutions: expect.any(Array),
@@ -71,18 +172,28 @@ describe('admissions evaluate route', () => {
     );
   });
 
-  it('evaluates 24 programmes as one rate-limited request with shared inputs and at most four workers', async () => {
+  it('evaluates 24 programmes as one rate-limited request with shared inputs, concurrent evaluators and at most eight calls per host', async () => {
     const degreeIds = Array.from({ length: 24 }, (_, i) => `programme-${i}`);
     hoistedMocks.listCataloguePrograms.mockResolvedValue({ data: degreeIds.map((id) => ({ id })) });
     let active = 0;
     let peak = 0;
-    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(async ({ input }) => {
-      active++;
-      peak = Math.max(peak, active);
+    let sourceActive = 0;
+    let sourcePeak = 0;
+    vi.spyOn(globalThis, 'fetch').mockImplementation(async () => {
+      sourcePeak = Math.max(sourcePeak, ++sourceActive);
       await new Promise((resolve) => setTimeout(resolve, 1));
-      active--;
-      return { input, results: [] };
+      sourceActive--;
+      return new Response('{}');
     });
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation(
+      async ({ input, sourceContext }) => {
+        active++;
+        peak = Math.max(peak, active);
+        await sourceContext.fetcher('https://official.example/scores', { method: 'POST' });
+        active--;
+        return { input, results: [] };
+      },
+    );
     const applicant = {
       psychometric: 700,
       bagrut: 110,
@@ -99,7 +210,8 @@ describe('admissions evaluate route', () => {
     expect(data.failedDegreeIds).toEqual([]);
     for (const id of degreeIds)
       expect(data.reports[id].input).toEqual({ degreeId: id, ...applicant });
-    expect(peak).toBeLessThanOrEqual(4);
+    expect(peak).toBe(degreeIds.length);
+    expect(sourcePeak).toBe(8);
     expect(hoistedMocks.listCataloguePrograms).toHaveBeenCalledTimes(1);
     expect(hoistedMocks.listCatalogueInstitutions).toHaveBeenCalledTimes(1);
     // The batch consumed one quota slot, not twenty-four.

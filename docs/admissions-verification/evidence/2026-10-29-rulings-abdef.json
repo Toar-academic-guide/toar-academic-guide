@@ -1,0 +1,657 @@
+{
+  "date": "2026-10-28",
+  "behaviourBase": "3457bae",
+  "A_F": "STOPPED: evaluator integration outside grant. Exact note requested; no Haifa production change.",
+  "B": "STOPPED: derived average omitted from adapter context at16 callsites; no TAU production change.",
+  "D": {
+    "redTests": 2,
+    "alreadyPassingInstitutionPreservationTests": 1,
+    "oldName": "מדעי המחשב - המכללה האקדמית להנדסה בראודה",
+    "newName": "מדעי המחשב - המכללה האקדמית להנדסה אורט בראודה"
+  },
+  "E": {
+    "redTests": 9,
+    "greenFilesTests": 61,
+    "change": "Only registration availability is excluded from hashing. Other rule changes remain detectable.",
+    "controlledFingerprintChanges": [
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "biology__bgu",
+        "fixtureId": "biology__bgu:eligible:2026-2027",
+        "before": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+        "after": "sha256:fa6a9d17b1ecb48186c04a8c4273438615a28c4f095fa38046f61b02140efb08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "biology__bgu",
+        "fixtureId": "biology__bgu:below:2026-2027",
+        "before": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+        "after": "sha256:fa6a9d17b1ecb48186c04a8c4273438615a28c4f095fa38046f61b02140efb08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_biology__bgu",
+        "fixtureId": "bgu_biology__bgu:eligible:2026-2027",
+        "before": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+        "after": "sha256:fa6a9d17b1ecb48186c04a8c4273438615a28c4f095fa38046f61b02140efb08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_biology__bgu",
+        "fixtureId": "bgu_biology__bgu:below:2026-2027",
+        "before": "sha256:3628de6a72b26e2c6987a4154e64a81263585afdc44a07b5206300bfe7f5d49f",
+        "after": "sha256:fa6a9d17b1ecb48186c04a8c4273438615a28c4f095fa38046f61b02140efb08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "economics__bgu",
+        "fixtureId": "economics__bgu:eligible:2026-2027",
+        "before": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+        "after": "sha256:4484cf94ded9f5430b2a25f0ff0120a61d5571826003601a62417746fa5e2ad8"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "economics__bgu",
+        "fixtureId": "economics__bgu:below:2026-2027",
+        "before": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+        "after": "sha256:4484cf94ded9f5430b2a25f0ff0120a61d5571826003601a62417746fa5e2ad8"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_economics__bgu",
+        "fixtureId": "bgu_economics__bgu:eligible:2026-2027",
+        "before": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+        "after": "sha256:4484cf94ded9f5430b2a25f0ff0120a61d5571826003601a62417746fa5e2ad8"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_economics__bgu",
+        "fixtureId": "bgu_economics__bgu:below:2026-2027",
+        "before": "sha256:d9b5219b45f72f91ceb535afc64f847c3eb67b9cbfaedc25388685da6ca24fb5",
+        "after": "sha256:4484cf94ded9f5430b2a25f0ff0120a61d5571826003601a62417746fa5e2ad8"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "business__bgu",
+        "fixtureId": "business__bgu:eligible:2026-2027",
+        "before": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+        "after": "sha256:c5b4bc7b18e03cbdd0db5be375af60de7c7bd14ebb71afe5d628f16aa8217259"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "business__bgu",
+        "fixtureId": "business__bgu:below:2026-2027",
+        "before": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+        "after": "sha256:c5b4bc7b18e03cbdd0db5be375af60de7c7bd14ebb71afe5d628f16aa8217259"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_business__bgu",
+        "fixtureId": "bgu_business__bgu:eligible:2026-2027",
+        "before": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+        "after": "sha256:c5b4bc7b18e03cbdd0db5be375af60de7c7bd14ebb71afe5d628f16aa8217259"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_business__bgu",
+        "fixtureId": "bgu_business__bgu:below:2026-2027",
+        "before": "sha256:117bb830db9c922ab98fe81b72d2326f5a94318a84c7eb12287579cb3941ac91",
+        "after": "sha256:c5b4bc7b18e03cbdd0db5be375af60de7c7bd14ebb71afe5d628f16aa8217259"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "accounting__bgu",
+        "fixtureId": "accounting__bgu:eligible:2026-2027",
+        "before": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+        "after": "sha256:cf211084a8bfb8f95db117f60e5fcbfeceeb5cec1ced876d904d4a9be1947f08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "accounting__bgu",
+        "fixtureId": "accounting__bgu:below:2026-2027",
+        "before": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+        "after": "sha256:cf211084a8bfb8f95db117f60e5fcbfeceeb5cec1ced876d904d4a9be1947f08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_accounting__bgu",
+        "fixtureId": "bgu_accounting__bgu:eligible:2026-2027",
+        "before": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+        "after": "sha256:cf211084a8bfb8f95db117f60e5fcbfeceeb5cec1ced876d904d4a9be1947f08"
+      },
+      {
+        "file": "2026-09-27-bgu-quantitative-routes-controlled.json",
+        "pairId": "bgu_accounting__bgu",
+        "fixtureId": "bgu_accounting__bgu:below:2026-2027",
+        "before": "sha256:a67601c4582d9c2d8afaf40e79cb712071169487899cfa428d2707345dcbcfdd",
+        "after": "sha256:cf211084a8bfb8f95db117f60e5fcbfeceeb5cec1ced876d904d4a9be1947f08"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "social_work__bgu",
+        "fixtureId": "social_work__bgu:below:2026-2027",
+        "before": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+        "after": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "social_work__bgu",
+        "fixtureId": "social_work__bgu:eligible:2026-2027",
+        "before": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+        "after": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "bgu_socialwork__bgu",
+        "fixtureId": "bgu_socialwork__bgu:below:2026-2027",
+        "before": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+        "after": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "bgu_socialwork__bgu",
+        "fixtureId": "bgu_socialwork__bgu:eligible:2026-2027",
+        "before": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+        "after": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "communication__bgu",
+        "fixtureId": "communication__bgu:below:2026-2027",
+        "before": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+        "after": "sha256:88519534d5bfef4149998f75dcd34296b1b80104989916c6f8b27f370f86fed5"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "communication__bgu",
+        "fixtureId": "communication__bgu:eligible:2026-2027",
+        "before": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+        "after": "sha256:88519534d5bfef4149998f75dcd34296b1b80104989916c6f8b27f370f86fed5"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "education__bgu",
+        "fixtureId": "education__bgu:below:2026-2027",
+        "before": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+        "after": "sha256:cfbedeb57024d37891346553ad81d9f730a2510c2a24f53d1034a38c66160ca3"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "education__bgu",
+        "fixtureId": "education__bgu:eligible:2026-2027",
+        "before": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+        "after": "sha256:cfbedeb57024d37891346553ad81d9f730a2510c2a24f53d1034a38c66160ca3"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "political_science__bgu",
+        "fixtureId": "political_science__bgu:below:2026-2027",
+        "before": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+        "after": "sha256:3fe1f13b6c614477ac6e96d8acd95e02a4cd405acf378d1c44c155b1d99c3ede"
+      },
+      {
+        "file": "2026-09-27-bgu-social-sciences-controlled.json",
+        "pairId": "political_science__bgu",
+        "fixtureId": "political_science__bgu:eligible:2026-2027",
+        "before": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+        "after": "sha256:3fe1f13b6c614477ac6e96d8acd95e02a4cd405acf378d1c44c155b1d99c3ede"
+      }
+    ]
+  },
+  "blockedContractResults": [
+    {
+      "ruling": "A",
+      "failures": [
+        {
+          "catalogue": "static",
+          "id": "cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "officialUrls": ["https://admissions.haifa.ac.il/social-sciences/program/3268/"],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "static",
+          "id": "law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "officialUrls": ["https://admissions.haifa.ac.il/social-sciences/program/3268/"],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_socialwork",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_politicalscience",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_statistics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_math",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "officialUrls": [],
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_sociology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_engineering",
+          "kind": "unsupported",
+          "requiredInputs": [],
+          "officialUrls": [
+            "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?utm_source=myway&utm_medium=referral"
+          ],
+          "explanation": "תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "officialUrls": ["https://admissions.haifa.ac.il/social-sciences/program/3268/"],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_socialwork",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_politicalscience",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_statistics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_math",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "officialUrls": [],
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_sociology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "officialUrls": ["https://admissions.haifa.ac.il/social-sciences/program/3268/"],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "social_work",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "occupational_therapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "political_science",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "officialUrls": [],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        }
+      ]
+    },
+    {
+      "ruling": "B",
+      "id": "tau_psychology",
+      "request": {
+        "scoresData": {
+          "prog": "calctziun",
+          "out": "json",
+          "reali10": 0,
+          "psicho": "700",
+          "bagrut": "92.1"
+        }
+      },
+      "result": {
+        "kind": "exact",
+        "score": 600,
+        "threshold": 660,
+        "decision": "below"
+      }
+    },
+    {
+      "ruling": "B",
+      "id": "tau_law",
+      "request": {
+        "scoresData": {
+          "prog": "calctziun",
+          "out": "json",
+          "reali10": 0,
+          "psicho": "700",
+          "bagrut": "92.1"
+        }
+      },
+      "result": {
+        "kind": "exact",
+        "score": 600,
+        "threshold": 647,
+        "decision": "below"
+      }
+    },
+    {
+      "ruling": "B",
+      "id": "tau_ee",
+      "request": {
+        "scoresData": {
+          "prog": "calctziun",
+          "out": "json",
+          "reali10": 1,
+          "psicho": "700",
+          "bagrut": "92.1"
+        }
+      },
+      "result": {
+        "kind": "exact",
+        "score": 610,
+        "threshold": 710,
+        "decision": "below"
+      }
+    }
+  ],
+  "existingAssertionFlips": [],
+  "verification": {
+    "completedAt": "2026-10-29",
+    "guard": "env -u DATABASE_URL npm run guard:pre-pr",
+    "testsPassed": 3189,
+    "filesPassed": 129,
+    "lint": "passed",
+    "typecheck": "passed",
+    "prettier": "passed",
+    "evidenceSha256": "5 files verified",
+    "newPassingTests": "D2 behaviour +1 preservation; E9 behaviour",
+    "blockedDiagnosticTests": "A/F1 +B3 remain explicitly red; no production changes attempted outside grant",
+    "existingAssertionFlips": []
+  }
+}

@@ -4,7 +4,13 @@ import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
 import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
-import { ENQUIRY_COPY as COPY, ENQUIRY_PREP_CONSENT, type EnquiryInput } from '@/lib/enquiries';
+import { getEnquiryOrigin } from '@/lib/leadAttribution';
+import {
+  ENQUIRY_COPY as COPY,
+  ENQUIRY_PREP_CONSENT,
+  ENQUIRY_PREP_COPY,
+  type EnquiryInput,
+} from '@/lib/enquiries';
 
 const CONSENT_COLOR = '#666666';
 const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
@@ -13,6 +19,8 @@ export default function EnquiryForm({
   programId,
   institutionId,
   title,
+  heading = 'רוצים תשובות ישר מהמוסד?',
+  intro,
   onBack,
   surface = 'enquiry_page',
   evaluationInput,
@@ -20,10 +28,14 @@ export default function EnquiryForm({
   programId: string;
   institutionId: string;
   title: string;
+  heading?: string;
+  intro?: string;
   onBack?: () => void;
   surface?: string;
   evaluationInput?: EnquiryInput['evaluationInput'];
 }) {
+  const buttonCopy =
+    programId === 'psychometric-preparation' && institutionId === '' ? ENQUIRY_PREP_COPY : COPY;
   const id = useId();
   const dialog = useRef<HTMLDialogElement>(null);
   const nameField = useRef<HTMLInputElement>(null);
@@ -36,11 +48,13 @@ export default function EnquiryForm({
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const [errors, setErrors] = useState({ name: false, phone: false });
   const institutionName = title.split(' · ').slice(1).join(' · ') || title;
-  const institutionLe = `ל${institutionName.replace(/^האוניברסיטה/, 'אוניברסיטה')}`;
+  // Absorb a definite article only on known nouns; preserve names such as הנדסאים.
+  const institutionLe = `ל${institutionName.replace(
+    /^ה(?=(?:אוניברסיטה|מכללה|קריה|טכניון|מרכז|מכון|אקדמיה|סטודיו|מכינה|יחידה|מינהל|אילוף)(?:\s|$))/,
+    '',
+  )}`;
   const institutionMe = `מ${institutionName}`;
-  const [actionStart, actionButton, actionEnd] = COPY.actionNotice
-    .replace('{institution_le}', institutionLe)
-    .split('״');
+  const actionNotice = COPY.actionNotice.replace('{institution_le}', institutionLe);
   const close = () => {
     setOpen(false);
     onBack?.();
@@ -102,7 +116,10 @@ export default function EnquiryForm({
       phone,
       programId,
       institutionId,
-      sourcePath: `${window.location.pathname}${window.location.hash}`.slice(0, 300),
+      sourcePath: (
+        (window.location.pathname === '/enquiry' && getEnquiryOrigin()) ||
+        window.location.pathname
+      ).slice(0, 300),
       consent: true,
       prepConsent: values.has('prepConsent'),
       attribution: getSessionAttribution(),
@@ -142,14 +159,15 @@ export default function EnquiryForm({
   return (
     <>
       <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
-        <h1 className="text-2xl font-bold">רוצה לשמוע עוד?</h1>
+        <h1 className="text-2xl font-bold">{heading}</h1>
+        {intro && <p className="mt-2">{intro}</p>}
         <p className="mt-2">{title}</p>
         <button
           type="button"
           className="way-button-primary mt-4 px-6 py-3"
           onClick={() => setOpen(true)}
         >
-          יצירת קשר
+          השאירו פרטים
         </button>
       </section>
       {open && (
@@ -263,20 +281,21 @@ export default function EnquiryForm({
                     />
                   </div>
                   <div className="pt-[10px]">
-                    <p id="action-consent" style={consentStyle}>
-                      {actionStart}
-                      <bdi dir="rtl">״{actionButton}״</bdi>
-                      {actionEnd}
-                    </p>
                     <label
                       id="consent-prep"
                       htmlFor={`${id}-prep`}
                       className="mt-1 block cursor-pointer"
                       style={consentStyle}
                     >
-                      {ENQUIRY_PREP_CONSENT.split('18')[0]}
-                      <bdi dir="ltr">18</bdi>
-                      {ENQUIRY_PREP_CONSENT.split('18')[1]}
+                      {ENQUIRY_PREP_CONSENT.split(/(18|SMS|WhatsApp)/).map((part, index) =>
+                        /^(18|SMS|WhatsApp)$/.test(part) ? (
+                          <bdi key={index} dir="ltr">
+                            {part}
+                          </bdi>
+                        ) : (
+                          part
+                        ),
+                      )}
                     </label>
                     <a
                       id="privacy-link"
@@ -296,6 +315,9 @@ export default function EnquiryForm({
                   {COPY.serverError}
                 </p>
               )}
+              <p id="action-consent" className="mb-3" style={consentStyle}>
+                {actionNotice}
+              </p>
               <button
                 type="submit"
                 aria-describedby="action-consent"
@@ -321,8 +343,8 @@ export default function EnquiryForm({
                 {status === 'failed'
                   ? COPY.retry
                   : status === 'sending'
-                    ? COPY.loadingButton
-                    : COPY.button}
+                    ? buttonCopy.loadingButton
+                    : buttonCopy.button}
               </button>
               {status === 'sending' && (
                 <p role="status" className="sr-only">

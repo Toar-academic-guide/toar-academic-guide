@@ -263,11 +263,6 @@ const SOURCE_BY_INSTITUTION: Record<FormulaBackedInstitutionId, { url: string; r
  * like an implementation omission.
  */
 const WITHHELD_PAIR_EVIDENCE: Record<string, { url: string; reason: string }> = {
-  haifa_psychology__haifa: {
-    url: 'https://admissions.haifa.ac.il/social-sciences/program/3268/',
-    reason:
-      'הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה.',
-  },
   medicine__tau: {
     url: 'https://go.tau.ac.il/he/med/ba/med-doc?v=important-info',
     reason:

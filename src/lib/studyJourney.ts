@@ -1,3 +1,10 @@
+import type { AcademicScores } from '@/types';
+import { z } from 'zod';
+import { SECTORS } from '@/data/bagrutSubjects';
+import { admissionScoreGap } from './admissionScoreGap';
+import { formatSekhemNumber } from './sekhemResultPresentation';
+import { institutionLink } from '@/lib/institutionLinks';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { FIELD_ENRICHMENT, PROGRAM_FIELD_MAP } from '@/data/degrees/fieldEnrichment';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
@@ -7,6 +14,45 @@ import { canonicalProgramId, PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/program
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 import { isBatchBManualProgramId } from '@/data/admissions/batchBManualProgramIds';
+
+const unfinishedGradeNumber = z.union([z.number(), z.literal('')]);
+export const exactInProgressSchema = z.object({
+  sector: z.string().refine((value) => Object.hasOwn(SECTORS, value)),
+  certificate: z.enum(['', 'internal', 'external_1977_or_later', 'other']),
+  complete: z.boolean(),
+  rows: z.array(
+    z.object({
+      label: z.string(),
+      units: unfinishedGradeNumber,
+      grade: unfinishedGradeNumber,
+      assessmentKind: z.enum(['exam', 'final_project', 'combined']).optional(),
+    }),
+  ),
+  imported: z.boolean().default(false),
+  reviewed: z.boolean().default(false),
+});
+export type ExactInProgress = z.infer<typeof exactInProgressSchema>;
+
+/** Select the journey's committed Bagrut path without changing an imported account profile. */
+export function bagrutScoresForMode(
+  scores: AcademicScores,
+  gradeMode: 'quick' | 'exact' | 'none' | undefined,
+): AcademicScores {
+  if (gradeMode === undefined || !scores.bagrut) return scores;
+  const { weightedAverage, subjectRecord } = scores.bagrut;
+  return {
+    ...scores,
+    ...(scores.admissions?.activeBagrutPath !== undefined
+      ? { admissions: { ...scores.admissions, activeBagrutPath: gradeMode } }
+      : {}),
+    bagrut:
+      gradeMode === 'quick'
+        ? { weightedAverage }
+        : gradeMode === 'exact'
+          ? { subjectRecord }
+          : undefined,
+  };
+}
 
 export const LOCATIONS = {
   all: 'כל הארץ',
@@ -249,6 +295,10 @@ export function resultLabel(
   label: string;
   group: JourneyResultGroup;
 } {
+  const formatScore = (value: number) =>
+    result?.linkedInstitutionId === 'reichman'
+      ? formatSekhemNumber(value, 'reichman')
+      : formatJourneyScore(value);
   if (failed) return { label: 'החישוב לא נטען', group: 'explore' };
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
   if (isTechnionMedicineScore(result, programId))
@@ -273,29 +323,41 @@ export function resultLabel(
   if (result?.scoreAssessment)
     return result.scoreAssessment === 'meets_threshold'
       ? {
-          label: 'הציונים עומדים בסף',
+          label: 'עוברים את הסף ✓',
           group: result.additionalConditions?.some((condition) => condition.status === 'unmet')
             ? 'explore'
             : 'match',
         }
-      : { label: 'הציונים מתחת לסף', group: 'improve' };
+      : { label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף', group: 'improve' };
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
-    return { label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'התאמה משוערת', group: 'match' };
+    return {
+      label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'עוברים את הסף ✓',
+      group: 'match',
+    };
   }
-  if (result?.decision === 'below') return { label: 'אפשר לשפר את הסיכוי', group: 'improve' };
+  if (result?.decision === 'below')
+    return {
+      label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף',
+      group: 'improve',
+    };
   if (result?.decision === 'eligible_to_apply')
     return { label: 'אפשר להגיש מועמדות', group: 'match' };
+  const scoreLabel = Number.isFinite(result?.threshold)
+    ? 'אין הכרעת קבלה'
+    : typeof result?.score === 'number' && Number.isFinite(result.score)
+      ? `הסכם שלכם: ${formatScore(result.score)}`
+      : 'אין הכרעת קבלה';
   const labels: Partial<Record<AdmissionsEvaluationResult['kind'], string>> = {
-    needs_input: 'חסרים פרטים לחישוב',
-    manual_gate: 'נדרש מיון נוסף',
+    needs_input: 'השלימו פרטים וקבלו תשובה',
+    manual_gate: 'השלב הבא: מיון במוסד',
     requirements_only: 'תנאי קבלה ללא חישוב',
-    unsupported: 'אין חישוב למסלול זה',
-    authority_unavailable: 'הנתונים הרשמיים אינם זמינים',
-    tracked_missing_rule: 'חסרים נתוני קבלה רשמיים',
-    degraded: 'החישוב אינו זמין כרגע',
-    exact: 'אין הכרעת קבלה',
-    estimated: 'אין הכרעת קבלה',
+    unsupported: 'בדיקה אישית מול המוסד',
+    authority_unavailable: 'בדיקה אישית מול המוסד',
+    tracked_missing_rule: 'בדיקה אישית מול המוסד',
+    degraded: 'בדיקה אישית מול המוסד',
+    exact: scoreLabel,
+    estimated: scoreLabel,
   };
   return {
     label: result ? (labels[result.kind] ?? 'טרם חושבה התאמה') : 'טרם חושבה התאמה',
@@ -307,18 +369,23 @@ export function resultExplanation(
   result?: AdmissionsEvaluationResult,
   programId?: string,
 ): string | undefined {
-  if (!result) return undefined;
+  if (!result || result.explanation === 'אין כרגע מידע עדכני על המסלול.') return undefined;
   if (result.degradationReason === 'incomplete_published_requirements') return undefined;
   if (result.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
     return undefined;
+  if (result.kind === 'tracked_missing_rule' || result.kind === 'authority_unavailable') {
+    if (result.explanation.trim() && !/[a-zA-Z]/.test(result.explanation))
+      return result.explanation;
+    return result.kind === 'authority_unavailable'
+      ? 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.'
+      : 'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
+  }
   switch (result.kind) {
     case 'requirements_only':
-    case 'tracked_missing_rule':
     case 'unsupported':
       if (isBatchCUnsupportedProgramId(programId ?? '', result.linkedInstitutionId))
         return result.explanation;
-      return 'אין כרגע חישוב קבלה מאומת למסלול הזה. אפשר לבדוק את התנאים העדכניים באתר המוסד.';
-    case 'authority_unavailable':
+      return 'תנאי הקבלה כאן למטה. רוצים תשובה אישית? השאירו פרטים והמוסד יחזור אליכם.';
     case 'degraded':
       return 'נתוני הקבלה הדרושים לחישוב אינם זמינים כרגע. אפשר לבדוק ישירות באתר המוסד.';
     case 'manual_gate':
@@ -334,10 +401,21 @@ export function resultExplanation(
         isBatchBManualProgramId(programId ?? '', result.linkedInstitutionId)
       )
         return result.explanation;
-      return 'בנוסף לציונים, צריך לבדוק את שלבי המיון ותנאי ההגשה של המוסד.';
+      return 'השלב הבא הוא המיון. כל הפרטים כאן.';
     default:
       return result.explanation;
   }
+}
+
+export const LAST_SORTED_INSTITUTION_IDS: ReadonlySet<string> = new Set(['biu', 'ariel']);
+
+function stablePartitionLast<T>(items: T[], goesLast: (item: T) => boolean): T[] {
+  const first: T[] = [];
+  const last: T[] = [];
+  for (const item of items) {
+    (goesLast(item) ? last : first).push(item);
+  }
+  return [...first, ...last];
 }
 
 export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institution') {
@@ -353,7 +431,36 @@ export function groupJourneyRows(rows: JourneyRow[], groupBy: 'field' | 'institu
         rows: [row],
       });
   }
-  return [...groups.values()];
+  const groupedRows = [...groups.values()];
+  if (groupBy === 'institution') {
+    return stablePartitionLast(groupedRows, (group) => LAST_SORTED_INSTITUTION_IDS.has(group.id));
+  }
+  return groupedRows.map((group) => ({
+    ...group,
+    rows: stablePartitionLast(group.rows, (row) =>
+      LAST_SORTED_INSTITUTION_IDS.has(row.institution.id),
+    ),
+  }));
 }
 
 export { institutionLink as officialUrl } from '@/lib/institutionLinks';
+
+export function showsOfficialNoCalculationNote(result?: AdmissionsEvaluationResult): boolean {
+  return (
+    (result?.kind === 'tracked_missing_rule' || result?.kind === 'authority_unavailable') &&
+    result.explanation === HAIFA_NO_CALCULATION_NOTE &&
+    Boolean(result.officialUrls?.length && resultSourceLinks(result)?.length)
+  );
+}
+
+export function resultSourceLinks(result?: AdmissionsEvaluationResult, fallbackUrl?: string) {
+  if (result?.kind !== 'tracked_missing_rule' && result?.kind !== 'authority_unavailable')
+    return undefined;
+  const hasSources = Boolean(result.officialUrls?.length);
+  return (hasSources ? result.officialUrls! : [fallbackUrl]).flatMap((source, index) => {
+    const href = institutionLink(source, result.linkedInstitutionId);
+    return href
+      ? [{ href, label: hasSources ? (index === 0 ? 'למקור הרשמי' : 'למקור נוסף') : 'לאתר המוסד' }]
+      : [];
+  });
+}

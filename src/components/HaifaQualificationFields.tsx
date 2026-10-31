@@ -81,17 +81,17 @@ export default function HaifaQualificationFields(props: {
   onChange: (key: keyof HaifaAdmissionsInputs, value: string) => void;
   disabled: boolean;
   inputClassName: string;
+  visibleKeys?: readonly (keyof HaifaAdmissionsInputs)[];
+  compact?: boolean;
 }) {
-  return (
-    <details className="col-span-full rounded-xl border border-slate-200 p-3">
-      <summary className="cursor-pointer text-sm font-medium text-slate-700">
-        תנאי החוגים באוניברסיטת חיפה
-      </summary>
-      <p className="mt-2 text-xs text-slate-500">
-        מלאו את הנתונים הידועים לכם. מתמטיקה ויחידותיה נלקחות ממקצועות הבגרות בפרופיל. ראיונות
-        ומבחני התאמה יופיעו בתוצאה כשלבים שנותרו.
-      </p>
-      <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
+  const content = (
+    <div className={`${props.compact ? '' : 'mt-3 '}grid grid-cols-1 gap-3 sm:grid-cols-2`}>
+      {(!props.visibleKeys ||
+        props.visibleKeys.some(
+          (key) =>
+            key === 'haifaInformationSystemsTrack' ||
+            key === 'haifaInformationSystemsPartnerRequirementsConfirmed',
+        )) && (
         <HaifaInformationSystemsTrackFields
           track={props.values.haifaInformationSystemsTrack ?? ''}
           partnerRequirements={
@@ -107,50 +107,64 @@ export default function HaifaQualificationFields(props: {
           disabled={props.disabled}
           inputClassName={props.inputClassName}
         />
-        {fields
-          .filter(
-            (field) =>
-              !['haifaHebrewScore', 'haifaHebrewExamDate'].includes(field.key) ||
+      )}
+      {fields
+        .filter((field) =>
+          props.visibleKeys
+            ? props.visibleKeys.includes(field.key)
+            : !['haifaHebrewScore', 'haifaHebrewExamDate'].includes(field.key) ||
               ['exam', 'university_exam'].includes(props.values.haifaHebrewQualification ?? ''),
-          )
-          .map((field) => (
-            <div key={field.key} className="flex min-w-0 flex-col gap-1.5">
-              <label htmlFor={field.key} className="text-xs font-medium text-slate-600">
-                {field.label}
-              </label>
-              {field.options ? (
-                <select
-                  id={field.key}
-                  value={props.values[field.key] ?? ''}
-                  onChange={(event) => props.onChange(field.key, event.target.value)}
-                  disabled={props.disabled}
-                  className={props.inputClassName}
-                >
-                  <option value="">לא ידוע</option>
-                  {field.options.map(([value, label]) => (
-                    <option key={value} value={value}>
-                      {label}
-                    </option>
-                  ))}
-                </select>
-              ) : (
-                <input
-                  id={field.key}
-                  type={field.type ?? 'number'}
-                  min={field.min}
-                  max={field.max}
-                  step={field.type ? undefined : 1}
-                  placeholder="לא ידוע"
-                  value={props.values[field.key] ?? ''}
-                  onChange={(event) => props.onChange(field.key, event.target.value)}
-                  disabled={props.disabled}
-                  className={props.inputClassName}
-                />
-              )}
-              {field.help && <p className="text-xs text-slate-500">{field.help}</p>}
-            </div>
-          ))}
-      </div>
+        )
+        .map((field) => (
+          <div key={field.key} className="flex min-w-0 flex-col gap-1.5">
+            <label htmlFor={field.key} className="text-xs font-medium text-slate-600">
+              {field.label}
+            </label>
+            {field.options ? (
+              <select
+                id={field.key}
+                value={props.values[field.key] ?? ''}
+                onChange={(event) => props.onChange(field.key, event.target.value)}
+                disabled={props.disabled}
+                className={props.inputClassName}
+              >
+                <option value="">לא ידוע</option>
+                {field.options.map(([value, label]) => (
+                  <option key={value} value={value}>
+                    {label}
+                  </option>
+                ))}
+              </select>
+            ) : (
+              <input
+                id={field.key}
+                type={field.type ?? 'number'}
+                min={field.min}
+                max={field.max}
+                step={field.type ? undefined : 1}
+                placeholder="לא ידוע"
+                value={props.values[field.key] ?? ''}
+                onChange={(event) => props.onChange(field.key, event.target.value)}
+                disabled={props.disabled}
+                className={props.inputClassName}
+              />
+            )}
+            {!props.compact && field.help && <p className="text-xs text-slate-500">{field.help}</p>}
+          </div>
+        ))}
+    </div>
+  );
+  if (props.compact) return content;
+  return (
+    <details className="col-span-full rounded-xl border border-slate-200 p-3">
+      <summary className="cursor-pointer text-sm font-medium text-slate-700">
+        תנאי החוגים באוניברסיטת חיפה
+      </summary>
+      <p className="mt-2 text-xs text-slate-500">
+        מלאו את הנתונים הידועים לכם. מתמטיקה ויחידותיה נלקחות ממקצועות הבגרות בפרופיל. ראיונות
+        ומבחני התאמה יופיעו בתוצאה כשלבים שנותרו.
+      </p>
+      {content}
     </details>
   );
 }

@@ -74,7 +74,10 @@ describe('official BIU תשפ״ז published routes', () => {
       }
       expect(result.requiredInputs).toBeUndefined();
       // Approved by Jorje 2026-10-25 02:10 (1)–(2): https://shoham.biu.ac.il/kabala/ remarks include psych channels for criminology and the three science tracks.
-      if (degreeId === 'law') expect(result.explanation).toContain('למסלול ללא פסיכומטרי בלבד');
+      if (degreeId === 'law') {
+        // Approved test update, Jorje 2026-10-28
+        expect(result.explanation).toContain('פסיכומטרי 720');
+      }
     },
   );
 
@@ -102,8 +105,9 @@ describe('official BIU תשפ״ז published routes', () => {
     (degreeId) => {
       const input = boundaryInputs[degreeId];
       // Approved by Jorje 2026-10-25 02:10 (3): https://shoham.biu.ac.il/kabala/ remarks leave a viable combined channel; general law keeps its shipped route.
+      // Approved test update, Jorje 2026-10-28
       expect(evaluate({ ...input, bagrut: input.bagrut! - 0.01, psychometric: 800 }).decision).toBe(
-        degreeId === 'biu_law' ? 'pending' : degreeId === 'law' ? 'below' : 'unknown',
+        degreeId === 'biu_law' || degreeId === 'law' ? 'pending' : 'unknown',
       );
     },
   );

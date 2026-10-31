@@ -128,7 +128,7 @@ describe('LandingPage calculator', () => {
     expect(onSignOut).not.toHaveBeenCalled();
   });
 
-  it('links to the about page from the public navigation', () => {
+  it('links to the calculator from the public navigation', () => {
     render(
       <LandingPage
         {...defaultProps}
@@ -137,7 +137,9 @@ describe('LandingPage calculator', () => {
       />,
     );
 
-    expect(screen.getByRole('link', { name: 'מי אנחנו' }).getAttribute('href')).toBe('/about');
+    expect(screen.getByRole('link', { name: 'מה הסיכויים שלי?' }).getAttribute('href')).toBe(
+      '/app/calculator',
+    );
   });
 
   it('keeps the selected degree valid when the catalogue is replaced', async () => {

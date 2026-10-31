@@ -1,0 +1,133 @@
+{
+  "baseline": "7e84affbfe09f4e7207dded348569e77caec861f",
+  "captureDate": "2026-10-29",
+  "qaReplay": "2026-10-29-haifa-qa-replay.json",
+  "H1": {
+    "redTests": [
+      "H1 preserves the API explanation for tracked_missing_rule at both institutions",
+      "H1 preserves the API explanation for authority_unavailable at both institutions",
+      "H1 shows haifa authority_unavailable API explanation and all links (sources=true)",
+      "H1 shows haifa tracked_missing_rule API explanation and all links (sources=true)",
+      "H1 shows bgu authority_unavailable API explanation and all links (sources=true)",
+      "H1 shows bgu tracked_missing_rule API explanation and all links (sources=true)",
+      "H1 'results' preserves 'haifa' 'authority_unavailable' explanation and links (sources=true)",
+      "H1 'results' preserves 'haifa' 'tracked_missing_rule' explanation and links (sources=true)",
+      "H1 'results' preserves 'bgu' 'authority_unavailable' explanation and links (sources=true)",
+      "H1 'results' preserves 'bgu' 'tracked_missing_rule' explanation and links (sources=true)",
+      "H1 'results' preserves 'bgu' 'authority_unavailable' explanation and links (sources=false)",
+      "H1 'results' preserves 'bgu' 'tracked_missing_rule' explanation and links (sources=false)",
+      "H1 'detail' preserves 'haifa' 'authority_unavailable' explanation and links (sources=true)",
+      "H1 'detail' preserves 'haifa' 'tracked_missing_rule' explanation and links (sources=true)",
+      "H1 'detail' preserves 'bgu' 'authority_unavailable' explanation and links (sources=true)",
+      "H1 'detail' preserves 'bgu' 'tracked_missing_rule' explanation and links (sources=true)",
+      "H1 'detail' preserves 'bgu' 'authority_unavailable' explanation and links (sources=false)",
+      "H1 'detail' preserves 'bgu' 'tracked_missing_rule' explanation and links (sources=false)"
+    ],
+    "redMessages": [
+      "AssertionError: https://applicants.haifa.ac.il/enrollmentChances/index.html: expected undefined to be truthy",
+      "AssertionError: expected <a …(5)></a> to be null",
+      "TestingLibraryElementError: Unable to find an element with the text: עדיין לא מחשבים כאן את ציון הקבלה של חיפה. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.",
+      "TestingLibraryElementError: Unable to find an element with the text: תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה. סף הקבלה השמור למסלול הוא 620 בציון המוסדי. נתוני הבסיס אומתו ב־27.9.2026, למחזור 2026-2027.. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.",
+      "AssertionError: expected 'אין כרגע חישוב קבלה מאומת למסלול הזה.…' to be 'עדיין לא מחשבים כאן את ציון הקבלה של …' // Object.is equality",
+      "AssertionError: expected 'נתוני הקבלה הדרושים לחישוב אינם זמיני…' to be 'עדיין לא מחשבים כאן את ציון הקבלה של …' // Object.is equality"
+    ],
+    "redSummary": "18 failed, 115 passed, 3 files; 2 empty-source CalculatorResults cases passed as preservation coverage",
+    "greenSummary": "133 passed, 3 files",
+    "latinFallback": {
+      "redTests": [
+        "H1 Latin ledger fallback for medicine at tau (authority_unavailable)",
+        "H1 Latin ledger fallback for tau_medicine at tau (authority_unavailable)",
+        "H1 Latin ledger fallback for physiotherapy at tau (authority_unavailable)",
+        "H1 Latin ledger fallback for colmgmt_cs at colman (authority_unavailable)",
+        "H1 Latin ledger fallback for colmgmt_cs at colman (tracked_missing_rule)",
+        "H1 Latin fallback on 'results' for 'medicine' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'results' for 'tau_medicine' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'results' for 'physiotherapy' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'results' for 'colmgmt_cs' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'results' for 'colmgmt_cs' ('tracked_missing_rule') retains official links",
+        "H1 Latin fallback on 'detail' for 'medicine' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'detail' for 'tau_medicine' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'detail' for 'physiotherapy' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'detail' for 'colmgmt_cs' ('authority_unavailable') retains official links",
+        "H1 Latin fallback on 'detail' for 'colmgmt_cs' ('tracked_missing_rule') retains official links",
+        "H1 Latin fallback on CalculatorResults for medicine at tau (authority_unavailable) retains official links",
+        "H1 Latin fallback on CalculatorResults for tau_medicine at tau (authority_unavailable) retains official links",
+        "H1 Latin fallback on CalculatorResults for physiotherapy at tau (authority_unavailable) retains official links",
+        "H1 Latin fallback on CalculatorResults for colmgmt_cs at colman (authority_unavailable) retains official links",
+        "H1 Latin fallback on CalculatorResults for colmgmt_cs at colman (tracked_missing_rule) retains official links"
+      ],
+      "redSummary": "20 failed,133 passed,3 files",
+      "greenSummary": "153 passed in the H1 suites; 183 including the30 rulings cases",
+      "fixtures": "Real evaluator called with mocked fetch for medicine,tau_medicine,physiotherapy,colmgmt_cs; unavailable shapes replay their real English ledger reasons because current dispatch reaches earlier Hebrew states; real evaluator source URLs retained, reviewed ledger source used when absent."
+    }
+  },
+  "H2": {
+    "redTests": [
+      "H2 uses the real 1280 average-only CS UI request without asking for inputs",
+      "H2 uses the real 390 average-only CS UI request without asking for inputs",
+      "H2 uses the real 1280-retry average-only CS UI request without asking for inputs",
+      "H2 uses the real 390-retry average-only CS UI request without asking for inputs",
+      "H2 returns the honest note for captured average-only Haifa programme cs",
+      "H2 returns the honest note for captured average-only Haifa programme psychology",
+      "H2 returns the honest note for captured average-only Haifa programme law",
+      "H2 returns the honest note for captured average-only Haifa programme economics",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_cs",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_psychology",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_law",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_economics",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_biology",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_socialwork",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_nursing",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_accounting",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_communication",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_politicalscience",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_statistics",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_math",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_infosystems",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_physiotherapy",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_sociology",
+      "H2 returns the honest note for captured average-only Haifa programme haifa_engineering"
+    ],
+    "redMessages": [
+      "AssertionError: expected { …(12) } to match object { kind: 'tracked_missing_rule', …(3) }",
+      "AssertionError: expected { …(13) } to match object { kind: 'authority_unavailable', …(3) }"
+    ],
+    "redSummary": "24 failed, 6 passed, 1 file",
+    "provenance": {
+      "normalizedInputsEqual": true,
+      "inferredHaifaAverage": 98,
+      "inferredIsProxy": true,
+      "explicitIsProxy": false
+    },
+    "status": "fixed under ruling(b): recoverable input/proxy paths use the note; unresolved mappings remain blocked; unsupported proxy programmes fall through; explicit-average and original no-proxy/no-average behavior retained",
+    "greenSummary": "30 passed in rulingsHaifaTau.test.ts",
+    "narrowing": {
+      "legacyRedTests": [
+        "requests Haifa psychometric subscores after pair proof is verified",
+        "defaults Haifa years while retaining qualification questions",
+        "07:24 calculated Haifa provenance: {\"defaulted\":true,\"subjects\":false,\"proxy\":true}"
+      ],
+      "legacyRed": "3 failed /3 non-proxy rows passed against7e84aff; test-name filter selected six cases",
+      "exceptionRedTests": [
+        "haifa_engineering stays honest through evaluator and client for empty, weak and strong profiles",
+        "H2 returns the honest note for captured average-only Haifa programme haifa_infosystems",
+        "H2 returns the honest note for captured average-only Haifa programme haifa_engineering",
+        "haifa_engineering cannot become score eligible via API",
+        "explains the unresolved ordinary Haifa Information Systems mapping without a numeric replay",
+        "requests Haifa psychometric subscores after pair proof is verified"
+      ],
+      "exceptionRed": "Broad dispatch failed the protected mapping/BatchC cases plus two revised captured exception cases; a test-object absent-key assertion was corrected to a separate undefined check before the narrowing fix",
+      "green": "644 passed /4 files",
+      "changedPriorCaseCount": 3,
+      "protected": "Information-systems mapping test and both BatchC test files unchanged from7e84aff"
+    }
+  },
+  "validation": {
+    "guard": "3259 passed /130 files; Pre-PR guard passed",
+    "typecheck": "passed",
+    "lint": "passed",
+    "formatting": "Prettier on all changed source/docs/evidence files",
+    "remoteMain": "2cb674a905dce47415e04a57a7082a55bd599b8a already merged",
+    "publication": "local commit only, no push"
+  }
+}

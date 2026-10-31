@@ -26,7 +26,7 @@ import {
   getPublicRelatedPrograms,
 } from '@/lib/publicCatalogueLinks';
 import sitemap from '@/app/sitemap';
-import { institutionLd, programLd, programFaqPageLd } from './jsonLd';
+import { institutionLd, programLd } from './jsonLd';
 
 const redirects = [
   ['jerusalem_academy_graphic_design', '/programs/jerusalem_academy_dance'],
@@ -107,7 +107,6 @@ describe('verified dance, TAU music and Sam Spiegel identities', () => {
         timeToComplete: 'P48M',
         educationalCredentialAwarded: credential,
       });
-      expect(programFaqPageLd(page, {})).toBeNull();
     },
   );
 

@@ -1,0 +1,168 @@
+
+> toar-academic-guide@0.1.0 guard:pre-pr
+> node scripts/pre-pr-guard.mjs
+
+Pre-PR guard: checking migration grants.
+Pre-PR guard: running migration consistency check.
+
+> toar-academic-guide@0.1.0 db:migrate:check
+> drizzle-kit check
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/workspace/toar-wt-haifa-formula/drizzle.config.ts'
+Warning: 0002_loud_texas_twister (idx: 2, when: 1781295195148) follows 0001_calculator_configs (idx: 1, when: 1781300000000) in the journal, but its timestamp is not greater. If the earlier entry has already been applied, the migrator will skip this entry. Journal timestamps must strictly increase in entry order.
+Everything's fine 🐶🔥
+Pre-PR guard: running catalogue seed dry-run.
+
+> toar-academic-guide@0.1.0 db:seed:dry-run
+> node scripts/seed-catalogue.mjs --dry-run
+
+{
+  "counts": {
+    "institutions": 215,
+    "programs": 403,
+    "programInstitutions": 469,
+    "admissionRequirements": 469,
+    "admissionThresholds": 187,
+    "sourceUrls": 1272,
+    "requirementVersions": 469
+  },
+  "validationErrors": []
+}
+Pre-PR guard: high-risk production paths changed:
+  - src/app/api/admissions/evaluate/batchC.test.ts
+  - src/app/api/admissions/evaluate/bugsFirst.test.ts
+  - src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts
+  - src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts
+  - src/components/sekhem/SekhemResults.mapping.test.tsx
+  - src/data/admissions/bguCutoffsManifest.test.ts
+  - src/data/admissions/formulaBackedVerificationLedger.test.ts
+  - src/data/admissions/formulaBackedVerificationLedger.ts
+  - src/data/admissions/haifaAdmissionFormula.ts
+  - src/data/admissions/haifaFormula.test.ts
+  - src/data/admissions/haifaProgramVerification.ts
+  - src/data/admissions/haifaProgrammePolicies.json
+  - src/data/admissions/reviewedManifest.json
+  - src/data/degrees/academic.ts
+  - src/data/degrees/academicPrograms.ts
+  - src/lib/publishedCompositeThresholds.test.ts
+  - src/server/admissions/__fixtures__/reviewedManifest-2026-10-29-bgu.json
+  - src/server/admissions/batchCUnsupportedPathEvaluation.test.ts
+  - src/server/admissions/evaluator.test.ts
+  - src/server/admissions/evaluator.ts
+  - src/server/admissions/haifaProgrammePolicy.ts
+  - src/server/data-health/queries.test.ts
+Pre-PR guard: verifying committed Monday admissions evidence.
+
+> toar-academic-guide@0.1.0 monday:verify-admissions-evidence
+> node scripts/verify-monday-admissions-evidence.mjs
+
+{
+  "verified": true,
+  "records": 212,
+  "notApplicable": 2,
+  "structuredRequirementQueue": 2,
+  "blockedOfficialSource": 1
+}
+Pre-PR guard: raw Monday export not found; skipping local regeneration drift check.
+Pre-PR guard: running targeted catalogue/data-health/calculator tests.
+
+> toar-academic-guide@0.1.0 test
+> vitest run src/data/degrees/index.test.ts src/data/admissions/catalogueContentRepair.test.ts src/lib/seo/seo.test.ts src/lib/requirementTiles.test.ts src/components/RequirementTiles.test.tsx src/components/AdmissionRequirements.test.tsx src/components/AdmissionRequirements.biuFloors.test.tsx src/components/StudyJourney.account.test.tsx src/lib/studyJourney.test.ts src/components/StudyJourney.ux-p1.test.tsx src/components/JourneyExactGrades.test.tsx src/app/app/calculator/page.test.tsx src/lib/haifaOfficialUrls.test.ts src/server/catalogue/serializers.test.ts src/lib/__tests__/StudyJourney.technionWinter.test.tsx scripts/check-haifa-official-urls.test.ts src/lib/bagrutPdf.test.ts src/components/EnquiryForm.test.tsx src/app/api/enquiries/route.test.ts src/server/enquiries/repository.test.ts src/server/enquiries/notifications.test.ts src/db/migrations/enquiriesRls.test.ts src/lib/posthogPrivacy.test.ts src/lib/leadAttribution.test.ts src/lib/enquirySourcePath.test.ts src/lib/sessionAttribution.analytics.test.ts src/server/enquiries/monday.test.ts src/server/enquiries/scoreBands.test.ts src/proxy.test.ts src/data/admissions/mondayEvidence.test.ts src/data/admissions/formulaBackedPairInventory.test.ts src/data/admissions/formulaBackedVerificationLedger.test.ts src/server/admissions/catalogueEvidenceCoverage.test.ts src/lib/admissionsCoverageRetirement.test.ts src/lib/admissionsEvaluationSerialization.test.ts src/app/api/admissions/evaluate/serialization.test.ts src/app/sekhem-calculator/page.test.tsx src/components/BagrutSubjectRows.test.tsx src/components/HaifaQualificationFields.filtered.test.tsx src/components/sekhem/SekhemCalculator.test.tsx src/components/sekhem/RequiredAdmissionsInputs.test.tsx src/components/sekhem/SekhemResults.test.tsx src/components/sekhem/SekhemResults.mapping.test.tsx src/lib/sekhemCalculator.test.ts src/lib/sekhemCalculatorGuard.test.ts src/lib/publishedCompositeThresholds.test.ts src/lib/seo/sekhemThresholdLinks.test.tsx src/server/admissions/capabilityMatrix.test.ts src/server/admissions/evaluator.test.ts src/server/admissions/evaluationInputs.test.ts src/lib/admissionsEvaluationClient.test.ts src/components/AppExperience.test.tsx src/server/admissions/evaluationSnapshot.test.ts src/server/admissions/rateLimit.test.ts src/server/admissions/tauPhysiotherapyEvaluation.test.ts src/server/admissions/colmanBagrutEvaluation.test.ts src/server/admissions/colmanPublishedRoutesEvaluation.test.ts src/server/admissions/reichmanPublishedRoutesEvaluation.test.ts src/server/admissions/telhaiPublishedRoutesEvaluation.test.ts src/server/admissions/onoPublishedRoutesEvaluation.test.ts src/server/admissions/ruppinComputerScienceEvaluation.test.ts src/app/api/admissions/evaluate/batchA.test.ts src/server/admissions/batchBManualPathEvaluation.test.ts src/app/api/admissions/evaluate/batchB.test.ts src/server/admissions/batchCUnsupportedPathEvaluation.test.ts src/app/api/admissions/evaluate/batchC.test.ts src/server/admissions/mtaComputerScienceEvaluation.test.ts src/server/admissions/mtaPublishedRoutesEvaluation.test.ts src/server/admissions/mtaCombinedScore.test.ts src/server/admissions/biuPublishedRoutesEvaluation.test.ts src/server/admissions/biuLawChannels.test.ts src/server/admissions/biuFloorChannels.test.ts src/app/api/admissions/evaluate/biu.test.ts src/app/api/admissions/evaluate/mta.test.ts src/app/api/admissions/evaluate/afeka.test.ts src/server/admissions/officialRequirements4.test.ts src/server/admissions/officialRequirements5.test.ts src/server/admissions/bguEngineeringPolicy.test.ts src/server/admissions/tauComputerSciencePolicy.test.ts src/server/admissions/bguQuantitativeRoutes.test.ts src/server/admissions/tauManagementPolicy.test.ts src/server/ingestion/adapters/tauAdmissions.test.ts src/server/ingestion/adapters/bguAdmissions.test.ts src/server/admissions/bguPsychologyRoutes.test.ts src/server/admissions/hujiMedicinePolicy.test.ts src/server/ingestion/adapters/hujiAdmissions.test.ts src/components/AcademicProfileForm.test.tsx src/server/admissions/bguHealthRoutes.test.ts src/server/admissions/bguSocialScienceRoutes.test.ts src/server/ingestion/adapters/technionAdmissions.test.ts src/server/admissions/technionWinterThresholds.test.ts src/server/ingestion/adapters/haifaAdmissions.test.ts src/server/admissions/haifaProgrammePolicy.test.ts src/server/admissions/verification/programVerification.test.ts src/server/ingestion/admissionsLiveProofRunner.test.ts src/server/admissions/admissionsReleasePublisher.test.ts src/server/admissions/productionSchemaPreflight.test.ts src/db/migrations/freshnessReviewHandoffAccessRls.test.ts src/server/admissions/rateLimit.test.ts src/server/admissions/e2eSmokeWorkflow.test.ts scripts/lib/production-schema-snapshot.test.ts src/server/admissions/productionSensitivePaths.test.ts src/server/catalogue/queries.test.ts src/server/data-health/queries.test.ts src/db/seeds/catalogueSeed.test.ts src/db/seeds/mtaCatalogueMirror.test.ts src/components/CalculatorResults.test.tsx src/components/LandingPage.test.tsx src/app/internal/data-health/page.test.tsx src/app/internal/data-health/DataHealthDashboard.test.tsx src/app/api/catalog/programs/route.test.ts src/app/api/catalog/institutions/route.test.ts src/app/api/admissions/evaluate/route.test.ts src/app/api/admissions/evaluate/bugsFirst.test.ts src/app/api/admissions/evaluate/engineeringMath.test.ts src/app/api/admissions/evaluate/uxFollowups.test.ts src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts src/data/admissions/publicCatalogueCopy.test.ts src/lib/__tests__/TechnionMedicineComparison.test.tsx src/data/admissions/engineeringMathRequirements.test.ts src/app/api/admissions/evaluate/aliases.test.ts src/app/api/admissions/evaluate/reichman.test.ts src/app/api/profile/route.test.ts src/server/user/profile.test.ts src/server/user/profileSchema.test.ts src/server/user/migration.test.ts src/server/admission-alerts/profileRefresh.test.ts src/server/admission-alerts/transitionProcessor.test.ts src/server/admission-alerts/deliveryWorker.test.ts src/server/admission-alerts/deliveryPreparation.test.ts src/components/AdmissionAlertManager.test.tsx src/app/api/admission-alerts/route.test.ts src/app/api/admission-alerts/[subscriptionId]/route.test.ts src/app/api/_lib/auth.test.ts src/server/admission-alerts/resendProvider.test.ts src/server/admission-alerts/webhookService.test.ts src/app/api/admission-alerts/webhooks/resend/route.test.ts src/app/api/admission-alerts/unsubscribe/route.test.ts src/server/admission-alerts/deliveryRuntime.test.ts src/server/admission-alerts/transitionWork.test.ts src/server/admission-alerts/subscriptionService.test.ts src/server/admission-alerts/baselineEvaluator.test.ts src/server/admission-alerts/processingRuntime.test.ts
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx (11 tests | 1 failed) 315ms
+     × 'Haifa official combined score and pro…' 11ms
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts (40 tests | 1 failed) 189ms
+   × saved psychology reaches its missing-month gate while a proxy keeps the Haifa note 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/sekhem/SekhemResults.mapping.test.tsx > real evaluator → batch POST → calculator result rows > 'Haifa official combined score and pro…'
+TestingLibraryElementError: Unable to find an element with the text: הציונים מתחת לסף. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div[39m
+  [33mdata-capability[39m=[32m"exact"[39m
+  [33mdata-decision[39m=[32m"eligible_to_apply"[39m
+  [33mdata-kind[39m=[32m"manual_gate"[39m
+  [33mdata-testid[39m=[32m"result-haifa_cs-haifa"[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"flex flex-wrap items-baseline gap-x-5 gap-y-2"[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"block text-3xl font-semibold tabular-nums"[39m
+        [33mdata-result-number[39m=[32m"score"[39m
+        [33mdir[39m=[32m"ltr"[39m
+      [36m>[39m
+        [0m806[0m
+      [36m</span>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"text-sm text-(--text-body)"[39m
+      [36m>[39m
+        [0mציון הקבלה[0m
+      [36m</span>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"block text-sm text-(--text-body)"[39m
+      [36m>[39m
+        [0mסף קבלה[0m
+      [36m</span>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"tabular-nums"[39m
+        [33mdata-result-number[39m=[32m"threshold"[39m
+        [33mdir[39m=[32m"ltr"[39m
+      [36m>[39m
+        [0m700[0m
+      [36m</span>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 font-medium "[39m
+  [36m>[39m
+    [0mעדיין לא מחשבים כאן את ציון הקבלה של חיפה[0m
+  [36m</p>[39m
+[36m</div>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx:292:27
+    290|               ? 'הציונים עומדים בתנאי הקבלה'
+    291|               : 'הציונים מתחת לסף';
+    292|       expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
+       |                           ^
+    293|       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
+    294|       for (const gate of result.additionalConditions ?? [])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved psychology reaches its missing-month gate while a proxy keeps the Haifa note
+AssertionError: expected '{"institution":{"id":"haifa","name":"…' not to contain '650'
+
+Expected: "650"
+Received: "{"institution":{"id":"haifa","name":"אוניברסיטת חיפה","region":"north","domain":"haifa.ac.il","logoUrl":"https://upload.wikimedia.org/wikipedia/commons/e/e1/University_of_Haifa_logo.svg","programUrl":"https://www.haifa.ac.il/ba_programs/","calculatorUrl":"https://applicants.haifa.ac.il/enrollmentChances/index.html","universityId":"haifa"},"linkedInstitutionId":"haifa","capability":"needs_input","kind":"needs_input","decision":"unknown","confidence":"low","sourceLabel":"נדרשים נתונים נוספים","explanation":"לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי.","nextAction":"השלימו את הנתונים החסרים בפרופיל האקדמי, בסעיף ״תנאי החוגים באוניברסיטת חיפה״ ובמקצועות הבגרות.","requiredInputs":["haifa_psychometric_month"],"snapshot":{"evaluatorVersion":"admissions-evaluator-v2","ruleVersion":"admissions-evaluator-v2:haifa:needs_input","ruleFingerprint":"sha256:36bf1b6ddf436c05971d513b758252d1f365032685df0840ccabb28f2658da17","inputDigest":"sha256:dfcc7d29c1a517f5320226e3bd7e1f10a38ed0664babd07a9edfba6dd4847e5e","evaluationDigest":"sha256:9a3c56e5ffb03bdd25f8fd60b8d7d8940fa58ffb8b50ef059a362fe8dd1d9ca2"}}"
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:222:42
+    220|     });
+    221|     for (const answer of [result, proxyResult]) {
+    222|       expect(JSON.stringify(answer)).not.toContain('650');
+       |                                          ^
+    223|       expect(answer.degradationReason).toBeUndefined();
+    224|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 141 passed (143)
+      Tests  2 failed | 3480 passed (3482)
+   Start at  15:16:17
+   Duration  23.86s (transform 11.11s, setup 11.56s, import 64.95s, tests 53.06s, environment 15.62s)

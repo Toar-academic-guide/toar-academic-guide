@@ -61,7 +61,8 @@ const cases = {
 };
 
 async function state(page: Page) {
-  await expect(page.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  await expect(page.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
   const badge = page.locator('.journey-status').first();
   await expect(badge).not.toContainText('מחשבים');
   return {

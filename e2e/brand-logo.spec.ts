@@ -19,10 +19,20 @@ for (const width of [390, 1280]) {
     if (width === 390) {
       expect(box.height).toBeGreaterThanOrEqual(30);
       expect(box.height).toBeLessThanOrEqual(34);
-      await expect(header).toHaveCSS('grid-template-columns', '105px 230px');
+      await expect(header.getByRole('button', { name: 'תפריט ניווט' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'מה הסיכויים שלי?' })).toBeHidden();
     } else {
       expect(box.height).toBeCloseTo(39.9, 1);
-      await expect(header).toHaveCSS('grid-template-columns', '130px 916px 130px');
+      const columns = await header.evaluate((element) =>
+        getComputedStyle(element).gridTemplateColumns.split(' ').map(parseFloat),
+      );
+      expect(columns).toHaveLength(3);
+      expect(columns[0]).toBeCloseTo(columns[2], 1);
+      const group = (await header
+        .getByRole('link', { name: 'מה הסיכויים שלי?' })
+        .locator('..')
+        .boundingBox())!;
+      expect(Math.abs(group.x + group.width / 2 - width / 2)).toBeLessThanOrEqual(4);
     }
     expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBeLessThanOrEqual(
       width,

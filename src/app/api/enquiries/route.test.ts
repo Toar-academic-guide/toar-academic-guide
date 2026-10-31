@@ -176,6 +176,8 @@ describe('website enquiries → Monday', () => {
   });
   it.each([
     ['/680', '/'],
+    ['/not-a-page', '/'],
+    ['/enquiry-fake', '/'],
     ['/psychometric_680?bagrut=105.5#what_if_750', '/'],
     ['/programs/cs', '/programs/cs'],
     ['/app/calculator?psychometric=680', '/app/calculator'],
@@ -185,6 +187,16 @@ describe('website enquiries → Monday', () => {
     expect(JSON.parse(body.variables.columns).text_mm8am52m).toBe(expected);
     expect(backup).toHaveBeenCalledWith(expect.objectContaining({ sourcePath: expected }));
   });
+  // The sourcePath refine rejects absolute and protocol-relative URLs before delivery.
+  it.each(['https://evil.example/x', '//evil.example/x'])(
+    'rejects external source %s without storing or delivering it',
+    async (sourcePath) => {
+      expect((await POST(request({ sourcePath }))).status).toBe(400);
+      expect(fetch).not.toHaveBeenCalled();
+      expect(backup).not.toHaveBeenCalled();
+      expect(after).not.toHaveBeenCalled();
+    },
+  );
   it('preserves names and bounded campaign strings, storing only supported attribution keys', async () => {
     const attribution = {
       utm_source: '105.5',
@@ -579,9 +591,132 @@ describe('separate prep consent at the API boundary', () => {
       expect(saved.prepConsentAt?.getFullYear()).not.toBe(2000);
     },
   );
+  it('defaults omitted prep consent to false with no stored prep evidence', async () => {
+    expect((await POST(request())).status).toBe(201);
+    expect(backup).toHaveBeenCalledWith(
+      expect.objectContaining({
+        prepConsent: false,
+        prepConsentText: null,
+        prepConsentAt: null,
+      }),
+    );
+  });
+  it.each([1, 'on'])('rejects non-boolean prep consent %s before storage', async (prepConsent) => {
+    expect((await POST(request({ prepConsent }))).status).toBe(400);
+    expect(backup).not.toHaveBeenCalled();
+    expect(fetch).not.toHaveBeenCalled();
+  });
   it('rejects non-boolean prep consent before delivery', async () => {
     expect((await POST(request({ prepConsent: 'true' }))).status).toBe(400);
     expect(backup).not.toHaveBeenCalled();
     expect(fetch).not.toHaveBeenCalled();
   });
+});
+
+describe('prep-only consent and age privacy across delivery and after capture', () => {
+  beforeEach(() => {
+    after.mockReset();
+    backup.mockReset().mockResolvedValue(undefined);
+    notify.mockReset().mockResolvedValue(undefined);
+    capture.mockReset();
+    flush.mockReset().mockResolvedValue(undefined);
+    vi.stubEnv('MONDAY_API_TOKEN', 'test-server-token');
+    vi.stubEnv('NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN', 'test-analytics-token');
+    vi.stubGlobal(
+      'fetch',
+      vi.fn().mockResolvedValue(Response.json({ data: { create_item: { id: '123' } } })),
+    );
+  });
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
+  });
+
+  it.each([
+    ['unticked', { prepConsent: false }],
+    [
+      'forged unticked evidence',
+      { prepConsent: false, prepConsentText: ENQUIRY_PREP_CONSENT, prepConsentAt: '2000-01-01' },
+    ],
+    ['no age attestation', { prepConsentText: ENQUIRY_PREP_CONSENT, prepConsentAt: '2000-01-01' }],
+  ])(
+    'keeps %s prep lead MyWay-only through storage, Monday and after analytics',
+    async (_label, evidence) => {
+      const response = await POST(
+        request({
+          programId: 'psychometric-preparation',
+          institutionId: '',
+          sourcePath: '/enquiry',
+          ...evidence,
+        }),
+      );
+      expect(response.status).toBe(201);
+      expect(await response.json()).toEqual({ data: { received: true } });
+      expect(backup).toHaveBeenCalledOnce();
+      const saved = backup.mock.calls[0][0];
+      expect(saved).toMatchObject({
+        prepConsent: false,
+        prepConsentText: null,
+        prepConsentAt: null,
+        institutionId: '',
+      });
+      expect(fetch).toHaveBeenCalledOnce();
+      const [url, options] = vi.mocked(fetch).mock.calls[0];
+      expect(url).toBe('https://api.monday.com/v2');
+      const body = JSON.parse(options?.body as string);
+      expect(body.variables.board).toBe('18436300533');
+      expect(body.variables.name).toBe(enquiry.name);
+      expect(JSON.parse(body.variables.columns).text_mm8a4c4w).toBe('');
+      expect(capture).not.toHaveBeenCalled();
+      expect(after).toHaveBeenCalledOnce();
+      await after.mock.calls[0][0]();
+      expect(notify).toHaveBeenCalledExactlyOnceWith(saved, '123');
+      expect(capture).toHaveBeenCalledExactlyOnceWith({
+        distinctId: enquiry.requestId,
+        event: 'server_enquiry_created',
+        properties: {
+          program_id: 'psychometric-preparation',
+          institution_id: '',
+          source_path: '/enquiry',
+          $process_person_profile: false,
+        },
+      });
+      expect(flush).toHaveBeenCalledOnce();
+      const analytics = JSON.stringify(capture.mock.calls);
+      expect(analytics).not.toContain(enquiry.name);
+      expect(analytics).not.toContain(enquiry.phone);
+      expect(analytics).not.toContain(ENQUIRY_PREP_CONSENT);
+    },
+  );
+
+  it.each([null, 'obsolete attestation'])(
+    'owns the prep evidence on an explicit new attestation instead of trusting client text %s',
+    async (prepConsentText) => {
+      const before = Date.now();
+      expect(
+        (
+          await POST(
+            request({
+              programId: 'psychometric-preparation',
+              institutionId: '',
+              prepConsent: true,
+              prepConsentText,
+              prepConsentAt: '2000-01-01',
+            }),
+          )
+        ).status,
+      ).toBe(201);
+      const saved = backup.mock.calls[0][0];
+      expect(saved.prepConsentText).toBe(ENQUIRY_PREP_CONSENT);
+      expect(saved.prepConsentAt.getTime()).toBeGreaterThanOrEqual(before);
+      expect(saved.prepConsentAt.getTime()).toBeLessThanOrEqual(Date.now());
+      await after.mock.calls[0][0]();
+      expect(capture.mock.calls[0][0].properties).toEqual({
+        program_id: 'psychometric-preparation',
+        institution_id: '',
+        source_path: '/',
+        $process_person_profile: false,
+      });
+    },
+  );
 });

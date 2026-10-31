@@ -1,4 +1,5 @@
 import {
+  canonicalBiuProgrammeId,
   BIU_GENERAL_REQUIREMENTS_URL,
   BIU_PUBLISHED_ROUTE_PROGRAMMES,
   BIU_PUBLISHED_ROUTES_URL,
@@ -92,6 +93,7 @@ export function evaluateBiuPublishedRoutes({
   input: AdmissionsEvaluationInput;
   institution: CatalogueInstitution;
 }) {
+  input = { ...input, degreeId: canonicalBiuProgrammeId(input.degreeId) };
   const programme =
     BIU_PUBLISHED_ROUTE_PROGRAMMES[input.degreeId as keyof typeof BIU_PUBLISHED_ROUTE_PROGRAMMES];
   const threshold =

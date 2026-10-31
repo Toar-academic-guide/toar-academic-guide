@@ -868,9 +868,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        '5 יח"ל מתמטיקה — חובה',
-        'ציון פסיכומטרי מינימלי: 650',
-        'ממוצע בגרות מינימלי: 85',
+        'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+        'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
       ],
       officialCalculatorUrl: HAIFA_CALCULATOR_URL,
       programUrl: HAIFA_PROGRAM_URLS.haifa_cs,
@@ -2025,7 +2025,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 705 },
+    thresholds: { haifa: 700 },
     institutionDetails: D['haifa_cs'],
   },
   {
@@ -2159,7 +2159,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.statistics,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 650 },
+    thresholds: { haifa: 630 },
     institutionDetails: D['haifa_statistics'],
   },
   {
@@ -3120,7 +3120,6 @@ export const academicPrograms: Program[] = [
           'מעל גיל 30: ראיון קבלה ובגרות מלאה',
           'תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה',
           'אפיק מעבר לאקדמיה: למי שיש בגרות מלאה ולא עומדים בתנאי הממוצע. צריך לעבור מקבץ קורסים אקדמיים לפני תחילת הלימודים.',
-          'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
         ],
         officialCalculatorUrl: '',
         programUrl: 'https://www.ono.ac.il/curriculum/llb/',

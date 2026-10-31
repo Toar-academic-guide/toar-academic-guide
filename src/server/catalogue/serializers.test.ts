@@ -1,3 +1,6 @@
+import * as contentRepair from '@/data/admissions/catalogueContentRepair';
+import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
+import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
@@ -15,6 +18,74 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each([
+    'tau_me',
+    'tau_ee',
+    'tau_industrial',
+    'tau_datascience',
+    'tau_cs',
+    'technion_cs',
+    'technion_datascience',
+    'technion_ee',
+    'technion_me',
+    'technion_civil',
+    'technion_industrial',
+    'technion_biomedical',
+  ])('item 6 repairs persisted %s mathematics after a database read', (id) => {
+    const seed = buildCatalogueSeed();
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const staleNotes = ['5 יח"ל מתמטיקה — חובה', 'דרישה אחרת שנשמרת'];
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        { ...requirement, admissionRequirements: staleNotes, specificAdmissionNotes: staleNotes },
+      ] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: [],
+      admissionFacts: [
+        {
+          id: `${id}:stale-math`,
+          admissionRequirementId: requirement.id,
+          kind: 'numeric_gate',
+          field: 'math_units',
+          comparison: 'gte',
+          valueNumber: 5,
+          description: staleNotes[0],
+          confidence: 'high',
+          isRequired: true,
+        },
+      ] as AdmissionFactRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    const detail = result.institutionDetails![0];
+    expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
+    expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
+    expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    expect(detail.admissionFacts).toContainEqual(
+      expect.objectContaining({
+        field: 'math_units',
+        valueNumber: 4,
+        groupKey: expect.stringMatching(/^math_route\//),
+      }),
+    );
+    expect(detail.admissionFacts!.every((fact) => fact.groupKey?.startsWith('math_route/'))).toBe(
+      true,
+    );
+    expect(result.id).toBe(id);
+    expect(result.thresholds).toEqual(
+      Object.fromEntries(
+        seed.admissionThresholds
+          .filter((row) => row.programId === id && row.thresholdKind === 'sekhem')
+          .map((row) => [row.universityId, row.thresholdValue]),
+      ),
+    );
+  });
+
   it.each(['ruppin_marine_bio', 'afeka_biomedical'])(
     'sweep38 repairs persisted %s requirements',
     (id) => {
@@ -191,6 +262,109 @@ describe('catalogue serializers', () => {
       expect(result.linkedInstitutionIds).toEqual(['afeka']);
     },
   );
+
+  it.each([
+    'haifa_psychology',
+    'mon_12220708942_cs',
+    'huji_psychology',
+    'afeka_ee',
+    'afeka_softwareeng',
+    'afeka_cs',
+    'afeka_biomedical',
+    'ruppin_marine_bio',
+    'jerusalem_academy_graphic_design',
+    'jerusalem_academy_dance',
+    'rubin_classical',
+  ])('preserves the full serialized object for existing repaired ID %s', (id) => {
+    const seed = buildCatalogueSeed();
+    const sourceId =
+      id === 'jerusalem_academy_graphic_design'
+        ? 'jerusalem_academy_dance'
+        : id === 'mon_12220708942_cs'
+          ? 'braude_engineering'
+          : id;
+    const program = seed.programs.find((row) => row.id === sourceId)!;
+    expect(program).toBeDefined();
+    const requirements = seed.admissionRequirements.filter((row) => row.programId === sourceId);
+    const requirementIds = new Set(requirements.map((row) => row.id));
+    const repairSpy = vi.spyOn(contentRepair, 'applyCatalogueContentRepair');
+    try {
+      const result = serializeProgramRow({
+        program: { ...program, id } as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === sourceId,
+        ) as ProgramInstitutionRow[],
+        requirements: requirements as AdmissionRequirementRow[],
+        thresholds: seed.admissionThresholds.filter(
+          (row) => row.programId === sourceId,
+        ) as AdmissionThresholdRow[],
+        sourceUrls: seed.sourceUrls.filter(
+          (row) => row.admissionRequirementId && requirementIds.has(row.admissionRequirementId),
+        ) as SourceUrlRow[],
+        admissionFacts: seed.admissionFacts.filter((row) =>
+          requirementIds.has(row.admissionRequirementId),
+        ) as AdmissionFactRow[],
+        admissionAlternativePaths: seed.admissionAlternativePaths.filter((row) =>
+          requirementIds.has(row.admissionRequirementId),
+        ) as AdmissionAlternativePathRow[],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      expect(repairSpy).toHaveBeenCalledTimes(1);
+      const serialized = repairSpy.mock.calls[0][0];
+      // The previous repair branch, followed by the existing post-processing.
+      const before = applyJamdCurriculum(
+        applyEngineeringMathRequirements(contentRepair.applyCatalogueContentRepair(serialized)),
+      );
+      expect(result).toEqual(before);
+    } finally {
+      repairSpy.mockRestore();
+    }
+  });
+
+  it('repairs persisted Haifa CS notes while keeping all official Haifa URLs', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'haifa_cs';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [
+        {
+          ...requirement,
+          specificAdmissionNotes: [
+            '5 יח"ל מתמטיקה — חובה',
+            'ציון פסיכומטרי מינימלי: 650',
+            'ממוצע בגרות מינימלי: 85',
+          ],
+        },
+      ] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: ['program', 'calculator'].map((kind) => ({
+        id: `old-cs-${kind}`,
+        admissionRequirementId: requirement.id,
+        kind,
+        url: `https://www.haifa.ac.il/index.php/he/${kind}`,
+      })) as SourceUrlRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+    expect(result.institutionDetails![0]).toMatchObject({
+      specificAdmissionNotes: [
+        'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+        'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
+      ],
+      programUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',
+      calculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+      officialCalculatorUrl: 'https://admissions.haifa.ac.il/score-calculation/',
+    });
+    expect(result.thresholds).toEqual({ haifa: 700 });
+    expect(result.id).toBe(id);
+    expect(result.linkedInstitutionIds).toEqual(['haifa']);
+  });
 
   it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
     const seed = buildCatalogueSeed();
@@ -665,4 +839,52 @@ describe('Braude persisted identity reconciliation', () => {
       expect(serializeInstitutionRow(institution).id).toBe(alias);
     },
   );
+});
+
+it('D serves the full Ort Braude CS identity from shortened persisted rows', () => {
+  const seed = buildCatalogueSeed();
+  const id = 'mon_12220708942_cs';
+  const alias = 'mon_12220708942';
+  const shortened = 'המכללה האקדמית להנדסה בראודה';
+  const institution = 'המכללה האקדמית להנדסה אורט בראודה';
+  const original = {
+    ...seed.programs[0],
+    id,
+    name: `מדעי המחשב - ${shortened}`,
+    institutionName: shortened,
+    institutionId: alias,
+  } as ProgramRow;
+  const result = serializeProgramRow({
+    program: original,
+    relations: [{ programId: id, institutionId: alias }],
+    requirements: [
+      {
+        ...seed.admissionRequirements[0],
+        id: `${id}:${alias}`,
+        programId: id,
+        institutionId: alias,
+      },
+    ] as AdmissionRequirementRow[],
+    thresholds: [],
+    sourceUrls: [],
+    institutionsById: new Map([
+      [alias, { ...seed.institutions[0], id: alias, name: shortened } as InstitutionRow],
+    ]),
+  });
+  expect(result).toMatchObject({ id, name: `מדעי המחשב - ${institution}`, institution });
+  expect(result.institutionDetails![0].institutionName).toBe(institution);
+  expect(original.name).toBe(`מדעי המחשב - ${shortened}`);
+});
+
+it('D already serves the canonical name for the shortened legacy Braude institution row', () => {
+  const row = {
+    ...buildCatalogueSeed().institutions[0],
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה בראודה',
+  } as InstitutionRow;
+  expect(serializeInstitutionRow(row)).toMatchObject({
+    id: 'mon_12220708942',
+    name: 'המכללה האקדמית להנדסה אורט בראודה',
+  });
+  expect(row.name).toBe('המכללה האקדמית להנדסה בראודה');
 });

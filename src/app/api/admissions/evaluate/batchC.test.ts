@@ -40,6 +40,8 @@ describe('Batch C API dispatch', () => {
         const result = data.results.find(
           (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === config.institutionId,
         );
+        // Ruling 3: Jorje 2026-10-29; no engineering calculator mapping exists, so all inputs reach unsupported.
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
         expect(result).toMatchObject({
           capability: 'unsupported',
           kind: 'unsupported',
@@ -51,6 +53,7 @@ describe('Batch C API dispatch', () => {
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
+        // Approved test update, Jorje 2026-10-29
         expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]/);
       }
     },

@@ -1,0 +1,307 @@
+{
+  "label": "rulingsHaifaTau-saved-biology",
+  "operation": "calculateChances",
+  "params": {
+    "year": "2026",
+    "semester": "001",
+    "hug": "SC0006",
+    "program": "52255174",
+    "bag_type": "001",
+    "bag_year": "2026",
+    "bag_avg": "104",
+    "psy_year": "2026",
+    "psy_math": "115",
+    "psy_verbal": "110",
+    "psy_english": "120"
+  },
+  "localInput": {
+    "programme": "biology",
+    "bagrutAverage": 104,
+    "bagrutYear": 2026,
+    "psychometricYear": 2026,
+    "psychometric": 590,
+    "quantitative": 115,
+    "verbal": 110,
+    "english": 120
+  },
+  "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=calculateChances&year=2026&semester=001&hug=SC0006&program=52255174&bag_type=001&bag_year=2026&bag_avg=104&psy_year=2026&psy_math=115&psy_verbal=110&psy_english=120",
+  "method": "GET",
+  "startedAt": "2026-10-29T12:56:10.156Z",
+  "finishedAt": "2026-10-29T12:56:11.670Z",
+  "status": 200,
+  "json": {
+    "data": [
+      {
+        "results": [
+          {
+            "content": [
+              {
+                "notes": [],
+                "label": "התכנית המבוקשת",
+                "type": "text",
+                "value": ""
+              },
+              {
+                "notes": [],
+                "label": "הציון המשוקלל שלך",
+                "type": "num",
+                "value": "611"
+              },
+              {
+                "notes": [],
+                "label": "חתך קבלה",
+                "type": "num",
+                "value": "640"
+              },
+              {
+                "notes": [
+                  {
+                    "note": "מתחת לחתך זה - אין אפשרות קבלה!"
+                  },
+                  {
+                    "note": "מעל חתך זה קבלה אינה מובטחת ויש לעקוב אחר התעדכנות חתך קבלה"
+                  }
+                ],
+                "label": "חתך דחייה",
+                "type": "num",
+                "value": "619"
+              },
+              {
+                "notes": [],
+                "label": "ציון הפסיכומטרי שלך",
+                "type": "num",
+                "value": "580"
+              }
+            ]
+          },
+          {
+            "slider": {
+              "shiklul": "611",
+              "approve": "640",
+              "reject": "619",
+              "display": "true"
+            }
+          },
+          {
+            "otherConditions": [
+              {
+                "text": "לא נמצאו"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hugOptions": [
+          {
+            "hugName": "חוג למתמטיקה",
+            "hug": "50000231",
+            "url": "http://math.haifa.ac.il"
+          },
+          {
+            "hugName": "ריפוי בעיסוק-ב\"א-חד חוגי",
+            "hug": "50026596",
+            "url": "http://hw.haifa.ac.il/he/departments/ot"
+          },
+          {
+            "hugName": "מדעי הדימות הרפואי-B.Sc - חד חוגי",
+            "hug": "51891878",
+            "url": "https://hw.haifa.ac.il/departments/medimaging"
+          },
+          {
+            "hugName": "חינוך מיוחד-ב\"א-דו חוגי",
+            "hug": "50543971",
+            "url": "http://edu.haifa.ac.il/special-ed"
+          },
+          {
+            "hugName": "התפתחות האדם-ב\"א-דו חוגי",
+            "hug": "50543965",
+            "url": "http://www.edu.haifa.ac.il/couns-ed"
+          },
+          {
+            "hugName": "מדעי הלמידה וההוראה-ב\"א-דו חוגי",
+            "hug": "50543950",
+            "url": "http://www.edu.haifa.ac.il/learn"
+          },
+          {
+            "hugName": "ביה\"ס למדעי המדינה-ב\"א-חד חוגי",
+            "hug": "50026857",
+            "url": "http://poli.haifa.ac.il/"
+          },
+          {
+            "hugName": "ביה\"ס למדעי המדינה-ב\"א-דו חוגי",
+            "hug": "50026856",
+            "url": "http://poli.haifa.ac.il/"
+          },
+          {
+            "hugName": "סיעוד-ב\"א-חד חוגי",
+            "hug": "50026744",
+            "url": "http://hw.haifa.ac.il/index.php/he/departments/nursing"
+          },
+          {
+            "hugName": "פילוסופיה-תואר ראשון-דו חוגי",
+            "hug": "50026100",
+            "url": "http://philo.haifa.ac.il"
+          },
+          {
+            "hugName": "ביה\"ס למדעי המדינה-ב\"א-ערב-דו חוגי",
+            "hug": "50026862",
+            "url": "http://poli.haifa.ac.il/"
+          },
+          {
+            "hugName": "בית הספר לקרימינולוגיה-ב\"א-חד חוגי",
+            "hug": "51865695",
+            "url": "http://criminology.haifa.ac.il/index.php?lang=he"
+          },
+          {
+            "hugName": "בית הספר לקרימינולוגיה-ב\"א-דו חוגי",
+            "hug": "51865694",
+            "url": "http://criminology.haifa.ac.il/index.php?lang=he"
+          },
+          {
+            "hugName": "תקשורת-ב\"א-חד חוגי",
+            "hug": "50027049",
+            "url": "http://communication.haifa.ac.il/"
+          },
+          {
+            "hugName": "תקשורת-ב\"א-דו חוגי",
+            "hug": "50027048",
+            "url": "http://communication.haifa.ac.il/"
+          },
+          {
+            "hugName": "שירותי אנוש-ב\"א-דו חוגי",
+            "hug": "50026742",
+            "url": "http://hw.haifa.ac.il/index.php/he/departments/human"
+          },
+          {
+            "hugName": "גאוגרפיה ולימודי סביבה-ב\"א-ערב-דו חוגי",
+            "hug": "50026681",
+            "url": "http://geo.haifa.ac.il/"
+          },
+          {
+            "hugName": "גאוגרפיה ולימודי סביבה-ב\"א-דו חוגי",
+            "hug": "50026669",
+            "url": "http://geo.haifa.ac.il/"
+          },
+          {
+            "hugName": "חוג לשפה וספרות ערבית",
+            "hug": "50000175",
+            "url": "http://arabic.haifa.ac.il"
+          },
+          {
+            "hugName": "לימודים רב תחומיים-ב\"א-ערב-דו חוגי",
+            "hug": "50026486",
+            "url": "http://multiba.haifa.ac.il"
+          },
+          {
+            "hugName": "לימודים רב תחומיים-ב\"א-דו חוגי",
+            "hug": "50026467",
+            "url": "http://multiba.haifa.ac.il"
+          },
+          {
+            "hugName": "סוציולוגיה ואנתרופולוגיה-ב\"א-דו חוגי",
+            "hug": "50026815",
+            "url": "http://soc.haifa.ac.il/"
+          },
+          {
+            "hugName": "סוציולוגיה ואנתרופולוגיה-ב\"א-חד חוגי",
+            "hug": "50026817",
+            "url": "http://soc.haifa.ac.il/"
+          },
+          {
+            "hugName": "לימודי אסיה-ב\"א-דו חוגי",
+            "hug": "50026460",
+            "url": "http://asia.haifa.ac.il"
+          },
+          {
+            "hugName": "ספרות עברית והשוואתית-תואר ראשון-דו חוגי",
+            "hug": "50026402",
+            "url": "http://literature.haifa.ac.il"
+          },
+          {
+            "hugName": "ארכיאולוגיה-תואר ראשון-דו חוגי",
+            "hug": "50026254",
+            "url": "http://archlgy.haifa.ac.il"
+          },
+          {
+            "hugName": "לימודי ישראל-תואר ראשון-דו חוגי",
+            "hug": "50026214",
+            "url": "http://israel-stu.haifa.ac.il"
+          },
+          {
+            "hugName": "היסטוריה כללית-תואר ראשון-חד חוגי",
+            "hug": "50026123",
+            "url": "http://history.haifa.ac.il"
+          },
+          {
+            "hugName": "תולדות האמנות-ב\"א-דו חוגי",
+            "hug": "50030588",
+            "url": "http://art.haifa.ac.il"
+          },
+          {
+            "hugName": "מחשבת ישראל-ב\"א-דו חוגי",
+            "hug": "50030603",
+            "url": "http://jewish-history.haifa.ac.il/index.php/he/"
+          },
+          {
+            "hugName": "היסטוריה כללית-תואר ראשון-דו חוגי",
+            "hug": "50026122",
+            "url": "http://history.haifa.ac.il"
+          },
+          {
+            "hugName": "לימודי המזה\"ת והאסלאם-ב\"א-דו חוגי",
+            "hug": "50025920",
+            "url": "http://mideast.haifa.ac.il"
+          },
+          {
+            "hugName": "הסטוריה של עם ישראל-תואר ראשון-דו חוגי",
+            "hug": "50025897",
+            "url": "http://jewish-history.haifa.ac.il/index.php/he/"
+          },
+          {
+            "hugName": "לשון העברית-תואר ראשון-דו חוגי",
+            "hug": "50025855",
+            "url": "http://hebrew-language.haifa.ac.il"
+          },
+          {
+            "hugName": "מקרא-תואר ראשון-דו חוגי",
+            "hug": "50025837",
+            "url": "http://bible.haifa.ac.il"
+          },
+          {
+            "hugName": "סוציולוגיה ואנתרופולוגיה-ב\"א-ערב-דו חוגי",
+            "hug": "50026819",
+            "url": "http://soc.haifa.ac.il/"
+          }
+        ]
+      },
+      {
+        "userInput": [
+          {
+            "diploma": {
+              "avg": 104,
+              "year": "2026",
+              "diplomaName": "בגרות ישראלית",
+              "diploma": "001"
+            }
+          },
+          {
+            "psy": {
+              "english_val": "120",
+              "year": "2026",
+              "verb_val": "110",
+              "math_val": "115"
+            }
+          }
+        ]
+      }
+    ],
+    "guid": "f018630a-c6b5-3f10-2780-de2cd2028df2",
+    "return": {
+      "number": "",
+      "errorType": "",
+      "type": "S",
+      "message": ""
+    }
+  }
+}

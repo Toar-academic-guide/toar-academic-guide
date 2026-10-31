@@ -4,18 +4,18 @@ async function enterJourney(page: Page, field: string, bagrut?: number, psychome
   await page.goto('/app/calculator');
   await page.getByLabel('חיפוש תחום לימודים').fill(field);
   await page.getByRole('button', { name: field, exact: true }).click();
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   await expect(page.getByRole('button', { name: 'כל הארץ', exact: true })).toHaveAttribute(
     'aria-pressed',
     'true',
   );
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   if (bagrut === undefined) {
     await page.getByRole('button', { name: /אין לי כרגע ציוני בגרות/ }).click();
   } else {
     await page.getByRole('button', { name: /יש לי ממוצע בגרות/ }).click();
     await page.getByLabel('ממוצע בגרות', { exact: true }).fill(String(bagrut));
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   }
   if (psychometric === undefined) {
     await page.getByRole('button', { name: 'בלי פסיכומטרי כרגע' }).click();
@@ -25,7 +25,7 @@ async function enterJourney(page: Page, field: string, bagrut?: number, psychome
     await expect(page.getByLabel('כמותי', { exact: true })).toBeVisible();
     await expect(page.getByLabel('מילולי', { exact: true })).toBeVisible();
     await expect(page.getByLabel('אנגלית', { exact: true })).toBeVisible();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   }
 }
 
@@ -53,7 +53,7 @@ test('Industrial Engineering keeps an omitted psychometric score omitted', async
     degreeId: 'bgu_industrial',
     bagrut: 109,
   });
-  await expect(page.getByRole('heading', { name: 'האפשרויות שלך' })).toBeVisible();
+  await expect(page.getByRole('heading', { name: 'האפשרויות שלכם' })).toBeVisible();
 });
 
 test('grouped results retain visible contact and save actions and selected context after reload', async ({
@@ -65,14 +65,18 @@ test('grouped results retain visible contact and save actions and selected conte
   await page.getByRole('button', { name: 'לגלות את האפשרויות שלי' }).click();
   expect((await pending).status()).toBe(200);
   await expect(page).toHaveURL(/\/app\/calculator#results$/);
-  await expect(page.getByRole('button', { name: 'יצירת קשר', exact: true }).first()).toBeVisible();
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+  await expect(
+    page.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }).first(),
+  ).toBeVisible();
   const saved = page.getByRole('button', { name: 'שמירת פיזיותרפיה — אוניברסיטת תל אביב' });
   await saved.click();
   await expect(saved).toHaveAttribute('aria-pressed', 'true');
   await page
     .getByRole('article')
     .filter({ has: saved })
-    .getByRole('button', { name: 'יצירת קשר', exact: true })
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    .getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true })
     .click();
   await expect(page.getByRole('dialog', { name: 'אוניברסיטת תל אביב' })).toBeVisible(); // Approved test update, Jorje 2026-10-26
   await page.reload();

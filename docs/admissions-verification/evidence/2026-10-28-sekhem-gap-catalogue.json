@@ -1,0 +1,1683 @@
+{
+  "source": "/workspace/pm-research/cov/programs.json",
+  "sourceSha256": "8e8e9e65d59dedd0832fec7b483acbbcc65c9d870d6c834a43d925eb62091071",
+  "projection": "Haifa/Technion links, thresholds and institution details; other fields used by evaluator preserved. No current network catalogue request.",
+  "programs": [
+    {
+      "id": "technion_civil",
+      "name": "הנדסה אזרחית וסביבתית",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "הנדסה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 87
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-120 סטודנטים",
+          "quantitativeMinRequirement": 135,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 4,
+        "CR": 2,
+        "SO": 1,
+        "LE": 1,
+        "OR": 3,
+        "DI": 1,
+        "ER": 2
+      }
+    },
+    {
+      "id": "technion_industrial",
+      "name": "הנדסת תעשייה וניהול",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "הנדסה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 89
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-120 סטודנטים",
+          "quantitativeMinRequirement": 133,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 2,
+        "CR": 0,
+        "SO": 1,
+        "LE": 3,
+        "OR": 4,
+        "DI": 2,
+        "ER": 2
+      }
+    },
+    {
+      "id": "technion_biomedical",
+      "name": "הנדסה ביורפואית",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "הנדסה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 87
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-60 סטודנטים",
+          "quantitativeMinRequirement": 140,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "5 יח\"ל מתמטיקה — חובה",
+            "ביולוגיה ו/או כימיה 5 יח\"ל — יתרון"
+          ],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 3,
+        "CR": 0,
+        "SO": 2,
+        "LE": 0,
+        "OR": 2,
+        "DI": 2,
+        "ER": 3
+      }
+    },
+    {
+      "id": "technion_medicine",
+      "name": "רפואה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "רפואה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": null
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 6,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["ראיון אישי — מחייב", "ממוצע בגרות ≥ 100 — מומלץ מאוד"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 0,
+        "SO": 4,
+        "LE": 1,
+        "OR": 2,
+        "DI": 0,
+        "ER": 5
+      }
+    },
+    {
+      "id": "haifa_cs",
+      "name": "מדעי המחשב",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי המחשב",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 700
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "5 יח\"ל מתמטיקה — חובה",
+            "ציון פסיכומטרי מינימלי: 650",
+            "ממוצע בגרות מינימלי: 85"
+          ],
+          "officialCalculatorUrl": "https://admissions.haifa.ac.il/score-calculation/",
+          "programUrl": "https://admissions.haifa.ac.il/computer-information-science/program/3210/",
+          "calculatorUrl": "https://admissions.haifa.ac.il/score-calculation/"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 1,
+        "SO": 0,
+        "LE": 1,
+        "OR": 3,
+        "DI": 5,
+        "ER": 2
+      }
+    },
+    {
+      "id": "haifa_psychology",
+      "name": "פסיכולוגיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 650
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-120 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 650 לפחות; ציונים 630–649 נמצאים בטווח ההמתנה.",
+            "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 90 ביעלנט או במבחן הסיווג של האוניברסיטה, בקבלה על תנאי עד השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.",
+            "תוכנית פסיפס (מסלול נפרד עם החוג לפילוסופיה): סכם 680 לפחות + ראיון קבלה."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/3268/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 0,
+        "CR": 1,
+        "SO": 5,
+        "LE": 1,
+        "OR": 1,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "haifa_law",
+      "name": "משפטים",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "משפטים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-150 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["ציון פסיכומטרי מינימלי: 640", "ממוצע בגרות מינימלי: 82"],
+          "officialCalculatorUrl": "https://admissions.haifa.ac.il/score-calculation/",
+          "programUrl": "https://admissions.haifa.ac.il/law/program/3000/",
+          "calculatorUrl": "https://admissions.haifa.ac.il/score-calculation/"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 0,
+        "CR": 1,
+        "SO": 3,
+        "LE": 5,
+        "OR": 2,
+        "DI": 0,
+        "ER": 5
+      }
+    },
+    {
+      "id": "haifa_economics",
+      "name": "כלכלה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "כלכלה ועסקים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 660
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["ציון פסיכומטרי מינימלי: 620", "ממוצע בגרות מינימלי: 80"],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/index.php/he/departments/departments-social-sciences/economics",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 0,
+        "CR": 0,
+        "SO": 1,
+        "LE": 3,
+        "OR": 4,
+        "DI": 2,
+        "ER": 4
+      }
+    },
+    {
+      "id": "haifa_biology",
+      "name": "ביולוגיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי החיים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 640
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-80 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "ביולוגיה ו/או כימיה — יתרון",
+            "ציון פסיכומטרי מינימלי: 620",
+            "ממוצע בגרות מינימלי: 80"
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/index.php/he/departments/departments-natural-science/biology",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 1,
+        "SO": 1,
+        "LE": 0,
+        "OR": 2,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "haifa_socialwork",
+      "name": "עבודה סוציאלית",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 615
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["ציון פסיכומטרי מינימלי: 580", "ממוצע בגרות מינימלי: 75"],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/index.php/he/departments/departments-social-welfare/social-work",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 0,
+        "CR": 1,
+        "SO": 5,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 3
+      }
+    },
+    {
+      "id": "haifa_nursing",
+      "name": "סיעוד",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [
+        "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות",
+        "8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב",
+        "אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה"
+      ],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 580
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-90 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "ציון סכם 580 ומעלה (טווח המתנה 570–579) וגם ציון פסיכומטרי 550 לפחות",
+            "8 יחידות מדעיות בבגרות ומבחן אינטליגנציה רגשית ממוחשב",
+            "אנגלית ברמת בסיסי ומעלה ועברית 115 ומעלה",
+            "יש מסלולים נוספים, למשל בלי פסיכומטרי לבוגרי מגמת בריאות עם ממוצע 90 ומעלה, מכינת המדעים של האוניברסיטה, מעבר מהאוניברסיטה הפתוחה ומסלולים למשרתי מילואים ולמפונים. הפרטים בעמוד התוכנית.",
+            "האוניברסיטה שומרת לעצמה את הזכות לשנות את תנאי הקבלה."
+          ],
+          "officialCalculatorUrl": "https://admissions.haifa.ac.il/score-calculation/",
+          "programUrl": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/2973/",
+          "calculatorUrl": "https://admissions.haifa.ac.il/score-calculation/"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 2,
+        "CR": 0,
+        "SO": 5,
+        "LE": 1,
+        "OR": 2,
+        "DI": 0,
+        "ER": 2
+      }
+    },
+    {
+      "id": "haifa_accounting",
+      "name": "חשבונאות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "כלכלה ועסקים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-80 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 680 לפחות; ציונים 660–679 נמצאים בטווח ההמתנה.",
+            "מתמטיקה: 4 יחידות בציון 80 לפחות או 5 יחידות בציון 60 לפחות. לפני הלימודים יש לעבור את הקורס רישום מידע חשבונאי בציון 60 לפחות.",
+            "נדרשת אנגלית ברמת בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג, או השלמת קורס עברית באקדמיה במכינה.",
+            "ללא פסיכומטרי, במסלול אופק: בגרות 100 לפחות, או מכינת אוניברסיטת חיפה בממוצע 100 ומתמטיקה ברמת 4 יחידות בציון 80. יש לעבור 6 קורסים בציון 60 לפחות בסמסטר הראשון לפני קבלה מן המניין.",
+            "באמצעות בחינת כניסה חוגית: בגרות או מכינת אוניברסיטת חיפה בממוצע 90 לפחות. לזכאים לאפיק המילואים, כוחות הביטחון והמפונים נדרש ממוצע בגרות 85 לפחות ובחינה חוגית.",
+            "דרישות השפה, המתמטיקה והקורס ברישום מידע חשבונאי חלות גם באפיקי הקבלה החלופיים."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/2484/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 0,
+        "CR": 0,
+        "SO": 1,
+        "LE": 3,
+        "OR": 5,
+        "DI": 2,
+        "ER": 2
+      }
+    },
+    {
+      "id": "haifa_communication",
+      "name": "תקשורת",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "תקשורת",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 550
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 550 לפחות; ציונים 500–549 נמצאים בטווח ההמתנה.",
+            "ללא פסיכומטרי: בגרות מלאה מאפשרת כניסה למסלול אופק, שבו יש לעבור 2–3 קורסים בציון 70 לפחות בסמסטר הראשון. הקבלה לתואר מותנית בהשלמת המסלול.",
+            "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 95 לפחות ביעלנט או במבחן הסיווג של האוניברסיטה; יש להשלים עברית 120 בשנה א׳. אפשר לעמוד בדרישת העברית גם בקורס עברית באקדמיה במכינה.",
+            "במסלול הדו־חוגי בשנתיים נדרשות אנגלית ברמת בסיסי ועברית 120 כבר בקבלה.",
+            "מכינת אוניברסיטת חיפה: ממוצע 90 לקבלה ישירה; 86–89 בצירוף בחינת כניסה בציון 75; מתחת ל־86 דרך מסלול אופק. דרישות השפה חלות גם באפיקים אלה.",
+            "סכם 500–549 מאפשר גם מסלול אופק או בחינת כניסה בציון 75, בכפוף לדרישות השפה.",
+            "לבעלי תואר קודם מוכר: ממוצע 80 לפחות, או בחינת כניסה בציון 75, או ציון גמר ב־15% העליונים במחזור. מעבר מחוג אחר דורש לפחות 30 נקודות זכות בתקשורת בממוצע 75."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/3229/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 1,
+        "CR": 4,
+        "SO": 4,
+        "LE": 3,
+        "OR": 1,
+        "DI": 2,
+        "ER": 3
+      }
+    },
+    {
+      "id": "haifa_politicalscience",
+      "name": "מדע המדינה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 580
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-80 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 580 ומעלה; 520–579 בטווח המתנה. חלופה ללא פסיכומטרי: בגרות מלאה בממוצע משוקלל 102 ומעלה.",
+            "אנגלית ברמת טרום־בסיסי לפחות. למי שנדרשים לסיווג עברית: 90 לפחות, בקבלה על תנאי עד להשלמה ל־120 בשנה א׳, או מעבר קורס עברית במכינה.",
+            "מסלול אופק: בגרות 75 ומעלה או מכינה בממוצע 75–84, ומעבר 2–4 קורסים בציון 76 לפחות בסמסטר הראשון, לפי מתכונת הלימודים. לבוגרי מכינת 30+ אפשרות למסלול זה ללא תלות בממוצע.",
+            "קבלה ישירה גם לבוגרי מכינת אוניברסיטת חיפה בממוצע 85 ומעלה, לבעלי תעודת הנדסאי מוכרת במה״ט עם ריאיון לפי הצורך, או לבעלי תואר קודם בממוצע 75 ומעלה.",
+            "בתוכנית הדו־שנתית נדרשים סכם 580, אנגלית ברמת בסיסי ועברית 120 לפחות."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/3054/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 1,
+        "CR": 2,
+        "SO": 3,
+        "LE": 4,
+        "OR": 2,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "haifa_statistics",
+      "name": "סטטיסטיקה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי המחשב",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 630
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-60 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["4 יח\"ל מתמטיקה ומעלה — חובה"],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 1,
+        "CR": 0,
+        "SO": 0,
+        "LE": 1,
+        "OR": 3,
+        "DI": 3,
+        "ER": 3
+      }
+    },
+    {
+      "id": "haifa_math",
+      "name": "מתמטיקה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעים מדויקים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 610
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-50 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה"],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 1,
+        "CR": 1,
+        "SO": 0,
+        "LE": 0,
+        "OR": 2,
+        "DI": 2,
+        "ER": 4
+      }
+    },
+    {
+      "id": "haifa_infosystems",
+      "name": "מערכות מידע",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי המחשב",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-80 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 680 לפחות; ציונים 650–679 נמצאים בטווח ההמתנה.",
+            "מתמטיקה: 4 יחידות בציון 80 לפחות או 5 יחידות בציון 70 לפחות.",
+            "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג, או השלמת קורס עברית באקדמיה במכינה.",
+            "במסלול אופק: סכם 630–679 ועמידה בדרישות המתמטיקה והשפה; ייתכנו בחינת כניסה או ריאיון. יש לעבור 3 קורסים בממוצע משוקלל 70 לפחות בסמסטר הראשון כדי להתקבל מן המניין.",
+            "מכינת אוניברסיטת חיפה מאפשרת מסלול אופק עם ממוצע 90, מתמטיקה ברמת 4 יחידות בציון 80, אנגלית ברמת בסיסי ועברית 120.",
+            "לזכאים לאפיק המילואים, כוחות הביטחון והמפונים: מסלול אופק עם בגרות מלאה ועמידה בדרישות המתמטיקה והשפה, בפנייה למזכירות. חריגים עשויים להיבחן בריאיון.",
+            "קיים אפיק מעבר מהאוניברסיטה הפתוחה ללא פסיכומטרי. בעלי ממוצע 70 לפחות בשנה א׳ במדעי המחשב, מערכות מידע או תחום טכנולוגי במוסד מוכר יכולים לפנות לוועדת חריגים; הקבלה לפי שיקול דעתה."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/computer-information-science/program/3218/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 1,
+        "CR": 0,
+        "SO": 1,
+        "LE": 3,
+        "OR": 4,
+        "DI": 4,
+        "ER": 2
+      }
+    },
+    {
+      "id": "haifa_physiotherapy",
+      "name": "פיזיותרפיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-50 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["ביולוגיה 5 יח\"ל — חובה", "ראיון קבלה מחייב"],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 4,
+        "CR": 2,
+        "SO": 4,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 2
+      }
+    },
+    {
+      "id": "haifa_sociology",
+      "name": "סוציולוגיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת חיפה",
+      "institutionId": "haifa",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 540
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": 3,
+          "estimatedStudentsPerYear": "כ-100 סטודנטים",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 540 לפחות; ציונים 520–539 נמצאים בטווח ההמתנה.",
+            "ללא פסיכומטרי: בגרות מלאה בממוצע 90 לפחות, ואנגלית 4 יחידות בציון 85 או 5 יחידות בציון 60.",
+            "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 110 ביעלנט או במבחן הסיווג, עם השלמה ל־120 בשנה א׳; אפשר גם להשלים קורס עברית באקדמיה במכינה.",
+            "במסלול אופק: בגרות מלאה בממוצע 90 ועמידה בדרישות השפה, ולאחר מכן מעבר 2–3 קורסי חובה בציון 70 לפחות בסמסטר הראשון. רק לאחר השלמתם מתקבלים מן המניין.",
+            "מכינת אוניברסיטת חיפה: ממוצע 85 לפחות ועמידה בדרישות השפה. בתוכנית הדו־שנתית נדרשות אנגלית ברמת בסיסי ועברית 120, והכניסה בסמסטר א׳ בלבד.",
+            "מעבר מהאוניברסיטה הפתוחה או ממכללה מוכרת: לפחות 30 נקודות זכות בסוציולוגיה בממוצע 85, לצד בגרות, תעודת הנדסאי או מכינה מלאה.",
+            "מעבר מהחוג ללימודים רב־תחומיים בחיפה: השלמת 5 קורסי החובה של שנה א׳ בסוציולוגיה בממוצע 70 לפחות."
+          ],
+          "officialCalculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/2968/",
+          "calculatorUrl": "https://www.haifa.ac.il/index.php/he/admissions/sif"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 0,
+        "CR": 2,
+        "SO": 5,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "cs",
+      "name": "מדעי המחשב",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "הנדסה וטכנולוגיה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion", "haifa"],
+      "thresholds": {
+        "technion": 91,
+        "haifa": 705
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://www.technion.ac.il"
+        },
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 1,
+        "SO": 0,
+        "LE": 1,
+        "OR": 3,
+        "DI": 5,
+        "ER": 2
+      }
+    },
+    {
+      "id": "ee",
+      "name": "הנדסת חשמל",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "הנדסה וטכנולוגיה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 91.5
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://www.technion.ac.il"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 4,
+        "CR": 0,
+        "SO": 0,
+        "LE": 1,
+        "OR": 2,
+        "DI": 3,
+        "ER": 2
+      }
+    },
+    {
+      "id": "psychology",
+      "name": "פסיכולוגיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 650
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 0,
+        "CR": 1,
+        "SO": 5,
+        "LE": 1,
+        "OR": 1,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "me",
+      "name": "הנדסת מכונות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "הנדסה וטכנולוגיה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 87
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://www.technion.ac.il"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 5,
+        "CR": 1,
+        "SO": 0,
+        "LE": 1,
+        "OR": 2,
+        "DI": 1,
+        "ER": 2
+      }
+    },
+    {
+      "id": "medicine",
+      "name": "רפואה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 92
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://www.technion.ac.il"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 0,
+        "SO": 4,
+        "LE": 1,
+        "OR": 2,
+        "DI": 0,
+        "ER": 5
+      }
+    },
+    {
+      "id": "law",
+      "name": "משפטים",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "משפטים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 0,
+        "CR": 1,
+        "SO": 3,
+        "LE": 5,
+        "OR": 2,
+        "DI": 0,
+        "ER": 5
+      }
+    },
+    {
+      "id": "economics",
+      "name": "כלכלה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "כלכלה ועסקים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 660
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 0,
+        "CR": 0,
+        "SO": 1,
+        "LE": 3,
+        "OR": 4,
+        "DI": 2,
+        "ER": 4
+      }
+    },
+    {
+      "id": "datascience",
+      "name": "מדעי הנתונים",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטה",
+      "category": "הנדסה וטכנולוגיה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 91
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 91 להנדסת נתונים ומידע בחורף תשפ״ז, בשקלול בגרות ופסיכומטרי. הסף למחזור הבא טרם פורסם.",
+            "מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך יותר ב־5 יחידות נדרשים לבחינת סיווג בציון 70 לפחות.",
+            "נדרשת אנגלית 104 לפחות או חלופה מוכרת, ויע״ל 121 או פטור מוכר מעברית.",
+            "בטבלת חורף תשפ״ז מופיעים גם אפיקי בגרות מצוינת, בגרות ובחינת סיווג במתמטיקה, וריאיון לצד סכם. לכל אפיק תנאים נפרדים.",
+            "התוכנית אינה מופיעה בין המסלולים הפתוחים בטבלת אביב תשפ״ז; אין להסיק מספי החורף שניתן להירשם אליה באביב."
+          ],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://admissions.technion.ac.il/sechem-for-admission/מסלולי-הלימוד-לפי-אפיקי-הקבלה/"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 1,
+        "CR": 0,
+        "SO": 0,
+        "LE": 1,
+        "OR": 4,
+        "DI": 5,
+        "ER": 3
+      }
+    },
+    {
+      "id": "biology",
+      "name": "ביולוגיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי החיים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 640
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 3,
+        "CR": 1,
+        "SO": 2,
+        "LE": 1,
+        "OR": 3,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "social_work",
+      "name": "עבודה סוציאלית",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 615
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 1,
+        "CR": 2,
+        "SO": 5,
+        "LE": 3,
+        "OR": 2,
+        "DI": 0,
+        "ER": 3
+      }
+    },
+    {
+      "id": "nursing",
+      "name": "סיעוד",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 580
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 3,
+        "CR": 1,
+        "SO": 5,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 2
+      }
+    },
+    {
+      "id": "accounting",
+      "name": "חשבונאות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "כלכלה ועסקים",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 1,
+        "CR": 1,
+        "SO": 1,
+        "LE": 3,
+        "OR": 5,
+        "DI": 2,
+        "ER": 2
+      }
+    },
+    {
+      "id": "occupational_therapy",
+      "name": "ריפוי בעיסוק",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 610
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 610 לפחות לזימון למיון; בטווח 595–609 הזימון נתון לשיקול דעת החוג.",
+            "נדרשת אנגלית ברמת מתקדמים א׳ לפחות ועברית 120 ביעלנט או במבחן הסיווג, או השלמת קורס עברית באקדמיה במכינה.",
+            "המיון כולל ריאיון בכתב ולאחר מעברו ריאיון אישי עם שני אנשי סגל. אין קבלה על תנאי, ועמידה בספים אינה מבטיחה קבלה.",
+            "אפיקים נוספים למיון: תואר קודם מוכר בממוצע 85, או מכינת מדעים בחיפה בממוצע 90, או מכינת חברה ורוח בחיפה בממוצע 92.",
+            "לזכאים לאפיק המילואים, כוחות הביטחון והמפונים: בגרות 100 לפחות ומתמטיקה 3 יחידות בציון 90, 4 בציון 80 או 5 בציון 70. נדרשות גם דרישות השפה והמיון.",
+            "לא ניתן לגשת למיון בפעם השלישית לאחר שתי דחיות. ניתנת עדיפות למי שסימנו את החוג בעדיפות ראשונה. היעדרות ללא הודעה וסיבה מוצדקת אינה מאפשרת ריאיון נוסף.",
+            "למחזור תשפ״ז: הפסיכומטרי ויע״ל עד אפריל 2026; הרשמה ומסמכים עד 14.06.2026. יש לבדוק את מועדי המחזור הבא לפני הרשמה.",
+            "לאחר קבלה נדרשים הצהרת בריאות והשלמת החיסונים למקצועות הבריאות עד סוף סמסטר א׳ בשנה א׳."
+          ],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://admissions.haifa.ac.il/social-welfare-health-sciences/program/3088/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 3,
+        "CR": 3,
+        "SO": 5,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 3
+      }
+    },
+    {
+      "id": "architecture",
+      "name": "אדריכלות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "אדריכלות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 85
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם ארכיטקטורה 85 פורסם לסמסטר חורף תשפ״ז. הוא משלב בגרות, פסיכומטרי ובחינת כניסה; זה אינו סף שפורסם למחזור הבא.",
+            "בגרות מלאה: מתמטיקה 4 יחידות בציון 70 או 5 יחידות בציון 65, ואנגלית בהיקף 4 יחידות לפחות.",
+            "חובה לעבור בחינת כניסה בארכיטקטורה. הבחינות בשליש התחתון מדורגות כלא עובר, גם אם יתר הציונים גבוהים.",
+            "נדרשת אנגלית 104 לפחות או חלופה מוכרת, ויע״ל 121 או פטור מוכר מעברית.",
+            "בחינת הכניסה נערכת בעברית ובודקת יכולות דו־ממדיות ותלת־ממדיות. היא שונה מהבחינה לאדריכלות נוף.",
+            "בעלי שני סמסטרים לפחות של לימודי ארכיטקטורה שהטכניון מכיר בהם יכולים לקבל פטור מבחינת הכניסה; אם תישקל קבלתם, יוזמנו לריאיון ולהצגת עבודות."
+          ],
+          "officialCalculatorUrl": "",
+          "programUrl": "https://admissions.technion.ac.il/architecture-info/"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 4,
+        "CR": 5,
+        "SO": 1,
+        "LE": 2,
+        "OR": 3,
+        "DI": 2,
+        "ER": 2
+      }
+    },
+    {
+      "id": "communication",
+      "name": "תקשורת ועיתונאות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "תקשורת",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 550
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "סכם 550 לפחות; ציונים 500–549 נמצאים בטווח ההמתנה.",
+            "ללא פסיכומטרי: בגרות מלאה מאפשרת כניסה למסלול אופק, שבו יש לעבור 2–3 קורסים בציון 70 לפחות בסמסטר הראשון. הקבלה לתואר מותנית בהשלמת המסלול.",
+            "נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 95 לפחות ביעלנט או במבחן הסיווג של האוניברסיטה; יש להשלים עברית 120 בשנה א׳. אפשר לעמוד בדרישת העברית גם בקורס עברית באקדמיה במכינה.",
+            "במסלול הדו־חוגי בשנתיים נדרשות אנגלית ברמת בסיסי ועברית 120 כבר בקבלה.",
+            "מכינת אוניברסיטת חיפה: ממוצע 90 לקבלה ישירה; 86–89 בצירוף בחינת כניסה בציון 75; מתחת ל־86 דרך מסלול אופק. דרישות השפה חלות גם באפיקים אלה.",
+            "סכם 500–549 מאפשר גם מסלול אופק או בחינת כניסה בציון 75, בכפוף לדרישות השפה.",
+            "לבעלי תואר קודם מוכר: ממוצע 80 לפחות, או בחינת כניסה בציון 75, או ציון גמר ב־15% העליונים במחזור. מעבר מחוג אחר דורש לפחות 30 נקודות זכות בתקשורת בממוצע 75."
+          ],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://admissions.haifa.ac.il/social-sciences/program/3229/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 2,
+        "TE": 1,
+        "CR": 4,
+        "SO": 4,
+        "LE": 3,
+        "OR": 1,
+        "DI": 2,
+        "ER": 3
+      }
+    },
+    {
+      "id": "political_science",
+      "name": "מדע המדינה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי החברה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 580
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 1,
+        "CR": 2,
+        "SO": 3,
+        "LE": 4,
+        "OR": 2,
+        "DI": 0,
+        "ER": 4
+      }
+    },
+    {
+      "id": "physiotherapy",
+      "name": "פיזיותרפיה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "אוניברסיטת תל אביב",
+      "institutionId": "tau",
+      "category": "מדעי הבריאות",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["haifa"],
+      "thresholds": {
+        "haifa": 680
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "אוניברסיטת חיפה",
+          "durationYears": null,
+          "estimatedStudentsPerYear": "",
+          "quantitativeMinRequirement": null,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [],
+          "officialCalculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+          "programUrl": "https://www.haifa.ac.il/ba_programs/",
+          "calculatorUrl": "https://applicants.haifa.ac.il/enrollmentChances/index.html"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 4,
+        "CR": 2,
+        "SO": 4,
+        "LE": 2,
+        "OR": 2,
+        "DI": 0,
+        "ER": 2
+      }
+    },
+    {
+      "id": "technion_cs",
+      "name": "מדעי המחשב",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "מדעי המחשב",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 91
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-180 סטודנטים",
+          "quantitativeMinRequirement": 148,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": [
+            "5 יח\"ל מתמטיקה — חובה מוחלטת",
+            "5 יח\"ל פיזיקה — נדרש לחלק מהמסלולים"
+          ],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/",
+          "admissionsSourceCandidates": [
+            {
+              "id": "technion_cs:technion:admissions-source",
+              "origin": "catalogue_url",
+              "specificity": "institution_admissions",
+              "confidence": "high",
+              "url": "https://admissions.technion.ac.il/",
+              "title": "אתר רישום וקבלה - הטכניון"
+            }
+          ],
+          "admissionFacts": [
+            {
+              "id": "technion_cs:technion:fact:sekhem",
+              "sourceCandidateId": "technion_cs:technion:admissions-source",
+              "kind": "numeric_gate",
+              "field": "sekhem",
+              "comparison": "gte",
+              "valueNumber": 92,
+              "valueText": null,
+              "unit": "points",
+              "description": "סכם טכניוני מינימלי: 92",
+              "confidence": "high",
+              "isRequired": true
+            },
+            {
+              "id": "technion_cs:technion:fact:quantitative",
+              "sourceCandidateId": "technion_cs:technion:admissions-source",
+              "kind": "numeric_gate",
+              "field": "psychometric_quantitative",
+              "comparison": "gte",
+              "valueNumber": 148,
+              "valueText": null,
+              "unit": "points",
+              "description": "ציון כמותי מינימלי: 148",
+              "confidence": "high",
+              "isRequired": true
+            },
+            {
+              "id": "technion_cs:technion:fact:math",
+              "sourceCandidateId": "technion_cs:technion:admissions-source",
+              "kind": "numeric_gate",
+              "field": "math_units",
+              "comparison": "gte",
+              "valueNumber": 5,
+              "valueText": null,
+              "unit": "units",
+              "description": "5 יח\"ל מתמטיקה - חובה",
+              "confidence": "high",
+              "isRequired": true
+            }
+          ],
+          "admissionAlternativePaths": [
+            {
+              "id": "technion_cs:technion:alt:prep",
+              "sourceCandidateId": "technion_cs:technion:admissions-source",
+              "kind": "prep_program",
+              "title": "מכינה טכנולוגית",
+              "description": "אם חסרים תנאי מתמטיקה או סכם, מכינה יכולה להיות נתיב ריאלי לפני ניסיון קבלה ישיר.",
+              "url": "https://admissions.technion.ac.il/",
+              "priority": 20
+            }
+          ]
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 2,
+        "CR": 1,
+        "SO": 0,
+        "LE": 1,
+        "OR": 3,
+        "DI": 5,
+        "ER": 2
+      }
+    },
+    {
+      "id": "technion_datascience",
+      "name": "מדעי הנתונים וסטטיסטיקה",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "מדעי המחשב",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": null
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-50 סטודנטים",
+          "quantitativeMinRequirement": 145,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה מוחלטת"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/programs/data-science-and-statistics/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/programs/data-science-and-statistics/",
+          "programDescription": "תוכנית מחקרית-הנדסית עם בסיס מתמטי חזק. מיועדת לסטודנטים עם נטייה לפתרון בעיות כמותיות מורכבות; קשרים ענפים עם מעבדות המחקר של הטכניון."
+        }
+      ],
+      "profileScore": {
+        "AN": 5,
+        "TE": 1,
+        "CR": 0,
+        "SO": 0,
+        "LE": 1,
+        "OR": 4,
+        "DI": 5,
+        "ER": 3
+      }
+    },
+    {
+      "id": "technion_ee",
+      "name": "הנדסת חשמל",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "הנדסה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 91.5
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-220 סטודנטים",
+          "quantitativeMinRequirement": 143,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה", "5 יח\"ל פיזיקה — חובה"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 4,
+        "TE": 4,
+        "CR": 0,
+        "SO": 0,
+        "LE": 1,
+        "OR": 2,
+        "DI": 3,
+        "ER": 2
+      }
+    },
+    {
+      "id": "technion_me",
+      "name": "הנדסת מכונות",
+      "type": "academic",
+      "isListed": true,
+      "institution": "הטכניון – מכון טכנולוגי לישראל",
+      "institutionId": "technion",
+      "category": "הנדסה",
+      "admissionType": "sekhem",
+      "admissionRequirements": [],
+      "linkedInstitutionIds": ["technion"],
+      "thresholds": {
+        "technion": 87
+      },
+      "institutionDetails": [
+        {
+          "institutionName": "הטכניון – מכון טכנולוגי לישראל",
+          "durationYears": 4,
+          "estimatedStudentsPerYear": "כ-200 סטודנטים",
+          "quantitativeMinRequirement": 140,
+          "englishMinRequirement": null,
+          "specificAdmissionNotes": ["5 יח\"ל מתמטיקה — חובה", "5 יח\"ל פיזיקה — חובה"],
+          "officialCalculatorUrl": "https://admissions.technion.ac.il/",
+          "programUrl": "https://www.technion.ac.il",
+          "calculatorUrl": "https://admissions.technion.ac.il/"
+        }
+      ],
+      "profileScore": {
+        "AN": 3,
+        "TE": 5,
+        "CR": 1,
+        "SO": 0,
+        "LE": 1,
+        "OR": 2,
+        "DI": 1,
+        "ER": 2
+      }
+    }
+  ]
+}

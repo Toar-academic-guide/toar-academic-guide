@@ -34,6 +34,7 @@ vi.mock('@/server/catalogue/queries', () => ({
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from '@/lib/catalogueStatic';
 import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catalogue/queries';
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
@@ -91,16 +92,34 @@ describe('ProgramPage', () => {
     expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
   });
 
+  it('omits the removed Ono note rather than rendering an empty list item', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_law' }) }),
+    );
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+    expect(
+      screen.queryByText(
+        'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
+      ),
+    ).toBeNull();
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+    expect([...container.querySelectorAll('li')].every((item) => item.textContent?.trim())).toBe(
+      true,
+    );
+    expect(screen.getByText(/אפיק מעבר לאקדמיה:/)).toBeTruthy();
+  });
   it('renders public program content and links into app routes', async () => {
     const program = getStaticCataloguePrograms()[0];
 
     render(await ProgramPage({ params: Promise.resolve({ programId: program.id }) }));
 
     expect(screen.getByRole('heading', { name: program.name })).toBeTruthy();
-    expect(screen.getByRole('link', { name: 'בדיקת סיכויי קבלה' }).getAttribute('href')).toBe(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    expect(screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' }).getAttribute('href')).toBe(
       `/app/calculator?program=${encodeURIComponent(program.id)}`,
     );
-    expect(screen.getByRole('link', { name: 'התאמה אישית' }).getAttribute('href')).toBe(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 38)
+    expect(screen.getByRole('link', { name: 'מה מתאים לי?' }).getAttribute('href')).toBe(
       '/app/assessment',
     );
     expect(screen.queryByText('savedProgramIds')).toBeNull();
@@ -124,7 +143,7 @@ describe('ProgramPage', () => {
     expect(heading.previousElementSibling?.textContent).toBe('הנדסה');
     expect(within(heading.parentElement!).queryByText('אוניברסיטת חיפה')).toBeNull();
     expect(await generateMetadata(props)).toMatchObject({
-      title: 'הנדסה וטכנולוגיה – אוניברסיטת חיפה',
+      title: 'הנדסה וטכנולוגיה – אוניברסיטת חיפה: תנאי קבלה',
       alternates: { canonical: '/programs/haifa_engineering' },
     });
   });
@@ -195,6 +214,24 @@ describe('ProgramPage', () => {
         expectedLink.toString(),
       );
     }
+  });
+
+  it('shows the regular Haifa CS cutoff and links to the sekhem calculator', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'haifa_cs' }) }),
+    );
+    const items = screen.getAllByRole('listitem').map((item) => item.textContent);
+    expect(items).toContain(
+      'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+    );
+    expect(screen.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה' }).getAttribute('href')).toBe(
+      '/sekhem-calculator?program=haifa_cs',
+    );
+    expect(container.textContent).not.toMatch(
+      /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
+    );
+    expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
+    expect(screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/)).toBeTruthy();
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
@@ -518,13 +555,16 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: 'לפרטים על המסלול' })).toBeNull();
     });
 
-    it('keeps unlisted pages’ existing unavailable message', async () => {
+    it('hides the unlisted programme admission block', async () => {
       vi.mocked(listCataloguePrograms).mockResolvedValue({
         data: [{ ...general, isListed: false }],
         meta: {},
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: 'nursing' }) }));
-      expect(screen.getByText('אין כרגע מידע עדכני על המסלול.')).toBeTruthy();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+      expect(screen.queryByText('אין כרגע מידע עדכני על המסלול.')).toBeNull();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 40)
+      expect(screen.queryByRole('heading', { name: 'תנאי קבלה' })).toBeNull();
       expect(screen.queryByRole('listitem')).toBeNull();
       expect(screen.queryByRole('link', { name: 'לפרטים המלאים' })).toBeNull();
     });
@@ -534,8 +574,10 @@ describe('ProgramPage', () => {
 it('tracks program page CTAs and official outbound links with only canonical IDs', async () => {
   render(await ProgramPage({ params: Promise.resolve({ programId: 'colmgmt_cs' }) }));
   const actions = [
-    ['בדיקת סיכויי קבלה', 'program_calculator_cta_clicked'],
-    ['יצירת קשר', 'program_contact_cta_clicked'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    ['בדקו אם אתם מתקבלים', 'program_calculator_cta_clicked'],
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    ['קבלו שיחה מהמוסד', 'program_contact_cta_clicked'],
     ['לאתר המוסד', 'institution_site_clicked'],
     ['למחשבון המכללה', 'institution_calculator_clicked'],
   ];

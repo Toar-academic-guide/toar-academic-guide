@@ -1,9 +1,69 @@
+import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
+import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import evidence from '@/data/admissions/haifaProgrammePolicies.json';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
 import type {
   AdmissionsEvaluationInput,
+  AdmissionsEvaluationResult,
   AdmissionsRequiredInput,
 } from '@/types/admissionsEvaluation';
+
+/** Missing institutional average cannot be replaced by the generic proxy.
+ * Local formula evidence: docs/admissions-verification/evidence/2026-10-29-haifa-formula/.
+ */
+export function haifaMissingRuleResult(
+  programId: string,
+  institution: AdmissionsEvaluationResult['institution'],
+  context: {
+    averageIsProxy: boolean;
+    capability: AdmissionsEvaluationResult['capability'];
+    input: AdmissionsEvaluationInput;
+  },
+): AdmissionsEvaluationResult | undefined {
+  if (isBatchCUnsupportedProgramId(programId, institution.id)) return undefined;
+  const averageKnown =
+    context.averageIsProxy || context.input.extraInputs?.haifaBagrutAverage !== undefined;
+  if (averageKnown) {
+    const policy = getHaifaProgrammePolicy(
+      programId,
+      context.input.extraInputs?.haifaInformationSystemsTrack,
+    );
+    if (policy?.mappingState === 'unresolved')
+      return {
+        institution,
+        linkedInstitutionId: institution.id,
+        capability: 'blocked',
+        kind: 'tracked_missing_rule',
+        decision: 'unknown',
+        confidence: 'low',
+        sourceLabel: 'מיפוי המסלול טרם אומת',
+        explanation:
+          'המיפוי של מסלול מערכות המידע החד־חוגי הרגיל למחשבון הרשמי טרם אומת. לא ניתן לקבוע זכאות עבורו.',
+        nextAction:
+          'בדקו את המסלול מול החוג. בחרו מסלול אחר רק אם זה המסלול שאליו אתם מתכוונים להירשם.',
+        officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
+      };
+    if (context.capability === 'blocked' || context.capability === 'unsupported') return undefined;
+  }
+  const kind = ['psychology', 'haifa_psychology'].includes(programId)
+    ? 'authority_unavailable'
+    : 'tracked_missing_rule';
+  return {
+    institution,
+    linkedInstitutionId: institution.id,
+    capability: kind,
+    kind,
+    decision: 'unknown',
+    confidence: 'low',
+    sourceLabel: 'אין מספיק מידע',
+    explanation: HAIFA_NO_CALCULATION_NOTE,
+    nextAction: 'בדקו במחשבון הרשמי של אוניברסיטת חיפה.',
+    officialUrls: [
+      'https://admissions.haifa.ac.il/score-calculation/',
+      'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+    ],
+  };
+}
 
 interface ProgrammePolicy {
   programme: string;
@@ -220,7 +280,7 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'score',
       conditional,
-      reason: `הסכם עומד בסף ${policy.score.acceptance} ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.`,
+      reason: `ציון הקבלה עומד בסף ${policy.score.acceptance} ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.`,
       steps,
     };
   if (
@@ -246,7 +306,7 @@ export function evaluateHaifaProgrammePolicy(args: {
     return {
       kind: 'below',
       reasons: [
-        `הסכם נמוך מסף ההמתנה ${policy.score.publishedWaitingMinimum} במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.`,
+        `ציון הקבלה נמוך מסף ההמתנה ${policy.score.publishedWaitingMinimum} במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.`,
       ],
     };
   if (policy.programme === 'communication')
@@ -254,7 +314,7 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'ofek',
       conditional,
-      reason: 'הסכם נמצא בטווח אפיק אופק בתקשורת; אין כאן קבלה ישירה לתואר.',
+      reason: 'ציון הקבלה נמצא בטווח אפיק אופק בתקשורת; אין כאן קבלה ישירה לתואר.',
       steps: ['באפיק אופק נדרשים 2–3 קורסים בציון 70 לפחות, לפי תנאי החוג.', ...steps],
     };
   if (policy.programme === 'social_work')
@@ -262,7 +322,8 @@ export function evaluateHaifaProgrammePolicy(args: {
       kind: 'eligible',
       route: 'score',
       conditional,
-      reason: 'הסכם נמצא בטווח ההמתנה; גם מועמדים בטווח זה נדרשים למיון בחוג לעבודה סוציאלית.',
+      reason:
+        'ציון הקבלה נמצא בטווח ההמתנה; גם מועמדים בטווח זה נדרשים למיון בחוג לעבודה סוציאלית.',
       steps,
     };
   return {
@@ -271,8 +332,8 @@ export function evaluateHaifaProgrammePolicy(args: {
     conditional,
     reason:
       policy.programme === 'occupational_therapy'
-        ? 'הסכם נמצא בטווח ההמתנה 595–609. אין זכאות אוטומטית למיון; החוג עשוי לפנות למועמדים שנבחרו.'
-        : `הסכם נמצא בטווח ההמתנה ${policy.score.publishedWaitingMinimum}–${policy.score.acceptance - 1}; נדרשת החלטת החוג.`,
+        ? 'ציון הקבלה נמצא בטווח ההמתנה 595–609. אין זכאות אוטומטית למיון; החוג עשוי לפנות למועמדים שנבחרו.'
+        : `ציון הקבלה נמצא בטווח ההמתנה ${policy.score.publishedWaitingMinimum}–${policy.score.acceptance - 1}; נדרשת החלטת החוג.`,
     steps,
   };
 }

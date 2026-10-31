@@ -63,6 +63,8 @@ describe('Batch C unsupported admission paths', () => {
           fetcher: vi.fn().mockRejectedValue(new Error('No network permitted')),
         });
         const result = report.results[0];
+        // Ruling 3: Jorje 2026-10-29; no engineering calculator mapping exists, so all inputs reach unsupported.
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
         expect(result).toMatchObject({
           kind: 'unsupported',
           capability: 'unsupported',
@@ -72,7 +74,10 @@ describe('Batch C unsupported admission paths', () => {
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
+        // Approved test update, Jorje 2026-10-29
         expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]|מוחרג|פרויקט אימות/);
+        // Approved test update, Jorje 2026-10-28
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
         expect(result.nextAction).toBe(config.nextActionHe);
         if (['itc_data_science', 'mon_12220696299_certificate'].includes(degreeId)) {
           expect(result.officialUrls).toBeUndefined();
@@ -81,6 +86,8 @@ describe('Batch C unsupported admission paths', () => {
           expect(result.officialUrls?.length).toBeGreaterThan(0);
         }
         for (const url of result.officialUrls ?? []) expect(url).not.toMatch(/yoram|walla/);
+        // Approved test update, Jorje 2026-10-28
+        // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
         expect(resultExplanation(result, degreeId)).toBe(config.explanationHe);
         expect(resultLabel(result).group).toBe('explore');
       }

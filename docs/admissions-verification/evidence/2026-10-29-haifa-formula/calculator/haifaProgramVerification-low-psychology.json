@@ -1,0 +1,132 @@
+{
+  "label": "haifaProgramVerification-low-psychology",
+  "operation": "calculateChances",
+  "params": {
+    "year": "2026",
+    "semester": "001",
+    "hug": "SC0042",
+    "program": "52252391",
+    "bag_type": "001",
+    "bag_year": "2026",
+    "bag_avg": "80",
+    "psy_year": "2026",
+    "psy_math": "100",
+    "psy_verbal": "100",
+    "psy_english": "100"
+  },
+  "localInput": {
+    "programme": "psychology",
+    "bagrutAverage": 80,
+    "bagrutYear": 2026,
+    "psychometricYear": 2026,
+    "psychometric": 500,
+    "quantitative": 100,
+    "verbal": 100,
+    "english": 100
+  },
+  "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=calculateChances&year=2026&semester=001&hug=SC0042&program=52252391&bag_type=001&bag_year=2026&bag_avg=80&psy_year=2026&psy_math=100&psy_verbal=100&psy_english=100",
+  "method": "GET",
+  "startedAt": "2026-10-29T13:01:50.359Z",
+  "finishedAt": "2026-10-29T13:01:50.727Z",
+  "status": 200,
+  "json": {
+    "data": [
+      {
+        "results": [
+          {
+            "content": [
+              {
+                "notes": [],
+                "label": "התכנית המבוקשת",
+                "type": "text",
+                "value": ""
+              },
+              {
+                "notes": [],
+                "label": "הציון המשוקלל שלך",
+                "type": "num",
+                "value": "493"
+              },
+              {
+                "notes": [],
+                "label": "חתך קבלה",
+                "type": "num",
+                "value": "650"
+              },
+              {
+                "notes": [
+                  {
+                    "note": "מתחת לחתך זה - אין אפשרות קבלה!"
+                  },
+                  {
+                    "note": "מעל חתך זה קבלה אינה מובטחת ויש לעקוב אחר התעדכנות חתך קבלה"
+                  }
+                ],
+                "label": "חתך דחייה",
+                "type": "num",
+                "value": "629"
+              },
+              {
+                "notes": [],
+                "label": "ציון הפסיכומטרי שלך",
+                "type": "num",
+                "value": "501"
+              }
+            ]
+          },
+          {
+            "slider": {
+              "shiklul": "493",
+              "approve": "650",
+              "reject": "629",
+              "display": "true"
+            }
+          },
+          {
+            "otherConditions": [
+              {
+                "text": "לא נמצאו"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "hugOptions": [
+          {
+            "hugName": "*רשימת החוגים מתקבלת בהזנת פרטי בגרות ופסיכומטרי",
+            "hug": "",
+            "url": ""
+          }
+        ]
+      },
+      {
+        "userInput": [
+          {
+            "diploma": {
+              "avg": 80,
+              "year": "2026",
+              "diplomaName": "בגרות ישראלית",
+              "diploma": "001"
+            }
+          },
+          {
+            "psy": {
+              "english_val": "100",
+              "year": "2026",
+              "verb_val": "100",
+              "math_val": "100"
+            }
+          }
+        ]
+      }
+    ],
+    "guid": "308c7bd4-c6b5-3f10-df9d-9e8d70f3585a",
+    "return": {
+      "number": "",
+      "errorType": "",
+      "type": "S",
+      "message": ""
+    }
+  }
+}

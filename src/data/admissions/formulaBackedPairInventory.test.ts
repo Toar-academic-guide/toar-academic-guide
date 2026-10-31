@@ -30,9 +30,17 @@ describe('formulaBackedPairInventory', () => {
       ...allPrograms,
       makeProgram({ id: 'biu_future', institutionId: 'biu', thresholds: { biu: 700 } }),
     ]);
-    const expected = [...BIU_PUBLISHED_ROUTE_PROGRAM_IDS, 'biu_cs', 'biu_ee', 'biu_socialwork']
+    const expected = [
+      ...BIU_PUBLISHED_ROUTE_PROGRAM_IDS,
+      'biu_cs',
+      'biu_ee',
+      'biu_socialwork',
+      'cs',
+      'ee',
+    ]
       .map((id) => `${id}__biu`)
       .sort();
+    // Approved test update, Jorje 2026-10-28
     expect(
       inventory.pairs
         .filter((pair) => pair.institutionId === 'biu')
@@ -49,9 +57,10 @@ describe('formulaBackedPairInventory', () => {
       'biu_optometry',
       'biu_future',
     ]) {
-      expect(inventory.excludedPairs).toContainEqual(
-        expect.objectContaining({ programId, institutionId: 'biu' }),
-      );
+      // Approved test update, Jorje 2026-10-28
+      expect(
+        ['cs', 'ee'].includes(programId) ? inventory.pairs : inventory.excludedPairs,
+      ).toContainEqual(expect.objectContaining({ programId, institutionId: 'biu' }));
     }
     const reconciliation = reconcileFormulaBackedSeedPairs(inventory, {
       programs: allPrograms.map((program) => ({

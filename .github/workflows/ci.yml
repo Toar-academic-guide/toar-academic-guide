@@ -347,7 +347,9 @@ jobs:
           npm exec vitest -- \
             src/data/admissions/mondayEvidence.test.ts \
             src/server/admissions/catalogueEvidenceCoverage.test.ts \
-            src/server/admissions/calculatorCoverage.test.ts \
+            src/lib/admissionsCoverageRetirement.test.ts \
+            src/lib/admissionsEvaluationSerialization.test.ts \
+            src/app/api/admissions/evaluate/serialization.test.ts \
             src/server/admissions/capabilityMatrix.test.ts \
             src/server/admissions/evaluator.test.ts \
             --run

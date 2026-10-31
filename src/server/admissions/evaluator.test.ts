@@ -69,6 +69,56 @@ describe.each(AFEKA_EVALUATOR_IDS)('%s published routes', (degreeId) => {
 });
 
 it.each([
+  // docs/admissions-verification/2026-09-28-haifa-official.json: cs.high, score 806 / acceptance 700.
+  {
+    average: 120,
+    psychometric: 800,
+    q: 150,
+    v: 150,
+    e: 150,
+    score: 806,
+    assessment: 'meets_threshold',
+  },
+  // docs/admissions-verification/evidence/2026-10-29-haifa-formula/calculator/rulingsHaifaTau-saved-cs.json: score 611 / acceptance 700.
+  {
+    average: 104,
+    psychometric: 590,
+    q: 115,
+    v: 110,
+    e: 120,
+    score: 611,
+    assessment: 'below_threshold',
+  },
+] as const)('local Haifa CS score $score carries $assessment', async (profile) => {
+  const fetcher = vi.fn<typeof fetch>();
+  const report = await evaluateAdmissionsForProgram({
+    program: haifaCs,
+    institutions,
+    input: {
+      degreeId: 'haifa_cs',
+      psychometric: profile.psychometric,
+      extraInputs: {
+        haifaBagrutAverage: profile.average,
+        haifaBagrutYear: 2026,
+        haifaPsychometricYear: 2026,
+        psychometricMath: profile.q,
+        psychometricVerbal: profile.v,
+        psychometricEnglish: profile.e,
+        haifaHebrewQualification: 'hebrew_school',
+        mathUnits: 5,
+        mathGrade: 75,
+      },
+    },
+    fetcher,
+    now: new Date('2026-10-29T12:00:00Z'),
+  });
+  const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
+  expect(result).toMatchObject({ capability: 'exact', score: profile.score, threshold: 700 });
+  expect(result.scoreAssessment).toBe(profile.assessment);
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
+it.each([
   { bagrut: 70, psychometric: 400 },
   { bagrut: 120, psychometric: 800 },
   ...[679, 680, 681].map((psychometric) => ({ bagrut: 85, psychometric })),
@@ -453,7 +503,11 @@ describe('Technion medicine estimated MOR invitation threshold', () => {
       expect(result.threshold).toBeUndefined();
       expect(result.scoreAssessment).toBeUndefined();
       expect(result.deltaNeeded).toBeUndefined();
-      expect(resultLabel(result)).toEqual({ label: 'אין הכרעת קבלה', group: 'explore' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
+      expect(resultLabel(result)).toEqual({
+        label: `הסכם שלכם: ${score.toLocaleString('he-IL', { maximumFractionDigits: 2 })}`,
+        group: 'explore',
+      });
       expect(fetcher).toHaveBeenCalledTimes(2);
     },
   );
@@ -1232,15 +1286,18 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 1. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    // Approved test update, Jorje 2026-10-29
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
-        kind: 'needs_input',
-        capability: 'needs_input',
+        kind: 'tracked_missing_rule',
+        capability: 'tracked_missing_rule',
         decision: 'unknown',
-        requiredInputs: ['psychometric_math', 'psychometric_verbal', 'psychometric_english'],
+        explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
       }),
     );
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -1284,14 +1341,8 @@ describe('evaluateAdmissionsForProgram', () => {
         institutions,
         fetcher,
       });
-      const params = new URL(String(fetcher.mock.calls[1][0])).searchParams;
-      expect(params.get('bag_avg')).toBe('102');
-      expect(params.get('bag_year')).toBe(String(year));
-      expect(params.get('psy_year')).toBe('2026');
-      expect(Object.fromEntries(params)).toEqual(
-        haifaOfficial.yearBoundaryCases.find((record) => record.request.bag_year === String(year))
-          ?.request,
-      );
+      // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+      expect(fetcher).not.toHaveBeenCalled();
       expect(report.results[0]).toMatchObject({ score, decision });
     },
   );
@@ -4360,8 +4411,18 @@ describe('results average normalization regressions', () => {
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimationReason).toBeUndefined();
     // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
-    expect(report.results[0].requiredInputs).not.toContain('haifa_admission_qualification');
-    expect(report.results[0].requiredInputs).not.toContain('haifa_bagrut_year');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_admission_qualification');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_bagrut_year');
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0]).toMatchObject({
+      kind: 'tracked_missing_rule',
+      capability: 'tracked_missing_rule',
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    });
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
   });
   it('does not leak the HIT implementation note after math gates are supplied', async () => {
     const report = await evaluateAdmissionsForProgram({
@@ -4849,7 +4910,26 @@ it.each([
         ),
       ),
   });
-  expect(report.results[0].score).toBe(proxy ? 806 : 702);
+  if (proxy) {
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0]).toMatchObject({
+      kind: 'tracked_missing_rule',
+      capability: 'tracked_missing_rule',
+      decision: 'unknown',
+      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+    });
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].score).toBeUndefined();
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].requiredInputs).toBeUndefined();
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].estimated).not.toBe(true);
+    // Approved test update, Jorje 2026-10-29
+    expect(report.results[0].estimationReason).toBeUndefined();
+    return;
+  }
+  // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
+  expect(report.results[0].score).toBe(proxy ? 806 : defaulted ? 699 : 702);
   expect(report.results[0].estimated === true).toBe(defaulted);
   if (defaulted) {
     expect(report.results[0].estimationReason).toContain('שנת הבגרות');
@@ -4882,7 +4962,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
         scoreAssessment: 'meets_threshold',
         estimated: true,
       });
-      expect(resultLabel(result)).toEqual({ label: 'הציונים עומדים בסף', group: 'match' });
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
+      expect(resultLabel(result)).toEqual({ label: 'עוברים את הסף ✓', group: 'match' });
       expect(result.additionalConditions ?? []).toEqual([]);
       expect(result.explanation).not.toContain('יש לאשר זכאות לבגרות מלאה');
       expect(result.explanation).not.toContain('אין כאן אישור קבלה סופית');
@@ -5033,7 +5114,8 @@ describe('TAU architecture manual screening', () => {
     expect(result.officialUrls).toContain(url);
     expect(resultExplanation(result, 'architecture')).toBe(result.explanation);
     expect(resultLabel(result, false, false, 'architecture').label).toBe(
-      result.decision === 'below' ? 'לא עומד/ת בתנאי הסף' : 'נדרש מיון נוסף',
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+      result.decision === 'below' ? 'לא עומד/ת בתנאי הסף' : 'השלב הבא: מיון במוסד',
     );
     expect(result.explanation).not.toMatch(/679|629|600|תיק עבודות|ראיון/);
     return result;
@@ -5066,7 +5148,8 @@ describe('TAU architecture manual screening', () => {
         sourceUrl: 'https://go.tau.ac.il/he/ba/admissions',
       }),
     ]);
-    expect(resultLabel(result)).toEqual({ label: 'נדרש מיון נוסף', group: 'explore' });
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 9)
+    expect(resultLabel(result)).toEqual({ label: 'השלב הבא: מיון במוסד', group: 'explore' });
   });
 
   it.each([

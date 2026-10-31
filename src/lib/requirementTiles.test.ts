@@ -256,3 +256,11 @@ describe('verified requirement tiles', () => {
     expect(select('cs', 'tau').model).toBeUndefined();
   });
 });
+
+it('names the threshold as the selection stage without a qualifier disclaimer', () => {
+  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 12)
+  expect(select('physiotherapy', 'bgu').model!.tiles.map((tile) => tile.qualifiers)).toEqual([
+    ['הסף לשלב המיון'],
+    ['הסף לשלב המיון'],
+  ]);
+});

@@ -1,0 +1,1267 @@
+{
+  "capturedAt": "2026-10-28",
+  "inspectedBranch": "origin/codex/sekhem-calculator-page",
+  "inspectedHead": "12fd33f272411ab6c13c47ca5f2cc9fa75136747",
+  "method": "Only three official read-only GETs; gaps >=8.2 seconds after the preceding completion. Existing local captures reused. No MyWay or Vercel HTTP calls. Official calculator requests in tests are mocks, not live scores for the persona.",
+  "captures": [
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=getCalcDiplomaType",
+      "startedAt": "2026-10-28T20:41:13.433692+00:00",
+      "finishedAt": "2026-10-28T20:41:15.079050+00:00",
+      "status": 500,
+      "sha256": "a88b7a27b6ff1c797d8381594d9543829453fd03cfefe3e94cc389e25dd28946",
+      "bytes": 2028
+    },
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/app/component/enrollmentChancesApp/store/Model.js",
+      "startedAt": "2026-10-28T20:41:39.545013+00:00",
+      "finishedAt": "2026-10-28T20:41:41.200965+00:00",
+      "status": 200,
+      "sha256": "6e335c266529c3e703f71bb083b2af476d602352a66598c52432a3e79ce3b798",
+      "bytes": 16055
+    },
+    {
+      "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=checkConnection",
+      "startedAt": "2026-10-28T20:41:49.401275+00:00",
+      "finishedAt": "2026-10-28T20:41:51.071073+00:00",
+      "status": 500,
+      "sha256": "bfcfc38665a59efdc0ea79187ff919c8f60d02d0d53dc64d1cf555d1c861e7b9",
+      "bytes": 2028
+    }
+  ],
+  "numericProbe": [
+    {
+      "institution": "technion",
+      "rows": [
+        {
+          "catalogue": "static",
+          "id": "cs",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה. סף הקבלה השמור למסלול הוא 91 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "ee",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "me",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "medicine",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה. סף הקבלה השמור למסלול הוא 92 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "datascience",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה. סף הקבלה השמור למסלול הוא 91 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "architecture",
+          "kind": "needs_input",
+          "requiredInputs": [
+            "technion_architecture_bagrut_average",
+            "technion_architecture_exam_score"
+          ],
+          "explanation": "לחישוב ארכיטקטורה בטכניון נדרשים הממוצע הרשמי לארכיטקטורה, ציון בחינת הכניסה, תוצאת ״עובר״ הרשמית ואישור שאר תנאי ההגשה."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_cs",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_datascience",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_ee",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_me",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_civil",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_industrial",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_biomedical",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_medicine",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "סף זימון משוער למבחן המו\"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה."
+        },
+        {
+          "catalogue": "static",
+          "id": "technion_engineering",
+          "kind": "unsupported",
+          "requiredInputs": [],
+          "explanation": "תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_civil",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_industrial",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_biomedical",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_medicine",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "סף זימון משוער למבחן המו\"ר: 92 (הערכה). זהו סף זימון משוער בלבד, ולא סף קבלה לרפואה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "cs",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "ee",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "me",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "medicine",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "datascience",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "architecture",
+          "kind": "needs_input",
+          "requiredInputs": [
+            "technion_architecture_bagrut_average",
+            "technion_architecture_exam_score"
+          ],
+          "explanation": "לחישוב ארכיטקטורה בטכניון נדרשים הממוצע הרשמי לארכיטקטורה, ציון בחינת הכניסה, תוצאת ״עובר״ הרשמית ואישור שאר תנאי ההגשה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_cs",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_datascience",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_ee",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "technion_me",
+          "kind": "exact",
+          "score": 84.4,
+          "requiredInputs": [],
+          "explanation": "מקור רשמי של הטכניון סיפק ציון וסף קבלה מעודכנים למסלול זה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027."
+        }
+      ],
+      "calculatorIds": [
+        "technion_cs",
+        "technion_ee",
+        "technion_me",
+        "technion_medicine",
+        "datascience",
+        "architecture",
+        "technion_datascience",
+        "technion_civil",
+        "technion_industrial",
+        "technion_biomedical",
+        "technion_engineering"
+      ],
+      "savedCalculatorIds": [
+        "technion_civil",
+        "technion_industrial",
+        "technion_biomedical",
+        "technion_medicine",
+        "technion_cs",
+        "technion_ee",
+        "technion_me",
+        "datascience",
+        "architecture",
+        "technion_datascience"
+      ],
+      "thresholds": [
+        {
+          "id": "cs",
+          "threshold": 92
+        },
+        {
+          "id": "ee",
+          "threshold": 88
+        },
+        {
+          "id": "me",
+          "threshold": 86
+        },
+        {
+          "id": "medicine",
+          "threshold": 94
+        },
+        {
+          "id": "datascience",
+          "threshold": 90
+        },
+        {
+          "id": "architecture",
+          "threshold": 85
+        },
+        {
+          "id": "technion_cs",
+          "threshold": 91
+        },
+        {
+          "id": "technion_datascience",
+          "threshold": 91
+        },
+        {
+          "id": "technion_ee",
+          "threshold": 91.5
+        },
+        {
+          "id": "technion_me",
+          "threshold": 87
+        },
+        {
+          "id": "technion_civil",
+          "threshold": 87
+        },
+        {
+          "id": "technion_industrial",
+          "threshold": 89
+        },
+        {
+          "id": "technion_biomedical",
+          "threshold": 87
+        },
+        {
+          "id": "technion_medicine",
+          "threshold": null
+        },
+        {
+          "id": "technion_engineering"
+        }
+      ]
+    },
+    {
+      "institution": "haifa",
+      "rows": [
+        {
+          "catalogue": "static",
+          "id": "cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "static",
+          "id": "law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_socialwork",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_politicalscience",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_statistics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_math",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_sociology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "static",
+          "id": "haifa_engineering",
+          "kind": "unsupported",
+          "requiredInputs": [],
+          "explanation": "תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_socialwork",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_politicalscience",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_statistics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_math",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "haifa_sociology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "social_work",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "occupational_therapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "political_science",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        },
+        {
+          "catalogue": "saved_audit",
+          "id": "physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_bagrut_average"],
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ממוצע בגרות רשמי של חיפה."
+        }
+      ],
+      "calculatorIds": [
+        "haifa_cs",
+        "haifa_psychology",
+        "haifa_law",
+        "haifa_economics",
+        "haifa_biology",
+        "haifa_socialwork",
+        "haifa_nursing",
+        "haifa_accounting",
+        "haifa_communication",
+        "haifa_politicalscience",
+        "haifa_statistics",
+        "haifa_math",
+        "haifa_infosystems",
+        "haifa_physiotherapy",
+        "haifa_sociology",
+        "haifa_engineering"
+      ],
+      "savedCalculatorIds": [
+        "haifa_cs",
+        "haifa_psychology",
+        "haifa_law",
+        "haifa_economics",
+        "haifa_biology",
+        "haifa_socialwork",
+        "haifa_nursing",
+        "haifa_accounting",
+        "haifa_communication",
+        "haifa_politicalscience",
+        "haifa_statistics",
+        "haifa_math",
+        "haifa_infosystems",
+        "haifa_physiotherapy",
+        "haifa_sociology",
+        "biology",
+        "social_work",
+        "nursing",
+        "accounting",
+        "occupational_therapy",
+        "communication",
+        "political_science",
+        "physiotherapy"
+      ],
+      "thresholds": [
+        {
+          "id": "cs",
+          "threshold": 705
+        },
+        {
+          "id": "psychology",
+          "threshold": 650
+        },
+        {
+          "id": "law",
+          "threshold": 680
+        },
+        {
+          "id": "economics",
+          "threshold": 660
+        },
+        {
+          "id": "haifa_cs",
+          "threshold": 705
+        },
+        {
+          "id": "haifa_psychology",
+          "threshold": 650
+        },
+        {
+          "id": "haifa_law",
+          "threshold": 680
+        },
+        {
+          "id": "haifa_economics",
+          "threshold": 660
+        },
+        {
+          "id": "haifa_biology",
+          "threshold": 640
+        },
+        {
+          "id": "haifa_socialwork",
+          "threshold": 615
+        },
+        {
+          "id": "haifa_nursing",
+          "threshold": 580
+        },
+        {
+          "id": "haifa_accounting",
+          "threshold": 680
+        },
+        {
+          "id": "haifa_communication",
+          "threshold": 550
+        },
+        {
+          "id": "haifa_politicalscience",
+          "threshold": 580
+        },
+        {
+          "id": "haifa_statistics",
+          "threshold": 650
+        },
+        {
+          "id": "haifa_math",
+          "threshold": 610
+        },
+        {
+          "id": "haifa_infosystems",
+          "threshold": 680
+        },
+        {
+          "id": "haifa_physiotherapy",
+          "threshold": 680
+        },
+        {
+          "id": "haifa_sociology",
+          "threshold": 540
+        },
+        {
+          "id": "haifa_engineering"
+        }
+      ]
+    }
+  ],
+  "continuationProbe": [
+    {
+      "extra": {
+        "haifaBagrutAverage": 102
+      },
+      "rows": [
+        {
+          "id": "haifa_cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "calls": 0,
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "id": "haifa_law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "haifa_economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "haifa_biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "haifa_socialwork",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": [
+            "haifa_hebrew_qualification",
+            "haifa_psychometric_month",
+            "haifa_science_units"
+          ],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד."
+        },
+        {
+          "id": "haifa_accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "haifa_communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_politicalscience",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_statistics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_math",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "calls": 0,
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "id": "haifa_physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "haifa_sociology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "cs",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "calls": 0,
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "id": "law",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "economics",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "biology",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "social_work",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "nursing",
+          "kind": "needs_input",
+          "requiredInputs": [
+            "haifa_hebrew_qualification",
+            "haifa_psychometric_month",
+            "haifa_science_units"
+          ],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד."
+        },
+        {
+          "id": "accounting",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        },
+        {
+          "id": "occupational_therapy",
+          "kind": "needs_input",
+          "requiredInputs": [
+            "haifa_hebrew_qualification",
+            "haifa_psychometric_month",
+            "haifa_ot_failed_selection_attempts",
+            "haifa_ot_unjustified_absence"
+          ],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, ניסיונות מיון בריפוי בעיסוק, היעדרות מריאיון בריפוי בעיסוק."
+        },
+        {
+          "id": "communication",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "political_science",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."
+        },
+        {
+          "id": "physiotherapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_hebrew_qualification", "haifa_psychometric_month"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."
+        }
+      ]
+    },
+    {
+      "extra": {
+        "haifaBagrutAverage": 102,
+        "haifaBagrutYear": 2020,
+        "haifaPsychometricYear": 2025,
+        "haifaHebrewQualification": "hebrew_school"
+      },
+      "rows": [
+        {
+          "id": "haifa_cs",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 680 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "calls": 0,
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "id": "haifa_law",
+          "kind": "exact",
+          "score": 492,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 630 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_economics",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 640 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_biology",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 620 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_socialwork",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 580 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_science_units"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: יחידות מדעיות לסיעוד."
+        },
+        {
+          "id": "haifa_accounting",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 660 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_communication",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 500 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_politicalscience",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 520 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_statistics",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 600 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_math",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 580 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_infosystems",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_information_systems_track"],
+          "calls": 0,
+          "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."
+        },
+        {
+          "id": "haifa_physiotherapy",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 630 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "haifa_sociology",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 520 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "cs",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 680 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "psychology",
+          "kind": "authority_unavailable",
+          "requiredInputs": [],
+          "calls": 0,
+          "explanation": "הקבלה לפסיכולוגיה באוניברסיטת חיפה מבוססת על סכם 650 לפחות, עם טווח המתנה 630–649. עדיין אין חישוב מאומת שמאפשר לקבוע סיכויי קבלה לפי הבגרות והפסיכומטרי שהוזנו. בדקו במחשבון הרשמי של האוניברסיטה."
+        },
+        {
+          "id": "law",
+          "kind": "exact",
+          "score": 492,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 630 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "economics",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 640 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "biology",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 620 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "social_work",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 580 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "nursing",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_science_units"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: יחידות מדעיות לסיעוד."
+        },
+        {
+          "id": "accounting",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 660 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "occupational_therapy",
+          "kind": "needs_input",
+          "requiredInputs": ["haifa_ot_failed_selection_attempts", "haifa_ot_unjustified_absence"],
+          "calls": 0,
+          "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: ניסיונות מיון בריפוי בעיסוק, היעדרות מריאיון בריפוי בעיסוק."
+        },
+        {
+          "id": "communication",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 500 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "political_science",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 520 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        },
+        {
+          "id": "physiotherapy",
+          "kind": "exact",
+          "score": 493,
+          "requiredInputs": [],
+          "calls": 2,
+          "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: הסכם נמוך מסף ההמתנה 630 במסלול הסכם הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.."
+        }
+      ]
+    }
+  ],
+  "failures": {
+    "blanketNumeric": "2 failed: Technion 6 of 29 pairs lack scores; Haifa 47 of 47 lack scores. Pair counts include separate static/saved-audit evaluations, not distinct offerings.",
+    "preItem1Replay": "8 failed: kind needs_input instead of exact and no score84.4, using only the pre-item1 adapter from215548a with current evaluator. Current adapter restored byte-for-byte. Counterfactual confirmation of already-committed fix, not a new chronological red/green claim.",
+    "currentRegressions": "18 passed. New preservation coverage; no production behaviour changed by this follow-up.",
+    "excludedTestDesignFailure": "Initial new generic-average assertion expected raw88.12; helper rounds to88.1. Fixture expectation corrected before finalizing; not evidence of a production defect or a flipped existing assertion."
+  },
+  "verification": {
+    "guard": "env -u DATABASE_URL npm run guard:pre-pr",
+    "guardTestsPassed": 3155,
+    "guardFilesPassed": 128,
+    "lint": "passed",
+    "typecheck": "passed",
+    "formatting": "prettier --write all changed files",
+    "existingAssertionFlips": [],
+    "productionBehaviourChanged": false
+  },
+  "technionAdapterOn320": {
+    "sha256": "d7a949c196a2abf4394c9b40d7166185a9003df9f73e04859711a7527d02c2da",
+    "identicalToPreItem1Adapter": true,
+    "item1Ancestor": false
+  }
+}

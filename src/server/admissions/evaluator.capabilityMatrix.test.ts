@@ -5,6 +5,11 @@ import type {
   buildAdmissionsCapabilityMatrix,
 } from './capabilityMatrix';
 import { evaluateAdmissionsForProgram } from './evaluator';
+// Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+import {
+  gapApplicant,
+  gapEvaluate,
+} from '@/app/api/admissions/evaluate/sekhemCalculatorGap.fixture';
 
 // Columns preserve programme identity, the programme actually passed to the
 // matrix, and every capability/source/target/input field used for dispatch.
@@ -512,7 +517,7 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
   return a[0].localeCompare(b[0]) || a[2].localeCompare(b[2]);
 }
 
-it('sweep38 keeps the capability matrix unchanged except medicine@bgu', async () => {
+it('preserves the capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
   const staticPrograms = getStaticCataloguePrograms();
   expect(
@@ -553,21 +558,117 @@ it('sweep38 keeps the capability matrix unchanged except medicine@bgu', async ()
   capture.rows.sort(comparePairs);
 
   // The exception must use exactly the existing named medicine target, including
-  // its capability and required inputs. No other pair or field is exempted.
+  // its capability and required inputs. The approved BIU aliases below retain full row comparisons.
   const canonicalMedicine = BASELINE_ROWS.find(
     (row) => row[0] === 'bgu_medicine' && row[2] === 'bgu',
   )!;
   expect(canonicalMedicine).toBeDefined();
-  const expectedRows = BASELINE_ROWS.map((row): MatrixRow =>
-    row[0] === 'medicine' && row[2] === 'bgu'
-      ? ([row[0], ...canonicalMedicine.slice(1)] as MatrixRow)
-      : row,
+  const expectedRows = BASELINE_ROWS.map((row): MatrixRow => {
+    if (row[0] === 'medicine' && row[2] === 'bgu')
+      return [row[0], ...canonicalMedicine.slice(1)] as MatrixRow;
+    if (['cs', 'ee'].includes(row[0]) && row[2] === 'biu')
+      return [row[0], row[1], 'biu', 'estimated', 'in_scope', null, null, null, null, null, [], []];
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    if (
+      // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+      row[2] === 'haifa' &&
+      // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+      [
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_communication',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_law',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_nursing',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_physiotherapy',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_politicalscience',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_psychology',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_socialwork',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'haifa_sociology',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'law',
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        'psychology',
+      ].includes(row[0])
+    )
+      // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+      return [
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        ...row.slice(0, 11),
+        // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+        ['haifa_bagrut_average', 'haifa_bagrut_year', 'haifa_psychometric_year'],
+      ] as MatrixRow;
+    return row;
+  });
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const communication = capture.rows.find(
+    (row) => row[0] === 'haifa_communication' && row[2] === 'haifa',
+  )!;
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(
+    communication[11].filter((key) =>
+      ['psychometric_math', 'psychometric_verbal', 'psychometric_english'].includes(key),
+    ),
+  ).toEqual([]);
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(capture.rows.find((row) => row[0] === 'haifa_cs' && row[2] === 'haifa')![11]).toContain(
+    'psychometric_math',
   );
   for (const [index, row] of capture.rows.entries()) {
+    // Approved test update, Jorje 2026-10-28
     expect(row, `${row[0]}@${row[2]}`).toEqual(expectedRows[index]);
   }
   const changedPairs = capture.rows
     .filter((row, index) => JSON.stringify(row) !== JSON.stringify(BASELINE_ROWS[index]))
     .map((row) => `${row[0]}@${row[2]}`);
-  expect(changedPairs).toEqual(['medicine@bgu']);
+  // Approved test update, Jorje 2026-10-28
+  // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+  expect(changedPairs).toEqual([
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'cs@biu',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'ee@biu',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_communication@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_law@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_nursing@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_physiotherapy@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_politicalscience@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_psychology@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_socialwork@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'haifa_sociology@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'law@haifa',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'medicine@bgu',
+    // Approved test update: Jorje 2026-10-29, Haifa general/law groups use NITE total (no Q/V/E); lines granted by Oded.
+    'psychology@haifa',
+  ]);
+});
+
+// Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+it('requires the top-level NITE total for Haifa communication', async () => {
+  // The matrix captures extra-input requirements only. evaluator.ts reads top-level psychometric and requests psychometric_overall when it is absent, even with Q/V/E supplied.
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_communication')!;
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const applicant = gapApplicant({ haifaBagrutAverage: 104 });
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  Reflect.deleteProperty(applicant, 'psychometric');
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  const { result } = await gapEvaluate(program, 'haifa', applicant);
+  // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
+  expect(result).toMatchObject({ kind: 'needs_input', requiredInputs: ['psychometric_overall'] });
 });

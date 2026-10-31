@@ -76,7 +76,10 @@ for (const width of [390, 1440]) {
       expect(result.requiredInputs).toBeUndefined();
       await expect(page.locator('.journey-result-explanation')).toHaveText(result.explanation);
       const main = page.getByRole('main');
-      await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+      await expect(
+        main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+      ).toBeVisible();
       await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
       await expect(main.getByRole('textbox', { name: /מתואם|סכם|מצרף|ציון קבלה/ })).toHaveCount(0);
       expect(

@@ -1,12 +1,60 @@
 import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
-import type { Program } from '@/data/degrees/types';
+import type { AdmissionFact, Program } from '@/data/degrees/types';
 import type { InstitutionId } from '@/data/institutions';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { getRequirementsChecked } from '@/lib/requirementsChecked';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
 import repair from './catalogueContentRepair.json';
+import { BGU_QUANTITATIVE_PROGRAMMES } from '@/server/admissions/bguQuantitativeRoutesPolicy';
 
 describe('verified catalogue content repair', () => {
+  it('matches BGU business administration copy to the reviewed quantitative routes', () => {
+    const row = repair.requirements.find(
+      (entry) => entry.programId === 'bgu_business' && entry.institutionId === 'bgu',
+    )!;
+    const policy = BGU_QUANTITATIVE_PROGRAMMES.business;
+    expect(policy).toMatchObject({
+      score: 620,
+      minimumPsychometric: 600,
+      alternate: { score: 640, psychometric: 570 },
+      directAverage: 107,
+      directPreparatoryAverage: 87,
+    });
+    const text = row.notes.join(' ');
+    expect(text).toContain('כלכלה חד־מחלקתי – מנהל עסקים');
+    expect(text).toContain(
+      `סכם כמותי ${policy.score} לפחות וגם פסיכומטרי ${policy.minimumPsychometric} לפחות`,
+    );
+    expect(text).toContain(
+      `סכם כמותי ${policy.alternate!.score} ופסיכומטרי ${policy.alternate!.psychometric} לפחות`,
+    );
+    expect(text).toContain(`ממוצע בגרות ${policy.directAverage} לפחות`);
+    expect(text).toContain(`בממוצע ${policy.directPreparatoryAverage}`);
+    expect(text).toContain('5 יחידות בציון 75 לפחות או 4 יחידות בציון 85 לפחות');
+    expect(text).toContain('4 יחידות בציון 75 לפחות או 5 יחידות בציון 65 לפחות');
+    expect(text).toContain('רכיב כמותי 130');
+    expect(text).toContain('ציון עובר ב־4 או 5 יחידות');
+    expect(text).toContain('אנגלית ברמת בסיסי ועברית ברמה ה׳');
+    expect(text).toContain('מבוא למתמטיקה בסמסטר א׳');
+    expect(text).toContain('4 יחידות בציון 75–84, 5 יחידות בציון 65–74');
+    expect(text).toContain('25.08.2026');
+    expect(text).toContain('ממליצה להירשם');
+    expect(text).toContain('עד 20 נקודות');
+    expect(text).not.toMatch(/580|בניהול|ניהול חד|ניהול דו|103|105/);
+    expect(row.checkedAt).toBe('2026-10-29');
+  });
+
+  it.each([
+    ['communication', '2026-10-21'],
+    ['bgu_accounting', '2026-10-29'],
+    ['bgu_business', '2026-10-29'],
+  ])('keeps the approved BGU verification date for %s', (programId, checkedAt) => {
+    expect(
+      repair.requirements.find((row) => row.programId === programId && row.institutionId === 'bgu')!
+        .checkedAt,
+    ).toBe(checkedAt);
+  });
+
   it.each(['braude', 'ort_braude', 'mon_12220708942'] as const)(
     'resolves the Braude CS requirements-checked footer for %s',
     (institutionId) => {
@@ -35,7 +83,8 @@ describe('verified catalogue content repair', () => {
       'ono',
       'https://www.ono.ac.il/curriculum/llb/',
       '2ea5e02446f90bb3c34fd480df1b11084bdd1b45133cebc8941c7f98d2888e8e',
-      6,
+      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+      5,
     ],
     [
       'colmgmt_cs',
@@ -74,6 +123,38 @@ describe('verified catalogue content repair', () => {
       ).toBeUndefined();
     },
   );
+
+  it('re-encodes and stamps the regular Haifa CS route', () => {
+    const program = allPrograms.find((item) => item.id === 'haifa_cs')!;
+    const notes = program.institutionDetails![0].specificAdmissionNotes;
+    expect(notes).toEqual([
+      'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+      'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+      'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
+    ]);
+    expect(notes).toHaveLength(3);
+    expect(program.thresholds).toEqual({ haifa: 700 });
+    expect(repair.requirements.find((row) => row.programId === program.id)).toMatchObject({
+      institutionId: 'haifa',
+      sourceUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',
+      sourceSha256: '7daea619ad71622a283aa2da04c7570d42b719c8d31e3c7ecfc35de1e6731b0d',
+      checkedAt: '2026-10-30',
+      coverage: 'published_conditions',
+      notes,
+    });
+    expect(getRequirementsChecked(program.id, { id: 'haifa' }, notes)).toEqual({
+      date: '30.10.2026',
+      sourceUrl:
+        'https://admissions.haifa.ac.il/computer-information-science/program/3210/?utm_source=myway&utm_medium=referral',
+    });
+    expect(
+      getRequirementsChecked(
+        program.id,
+        { id: 'haifa' },
+        notes.map((note) => `${note} `),
+      ),
+    ).toBeUndefined();
+  });
 
   it('re-encodes and stamps the regular Haifa psychology route', () => {
     const program = allPrograms.find((item) => item.id === 'haifa_psychology')!;
@@ -331,7 +412,22 @@ describe('verified catalogue content repair', () => {
         const updated = after.institutionDetails!.find(
           (item) => item.institutionName === detail.institutionName,
         )!;
-        expect(updated.admissionFacts).toEqual(detail.admissionFacts);
+        const reviewedMath = updated.admissionsSourceCandidates?.some((source) =>
+          source.id.endsWith(':math-source'),
+        );
+        const withoutMath = (facts: AdmissionFact[] = []) =>
+          facts.filter(
+            (fact) =>
+              fact.field !== 'math_units' &&
+              fact.field !== 'math_grade' &&
+              !fact.groupKey?.startsWith('math_route/') &&
+              !(fact.field === 'exam' && /מתמטיק/.test(fact.description)),
+          );
+        // Approved test update, Jorje 2026-10-28
+        // Item 6 replaces only source-verified maths gates; preserve every other fact.
+        expect(reviewedMath ? withoutMath(updated.admissionFacts) : updated.admissionFacts).toEqual(
+          reviewedMath ? withoutMath(detail.admissionFacts) : detail.admissionFacts,
+        );
         expect(updated.admissionAlternativePaths).toEqual(detail.admissionAlternativePaths);
         expect(updated.quantitativeMinRequirement).toBe(detail.quantitativeMinRequirement);
         expect(updated.englishMinRequirement).toBe(detail.englishMinRequirement);
@@ -351,4 +447,28 @@ describe('verified catalogue content repair', () => {
     };
     expect(applyCatalogueContentRepair(input).institutionDetails![0].admissionFacts).toBe(facts);
   });
+});
+
+it('D repairs the legacy Braude CS static identity without changing its saved ID', () => {
+  const institution = 'המכללה האקדמית להנדסה אורט בראודה';
+  const shortened = 'המכללה האקדמית להנדסה בראודה';
+  const base = allPrograms.find((program) => program.id === 'braude_engineering')!;
+  const original: Program = {
+    ...base,
+    id: 'mon_12220708942_cs',
+    name: `מדעי המחשב - ${shortened}`,
+    institution: shortened,
+    institutionDetails: base.institutionDetails?.map((detail) => ({
+      ...detail,
+      institutionName: shortened,
+    })),
+  };
+  const result = applyCatalogueContentRepair(original);
+  expect(result).toMatchObject({
+    id: 'mon_12220708942_cs',
+    name: `מדעי המחשב - ${institution}`,
+    institution,
+  });
+  expect(result.institutionDetails![0].institutionName).toBe(institution);
+  expect(original.name).toBe(`מדעי המחשב - ${shortened}`);
 });

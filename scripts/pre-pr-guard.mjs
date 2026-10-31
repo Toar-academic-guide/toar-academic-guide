@@ -4,6 +4,8 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
+import { disallowedPdfPaths } from './pdf-location-guard.mjs';
+
 import { findProductionSensitivePaths } from './production-sensitive-paths.mjs';
 
 const rootDir = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
@@ -37,6 +39,10 @@ const highRiskPathPatterns = [
   /^src\/server\/catalogue\//,
   /^src\/server\/data-health\//,
   /^src\/types\/admissionsEvaluation\.ts$/,
+  /^src\/app\/sekhem-calculator\//,
+  /^src\/components\/sekhem\//,
+  /^src\/app\/api\/admissions\/evaluate\//,
+  /^src\/lib\/(sekhemCalculator|admissionsEvaluationSerialization|publishedCompositeThresholds)/,
 ];
 
 const operationalReadGrants = {
@@ -85,6 +91,7 @@ const operationalReadGrants = {
 
 const targetedTests = [
   'src/data/degrees/index.test.ts',
+  'src/data/admissions/catalogueContentRepair.test.ts',
   'src/lib/seo/seo.test.ts',
   'src/lib/requirementTiles.test.ts',
   'src/components/RequirementTiles.test.tsx',
@@ -97,8 +104,14 @@ const targetedTests = [
   'src/app/app/calculator/page.test.tsx',
   'src/lib/haifaOfficialUrls.test.ts',
   'src/server/catalogue/serializers.test.ts',
+  'src/lib/__tests__/StudyJourney.technionWinter.test.tsx',
   'scripts/check-haifa-official-urls.test.ts',
   'src/lib/bagrutPdf.test.ts',
+  'src/utils/bagrutSubjectRecord.test.ts',
+  'src/lib/bagrutPdf.pipeline.test.ts',
+  'src/lib/bagrutPdf.ocr.test.ts',
+  'src/lib/bagrutPdfFontRepair.test.ts',
+  'scripts/pdf-location-guard.test.ts',
   'src/components/EnquiryForm.test.tsx',
   'src/app/api/enquiries/route.test.ts',
   'src/server/enquiries/repository.test.ts',
@@ -115,7 +128,20 @@ const targetedTests = [
   'src/data/admissions/formulaBackedPairInventory.test.ts',
   'src/data/admissions/formulaBackedVerificationLedger.test.ts',
   'src/server/admissions/catalogueEvidenceCoverage.test.ts',
-  'src/server/admissions/calculatorCoverage.test.ts',
+  'src/lib/admissionsCoverageRetirement.test.ts',
+  'src/lib/admissionsEvaluationSerialization.test.ts',
+  'src/app/api/admissions/evaluate/serialization.test.ts',
+  'src/app/sekhem-calculator/page.test.tsx',
+  'src/components/BagrutSubjectRows.test.tsx',
+  'src/components/HaifaQualificationFields.filtered.test.tsx',
+  'src/components/sekhem/SekhemCalculator.test.tsx',
+  'src/components/sekhem/RequiredAdmissionsInputs.test.tsx',
+  'src/components/sekhem/SekhemResults.test.tsx',
+  'src/components/sekhem/SekhemResults.mapping.test.tsx',
+  'src/lib/sekhemCalculator.test.ts',
+  'src/lib/sekhemCalculatorGuard.test.ts',
+  'src/lib/publishedCompositeThresholds.test.ts',
+  'src/lib/seo/sekhemThresholdLinks.test.tsx',
   'src/server/admissions/capabilityMatrix.test.ts',
   'src/server/admissions/evaluator.test.ts',
   'src/server/admissions/evaluationInputs.test.ts',
@@ -182,6 +208,15 @@ const targetedTests = [
   'src/app/api/catalog/programs/route.test.ts',
   'src/app/api/catalog/institutions/route.test.ts',
   'src/app/api/admissions/evaluate/route.test.ts',
+  'src/app/api/admissions/evaluate/bugsFirst.test.ts',
+  'src/app/api/admissions/evaluate/engineeringMath.test.ts',
+  'src/app/api/admissions/evaluate/uxFollowups.test.ts',
+  'src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts',
+  'src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts',
+  'src/data/admissions/publicCatalogueCopy.test.ts',
+  'src/lib/__tests__/TechnionMedicineComparison.test.tsx',
+  'src/data/admissions/engineeringMathRequirements.test.ts',
+  'src/app/api/admissions/evaluate/aliases.test.ts',
   'src/app/api/admissions/evaluate/reichman.test.ts',
   'src/app/api/profile/route.test.ts',
   'src/server/user/profile.test.ts',
@@ -335,6 +370,21 @@ function assertAdmissionsEvidenceFresh() {
     );
   }
 }
+
+function assertPdfLocations() {
+  const tracked = git(['ls-files', '-z']);
+  if (tracked === null) {
+    console.error('Pre-PR guard: could not inspect tracked PDF locations.');
+    process.exit(1);
+  }
+  if (disallowedPdfPaths(tracked.split('\0').filter(Boolean)).length > 0) {
+    console.error('Pre-PR guard: PDF outside approved fixture/admissions directories. Remove it from the index.');
+    process.exit(1);
+  }
+}
+
+console.log('Pre-PR guard: checking PDF locations.');
+assertPdfLocations();
 
 const changedFiles = getChangedFiles();
 const highRiskChanges = [
