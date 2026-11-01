@@ -1,3 +1,5 @@
+import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
+import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import 'server-only';
@@ -1360,4 +1362,17 @@ function hasDecisionThreshold(program: CatalogueProgram, institutionId: string):
     (sekhemThreshold !== undefined && sekhemThreshold !== null) ||
     (directPsychometric !== undefined && directPsychometric !== null)
   );
+}
+
+/** Academic evidence never promotes the final-stage medicine ledger entry. */
+export function getMedicineAcademicVerification(
+  programId: string,
+  institutionId: string,
+  extra: AdmissionsExtraInputs | undefined,
+) {
+  if (!isMedicineAcademicPair(programId, institutionId) || !usesMedicineAcademicStage(extra))
+    return undefined;
+  return MEDICINE_ACADEMIC_REFERENCE_CASES[
+    institutionId as keyof typeof MEDICINE_ACADEMIC_REFERENCE_CASES
+  ];
 }

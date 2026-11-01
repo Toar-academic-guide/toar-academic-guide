@@ -25,6 +25,9 @@ import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import type { HaifaQualificationValues } from '@/components/HaifaQualificationFields';
 import RequiredAdmissionsInputs, { requestedHaifaKeys } from './RequiredAdmissionsInputs';
 import SekhemResults from './SekhemResults';
+import MedicineAcademicFields, { type MedicineAcademicValues } from './MedicineAcademicFields';
+import { medicineAcademicInputsSchema } from '@/lib/medicineAcademicInputs';
+import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 import './sekhem.css';
 
 const subjectNames = ['מתמטיקה', 'אנגלית', 'פיזיקה', 'מדעי המחשב'];
@@ -97,6 +100,8 @@ export default function SekhemCalculator({
   const [programId, setProgramId] = useState(initialProgramId ?? '');
   const [reports, setReports] = useState<AdmissionsEvaluationReport[]>([]);
   const [haifaValues, setHaifaValues] = useState<HaifaQualificationValues>({});
+  const [medicineValues, setMedicineValues] = useState<MedicineAcademicValues>({});
+  const [medicineRequired, setMedicineRequired] = useState<AdmissionsRequiredInput[]>([]);
   const [requiredKeys, setRequiredKeys] = useState<ReturnType<typeof requestedHaifaKeys>>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -183,12 +188,16 @@ export default function SekhemCalculator({
       setReports(compatible ? saved.reports : []);
       setRequiredKeys(compatible ? saved.requiredKeys : []);
       setHaifaValues(compatible ? saved.haifaValues : {});
+      setMedicineValues(compatible ? (saved.medicineValues ?? {}) : {});
+      setMedicineRequired(compatible ? (saved.medicineRequired ?? []) : []);
       setFailedIds(compatible ? saved.failedIds : []);
     } else if (explicit) {
       setProgramId(explicit);
       setReports([]);
       setRequiredKeys([]);
       setHaifaValues({});
+      setMedicineValues({});
+      setMedicineRequired([]);
       setFailedIds([]);
     }
     generation.current++;
@@ -213,6 +222,8 @@ export default function SekhemCalculator({
       reports,
       requiredKeys,
       haifaValues,
+      medicineValues,
+      medicineRequired,
       failedIds,
     };
     const save = () => writeSekhemSession(snapshot);
@@ -234,6 +245,8 @@ export default function SekhemCalculator({
     reports,
     requiredKeys,
     haifaValues,
+    medicineValues,
+    medicineRequired,
     failedIds,
   ]);
 
@@ -289,6 +302,20 @@ export default function SekhemCalculator({
       applicant.extraInputs = {
         ...applicant.extraInputs,
         ...haifaProfileInputsSchema.parse(extras),
+        ...medicineAcademicInputsSchema.parse(
+          Object.fromEntries(
+            Object.entries(medicineValues)
+              .filter(([, value]) => value?.trim())
+              .map(([key, value]) => [
+                key,
+                key === 'medicineHebrewScore'
+                  ? Number(value)
+                  : key === 'medicineEnglishExempt'
+                    ? value === 'true'
+                    : value,
+              ]),
+          ),
+        ),
       };
     } catch (cause) {
       setError(
@@ -329,6 +356,15 @@ export default function SekhemCalculator({
       );
       setRequiredKeys((current) => [
         ...new Set([...current.filter((key) => haifaValues[key]?.trim()), ...keys]),
+      ]);
+      setMedicineRequired([
+        ...new Set(
+          completed.flatMap((report) =>
+            report.results
+              .filter((result) => result.stage === 'academic')
+              .flatMap((result) => result.requiredInputs ?? []),
+          ),
+        ),
       ]);
       setFailedIds(failed);
       if (failed.length) setError('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.');
@@ -401,6 +437,10 @@ export default function SekhemCalculator({
                 onChange={(event) => {
                   invalidate(['bagrut']);
                   setSector(event.target.value);
+                  setMedicineValues((current) => ({
+                    ...current,
+                    medicineCertificateLanguage: undefined,
+                  }));
                   setRows(rowsForSector(rows, event.target.value));
                 }}
               >
@@ -425,6 +465,41 @@ export default function SekhemCalculator({
               </select>
             </label>
           </div>
+          {(!programId || programId.endsWith('_medicine') || programId === 'medicine') && (
+            <details className="mt-3 text-right text-sm">
+              <summary className="cursor-pointer py-2">עבודות גמר וציונים משולבים</summary>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {rows.map(
+                  (row, index) =>
+                    row.label && (
+                      <label key={index}>
+                        סוג הציון — {row.label}
+                        <select
+                          aria-label={`סוג ציון ${index + 1}`}
+                          className="sekhem-input text-right"
+                          value={row.assessmentKind ?? 'exam'}
+                          disabled={busy}
+                          onChange={(event) => {
+                            invalidate(['bagrut']);
+                            const assessmentKind = event.target.value as
+                              'exam' | 'final_project' | 'combined';
+                            setRows((current) =>
+                              current.map((entry, i) =>
+                                i === index ? { ...entry, assessmentKind } : entry,
+                              ),
+                            );
+                          }}
+                        >
+                          <option value="exam">בחינת בגרות</option>
+                          <option value="final_project">עבודת גמר</option>
+                          <option value="combined">ציון משולב</option>
+                        </select>
+                      </label>
+                    ),
+                )}
+              </div>
+            </details>
+          )}
         </details>
         <label className="block text-sm font-medium" htmlFor="psychometric-total">
           פסיכומטרי — ציון כללי{' '}
@@ -486,6 +561,8 @@ export default function SekhemCalculator({
               onChange={(event) => {
                 invalidate();
                 setProgramId(event.target.value);
+                setMedicineValues({});
+                setMedicineRequired([]);
               }}
             >
               <option value="">כל התוכניות</option>
@@ -497,6 +574,15 @@ export default function SekhemCalculator({
             </select>
           </label>
         </details>
+        <MedicineAcademicFields
+          required={medicineRequired}
+          values={medicineValues}
+          disabled={busy}
+          onChange={(key, value) => {
+            invalidate();
+            setMedicineValues((current) => ({ ...current, [key]: value }));
+          }}
+        />
         <RequiredAdmissionsInputs
           keys={requiredKeys}
           values={haifaValues}

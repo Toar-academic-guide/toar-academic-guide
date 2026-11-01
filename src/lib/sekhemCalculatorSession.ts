@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import type { MedicineAcademicValues } from '@/components/sekhem/MedicineAcademicFields';
+import { MEDICINE_REQUIRED_INPUTS } from './medicineAcademicInputs';
+import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { MAX_BAGRUT_SUBJECTS } from './bagrutSubjectLimits';
 import { HAIFA_PROFILE_KEYS, type HaifaAdmissionsInputs } from './haifaAdmissionsInputs';
@@ -14,10 +17,15 @@ export interface SekhemCalculatorSnapshot extends CalculatorProfile {
   haifaValues: HaifaQualificationValues;
   reports: AdmissionsEvaluationReport[];
   failedIds: string[];
+  medicineValues?: MedicineAcademicValues;
+  medicineRequired?: AdmissionsRequiredInput[];
 }
 
 // Store only the report fields used by result presentation and enquiry attribution.
 const resultSchema = z.object({
+  stage: z.literal('academic').optional(),
+  admissionCycle: z.string().optional(),
+  registrationStatus: z.enum(['closed', 'open', 'unknown']).optional(),
   institution: z.object({ id: z.string(), name: z.string(), region: z.string() }),
   linkedInstitutionId: z.string(),
   kind: z.enum([
@@ -100,6 +108,14 @@ const snapshotSchema = z.object({
     }),
   ),
   failedIds: z.array(z.string()),
+  medicineValues: z
+    .object(
+      Object.fromEntries(
+        Object.keys(MEDICINE_REQUIRED_INPUTS).map((key) => [key, z.string().optional()]),
+      ),
+    )
+    .optional(),
+  medicineRequired: z.array(z.string()).optional(),
 });
 
 export function readSekhemSession(

@@ -61,6 +61,59 @@ function submit() {
   fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
 
+it('completes medicine applicant fields, keeps the academic score, and restores the answers', async () => {
+  const medicineOfferings = [
+    {
+      programId: 'huji_medicine',
+      programName: 'רפואה',
+      institutionId: 'huji',
+      institutionName: 'האוניברסיטה העברית',
+    },
+  ];
+  const data = response();
+  const report = data.reports.haifa_cs;
+  report.input.degreeId = 'huji_medicine';
+  report.program = { id: 'huji_medicine', name: 'רפואה' };
+  report.results[0] = {
+    ...report.results[0],
+    institution: { id: 'huji', name: 'האוניברסיטה העברית', region: 'center' },
+    linkedInstitutionId: 'huji',
+    stage: 'academic',
+    admissionCycle: '2026-2027',
+    registrationStatus: 'closed',
+    decision: 'below',
+    score: 24.366,
+    threshold: 25.186,
+    scoreAssessment: 'below_threshold',
+    requiredInputs: ['medicine_psychometric_date', 'medicine_hebrew_basis'],
+    nextAction: 'בהמשך: מיון אישיותי ודירוג המועמדים.',
+  };
+  const batch = { reports: { huji_medicine: report }, failedDegreeIds: [] };
+  fetchMock.mockImplementation(async () => Response.json({ data: batch }));
+  const view = render(<SekhemCalculator offerings={medicineOfferings} />);
+  examples();
+  submit();
+  await screen.findByText('24.366');
+  expect(screen.getByText('סף אקדמי')).toBeTruthy();
+  expect(screen.getByText(/ההרשמה סגורה/)).toBeTruthy();
+  expect(screen.queryByLabelText(/מו״ר/)).toBeNull();
+  fireEvent.change(screen.getByLabelText('מועד הפסיכומטרי'), { target: { value: '2025-12-01' } });
+  fireEvent.change(screen.getByLabelText('ידיעת עברית'), { target: { value: 'hebrew_school' } });
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  const body = JSON.parse(String(fetchMock.mock.calls[1][1]?.body));
+  expect(body.extraInputs).toMatchObject({
+    medicineStage: 'academic',
+    medicinePsychometricDate: '2025-12-01',
+    medicineHebrewBasis: 'hebrew_school',
+  });
+  await screen.findByText('24.366');
+  view.unmount();
+  render(<SekhemCalculator offerings={medicineOfferings} />);
+  expect((screen.getByLabelText('מועד הפסיכומטרי') as HTMLInputElement).value).toBe('2025-12-01');
+  expect(screen.getByText('סף אקדמי')).toBeTruthy();
+});
+
 async function answerHaifaFollowUps() {
   fetchMock.mockResolvedValueOnce(
     Response.json({

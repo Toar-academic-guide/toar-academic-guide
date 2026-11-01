@@ -1,6 +1,8 @@
 import type { BagrutSector, BagrutSubjectRecord, BagrutSubjectV2 } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { TAU_STANDARD_BONUS_SUBJECT_IDS } from '@/data/admissions/tauBagrutBonusSubjects';
+import { HUJI_BONUS_SUBJECT_IDS } from '@/data/admissions/hujiBagrutBonusSubjects';
+import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 
 export interface ReviewedBagrutPolicy {
   id: string;
@@ -60,23 +62,8 @@ export function evaluateTauBagrutProfileReadiness(
     return { state: 'needs_input', missingInputs: ['bagrut_certificate_units'], policyVersion };
   }
 
-  const examSubjectIds = new Set(
-    record.subjects
-      .filter((subject) => subject.assessmentKind === 'exam')
-      .map((subject) => subject.subjectId),
-  );
-  if (
-    record.subjects.some(
-      (subject) =>
-        subject.assessmentKind === 'final_project' && !examSubjectIds.has(subject.subjectId),
-    )
-  ) {
-    return {
-      state: 'needs_input',
-      missingInputs: ['bagrut_final_project_subject'],
-      policyVersion,
-    };
-  }
+  if (record.subjects.some((subject) => subject.subjectId === subjectIdForWizardLabel('עבודת גמר')))
+    return needsInput(policyVersion, ['bagrut_final_project_subject']);
 
   return { state: 'ready', policyVersion };
 }
@@ -92,18 +79,22 @@ const TAU_TWENTY_FIVE_POINT_SUBJECT_IDS = new Set([
 ]);
 
 /** Returns the reviewed TAU bonus for one schema-v2 certificate entry. */
-export function tauBagrutBonusForSubject(subject: BagrutSubjectV2, sector: BagrutSector): number {
+export function tauBagrutBonusForSubject(
+  subject: BagrutSubjectV2,
+  sector: BagrutSector,
+  hasCompanionExam = true,
+): number {
   if (subject.grade < 60 || subject.assessmentKind === 'combined') {
     return 0;
   }
 
-  if (subject.subjectId === 'mathematics' && subject.assessmentKind === 'exam') {
+  if (subject.subjectId === 'mathematics') {
     if (subject.units === 5) return 35;
     if (subject.units === 4) return 12.5;
     return 0;
   }
 
-  if (subject.subjectId === 'english' && subject.units === 4 && subject.assessmentKind === 'exam') {
+  if (subject.subjectId === 'english' && subject.units === 4) {
     return 12.5;
   }
 
@@ -116,7 +107,9 @@ export function tauBagrutBonusForSubject(subject: BagrutSubjectV2, sector: Bagru
     return 0;
   }
   if (subject.units === 5) {
-    return hasTwentyFivePointBonus && subject.assessmentKind === 'exam' ? 25 : 20;
+    return hasTwentyFivePointBonus && (subject.assessmentKind === 'exam' || !hasCompanionExam)
+      ? 25
+      : 20;
   }
   return subject.units === 4 ? 10 : 0;
 }
@@ -125,6 +118,7 @@ export type TauBagrutAverageResult =
   | {
       state: 'calculated';
       average: number;
+      uncappedAverage: number;
       includedSubjectIds: string[];
       excludedSubjectIds: string[];
       policyVersion: string;
@@ -149,7 +143,6 @@ export function calculateTauBagrutAverage(record: BagrutSubjectRecord): TauBagru
   const requiredSubjectIds = new Set(['english', 'mathematics', 'history', 'civics']);
   if (record.sector === 'jewish') {
     requiredSubjectIds.add('hebrew_expression');
-    if (examBySubjectId.has('arabic')) requiredSubjectIds.add('arabic');
   } else {
     requiredSubjectIds.add('arabic');
   }
@@ -170,11 +163,17 @@ export function calculateTauBagrutAverage(record: BagrutSubjectRecord): TauBagru
   }
 
   if (examBySubjectId.get('english')!.units < 4) {
-    return {
-      state: 'needs_input',
-      missingInputs: ['bagrut_foreign_language'],
-      policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
-    };
+    const frenchId = subjectIdForWizardLabel('צרפתית');
+    const french = examBySubjectId.get(frenchId);
+    if (french && french.units >= 4 && french.grade >= 55) {
+      requiredSubjectIds.add(frenchId);
+    } else {
+      return {
+        state: 'needs_input',
+        missingInputs: ['bagrut_foreign_language'],
+        policyVersion: TAU_BAGRUT_PROFILE_POLICY.version,
+      };
+    }
   }
 
   const groups = groupTauSubjects(record.subjects, record.sector);
@@ -214,13 +213,15 @@ export function calculateTauBagrutAverage(record: BagrutSubjectRecord): TauBagru
   }
 
   const externalAdjustment = record.certificateType === 'external_1977_or_later' ? 2 : 0;
-  const average = roundToTwoDecimals(Math.min(117, best.points / best.units + externalAdjustment));
+  const uncappedAverage = best.points / best.units + externalAdjustment;
+  const average = roundToTwoDecimals(Math.min(117, uncappedAverage));
   const includedSubjectIds = [...best.includedSubjectIds].sort();
   const included = new Set(includedSubjectIds);
 
   return {
     state: 'calculated',
     average,
+    uncappedAverage,
     includedSubjectIds,
     excludedSubjectIds: groups
       .map((group) => group.subjectId)
@@ -274,7 +275,11 @@ export function calculateBguBagrutAverage(record: BagrutSubjectRecord): BguBagru
   if (!record.complete) {
     return needsInput(policyVersion, ['bagrut_certificate_complete']);
   }
-  const exams = record.subjects.filter((subject) => subject.assessmentKind === 'exam');
+  if (record.subjects.some((subject) => subject.assessmentKind === 'combined'))
+    return needsInput(policyVersion, ['bagrut_combined_subjects']);
+  if (record.subjects.some((s) => s.subjectId === subjectIdForWizardLabel('עבודת גמר')))
+    return needsInput(policyVersion, ['bagrut_final_project_subject']);
+  const exams = record.subjects;
   const examBySubjectId = new Map(exams.map((subject) => [subject.subjectId, subject]));
   const requiredSubjectIds = new Set(['english', 'mathematics', 'history', 'civics']);
   if (record.sector === 'jewish') requiredSubjectIds.add('hebrew_expression');
@@ -291,7 +296,7 @@ export function calculateBguBagrutAverage(record: BagrutSubjectRecord): BguBagru
     .map((subject) => ({
       subjectId: subject.subjectId,
       units: subject.units,
-      points: subject.units * (subject.grade + bguBagrutBonusForSubject(subject)),
+      points: subject.units * (subject.grade + bguBagrutBonusForSubject(subject, record.sector)),
     }))
     .sort((left, right) => left.subjectId.localeCompare(right.subjectId));
   let states = new Map<string, TauAverageSelection>([['0', emptyTauSelection()]]);
@@ -329,7 +334,7 @@ export function calculateBguBagrutAverage(record: BagrutSubjectRecord): BguBagru
   const included = new Set(includedSubjectIds);
   return {
     state: 'calculated',
-    average: roundToOneDecimal(Math.min(120, best.points / best.units)),
+    average: roundToTwoDecimals(Math.min(120, best.points / best.units)),
     includedSubjectIds,
     excludedSubjectIds: groups
       .map((group) => group.subjectId)
@@ -339,8 +344,10 @@ export function calculateBguBagrutAverage(record: BagrutSubjectRecord): BguBagru
   };
 }
 
-function bguBagrutBonusForSubject(subject: BagrutSubjectV2): number {
+function bguBagrutBonusForSubject(subject: BagrutSubjectV2, sector: BagrutSector): number {
   if (subject.grade <= 60) return 0;
+  if (subject.units === 5 && subject.subjectId === 'hebrew' && sector !== 'jewish') return 25;
+  if (subject.units === 5 && subject.subjectId === 'arabic' && sector === 'jewish') return 20;
   const enhanced = BGU_ENHANCED_BONUS_BY_SUBJECT.get(subject.subjectId)?.get(subject.units);
   if (enhanced !== undefined) return enhanced;
   if (subject.units === 5) return 20;
@@ -350,6 +357,113 @@ function bguBagrutBonusForSubject(subject: BagrutSubjectV2): number {
 
 function roundToOneDecimal(value: number): number {
   return Math.round((value + Number.EPSILON) * 10) / 10;
+}
+
+/** HUJI's published optimal average; the medicine formula divides this value by ten. */
+export function calculateHujiBagrutAverage(record: BagrutSubjectRecord): BguBagrutAverageResult {
+  const policyVersion = 'huji-bagrut-2026-2027';
+  if (record.schemaVersion !== 2) return needsInput(policyVersion, ['bagrut_profile_version']);
+  if (!record.complete) return needsInput(policyVersion, ['bagrut_certificate_complete']);
+  if (record.subjects.some((s) => s.subjectId === subjectIdForWizardLabel('עבודת גמר')))
+    return needsInput(policyVersion, ['bagrut_final_project_subject']);
+  const subjects = record.subjects.map((subject) => ({ ...subject }));
+  const history = subjects.find((subject) => subject.subjectId === 'history');
+  if (
+    !subjects.some((subject) => subject.subjectId === 'civics') &&
+    history &&
+    history.units >= 4
+  ) {
+    history.units -= 1;
+    subjects.push({ ...history, subjectId: 'civics', units: 1 });
+  }
+  const required = new Set([
+    'english',
+    'mathematics',
+    'history',
+    'civics',
+    record.sector === 'jewish' ? 'hebrew_expression' : 'arabic',
+  ]);
+  const missing = [...required]
+    .filter((id) => !subjects.some((s) => s.subjectId === id))
+    .map((id) => `bagrut_subject:${id}`);
+  if (missing.length) return needsInput(policyVersion, missing);
+  const english = subjects.find((s) => s.subjectId === 'english')!;
+  if (
+    english.units < 4 &&
+    !subjects.some(
+      (s) => s.subjectId === subjectIdForWizardLabel('צרפתית') && s.units === 5 && s.grade >= 60,
+    )
+  )
+    return needsInput(policyVersion, ['bagrut_foreign_language']);
+  if (english.units < 4) required.add(subjectIdForWizardLabel('צרפתית'));
+  const enhanced = new Set([
+    'english',
+    'mathematics',
+    'computer_science',
+    'physics',
+    'biology',
+    'chemistry',
+    'history',
+    'arabic',
+    'civics',
+    'literature',
+    'bible',
+    subjectIdForWizardLabel('מחשבת ישראל'),
+  ]);
+  const bonus = (subject: BagrutSubjectV2) => {
+    if (
+      subject.grade < 60 ||
+      subject.assessmentKind === 'combined' ||
+      !HUJI_BONUS_SUBJECT_IDS.has(subject.subjectId)
+    )
+      return 0;
+    if (subject.subjectId === subjectIdForWizardLabel('חינוך גופני') && subject.units !== 5)
+      return 0;
+    if (subject.subjectId === 'arabic' && record.sector !== 'jewish' && subject.units < 5) return 0;
+    if (subject.subjectId === 'mathematics' && subject.units === 5)
+      return subject.assessmentKind === 'final_project' ? 25 : 35;
+    return subject.units === 5
+      ? enhanced.has(subject.subjectId)
+        ? 25
+        : 20
+      : subject.units === 4
+        ? enhanced.has(subject.subjectId)
+          ? 15
+          : 10
+        : 0;
+  };
+  let states = new Map<number, TauAverageSelection>([[0, emptyTauSelection()]]);
+  for (const subject of subjects) {
+    const next = new Map<number, TauAverageSelection>();
+    for (const state of states.values()) {
+      const choices = [
+        {
+          units: state.units + subject.units,
+          points: state.points + subject.units * (subject.grade + bonus(subject)),
+          includedSubjectIds: [...state.includedSubjectIds, subject.subjectId],
+        },
+      ];
+      if (!required.has(subject.subjectId)) choices.push(state);
+      for (const choice of choices) {
+        const current = next.get(choice.units);
+        if (!current || isBetterTauSelection(choice, current)) next.set(choice.units, choice);
+      }
+    }
+    states = next;
+  }
+  const best = [...states.values()]
+    .filter((s) => s.units >= 20)
+    .sort(compareTauAverageSelections)[0];
+  if (!best) return needsInput(policyVersion, ['bagrut_certificate_units']);
+  return {
+    state: 'calculated',
+    average: roundToOneDecimal(best.points / best.units),
+    includedSubjectIds: best.includedSubjectIds,
+    excludedSubjectIds: subjects
+      .map((s) => s.subjectId)
+      .filter((id) => !best.includedSubjectIds.includes(id)),
+    policyVersion,
+  };
 }
 
 interface TauSubjectGroup {
@@ -381,7 +495,14 @@ function groupTauSubjects(subjects: BagrutSubjectV2[], sector: BagrutSector): Ta
       units: entries.reduce((sum, subject) => sum + subject.units, 0),
       points: entries.reduce(
         (sum, subject) =>
-          sum + subject.units * (subject.grade + tauBagrutBonusForSubject(subject, sector)),
+          sum +
+          subject.units *
+            (subject.grade +
+              tauBagrutBonusForSubject(
+                subject,
+                sector,
+                entries.some((entry) => entry.assessmentKind === 'exam'),
+              )),
         0,
       ),
     }));

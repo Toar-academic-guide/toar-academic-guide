@@ -63,10 +63,10 @@ it('ignores snapshots whose programme is no longer offered', () => {
   expect(readSekhemSession([])).toBeNull();
 });
 it('tolerates unavailable and full storage', () => {
-  vi.spyOn(Storage.prototype, 'getItem').mockImplementation(() => {
+  vi.spyOn(Object.getPrototypeOf(window.sessionStorage), 'getItem').mockImplementation(() => {
     throw new Error('unavailable');
   });
-  vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+  vi.spyOn(Object.getPrototypeOf(window.sessionStorage), 'setItem').mockImplementation(() => {
     throw new Error('full');
   });
   expect(() => writeSekhemSession(snapshot())).not.toThrow();
