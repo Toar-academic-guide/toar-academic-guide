@@ -3707,6 +3707,37 @@ describe('current HUJI Medicine staged evaluation', () => {
     linkedInstitutionIds: ['huji'],
     thresholds: {},
   };
+  it.each(['medicine', 'huji_medicine'])(
+    'no longer rejects %s between the old and revised final cutoffs',
+    async (id) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: { ...medicine, id },
+        institutions: hujiInstitutions,
+        input: {
+          degreeId: id,
+          psychometric: 800,
+          extraInputs: {
+            ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+            hujiMedicineRoute: 'official_cognitive',
+            hujiMedicineCognitiveScore: 26.854,
+            hujiMedicineAssessmentScore: 175,
+          },
+        },
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockResolvedValue(new Response(medicineOfficial.calculatorHtml)),
+      });
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          capability: 'exact',
+          decision: 'eligible_to_apply',
+          score: 25.75,
+          threshold: 25.708,
+          scoreLabel: 'ציון התאמה סופי לרפואה',
+        }),
+      );
+    },
+  );
   it.each(['medicine', 'huji_medicine'])('evaluates %s without generic Bagrut', async (id) => {
     const report = await evaluateAdmissionsForProgram({
       program: { ...medicine, id },
@@ -3722,7 +3753,7 @@ describe('current HUJI Medicine staged evaluation', () => {
         kind: 'manual_gate',
         decision: 'eligible_to_apply',
         score: 26.612,
-        threshold: 25.783,
+        threshold: 25.708,
         scoreLabel: 'ציון התאמה סופי לרפואה',
       }),
     );
