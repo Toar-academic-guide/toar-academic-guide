@@ -1,0 +1,84 @@
+.main {
+  max-width: 980px;
+  min-height: 70vh;
+  margin-inline: auto;
+  padding: 48px 24px 72px;
+  text-align: right;
+  color: #12234a;
+}
+.main h1 {
+  font-size: clamp(1.85rem, 4vw, 2.65rem);
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 28px;
+}
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+}
+.table :is(th, td) {
+  padding: 13px 18px;
+  text-align: right;
+  border-bottom: 1px solid #dbe1ec;
+  vertical-align: top;
+  font-weight: 400;
+}
+.table thead th {
+  background: #eef2fb;
+  font-weight: 600;
+}
+.table tbody th {
+  width: 50%;
+}
+.table th span,
+.table strong,
+.table small {
+  display: block;
+}
+.table th a span {
+  display: inline;
+}
+.table tbody th span,
+.table small {
+  color: #526079;
+  font-size: 0.875rem;
+}
+.table small {
+  margin-top: 3px;
+}
+.table bdi {
+  white-space: nowrap;
+}
+.table a {
+  color: #49388b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  gap: 4px;
+}
+.table thead th {
+  vertical-align: middle;
+}
+@media (max-width: 600px) {
+  .main {
+    padding: 26px 12px 48px;
+  }
+  .main h1 {
+    margin-bottom: 20px;
+  }
+  .table :is(th, td) {
+    padding: 10px 6px;
+  }
+  .table tbody th {
+    width: 47%;
+  }
+  .table td {
+    font-size: 0.875rem;
+  }
+  .table small {
+    font-size: 0.75rem;
+  }
+}

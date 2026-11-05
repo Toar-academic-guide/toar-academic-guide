@@ -8,6 +8,7 @@ import { FOOTER_LEGAL_LINKS, FOOTER_NAV_LINKS } from '@/lib/footerLinks';
 const navigationLinks = [
   { label: 'תחומי לימוד', href: '/programs' },
   { label: 'מוסדות לימוד', href: '/institutions' },
+  { label: 'ימים פתוחים', href: '/open-days' },
   { label: 'מי אנחנו', href: '/about' },
   { label: 'הרשימה שלי', href: '/app/saved-programs' },
 ];
@@ -44,7 +45,7 @@ describe('SiteFooter', () => {
         })),
       ).toEqual(links);
     }
-    expect(container.querySelectorAll('a')).toHaveLength(10);
+    expect(container.querySelectorAll('a')).toHaveLength(11);
     expect(container.querySelector('h1')).toBeNull();
   });
 

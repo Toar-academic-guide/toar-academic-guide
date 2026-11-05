@@ -1,6 +1,7 @@
 export const FOOTER_NAV_LINKS = [
   { label: 'תחומי לימוד', href: '/programs' },
   { label: 'מוסדות לימוד', href: '/institutions' },
+  { label: 'ימים פתוחים', href: '/open-days' },
   { label: 'מי אנחנו', href: '/about' },
   { label: 'הרשימה שלי', href: '/app/saved-programs' },
 ] as const;
