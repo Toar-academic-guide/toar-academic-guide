@@ -75,7 +75,7 @@ describe('production-sensitive path classification', () => {
   });
 });
 
-describe('docs-only classification', () => {
+describe('CI path classification', () => {
   function classify(paths: string[], args: string[] = []) {
     return execFileSync(process.execPath, ['scripts/production-sensitive-paths.mjs', ...args], {
       input: paths.join('\n'),
@@ -113,7 +113,28 @@ describe('docs-only classification', () => {
   });
 
   it('never classifies --all as docs-only and preserves production sensitivity', () => {
-    expect(classify(['README.md'], ['--all'])).toBe('applicable=true\ndocs_only=false\n');
-    expect(classify(['README.md', 'src/db/schema.ts'])).toBe('applicable=true\ndocs_only=false\n');
+    const expected = 'applicable=true\ndocs_only=false\ndata_health_required=true\n';
+    expect(classify(['README.md'], ['--all'])).toBe(expected);
+    expect(classify(['README.md', 'src/db/schema.ts'])).toBe(expected);
+  });
+
+  it('skips the data-health smoke for calculator copy but runs it for mixed and unknown diffs', () => {
+    const copy = 'src/app/sekhem-calculator/page.tsx';
+    expect(classify([copy, 'README.md'])).toContain('data_health_required=false\n');
+    for (const relevant of [
+      'src/app/internal/data-health/page.tsx',
+      'src/server/data-health/queries.ts',
+      'src/server/internal/adminAuth.ts',
+      'src/lib/supabase/server.ts',
+      'src/proxy.ts',
+      'src/app/layout.tsx',
+      'src/server/catalogue/queries.ts',
+      'playwright.config.ts',
+      '.github/workflows/ci.yml',
+      'scripts/production-sensitive-paths.mjs',
+    ]) {
+      expect(classify([copy, relevant]), relevant).toContain('data_health_required=true\n');
+    }
+    expect(classify([])).toContain('data_health_required=true\n');
   });
 });
