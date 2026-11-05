@@ -1,4 +1,3 @@
-import { loadResultCalculatorPrograms } from '@/lib/sekhemCalculatorSupport';
 import type { Metadata } from 'next';
 import StudyJourney from '@/components/StudyJourney';
 
@@ -20,13 +19,6 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title: `${TITLE} | MyWay`, description: DESCRIPTION },
 };
 
-export const revalidate = 120;
-
-export default async function CalculatorPage() {
-  return (
-    <StudyJourney
-      calculatorPrograms={await loadResultCalculatorPrograms()}
-      initialStep="subjects"
-    />
-  );
+export default function CalculatorPage() {
+  return <StudyJourney initialStep="subjects" />;
 }

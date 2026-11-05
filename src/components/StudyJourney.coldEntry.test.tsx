@@ -9,7 +9,6 @@ const state = vi.hoisted(() => ({
   evaluate: vi.fn(),
   preload: vi.fn(),
 }));
-vi.mock('@/lib/sekhemCalculatorSupport', () => ({ loadResultCalculatorPrograms: async () => [] }));
 vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),

@@ -1,11 +1,7 @@
 'use client';
 
 import { savedAcademicRevision } from '@/lib/sekhemProfile';
-import {
-  resultCalculatorHref,
-  resultCalculatorProgram,
-  type ResultCalculatorProgram,
-} from '@/lib/resultCalculatorLink';
+import { resultCalculatorHref } from '@/lib/resultCalculatorLink';
 import HomeHero from './hero/HomeHero';
 
 import AdmissionEstimate from './AdmissionEstimate';
@@ -294,11 +290,9 @@ function Chips<T extends string>({
 }
 
 export default function StudyJourney({
-  calculatorPrograms = [],
   initialStep = 'home',
   initialProgramId,
 }: {
-  calculatorPrograms?: readonly ResultCalculatorProgram[];
   initialStep?: Step;
   initialProgramId?: string;
 }) {
@@ -485,7 +479,7 @@ export default function StudyJourney({
     setCatalogueError('');
     try {
       const [nextPrograms, nextInstitutions] = await Promise.all([
-        fetchCataloguePrograms(),
+        fetchCataloguePrograms({ includeCalculatorLinks: true }),
         fetchCatalogueInstitutions(),
       ]);
       cachedCatalogue = { programs: nextPrograms, institutions: nextInstitutions };
@@ -945,11 +939,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
-    const calculatorId = resultCalculatorProgram(
-      calculatorPrograms,
-      row.program.id,
-      row.institution.id,
-    );
+    const calculatorId = row.program.calculatorProgramIds?.[row.institution.id];
     const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
