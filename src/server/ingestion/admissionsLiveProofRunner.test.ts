@@ -46,7 +46,7 @@ describe('runAdmissionsLiveProof', () => {
         derivedVerdict: 'below',
         medicineStage: 'screening',
         medicineThreshold: 25.186,
-        acceptanceThreshold: 25.783,
+        acceptanceThreshold: 25.708,
       });
   });
   it('withholds a live response until independent eligible and below captures are supplied', async () => {
