@@ -99,13 +99,13 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
 
 it('renders an indexable public calculator with absolute title and canonical metadata', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
-  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('מחשבון סכם וסיכויי קבלה');
-  expect(metadata.title).toEqual({ absolute: 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay' });
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('מחשבון סכם');
+  expect(metadata.title).toEqual({ absolute: 'מחשבון סכם לפי מוסד ותוכנית | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
     // Approved test update, Jorje 2026-10-29: meta no-overclaim
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-    'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.',
+    'מחשבון סכם לפי ציוני הבגרות והפסיכומטרי שלכם. בחרו תוכנית לימודים ובדקו איך הציון שלכם משתווה לסף הקבלה שלה.',
   );
 });
 it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
@@ -118,7 +118,7 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
     (row) => row.url === 'https://findmyway.co.il/sekhem-calculator',
   );
   expect(entries).toHaveLength(1);
-  expect(entries[0].lastModified).toBe('2026-10-28');
+  expect(entries[0].lastModified).toBe('2026-11-05');
   expect(
     readFileSync('public/llms.txt', 'utf8')
       .split('\n')
@@ -239,9 +239,10 @@ it('sends only active supported programmes in a full nine-subject run without a 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
 const answerHeadings = [
-  'הסכם: המפתח לקבלה',
-  'איך מחשבים כאן?',
-  'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+  'מהו ציון סכם?',
+  'למה אותם ציונים נותנים סכם שונה במוסדות שונים?',
+  'עברתם את סף הקבלה. מה עוד כדאי לבדוק?',
+  'באילו תוכניות אפשר לבדוק את הסכם?',
 ];
 
 it.each(answerHeadings)('renders the answer heading %s', async (name) => {
@@ -269,10 +270,10 @@ it('omits lists and institution names from the answer section with mocked offeri
     expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
     const heading = within(section).getByRole('heading', {
       level: 2,
-      name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+      name: 'באילו תוכניות אפשר לבדוק את הסכם?',
     });
     expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
+      'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
     );
     for (const name of ['אפקה', 'תל אביב']) {
       expect(section.textContent).not.toContain(name);
@@ -294,10 +295,10 @@ it('omits lists and every real catalogue institution name from the answer sectio
   expect(within(section).queryAllByRole('listitem')).toHaveLength(0);
   const heading = within(section).getByRole('heading', {
     level: 2,
-    name: 'באילו מוסדות ותוכניות אפשר לבדוק כאן?',
+    name: 'באילו תוכניות אפשר לבדוק את הסכם?',
   });
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'המחשבון מכסה מספר הולך וגדל של מוסדות ותוכניות, ומתעדכן כל הזמן.',
+    'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
   );
   for (const name of institutionNames) {
     expect(section.textContent).not.toContain(name);
@@ -305,15 +306,15 @@ it('omits lists and every real catalogue institution name from the answer sectio
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block copy swaps)
-it('describes exactly how to calculate a sekhem here', async () => {
+it('explains how institutions weight the same inputs differently', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
   const heading = within(section).getByRole('heading', {
     level: 2,
-    name: 'איך מחשבים כאן?',
+    name: 'למה אותם ציונים נותנים סכם שונה במוסדות שונים?',
   });
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'מזינים ציוני בגרות ופסיכומטרי, ומקבלים מיד את הסכם שלכם מול סף הקבלה של התוכנית.',
+    'כל מוסד קובע אילו בונוסים לתת למקצועות מוגברים וכמה משקל לתת לפסיכומטרי. למשל, ציון במתמטיקה ברמת חמש יחידות יכול להשפיע אחרת על הסכם בכל מוסד, גם כשהציון בתעודה זהה.',
   );
 });
 
@@ -343,7 +344,7 @@ it('keeps the answer section free of numbers and unsupported admission promises'
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
-it('renders all three answers below the unavailable block for an unknown programme', async () => {
+it('renders the FAQ below the unavailable block for an unknown programme', async () => {
   render(await Page({ searchParams: Promise.resolve({ program: 'not_a_public_programme' }) }));
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 26)
   const unavailable = screen.getByText('לתוכנית הזו: בדיקה אישית מול המוסד.');
@@ -356,48 +357,42 @@ it('renders all three answers below the unavailable block for an unknown program
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
-it('renders exactly three visible answer headings in order without the guarantee question', async () => {
+it('renders the four visible answer headings in order', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
   const headings = within(section)
     .getAllByRole('heading', { level: 2 })
     .filter((heading) => !heading.classList.contains('sr-only'));
-  expect(headings).toHaveLength(3);
+  expect(headings).toHaveLength(4);
   expect(headings.map((heading) => heading.textContent)).toEqual(answerHeadings);
   expect(section.textContent).not.toContain('האם התוצאה מבטיחה קבלה?');
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 it.each([undefined, 'not_a_public_programme'])(
-  'keeps all rendered page JSON-LD free of Q&A and removed answer text for programme %s',
+  'publishes exactly the visible questions and answers for programme %s',
   async (program) => {
-    const offerings = await calculatorSupport.loadSekhemCalculatorOfferings();
-    const institutionNames = [
-      'אפקה',
-      'תל אביב',
-      ...new Set(offerings.map((offering) => offering.institutionName)),
-    ];
-    expect(offerings.length).toBeGreaterThan(0);
     const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
-    const scripts = Array.from(
+    const nodes = Array.from(
       container.querySelectorAll('main script[type="application/ld+json"]'),
+    ).flatMap((script) => JSON.parse(script.textContent!)['@graph']);
+    const faq = nodes.filter((node) => node['@type'] === 'FAQPage');
+    expect(faq).toHaveLength(1);
+    expect(faq[0].mainEntity).toEqual(
+      answerHeadings.map((name) => ({
+        '@type': 'Question',
+        name,
+        acceptedAnswer: {
+          '@type': 'Answer',
+          text: screen.getByRole('heading', { name }).nextElementSibling?.textContent,
+        },
+      })),
     );
-    expect(scripts.length).toBeGreaterThan(0);
-    const jsonLd = JSON.stringify(scripts.map((script) => JSON.parse(script.textContent!)));
-    for (const type of ['FAQPage', 'Question', 'Answer']) {
-      expect(jsonLd).not.toContain(type);
-    }
-    for (const name of institutionNames) {
-      expect(jsonLd).not.toContain(name);
-    }
-    expect(jsonLd).not.toContain('המחשבון כולל כרגע תוכניות במוסדות הבאים');
-    expect(jsonLd).not.toContain('האם התוצאה מבטיחה קבלה?');
-    expect(jsonLd).not.toContain('הערכה בלבד');
   },
 );
 
 it.each([undefined, 'not_a_public_programme'])(
-  'renders page-level WebApplication JSON-LD without FAQPage for programme %s',
+  'renders page-level WebApplication JSON-LD alongside the FAQ for programme %s',
   async (program) => {
     const { container } = render(await Page({ searchParams: Promise.resolve({ program }) }));
     const scripts = Array.from(
@@ -412,7 +407,7 @@ it.each([undefined, 'not_a_public_programme'])(
         '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
       }),
     );
-    expect(JSON.stringify(graphs)).not.toContain('FAQPage');
+    expect(nodes).toContainEqual(expect.objectContaining({ '@type': 'FAQPage' }));
   },
 );
 
@@ -421,7 +416,7 @@ it('describes the calculator application with canonical site relationships and n
   expect(application).toEqual({
     '@type': 'WebApplication',
     '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
-    name: 'מחשבון סכם וסיכויי קבלה',
+    name: 'מחשבון סכם',
     url: 'https://findmyway.co.il/sekhem-calculator',
     applicationCategory: 'EducationalApplication',
     operatingSystem: 'Web',
@@ -429,7 +424,7 @@ it('describes the calculator application with canonical site relationships and n
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-    featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
     publisher: { '@id': 'https://findmyway.co.il/#organization' },
     isPartOf: { '@id': 'https://findmyway.co.il/#website' },
   });
@@ -460,13 +455,12 @@ it('uses the sell-first description for every social snippet', () => {
 });
 it('renders the approved subtitle and explanation in the existing FAQ slot', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 29)
-  expect(screen.getByText('מזינים בגרות ופסיכומטרי, ורואים מה הסכם שלכם פותח.')).toBeTruthy();
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
-  const heading = screen.getByRole('heading', { name: 'הסכם: המפתח לקבלה' });
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
+  expect(
+    screen.getByText('חשבו את הסכם שלכם ובדקו איך הוא משתווה לסף הקבלה לתוכנית שבחרתם.'),
+  ).toBeTruthy();
+  const heading = screen.getByRole('heading', { name: 'מהו ציון סכם?' });
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון לכל תוכנית במחשבון.', // Approved copy update, Jorje/Amit 2026-10-30
+    'סכם הוא ציון שמשקלל את נתוני הקבלה שלכם, לרוב את ציוני הבגרות והפסיכומטרי. משווים אותו לסף שקבע החוג למסלול שבחרתם.',
   );
   expect(screen.queryByText('כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.')).toBeNull();
 });
