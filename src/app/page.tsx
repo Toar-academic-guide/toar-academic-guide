@@ -1,3 +1,4 @@
+import { loadResultCalculatorPrograms } from '@/lib/sekhemCalculatorSupport';
 import type { Metadata } from 'next';
 import StudyJourney from '@/components/StudyJourney';
 import JsonLd from '@/components/seo/JsonLd';
@@ -36,11 +37,13 @@ export const metadata: Metadata = {
   },
 };
 
-export default function Home() {
+export const revalidate = 120;
+
+export default async function Home() {
   return (
     <>
       <JsonLd data={webApplicationLd()} />
-      <StudyJourney />
+      <StudyJourney calculatorPrograms={await loadResultCalculatorPrograms()} />
     </>
   );
 }

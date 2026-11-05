@@ -138,3 +138,21 @@ export function canLinkToSekhemCalculator(
       ))
   );
 }
+
+export const loadResultCalculatorPrograms = cache(async () => {
+  const [offerings, catalogue] = await Promise.all([
+    loadSekhemCalculatorOfferings(),
+    loadPublicCatalogue(),
+  ]);
+  const programsById = new Map(catalogue.programs.map((program) => [program.id, program]));
+  return offerings
+    .filter(({ institutionId, programId }) => {
+      const program = programsById.get(programId);
+      return program && canLinkToSekhemCalculator(program, institutionId);
+    })
+    .map(({ institutionId, programId, sourceProgramIds }) => ({
+      institutionId,
+      programId,
+      sourceProgramIds,
+    }));
+});

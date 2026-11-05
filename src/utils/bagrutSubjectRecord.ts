@@ -17,6 +17,12 @@ const SECTOR_BY_WIZARD_LABEL: Record<string, BagrutSector> = {
   שומרוני: 'samaritan',
 };
 
+export function sectorLabelForRecord(sector: BagrutSector): string {
+  return Object.keys(SECTOR_BY_WIZARD_LABEL).find(
+    (label) => SECTOR_BY_WIZARD_LABEL[label] === sector,
+  )!;
+}
+
 const SUBJECT_IDS_BY_WIZARD_LABEL: Record<string, string> = {
   אזרחות: 'civics',
   אנגלית: 'english',

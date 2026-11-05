@@ -3,6 +3,7 @@ import { render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 
+vi.mock('@/lib/sekhemCalculatorSupport', () => ({ loadResultCalculatorPrograms: async () => [] }));
 vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
 vi.mock('next/navigation', () => ({
   useRouter: () => ({ push: vi.fn() }),
@@ -35,7 +36,7 @@ describe('calculator programme query', () => {
     ).selectedRowId?.split(':')[0];
   it('passes a single programme query to the journey', async () => {
     window.history.replaceState(null, '', '/app/calculator?program=tau_cs');
-    const page = CalculatorPage();
+    const page = await CalculatorPage();
     render(page);
     await waitFor(() =>
       expect({
@@ -47,7 +48,7 @@ describe('calculator programme query', () => {
 
   it('ignores ambiguous repeated programme parameters', async () => {
     window.history.replaceState(null, '', '/app/calculator?program=tau_cs&program=haifa_law');
-    render(CalculatorPage());
+    render(await CalculatorPage());
     await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
     expect(selectedProgramId()).toBeUndefined();
   });

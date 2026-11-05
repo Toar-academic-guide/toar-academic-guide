@@ -48,7 +48,9 @@ export function buildSekhemInput(
       (row) =>
         !row.label.trim() || !validNumber(row.units, 1, 5) || !validNumber(row.grade, 0, 100),
     ) ||
-    new Set(rows.map((row) => subjectIdForWizardLabel(row.label))).size !== rows.length
+    new Set(
+      rows.map((row) => subjectIdForWizardLabel(row.label) + ':' + (row.assessmentKind ?? 'exam')),
+    ).size !== rows.length
   ) {
     throw new Error('יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.');
   }
@@ -64,6 +66,7 @@ export function buildSekhemInput(
     complete: true,
     subjects: rows,
   });
+  if (record.subjects.length !== rows.length) throw new Error('בחרו את שמות המקצועות מתוך הרשימה.');
   const extraInputs = admissionsExtraInputsFromAcademicScores({
     bagrut: { subjectRecord: record },
     psychometric: {
