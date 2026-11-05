@@ -16,7 +16,7 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 Always use the Compound Engineering plugin (`ce`) for project work. Pick the most specific CE skill for the task instead of using generic behavior.
 
-- `ce-plan` for multi-step work, planning, unclear scope, or when the work needs structure before implementation.
+- When the user says `brainstorm`, use `ce-brainstorm`. When the user says `plan`, use Codex’s own planning capability. Use `ce-plan` only when the user explicitly requests it. Start brainstorming and planning immediately, and get explicit approval before implementation or execution.
 - `ce-work` for implementing features or fixes once the scope is understood.
 - `ce-debug` for bugs, regressions, errors, or root-cause investigation.
 - `ce-code-review` for reviewing diffs, branches, or PRs.
