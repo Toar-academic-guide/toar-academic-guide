@@ -1,84 +1,106 @@
 .main {
-  max-width: 980px;
+  max-width: 890px;
   min-height: 70vh;
   margin-inline: auto;
   padding: 48px 24px 72px;
   text-align: right;
-  color: #12234a;
+  font-family: var(--font-sans);
+  color: var(--text-heading);
 }
 .main h1 {
   font-size: clamp(1.85rem, 4vw, 2.65rem);
   line-height: 1.2;
   font-weight: 700;
-  margin-bottom: 28px;
+  margin-bottom: 24px;
+}
+.filters {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+.filters a {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 9px;
+  color: var(--text-body);
+}
+.filters a[aria-current] {
+  background: #27355c;
+  color: white;
 }
 .table {
   width: 100%;
   background: white;
   border-collapse: collapse;
+  font: inherit;
 }
 .table :is(th, td) {
-  padding: 13px 18px;
   text-align: right;
-  border-bottom: 1px solid #dbe1ec;
+  padding: 14px 18px;
   vertical-align: top;
-  font-weight: 400;
+  border-bottom: 1px solid var(--border);
 }
 .table thead th {
   background: #eef2fb;
-  font-weight: 600;
+  color: var(--text-body);
+  font-weight: 500;
+}
+.table th:first-child {
+  width: 36%;
 }
 .table tbody th {
-  width: 50%;
+  font-weight: 600;
 }
-.table th span,
-.table strong,
-.table small {
+.event {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+}
+.event small {
   display: block;
-}
-.table th a span {
-  display: inline;
-}
-.table tbody th span,
-.table small {
-  color: #526079;
+  margin-top: 3px;
+  color: var(--text-body);
   font-size: 0.875rem;
 }
-.table small {
-  margin-top: 3px;
-}
-.table bdi {
-  white-space: nowrap;
-}
-.table a {
+.event a,
+.later summary {
   color: #49388b;
   text-decoration: underline;
   text-underline-offset: 3px;
+}
+.event a {
   display: inline-flex;
   align-items: center;
   min-height: 44px;
-  gap: 4px;
 }
-.table thead th {
-  vertical-align: middle;
+.later summary {
+  width: fit-content;
+  cursor: pointer;
+  padding-block: 10px;
+  font-size: 0.9rem;
+}
+.later .event {
+  padding-block: 8px;
+  border-top: 1px solid var(--border);
 }
 @media (max-width: 600px) {
   .main {
-    padding: 26px 12px 48px;
+    padding: 28px 16px 48px;
   }
   .main h1 {
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
   .table :is(th, td) {
-    padding: 10px 6px;
+    padding: 12px 8px;
   }
-  .table tbody th {
-    width: 47%;
-  }
-  .table td {
-    font-size: 0.875rem;
-  }
-  .table small {
-    font-size: 0.75rem;
+  .event {
+    display: block;
   }
 }

@@ -21,17 +21,17 @@ product_contract_source: ce-brainstorm
 
 ### Summary
 
-Students will find upcoming dates in one sortable Hebrew table at `/open-days`. Monday holds both the list of institutions to revisit and the dated events eligible for the calendar.
+Students will find upcoming dates in one Hebrew table ordered by nearest date at `/open-days`. Monday holds both the list of institutions to revisit and the dated events eligible for the calendar.
 
 ### Requirements
 
 **Student calendar**
 
 - **R1.** Cover every university and college in the MyWay catalogue, including institutions that currently have no announced date.
-- **R2.** List one row per officially dated upcoming event. Include institution-wide and faculty open days, on campus and online. Combine duplicate announcements for the same event. For a multi-day event, retain the full announced date range.
-- **R3.** Show the institution, faculty when applicable, date, campus or `אונליין` when confirmed, and the last successful source check (`נבדק לאחרונה`). Use concise Hebrew and plural address.
+- **R2.** Group events by institution. Show the nearest date first and let readers expand later dates. Include institution-wide and faculty open days, on campus and online. Combine duplicate announcements for the same event. For a multi-day event, retain the full announced date range.
+- **R3.** Show the institution, faculty when applicable, date, campus or `אונליין` when confirmed, and the appropriate official link. Keep the last successful source check in Monday. Use concise Hebrew and plural address.
 - **R4.** Link `לפרטים` to the official announcement as soon as a date is confirmed. Use `להרשמה` when there is an active official registration path for that event.
-- **R5.** Make the calendar discoverable through the sitemap and relevant internal links.
+- **R5.** Open the calendar from מה ללמוד? → ימים פתוחים. Default to universities, with filters for colleges and all institutions. Include the page in the sitemap.
 
 **Monday and Grok**
 
@@ -42,11 +42,11 @@ Students will find upcoming dates in one sortable Hebrew table at `/open-days`. 
 ### Verification
 
 1. In Monday, open an event and follow its institution reference and official announcement. Compare the dates and registration action. An institution can appear in the checklist with zero upcoming events.
-2. For the public release, open `/open-days` at 1280px and 390px, sort by date, and follow a details link and an available registration link. The destinations must match their events. Check Hebrew alignment and the distinction between faculty, campus and online listings. Capture both widths for Amit before merge.
+2. For the public release, open `/open-days` at 1280px and 390px, switch institution types, expand additional dates, and follow a details link and an available registration link. The destinations must match their events. Check Hebrew alignment and the distinction between faculty, campus and online listings. Capture both widths for Amit before merge.
 3. During integration, verify that a confirmed venue change reaches the public row and a conflicting or unavailable source creates a review flag without publishing an unverified change.
 
 ### First-version handoff
 
-The board uses **Confirmed** for publishable events and **Cancelled** for explicit cancellations. Store the institution item's Monday URL in **Institution item**. Put the institution and event label in the item name, separated by ` — `. Use **End date** only when an event spans multiple days. If an official source becomes ambiguous, record the competing evidence in **Review notes** and keep the published fields at their last confirmed values.
+Mark **University** on university institution items. Each event inherits its institution’s filter. The board uses **Confirmed** for publishable events and **Cancelled** for explicit cancellations. Store the institution item's Monday URL in **Institution item**. Put the institution and event label in the item name, separated by ` — `. Use **End date** only when an event spans multiple days. If an official source becomes ambiguous, record the competing evidence in **Review notes** and keep the published fields at their last confirmed values.
 
 The website reads the board server-side with `MONDAY_API_TOKEN` and refreshes its cache every 15 minutes. Local and preview environments without the token use the checked-in first edition. Production requires board access. Grok's scheduling and credentials are managed separately.

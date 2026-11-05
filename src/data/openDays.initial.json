@@ -9,7 +9,8 @@
     "faculty": "",
     "source": "https://do.kinneret.ac.il/open-day/open-day-open-day/",
     "registration": "https://do.kinneret.ac.il/open-day/open-day-open-day/",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481618322",
@@ -21,7 +22,8 @@
     "faculty": "",
     "source": "https://www.hit.ac.il/events/261028650/",
     "registration": "https://www.hit.ac.il/events/261028650/#reg",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481657175",
@@ -33,7 +35,8 @@
     "faculty": "",
     "source": "https://www.sce.ac.il/lpage/beer-sheva",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481659630",
@@ -45,7 +48,8 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481657335",
@@ -57,7 +61,8 @@
     "faculty": "",
     "source": "https://www.jsfs.co.il/open-days",
     "registration": "https://www.jsfs.co.il/openday-internal",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481643153",
@@ -69,7 +74,8 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481668706",
@@ -81,7 +87,8 @@
     "faculty": "",
     "source": "https://www.tau.ac.il/calendar",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": true
   },
   {
     "id": "13481639779",
@@ -93,7 +100,8 @@
     "faculty": "",
     "source": "https://www.bgu.ac.il/events/open-day/",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": true
   },
   {
     "id": "13481669430",
@@ -105,7 +113,8 @@
     "faculty": "",
     "source": "https://www.biu.ac.il/article/openday",
     "registration": "https://openday.biu.ac.il/?utm_campaign=openday-feb-2027&utm_content=tipograhic&utm_medium=article&utm_source=biu",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": true
   },
   {
     "id": "13481643071",
@@ -117,7 +126,8 @@
     "faculty": "",
     "source": "https://he-info-overseas.huji.ac.il/",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": true
   },
   {
     "id": "13481658304",
@@ -129,7 +139,8 @@
     "faculty": "",
     "source": "https://www.jsfs.co.il/open-days",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481648241",
@@ -141,7 +152,8 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481657176",
@@ -153,7 +165,8 @@
     "faculty": "הפקולטה לחקלאות, מזון וסביבה",
     "source": "https://he-info-overseas.huji.ac.il/",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": true
   },
   {
     "id": "13481646628",
@@ -165,7 +178,8 @@
     "faculty": "",
     "source": "https://www.jsfs.co.il/open-days",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481640110",
@@ -177,7 +191,8 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481670467",
@@ -189,7 +204,8 @@
     "faculty": "",
     "source": "https://www.jsfs.co.il/open-days",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481658086",
@@ -201,7 +217,8 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   },
   {
     "id": "13481627989",
@@ -213,6 +230,7 @@
     "faculty": "",
     "source": "https://www.sapir.ac.il/inscription_acceptance/opendays",
     "registration": "",
-    "checked": "2026-11-05"
+    "checked": "2026-11-05",
+    "university": false
   }
 ]

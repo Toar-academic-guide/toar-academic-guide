@@ -30,7 +30,17 @@ it('joins confirmed events to institutions across pages and removes cancellation
     .fn()
     .mockResolvedValueOnce(page([event('8', 'Confirmed'), event('9', 'Cancelled')], 'next'))
     .mockResolvedValueOnce(
-      page([{ id: '7', name: 'מוסד', group: { id: 'topics' }, column_values: [] }], null),
+      page(
+        [
+          {
+            id: '7',
+            name: 'מוסד',
+            group: { id: 'topics' },
+            column_values: [{ id: 'boolean_mm8th0tr', text: 'v', checked: true }],
+          },
+        ],
+        null,
+      ),
     );
   vi.stubGlobal('fetch', request);
   const events = await loadOpenDays();
@@ -39,6 +49,7 @@ it('joins confirmed events to institutions across pages and removes cancellation
     id: '8',
     title: 'יום פתוח',
     institution: 'מוסד',
+    university: true,
     source: 'https://example.edu/open',
     registration: '',
   });

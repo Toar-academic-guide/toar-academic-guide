@@ -3,12 +3,12 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import seed from '@/data/openDays.initial.json';
 
-type OpenDay = (typeof seed)[number];
+export type OpenDay = (typeof seed)[number];
 type BoardItem = {
   id: string;
   name: string;
   group: { id: string };
-  column_values: { id: string; text: string | null }[];
+  column_values: { id: string; text: string | null; checked?: boolean }[];
 };
 
 type BoardResponse = {
@@ -26,13 +26,14 @@ const columns = {
   place: 'text_mm8t6bcc',
   faculty: 'text_mm8txfhf',
   status: 'color_mm8te8s1',
+  university: 'boolean_mm8th0tr',
 } as const;
 
 const query = `query OpenDays($cursor: String) {
   boards(ids: [18438707562]) {
     items_page(limit: 500, cursor: $cursor) {
       cursor
-      items { id name group { id } column_values(ids: ${JSON.stringify(Object.values(columns))}) { id text } }
+      items { id name group { id } column_values(ids: ${JSON.stringify(Object.values(columns))}) { id text ... on CheckboxValue { checked } } }
     }
   }
 }`;
@@ -46,9 +47,7 @@ function officialLink(value: string) {
 }
 
 function publishedEvents(items: BoardItem[]): OpenDay[] {
-  const institutions = new Map(
-    items.filter((i) => i.group.id === 'topics').map((i) => [i.id, i.name]),
-  );
+  const institutions = new Map(items.filter((i) => i.group.id === 'topics').map((i) => [i.id, i]));
   const events: OpenDay[] = [];
   for (const item of items) {
     if (item.group.id !== 'group_mm8t9en6') continue;
@@ -62,12 +61,14 @@ function publishedEvents(items: BoardItem[]): OpenDay[] {
     const endDate = values[columns.endDate];
     if (!institution || !source || !values[columns.date] || !values[columns.checked]) continue;
     if (endDate && endDate < values[columns.date]) continue;
+    const name = institution.name;
     events.push({
       id: item.id,
-      title: item.name.startsWith(institution + ' — ')
-        ? item.name.slice(institution.length + 3)
-        : item.name,
-      institution,
+      title: item.name.startsWith(name + ' — ') ? item.name.slice(name.length + 3) : item.name,
+      institution: name,
+      university: institution.column_values.some(
+        (v) => v.id === columns.university && v.checked === true,
+      ),
       date: values[columns.date],
       endDate,
       checked: values[columns.checked],
@@ -105,7 +106,7 @@ const readBoard = unstable_cache(
     } while (cursor);
     return publishedEvents(items);
   },
-  ['open-days-board-v1'],
+  ['open-days-board-v2'],
   { revalidate: 900 },
 );
 

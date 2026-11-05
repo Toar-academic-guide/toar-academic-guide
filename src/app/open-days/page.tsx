@@ -2,7 +2,7 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import { getJerusalemDate } from '@/lib/psychometricDates';
-import { loadOpenDays } from './openDays';
+import { loadOpenDays, type OpenDay } from './openDays';
 import styles from './page.module.css';
 
 export const metadata: Metadata = {
@@ -25,64 +25,92 @@ function dateLabel(start: string, end: string) {
     : dateFormat.format(first);
 }
 
+const filters = [
+  { value: 'universities', label: 'אוניברסיטאות', href: '/open-days' },
+  { value: 'colleges', label: 'מכללות', href: '/open-days?type=colleges' },
+  { value: 'all', label: 'הכול', href: '/open-days?type=all' },
+] as const;
+
+function EventDate({ event }: { event: OpenDay }) {
+  const description = [
+    event.title !== 'יום פתוח' && event.title,
+    event.faculty && !event.title.includes(event.faculty) && event.faculty,
+    event.place,
+  ]
+    .filter(Boolean)
+    .join(' · ');
+
+  return (
+    <div className={styles.event}>
+      <div>
+        <span>{dateLabel(event.date, event.endDate)}</span>
+        {description && <small>{description}</small>}
+      </div>
+      <a href={event.registration || event.source}>{event.registration ? 'להרשמה' : 'לפרטים'}</a>
+    </div>
+  );
+}
+
 export default async function OpenDaysPage({
   searchParams,
 }: {
-  searchParams: Promise<{ sort?: string }>;
+  searchParams: Promise<{ type?: string }>;
 }) {
-  const descending = (await searchParams).sort === 'latest';
+  const type = (await searchParams).type;
+  const filter = filters.find((option) => option.value === type) ?? filters[0];
   const today = getJerusalemDate(new Date());
   const events = (await loadOpenDays())
-    .filter((e) => (e.endDate || e.date) >= today)
+    .filter((event) => (event.endDate || event.date) >= today)
+    .filter(
+      (event) => filter.value === 'all' || event.university === (filter.value === 'universities'),
+    )
     .sort(
-      (a, b) =>
-        (descending ? -1 : 1) * a.date.localeCompare(b.date) ||
-        a.title.localeCompare(b.title, 'he'),
+      (a, b) => a.date.localeCompare(b.date) || a.institution.localeCompare(b.institution, 'he'),
     );
-
+  const institutions = Map.groupBy(events, (event) => event.institution);
   return (
     <WayPageShell>
       <main dir="rtl" id="main-content" className={styles.main}>
         <h1>ימים פתוחים באוניברסיטאות ובמכללות</h1>
-        {events.length === 0 ? (
-          <p>כרגע אין ימים פתוחים עם תאריך שפורסם.</p>
+        <nav aria-label="סוג מוסד" className={styles.filters}>
+          {filters.map((option) => (
+            <Link
+              key={option.value}
+              scroll={false}
+              href={option.href}
+              aria-current={option === filter ? 'page' : undefined}
+            >
+              {option.label}
+            </Link>
+          ))}
+        </nav>
+        {institutions.size === 0 ? (
+          <p>כרגע אין מועדים קרובים להצגה.</p>
         ) : (
           <table className={styles.table}>
             <caption className="sr-only">ימים פתוחים קרובים</caption>
             <thead>
               <tr>
-                <th scope="col">מוסד ואירוע</th>
-                <th scope="col" aria-sort={descending ? 'descending' : 'ascending'}>
-                  <Link
-                    scroll={false}
-                    href={descending ? '/open-days' : '/open-days?sort=latest'}
-                    aria-label={descending ? 'הצגת התאריך הקרוב תחילה' : 'הצגת התאריך הרחוק תחילה'}
-                  >
-                    תאריך <span aria-hidden="true">{descending ? '↓' : '↑'}</span>
-                  </Link>
-                </th>
-                <th scope="col">באתר המוסד</th>
+                <th scope="col">מוסד</th>
+                <th scope="col">תאריך</th>
               </tr>
             </thead>
             <tbody>
-              {events.map((event) => (
-                <tr key={event.id}>
-                  <th scope="row">
-                    <strong>{event.institution}</strong>
-                    {event.title !== 'יום פתוח' && <span>{event.title}</span>}
-                    {event.faculty && !event.title.includes(event.faculty) && (
-                      <span>{event.faculty}</span>
-                    )}
-                    {event.place && <span>{event.place}</span>}
-                  </th>
-                  <td>{dateLabel(event.date, event.endDate)}</td>
+              {Array.from(institutions, ([institution, [first, ...later]]) => (
+                <tr key={institution}>
+                  <th scope="row">{institution}</th>
                   <td>
-                    <a href={event.registration || event.source}>
-                      {event.registration ? 'להרשמה' : 'לפרטים'}
-                    </a>
-                    <small>
-                      נבדק לאחרונה <bdi>{event.checked.split('-').reverse().join('.')}</bdi>
-                    </small>
+                    <EventDate event={first} />
+                    {later.length > 0 && (
+                      <details className={styles.later}>
+                        <summary>
+                          {later.length === 1 ? 'מועד נוסף' : `עוד ${later.length} מועדים`}
+                        </summary>
+                        {later.map((event) => (
+                          <EventDate key={event.id} event={event} />
+                        ))}
+                      </details>
+                    )}
                   </td>
                 </tr>
               ))}
