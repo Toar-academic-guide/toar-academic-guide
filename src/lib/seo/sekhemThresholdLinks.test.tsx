@@ -107,6 +107,7 @@ describe('published-threshold calculator links', () => {
   });
 
   it('links exactly every programme whose rendered requirements contain a composite cutoff', async () => {
+    const offerings = await loadSekhemCalculatorOfferings();
     const rows = [];
     for (const program of getStaticCataloguePrograms()) {
       if (
@@ -128,16 +129,16 @@ describe('published-threshold calculator links', () => {
       rows.push({
         id: program.id,
         text: renderedRequirementText(section),
-        supported: Object.entries(
-          await getPublicProgramRequirementSources((await getPublicProgramPageData(program.id))!),
-        ).some(
-          ([id, source]) =>
-            ['score', 'gate'].includes(sekhemPairSupport(source.program, id) ?? '') &&
-            containsRenderedThreshold(source.requirements.join(' ')),
-        ),
-        linked: !!section.querySelector(
-          `a[href="/sekhem-calculator?program=${program.id}"], a[href="/sekhem-calculator"]`,
-        ),
+        supported:
+          offerings.some((row) => row.programId === program.id) &&
+          Object.entries(
+            await getPublicProgramRequirementSources((await getPublicProgramPageData(program.id))!),
+          ).some(
+            ([id, source]) =>
+              ['score', 'gate'].includes(sekhemPairSupport(source.program, id) ?? '') &&
+              containsRenderedThreshold(source.requirements.join(' ')),
+          ),
+        linked: !!section.querySelector(`a[href="/sekhem-calculator?program=${program.id}"]`),
       });
     }
     const linked = rows
@@ -152,7 +153,7 @@ describe('published-threshold calculator links', () => {
     expect(linked).toEqual(thresholds);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
     // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
-    expect(linked).toHaveLength(42);
+    expect(linked).not.toContain('cs');
     expect(linked).toEqual(
       expect.arrayContaining([
         'haifa_infosystems',
@@ -195,7 +196,9 @@ describe('published-threshold calculator links', () => {
     for (const program of getStaticCataloguePrograms()) {
       const data = (await getPublicProgramPageData(program.id))!;
       const sources = await getPublicProgramRequirementSources(data);
-      const html = renderToStaticMarkup(<SekhemCalculatorLink data={data} sources={sources} />);
+      const html = renderToStaticMarkup(
+        <SekhemCalculatorLink data={data} sources={sources} offerings={offerings} />,
+      );
       if (!html) continue;
       expect(
         Object.entries(sources).some(

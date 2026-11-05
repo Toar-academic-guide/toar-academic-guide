@@ -638,7 +638,7 @@ describe('structured data', () => {
     expect(application).toEqual({
       '@type': 'WebApplication',
       '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
-      name: 'מחשבון סכם וסיכויי קבלה',
+      name: 'מחשבון סכם',
       url: 'https://findmyway.co.il/sekhem-calculator',
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
@@ -646,7 +646,7 @@ describe('structured data', () => {
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-      featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+      featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
       publisher: { '@id': organizationLd()['@id'] },
       isPartOf: { '@id': websiteLd()['@id'] },
     });

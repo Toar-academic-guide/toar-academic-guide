@@ -1,4 +1,5 @@
 'use client';
+import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import { academicBagrutAverage } from '@/lib/admissionsEvaluationProfile';
 
 import { useEffect, useState, type ReactNode } from 'react';
@@ -135,6 +136,7 @@ function toCatalogueError(error: unknown): CatalogueApiError {
 }
 
 interface AppExperienceProps {
+  calculatorPrograms?: readonly Pick<CalculatorOffering, 'programId' | 'institutionId'>[];
   initialStudyRegions?: StudyRegionId[];
   fromStudyLocation?: boolean;
   initialStep?: AppStep;
@@ -153,6 +155,7 @@ const DURABLE_STEP_ROUTES: Partial<Record<AppStep, string>> = {
 };
 
 export default function AppExperience({
+  calculatorPrograms,
   initialStudyRegions = [],
   fromStudyLocation = false,
   initialStep: routeInitialStep = 'landing',
@@ -1099,6 +1102,7 @@ export default function AppExperience({
         {/* ── Step: Recommendations ─────────────────────────────── */}
         {!shouldBlockCatalogueStep && step === 'recommendations' && assessmentProfile && (
           <RecommendationResults
+            calculatorPrograms={calculatorPrograms}
             programs={cataloguePrograms}
             recommendations={recommendations}
             onSelectDegree={handleSelectDegree}

@@ -415,6 +415,9 @@ export default function SekhemCalculator({
           </button>
         </div>
         <div ref={subjectFields} id="sekhem-bagrut-subjects" tabIndex={-1}>
+          <p className="mb-3 text-sm text-(--text-body)">
+            הזינו את הציונים שמופיעים בתעודת הבגרות, לפני בונוסים.
+          </p>
           <BagrutSubjectRows
             sector={sector}
             rows={rows}

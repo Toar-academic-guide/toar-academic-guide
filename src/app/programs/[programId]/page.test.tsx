@@ -224,7 +224,7 @@ describe('ProgramPage', () => {
     expect(items).toContain(
       'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
     );
-    expect(screen.getByRole('link', { name: 'מחשבון סכם וסיכויי קבלה' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'חשבו סכם לתוכנית הזו' }).getAttribute('href')).toBe(
       '/sekhem-calculator?program=haifa_cs',
     );
     expect(container.textContent).not.toMatch(

@@ -165,14 +165,14 @@ export function sekhemCalculatorLd() {
   return {
     '@type': 'WebApplication',
     '@id': absoluteUrl('/sekhem-calculator#webapp'),
-    name: 'מחשבון סכם וסיכויי קבלה',
+    name: 'מחשבון סכם',
     url: absoluteUrl('/sekhem-calculator'),
     applicationCategory: 'EducationalApplication',
     operatingSystem: 'Web',
     inLanguage: 'he',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-    featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
     publisher: { '@id': ORGANIZATION_ID },
     isPartOf: { '@id': WEBSITE_ID },
   };
