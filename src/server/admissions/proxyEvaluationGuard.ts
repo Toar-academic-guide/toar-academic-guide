@@ -80,6 +80,9 @@ export function guardProxyEvaluation(
   if (!borderline && allOtherChannelsFailed) return result;
   return {
     ...result,
+    ...(result.linkedInstitutionId === 'bgu' && isBguPsychologyProgram(input.degreeId)
+      ? { score: undefined, deltaNeeded: undefined }
+      : {}),
     capability: 'needs_input',
     kind: 'needs_input',
     decision: 'unknown',

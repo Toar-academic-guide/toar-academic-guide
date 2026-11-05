@@ -10,7 +10,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     profileScore: { AN: 5, TE: 2, CR: 1, SO: 0, LE: 1, OR: 3, DI: 5, ER: 2 },
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 720, haifa: 705, biu: 675, ariel: 600 },
+    thresholds: { tau: 700, huji: 690, technion: 92, bgu: 720, haifa: 700, biu: 675, ariel: 600 },
     minimumPsychometric: { bgu: 600 },
     isTauEngineering: true,
   },
@@ -38,7 +38,7 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     admissionRequirements: [],
     thresholds: { tau: 720, huji: 725, technion: null, bgu: 650, haifa: 650, biu: 665, ariel: 580 },
     isTauEngineering: false,
-    directPsychometric: { huji: 660 },
+    directPsychometric: { huji: 725 },
     minimumPsychometric: { bgu: 650 },
   },
   {
@@ -62,8 +62,13 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     category: 'מדעי הבריאות',
     profileScore: { AN: 5, TE: 2, CR: 0, SO: 4, LE: 1, OR: 2, DI: 0, ER: 5 },
     admissionType: 'sekhem',
-    admissionRequirements: [],
-    thresholds: { tau: 770, huji: 775, technion: 94, bgu: null, biu: 740 },
+    admissionRequirements: ['בטכניון: 92 — סף זימון משוער למבחן מו״ר.'],
+    // TAU preliminary floor: https://go.tau.ac.il/graphql (acceptanceThreshold).
+    // https://go.tau.ac.il/he/med/ba/med-doc?v=new-info
+    // HUJI and BIU publish conditions on different scales; keep these keys NULL.
+    // Technion invitation estimate: see TECHNION_THRESHOLD_URL in admissions/technionThresholds.ts.
+    thresholds: { tau: 726.44, huji: null, technion: 92, biu: null },
+    nullThresholdLinks: ['huji', 'biu'],
     isTauEngineering: false,
   },
   {

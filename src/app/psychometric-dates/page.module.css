@@ -1,0 +1,259 @@
+.shell.shell {
+  background: transparent;
+}
+
+.shell [data-way-backdrop] {
+  display: none;
+}
+
+.main {
+  max-width: 800px;
+  margin-inline: auto;
+  padding: 36px 24px 72px;
+  min-height: 720px;
+  color: var(--text-body);
+  font-size: 16px;
+  line-height: 1.6;
+  text-align: right;
+}
+
+.main h1 {
+  color: #12234a;
+  font-family: var(--font-sans);
+  font-size: 38px;
+  line-height: 1.25;
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+
+.main bdi {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.main a {
+  color: #55449a;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.main :is(a, summary):focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 3px;
+}
+
+.intro {
+  margin-bottom: 26px;
+}
+.answer {
+  font-size: 17px;
+  max-width: 68ch;
+  margin-top: 14px;
+  line-height: 1.7;
+}
+.stamp {
+  font-size: 13px;
+  color: #56627b;
+  margin-top: 10px;
+}
+.stamp a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+.tool {
+  background: white;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 18px 45px #b5c9e030;
+  padding: 8px 28px 24px;
+}
+.tool table {
+  width: 100%;
+  border-collapse: collapse;
+  color: #12234a;
+  font-variant-numeric: tabular-nums;
+  table-layout: fixed;
+}
+.tool thead th {
+  font-size: 14px;
+  font-weight: 400;
+  color: #56627b;
+  padding: 12px 16px;
+  border-bottom: 1px solid #c9d3e6;
+}
+.tool th,
+.tool td {
+  text-align: right;
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--border);
+}
+.tool tbody th {
+  font-weight: 600;
+}
+.tool tbody a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+  color: #12234a;
+}
+.next {
+  background: #eef2ff;
+}
+.tool small {
+  display: block;
+  font-size: 12px;
+  font-weight: 400;
+  line-height: 1.5;
+  color: var(--text-body);
+}
+.tool tbody tr:last-child th,
+.tool tbody tr:last-child td {
+  border-bottom: 0;
+}
+.tool .statusBadge {
+  width: fit-content;
+  margin-inline-end: auto;
+  font-size: 12px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  background: #eef0ff;
+  color: #4d5690;
+}
+.ctaArea {
+  padding-top: 20px;
+}
+.main .primary {
+  width: 100%;
+  min-height: 52px;
+  min-width: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--way-action);
+  border: 0;
+  border-radius: 9px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 17px;
+  text-decoration: none;
+}
+.primary svg {
+  width: 22px;
+  height: 22px;
+  flex: none;
+}
+.primary:hover {
+  background: #55449a;
+}
+.reformNote {
+  font-size: 13px;
+  color: #56627b;
+  margin-top: 16px;
+  line-height: 1.6;
+}
+.reformNote a {
+  /* Expand the hit area without moving the mockup's inline text. */
+  padding-inline: 8px;
+  margin-inline: -8px;
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  min-width: 44px;
+}
+.extra {
+  margin-top: 16px;
+}
+.extra summary {
+  min-height: 44px;
+  padding: 10px 4px;
+  color: #55449a;
+  cursor: pointer;
+  font-size: 14px;
+}
+.extra summary:hover {
+  text-decoration: underline;
+}
+.detailsContent {
+  padding: 12px 4px 20px;
+  line-height: 1.75;
+  font-size: 14px;
+}
+.detailsContent h2 {
+  color: #12234a;
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 600;
+  margin-bottom: 12px;
+}
+.detailsContent p + p {
+  margin-top: 12px;
+}
+.detailsContent ul {
+  list-style: disc;
+  margin: 0 0 16px;
+  padding-inline-start: 22px;
+}
+.detailsContent a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .main {
+    padding: 22px 20px 44px;
+    min-height: 0;
+  }
+  .main h1 {
+    font-size: 29px;
+    line-height: 1.25;
+  }
+  .answer {
+    font-size: 15px;
+    line-height: 1.7;
+    margin-top: 12px;
+  }
+  .intro {
+    margin-bottom: 18px;
+  }
+  .stamp {
+    font-size: 12px;
+    margin-top: 6px;
+  }
+  .stamp a {
+    display: flex;
+  }
+  .tool {
+    padding: 4px 12px 18px;
+  }
+  .tool thead th {
+    font-size: 13px;
+    padding: 12px 8px;
+  }
+  .tool th,
+  .tool td {
+    padding: 8px;
+    font-size: 15px;
+  }
+  .ctaArea {
+    padding-top: 14px;
+  }
+  .main .primary {
+    font-size: 16px;
+  }
+}

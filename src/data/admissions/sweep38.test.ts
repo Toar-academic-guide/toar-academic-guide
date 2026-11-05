@@ -4,7 +4,7 @@ import { parseReviewedAdmissionsManifest } from '@/server/admissions/reviewedMan
 import { allPrograms, programsWithLegacyAdmissionFacts } from '@/data/degrees';
 import { hybridAdmissionSlice } from './hybridSlice';
 import { RETIRED_PROGRAM_IDS } from './catalogueContentRepair';
-import manifest from './reviewedManifest.json';
+import manifest from '@/server/admissions/__fixtures__/reviewedManifest-2026-10-25.json';
 import repair from './catalogueContentRepair.json';
 
 describe('sweep-38 official catalogue corrections', () => {

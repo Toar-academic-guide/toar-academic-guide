@@ -1,3 +1,6 @@
+// Preserve existing sessions when the Supabase URL moves to the custom auth domain.
+export const SUPABASE_AUTH_COOKIE_NAME = 'sb-kfxcdbjeidczltkrjazk-auth-token';
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL ?? null;
 const supabasePublishableKey =
   process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ??

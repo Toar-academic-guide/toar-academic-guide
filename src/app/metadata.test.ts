@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import { SITE_DESCRIPTION } from '@/lib/site';
 
 // Inspect server metadata exports without loading unrelated client application code.
 vi.mock('server-only', () => ({}));
@@ -36,8 +35,9 @@ describe('home metadata inheritance', () => {
       locale: 'he_IL',
       siteName: 'MyWay',
       url: 'https://findmyway.co.il/',
-      title: 'MyWay | הדרך שלך ללימודים',
-      description: SITE_DESCRIPTION,
+      title: 'מחשבון סיכויי קבלה לתואר לפי בגרות ופסיכומטרי | MyWay',
+      description:
+        'בדיקת סיכויי קבלה לתואר לפי בגרות ופסיכומטרי עם מחשבון סיכויי קבלה בחינם לסטודנטים.',
     });
   });
 });

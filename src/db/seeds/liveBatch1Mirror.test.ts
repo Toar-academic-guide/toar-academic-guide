@@ -10,7 +10,16 @@ describe('seed mirrors the live official requirements', () => {
   it.each(pairs)('%s keeps the live requirement text, notes and links', (id, live) => {
     const row = seed.admissionRequirements.find((entry) => entry.id === id);
     expect(row?.admissionRequirements).toEqual(live.admissionRequirements);
-    expect(row?.specificAdmissionNotes).toEqual(live.specificAdmissionNotes);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 39)
+    expect(row?.specificAdmissionNotes).toEqual(
+      id === 'ono_law:ono'
+        ? live.specificAdmissionNotes.filter(
+            (note) =>
+              note !==
+              'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
+          )
+        : live.specificAdmissionNotes,
+    );
     const urls = Object.fromEntries(
       seed.sourceUrls
         .filter((entry) => entry.admissionRequirementId === id)

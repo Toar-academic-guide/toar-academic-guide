@@ -1,0 +1,155 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts (40 tests | 8 failed) 181ms
+   × saved haifa_psychology reaches its missing-month gate while a proxy keeps the Haifa note 11ms
+   × saved psychology reaches its missing-month gate while a proxy keeps the Haifa note 4ms
+   × saved Haifa formula results and programme gates agree across the static catalogue 4ms
+   × saved Haifa formula results and programme gates agree across the saved_audit catalogue 2ms
+   × saved haifa_communication computes the official NITE score locally and uses student terminology 2ms
+   × saved communication computes the official NITE score locally and uses student terminology 2ms
+   × H2 returns the honest note for captured average-only Haifa programme psychology 2ms
+   × H2 returns the honest note for captured average-only Haifa programme haifa_psychology 2ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 8 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved haifa_psychology reaches its missing-month gate while a proxy keeps the Haifa note
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved psychology reaches its missing-month gate while a proxy keeps the Haifa note
+AssertionError: expected { …(5) } to match object { kind: 'authority_unavailable', …(3) }
+(1 matching property omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "capability": "authority_unavailable",
+-   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה",
++   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה סף הקבלה השמור למסלול הוא 650 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "authority_unavailable",
+    "officialUrls": [
+-     "https://admissions.haifa.ac.il/score-calculation/",
+      "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+    ],
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:215:38
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/8]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved Haifa formula results and programme gates agree across the static catalogue
+AssertionError: cs: expected { capability: 'exact', …(7) } to strictly equal { capability: 'exact', …(7) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  {
+    "capability": "exact",
+    "decision": "below",
+-   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..",
++   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "exact",
+    "officialUrls": [
+      "https://admissions.haifa.ac.il/score-calculation/",
+      "https://admissions.haifa.ac.il/computer-information-science/program/3210",
+    ],
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:481:52
+    479|       expect(baseline, program.id).toBeDefined();
+    480|       const { result } = await gapEvaluate(program, 'haifa', saved);
+    481|       expect(savedHaifaAnswer(result), program.id).toStrictEqual(basel…
+       |                                                    ^
+    482|     }
+    483|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/8]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved Haifa formula results and programme gates agree across the saved_audit catalogue
+AssertionError: haifa_cs: expected { capability: 'exact', …(7) } to strictly equal { capability: 'exact', …(7) }
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  {
+    "capability": "exact",
+    "decision": "below",
+-   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..",
++   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "exact",
+    "officialUrls": [
+      "https://admissions.haifa.ac.il/score-calculation/",
+      "https://admissions.haifa.ac.il/computer-information-science/program/3210",
+    ],
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:481:52
+    479|       expect(baseline, program.id).toBeDefined();
+    480|       const { result } = await gapEvaluate(program, 'haifa', saved);
+    481|       expect(savedHaifaAnswer(result), program.id).toStrictEqual(basel…
+       |                                                    ^
+    482|     }
+    483|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/8]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved haifa_communication computes the official NITE score locally and uses student terminology
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved communication computes the official NITE score locally and uses student terminology
+AssertionError: expected { …(16) } to match object { capability: 'exact', …(5) }
+(23 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "capability": "exact",
+    "decision": "eligible_to_apply",
+-   "explanation": "ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה.",
++   "explanation": "ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "manual_gate",
+    "score": 620,
+    "threshold": 550,
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:492:20
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/8]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > H2 returns the honest note for captured average-only Haifa programme psychology
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > H2 returns the honest note for captured average-only Haifa programme haifa_psychology
+AssertionError: expected { …(13) } to match object { kind: 'authority_unavailable', …(3) }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "capability": "authority_unavailable",
+-   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה",
++   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה סף הקבלה השמור למסלול הוא 650 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "authority_unavailable",
+    "officialUrls": [
+-     "https://admissions.haifa.ac.il/score-calculation/",
+      "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+    ],
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:595:22
+    593|       });
+    594|     } else {
+    595|       expect(result).toMatchObject({
+       |                      ^
+    596|         kind,
+    597|         capability: kind,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/8]⎯
+
+
+ Test Files  1 failed | 4 passed (5)
+      Tests  8 failed | 754 passed (762)
+   Start at  15:14:48
+   Duration  3.33s (transform 4.38s, setup 479ms, import 10.57s, tests 1.58s, environment 0ms)

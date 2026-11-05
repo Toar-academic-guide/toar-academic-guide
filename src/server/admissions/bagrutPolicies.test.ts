@@ -1,11 +1,14 @@
 import { describe, expect, it } from 'vitest';
+import type { BagrutSubjectRecordV2 } from '@/types';
 import { TAU_BAGRUT_AVERAGE_VERIFICATION } from '@/data/admissions/tauBagrutAverageVerification';
+import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
 import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 
 import {
   BGU_COMPUTER_SCIENCE_ROUTE_POLICY,
   TAU_ENGINEERING_EXACT_SCIENCES_POLICY,
   calculateBguBagrutAverage,
+  calculateHujiBagrutAverage,
   calculateTauBagrutAverage,
   calculateOptimizedBagrutAverage,
   classifyPsychometricEnglishScore,
@@ -15,6 +18,84 @@ import {
   evaluateTauEngineeringExactSciencesBonus,
   tauBagrutBonusForSubject,
 } from './bagrutPolicies';
+
+describe('medicine average official calculator captures', () => {
+  it('caps the high TAU average at 117 and retains its uncapped value', () => {
+    const reference = MEDICINE_ACADEMIC_REFERENCE_CASES.tau;
+    expect(calculateTauBagrutAverage(reference.record)).toMatchObject({
+      state: 'calculated',
+      average: reference.average,
+      uncappedAverage: reference.uncappedAverage,
+    });
+  });
+  it('keeps the two decimal places returned by BGU', () => {
+    const reference = MEDICINE_ACADEMIC_REFERENCE_CASES.bgu;
+    expect(calculateBguBagrutAverage(reference.record)).toMatchObject({
+      state: 'calculated',
+      average: 111.15,
+    });
+    const changed = structuredClone(reference.record);
+    changed.subjects.find((s) => s.subjectId === 'mathematics')!.grade = 91;
+    expect(calculateBguBagrutAverage(changed)).toMatchObject({
+      state: 'calculated',
+      average: 111.35,
+    });
+  });
+  it('matches HUJI full-unit and rounding examples', () => {
+    const reference = MEDICINE_ACADEMIC_REFERENCE_CASES.huji;
+    expect(calculateHujiBagrutAverage(reference.record)).toMatchObject({
+      state: 'calculated',
+      average: 105,
+    });
+    const changed = structuredClone(reference.record);
+    changed.subjects.find((s) => s.subjectId === 'bible')!.units = 3;
+    expect(calculateHujiBagrutAverage(changed)).toMatchObject({
+      state: 'calculated',
+      average: 104.3,
+    });
+    changed.subjects.find((s) => s.subjectId === 'bible')!.units = 2;
+    changed.subjects.find((s) => s.subjectId === 'mathematics')!.grade = 91;
+    expect(calculateHujiBagrutAverage(changed)).toMatchObject({
+      state: 'calculated',
+      average: 105.3,
+    });
+  });
+  it('keeps the qualifying French alternative in the TAU average', () => {
+    const record = structuredClone(MEDICINE_ACADEMIC_REFERENCE_CASES.tau.record);
+    record.subjects.find((s) => s.subjectId === 'english')!.units = 3;
+    record.subjects.push({
+      subjectId: subjectIdForWizardLabel('צרפתית'),
+      units: 4,
+      grade: 55,
+      assessmentKind: 'exam',
+    });
+    expect(calculateTauBagrutAverage(record)).toMatchObject({
+      state: 'calculated',
+      includedSubjectIds: expect.arrayContaining([subjectIdForWizardLabel('צרפתית')]),
+    });
+  });
+  it('includes final project grades in BGU instead of silently discarding them', () => {
+    const record = structuredClone(MEDICINE_ACADEMIC_REFERENCE_CASES.bgu.record);
+    record.subjects.push({
+      subjectId: subjectIdForWizardLabel('תיאטרון'),
+      units: 5,
+      grade: 100,
+      assessmentKind: 'final_project',
+    });
+    expect(calculateBguBagrutAverage(record)).toMatchObject({
+      state: 'calculated',
+      average: 112.58,
+    });
+  });
+  it('asks for a combined-subject transcript breakdown at BGU', () => {
+    const record = structuredClone(MEDICINE_ACADEMIC_REFERENCE_CASES.bgu.record);
+    record.subjects[0].assessmentKind = 'combined';
+    expect(calculateBguBagrutAverage(record)).toMatchObject({
+      state: 'needs_input',
+      missingInputs: ['bagrut_combined_subjects'],
+    });
+  });
+});
 
 describe('TAU engineering and exact-sciences Bagrut policy', () => {
   it('awards the published bonus only when both qualifying five-unit subjects meet the grade floor', () => {
@@ -119,6 +200,35 @@ describe('TAU engineering and exact-sciences Bagrut policy', () => {
 });
 
 describe('versioned admissions input policies', () => {
+  it.each(['other', 'external_1977_or_later'] as const)(
+    'calculates the same BGU average for an %s certificate as an internal certificate',
+    (certificateType) => {
+      const record: BagrutSubjectRecordV2 = {
+        schemaVersion: 2,
+        sector: 'jewish',
+        certificateType: 'internal',
+        complete: true,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'computer_science', units: 5, grade: 90, assessmentKind: 'exam' },
+          { subjectId: 'hebrew_expression', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'history', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'literature', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'civics', units: 2, grade: 85, assessmentKind: 'exam' },
+          { subjectId: 'bible', units: 2, grade: 85, assessmentKind: 'exam' },
+        ],
+      };
+      const internal = calculateBguBagrutAverage(record);
+      const result = calculateBguBagrutAverage({ ...record, certificateType });
+
+      expect(internal).toMatchObject({ state: 'calculated', average: 110 });
+      expect(result).toMatchObject({ state: 'calculated', average: 110 });
+      expect(result).toEqual(internal);
+    },
+  );
+
   it('reproduces the official BGU calculator sample and caps the optional average', () => {
     const result = calculateBguBagrutAverage({
       schemaVersion: 2,
@@ -325,7 +435,12 @@ describe('versioned admissions input policies', () => {
           { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' },
           { subjectId: 'english', units: 5, grade: 90, assessmentKind: 'exam' },
           { subjectId: 'history', units: 5, grade: 90, assessmentKind: 'exam' },
-          { subjectId: 'physics', units: 5, grade: 90, assessmentKind: 'final_project' },
+          {
+            subjectId: subjectIdForWizardLabel('עבודת גמר'),
+            units: 5,
+            grade: 90,
+            assessmentKind: 'final_project',
+          },
         ],
       }),
     ).toMatchObject({
@@ -346,6 +461,7 @@ describe('versioned admissions input policies', () => {
     expect(calculateTauBagrutAverage(TAU_BAGRUT_AVERAGE_VERIFICATION.record)).toEqual({
       state: 'calculated',
       average: 108.39,
+      uncappedAverage: 2493 / 23,
       includedSubjectIds: ['arabic', 'chemistry', 'civics', 'english', 'history', 'mathematics'],
       excludedSubjectIds: ['arab_history', 'biology', 'hebrew_expression'],
       policyVersion: 'tau-bagrut-profile-2026-09-29',

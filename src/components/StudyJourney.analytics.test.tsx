@@ -119,7 +119,8 @@ describe('journey funnel analytics', () => {
     fireEvent.change(screen.getByRole('textbox', { name: 'חיפוש אפשרויות' }), {
       target: { value: '' },
     });
-    fireEvent.click(screen.getAllByRole('button', { name: 'יצירת קשר' })[0]);
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+    fireEvent.click(screen.getAllByRole('button', { name: 'קבלו שיחה מהמוסד' })[0]);
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
     await waitFor(() => expect(events('journey_results_viewed')).toHaveLength(2));
@@ -142,7 +143,8 @@ describe('journey funnel analytics', () => {
           fireEvent.click(checkboxes[1]);
           fireEvent.click(screen.getByRole('button', { name: 'השוואת מסלולים' }));
         }
-        fireEvent.click(screen.getAllByRole('button', { name: 'יצירת קשר' })[0]);
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        fireEvent.click(screen.getAllByRole('button', { name: 'קבלו שיחה מהמוסד' })[0]);
       }
       await screen // Approved test update, Jorje 2026-10-26
         .findByRole('dialog', {

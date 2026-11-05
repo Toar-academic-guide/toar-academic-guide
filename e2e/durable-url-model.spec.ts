@@ -27,7 +27,7 @@ test.describe('durable URL model', () => {
     await page.getByLabel('שעות פיזיקה בתעודת הנדסאי').fill('90');
     await page.getByLabel('ציון פיזיקה בתעודת הנדסאי', { exact: true }).fill('85');
     await page.getByLabel('כל נתוני ההנדסה הרלוונטיים הוזנו').check();
-    await page.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).click();
+    await page.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }).click();
     await expect(page).toHaveURL(/\/app\/assessment$/);
     await page.goto('/app/profile');
     await page.reload();
@@ -86,7 +86,8 @@ test.describe('durable URL model', () => {
   test('public catalogue pages render without login', async ({ page }) => {
     await page.goto('/programs/cs');
     await expect(page.getByRole('heading', { name: 'מדעי המחשב' })).toBeVisible();
-    await expect(page.getByRole('link', { name: 'בדיקת סיכויי קבלה' })).toHaveAttribute(
+    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
+    await expect(page.getByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toHaveAttribute(
       'href',
       '/app/calculator?program=cs',
     );
@@ -116,11 +117,26 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
     const header = page.locator('header');
+    const openMobileMenu = async () => {
+      if (width === 390) {
+        const hamburger = header.getByRole('button', { name: 'תפריט ניווט' });
+        if ((await hamburger.getAttribute('aria-expanded')) === 'false') await hamburger.click();
+      }
+    };
     const checkHeader = async () => {
       await expect(header).toHaveCount(1);
-      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
+      await openMobileMenu();
+      await expect(header.getByRole('link', { name: 'מה הסיכויים שלי?' })).toBeVisible();
       await expect(header.getByRole('link', { name: 'הרשימה שלי' })).toBeVisible();
-      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toBeVisible();
+      await expect(header.getByRole('link', { name: 'מי אנחנו' })).toHaveCount(0);
+      await expect(page.locator('footer').getByRole('link', { name: 'מי אנחנו' })).toHaveAttribute(
+        'href',
+        '/about',
+      );
+      const institutions = header.getByRole('button', { name: 'איפה ללמוד?' });
+      if ((await institutions.getAttribute('aria-expanded')) === 'false')
+        await institutions.click();
+      await expect(header.getByRole('link', { name: 'מוסדות לימוד' })).toBeVisible();
     };
     await checkHeader();
     await header.getByRole('link', { name: 'מוסדות לימוד' }).click();
@@ -137,8 +153,12 @@ for (const width of [1440, 390]) {
     await expect(page).toHaveURL(/\/programs\//);
     await checkHeader();
     await header.getByRole('link', { name: 'MyWay', exact: true }).click();
-    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
-    await page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' }).click();
+    await expect(page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' })).toBeVisible();
+    await page.evaluate(() => {
+      window.location.hash = 'intent';
+    });
+    await expect(page).toHaveURL(/#intent$/);
+    await openMobileMenu();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
     await header.getByRole('link', { name: 'כניסה' }).click();
     await page.getByPlaceholder('you@example.com').waitFor();
@@ -149,11 +169,12 @@ for (const width of [1440, 390]) {
     await page.goBack();
     await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' })).toBeVisible();
     await page.goto('/app/calculator');
     await header.getByRole('link', { name: 'MyWay', exact: true }).click();
     await expect(page).toHaveURL(/\/$/);
-    await expect(page.getByRole('button', { name: 'עזרו לי לבחור מה ללמוד' })).toBeVisible();
+    await expect(page.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' })).toBeVisible();
+    await openMobileMenu();
     await header.getByRole('link', { name: 'הרשימה שלי' }).click();
     await expect(page).toHaveURL(/#saved$/);
     await header.getByRole('link', { name: 'כניסה' }).click();

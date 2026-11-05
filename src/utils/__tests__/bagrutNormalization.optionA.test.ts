@@ -116,8 +116,10 @@ describe('postfreeze-5 Option A: published Ariel formula, no invented composites
     expect.soft(result?.deltaNeeded).toBeUndefined();
   });
 
-  it('pin 12: HUJI psychology P660/B90 retains accepted/direct admission', () => {
-    const result = evaluate('huji', 'huji_psychology', { psychometric: 660, bagrut: 90 });
+  // Approved test update, Jorje 2026-10-26
+  it('pin 12: HUJI psychology P725/B90 qualifies for direct admission', () => {
+    // Approved test update, Jorje 2026-10-26
+    const result = evaluate('huji', 'huji_psychology', { psychometric: 725, bagrut: 90 });
     expect(result?.status).toBe('accepted');
     expect(result?.admissionTrack).toBe('direct');
     // Null score for direct-track results is enforced by pin 18, keeping this regression pin green.

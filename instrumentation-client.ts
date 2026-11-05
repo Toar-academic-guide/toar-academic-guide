@@ -2,6 +2,17 @@ import posthog from 'posthog-js';
 
 import { sanitizePostHogEvent } from './src/lib/posthogPrivacy';
 import { getSessionAttribution } from './src/lib/sessionAttribution';
+import { clearEnquiryOrigin, recordEnquiryOrigin } from './src/lib/leadAttribution';
+
+// A fresh document cannot inherit the origin of an earlier soft navigation.
+clearEnquiryOrigin();
+
+export function onRouterTransitionStart(
+  url: string,
+  _navigationType: 'push' | 'replace' | 'traverse',
+) {
+  recordEnquiryOrigin(url);
+}
 
 const firstTouch = getSessionAttribution();
 const attribution = {

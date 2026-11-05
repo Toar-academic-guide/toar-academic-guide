@@ -91,7 +91,8 @@ export function normalizeBguQuantitativeRouteRule(
 export function fingerprintBguQuantitativeRouteRule(
   rule: NonNullable<ReturnType<typeof normalizeBguQuantitativeRouteRule>>,
 ) {
-  return `sha256:${createHash('sha256').update(JSON.stringify(rule)).digest('hex')}`;
+  const { registrationStatus: _registrationStatus, ...admissionRules } = rule;
+  return `sha256:${createHash('sha256').update(JSON.stringify(admissionRules)).digest('hex')}`;
 }
 
 export const BGU_QUANTITATIVE_METADATA_BY_PAIR_ID = Object.fromEntries(

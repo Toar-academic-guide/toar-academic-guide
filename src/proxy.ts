@@ -1,7 +1,11 @@
 import { createServerClient } from '@supabase/ssr';
 import { NextResponse, type NextRequest } from 'next/server';
 
-import { getSupabaseEnv, isSupabaseConfigured } from '@/lib/supabase/env';
+import {
+  getSupabaseEnv,
+  isSupabaseConfigured,
+  SUPABASE_AUTH_COOKIE_NAME,
+} from '@/lib/supabase/env';
 
 const socialShortLinks: Record<string, string> = {
   '/tt': 'tiktok',
@@ -43,6 +47,7 @@ export async function proxy(request: NextRequest) {
   const { supabaseUrl, supabasePublishableKey } = getSupabaseEnv();
 
   const supabase = createServerClient(supabaseUrl!, supabasePublishableKey!, {
+    cookieOptions: { name: SUPABASE_AUTH_COOKIE_NAME },
     cookies: {
       getAll() {
         return request.cookies.getAll();

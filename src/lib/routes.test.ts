@@ -5,6 +5,7 @@ import {
   ROUTES,
   buildAdmissionAlertIntentPath,
   buildAdmissionAlertSignupPath,
+  buildLoginPath,
   normalizeSafeNextPath,
   parseAdmissionAlertIntent,
 } from './routes';
@@ -28,6 +29,18 @@ describe('route contract', () => {
       '/programs/technion-computer-science',
     );
     expect(normalizeSafeNextPath('/institutions/technion')).toBe('/institutions/technion');
+  });
+
+  it('accepts psychometric dates as a safe local return path', () => {
+    expect(normalizeSafeNextPath('/psychometric-dates')).toBe('/psychometric-dates');
+  });
+
+  it('builds the login return path for psychometric dates', () => {
+    expect(buildLoginPath('/psychometric-dates')).toBe('/login?next=%2Fpsychometric-dates');
+  });
+
+  it('rejects psychometric dates subpaths as return paths', () => {
+    expect(normalizeSafeNextPath('/psychometric-dates/evil')).toBe('/');
   });
 
   it('falls back for hostile or malformed return paths', () => {

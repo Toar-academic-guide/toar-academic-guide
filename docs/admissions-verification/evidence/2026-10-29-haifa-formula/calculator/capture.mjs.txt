@@ -1,0 +1,51 @@
+import { chromium } from 'playwright';
+import fs from 'node:fs';
+const root = '/workspace/toar-wt-haifa-formula/docs/admissions-verification/evidence/2026-10-29-haifa-formula';
+const policies = JSON.parse(fs.readFileSync('/workspace/toar-wt-haifa-formula/src/data/admissions/haifaProgrammePolicies.json')).records;
+fs.mkdirSync(`${root}/calculator`, { recursive: true });
+const browser = await chromium.launch();
+const context = await browser.newContext({locale:'he-IL', viewport:{width:1280,height:900},userAgent:'Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/130.0 Safari/537.36'});
+const page = await context.newPage();
+await page.goto('https://applicants.haifa.ac.il/enrollmentChances/index.html', {waitUntil:'networkidle'});
+await page.waitForTimeout(3000);
+await page.getByText('למחשבון').click();
+await page.waitForTimeout(10050);
+let lastFinished = 0;
+async function query(label, operation, params, localInput) {
+  const path = `${root}/calculator/${label}.json`;
+  if (fs.existsSync(path)) return JSON.parse(fs.readFileSync(path)).json;
+  await page.waitForTimeout(Math.max(0, 10050 - (Date.now()-lastFinished)));
+  const url = 'https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?' + new URLSearchParams({operation,...params});
+  const startedAt = new Date().toISOString();
+  const response = await page.evaluate(async url => { const r = await fetch(url, {headers:{'X-Requested-With':'XMLHttpRequest'}}); return {status:r.status, body:await r.text()}; }, url);
+  lastFinished = Date.now();
+  const json = JSON.parse(response.body);
+  fs.writeFileSync(path,JSON.stringify({label,operation,params,localInput,url,method:'GET',startedAt,finishedAt:new Date().toISOString(),status:response.status,json},null,2)+'\n');
+  console.log(label, response.status, JSON.stringify(json).slice(0,200));
+  return json;
+}
+const gapSubjects=[['35',5,90],['16',5,85],['36',5,90],['11',2,88],['22',2,85],['34',2,88],['10',2,90],['1',2,88]];
+const auditSubjects=[['35',5,90],['16',5,85],['36',5,80],['899',5,95],['11',2,85],['22',2,80],['34',2,85],['10',2,85],['1',2,80]];
+const bagrutParams=subjects=>({diploma:'001',data:JSON.stringify(subjects.map(([subject,units,grade])=>({subject,units:String(units),grade:String(grade)})))});
+await query('sekhemCalculatorGap-gap-bagrut','calculateBagrutAvg',bagrutParams(gapSubjects));
+await query('bugsFirst-audit-bagrut','calculateBagrutAvg',bagrutParams(auditSubjects));
+async function chance(label, programme, avg, bagYear=2026, psyYear=2026, q=115,v=110,e=120,pc=590) {
+ const policy=policies.find(p=>p.programme===programme);
+ return query(label,'calculateChances',{year:'2026',semester:'001',hug:policy.officialCalculatorHug,program:policy.officialCalculatorId,bag_type:'001',bag_year:String(bagYear),bag_avg:String(avg),psy_year:String(psyYear),psy_math:String(q),psy_verbal:String(v),psy_english:String(e)}, {programme,bagrutAverage:avg,bagrutYear:bagYear,psychometricYear:psyYear,psychometric:pc,quantitative:q,verbal:v,english:e});
+}
+// Prioritize the explicit mismatch risk and a math-group approved expectation.
+await chance('rulingsHaifaTau-saved-psychology','psychology',104);
+await chance('bugsFirst-audit-psychology','psychology',103.5,2026,2026,140,130,135,700);
+await chance('sekhemCalculatorGap-continuation-cs','cs',102,2020,2025);
+await chance('rulingsHaifaTau-saved102-psychology','psychology',102);
+for(const policy of policies.filter(p=>p.programme!=='infosystems')) {
+ await chance(`rulingsHaifaTau-saved-${policy.programme}`,policy.programme,104);
+ await chance(`sekhemCalculatorGap-derived-${policy.programme}`,policy.programme,105.12);
+}
+await chance('rulingsHaifaTau-saved104-nite700-psychology','psychology',104,2026,2026,140,130,135,700);
+await chance('haifaProgramVerification-high-psychology','psychology',120,2026,2026,150,150,150,800);
+await chance('haifaProgramVerification-low-psychology','psychology',80,2026,2026,100,100,100,500);
+await chance('evaluator-defaulted-cs','cs',102,2026,2026,140,130,130,693);
+await chance('evaluator-year2015-cs','cs',102,2015,2026,140,130,130,693);
+await chance('evaluator-year2020-cs','cs',102,2020,2026,140,130,130,693);
+await context.close(); await browser.close();

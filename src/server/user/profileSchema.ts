@@ -29,6 +29,7 @@ const bagrutRecordSchema = z.strictObject({
 });
 
 const admissionsInputsSchema = z.strictObject({
+  activeBagrutPath: z.enum(['quick', 'exact', 'none']).optional(),
   ...haifaAdmissionsInputsShape,
   bguEngineering: bguEngineeringSchema.optional(),
   technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),

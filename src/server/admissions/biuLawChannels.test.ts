@@ -156,14 +156,15 @@ describe('BIU law official admission channels are OR alternatives', () => {
     },
   );
 
-  it('does not add channels to the general law programme or HOLD/UNKNOWN BIU programmes', () => {
+  it('routes general law like BIU law while preserving HOLD/UNKNOWN BIU programmes', () => {
     for (const degreeId of ['law', 'biu_psychology', 'biu_optometry', 'biu_medicine']) {
+      // Approved test update, Jorje 2026-10-28
       expect(
         evaluateBiuPublishedRoutes({
           institution,
           input: { degreeId, bagrut: 95, psychometric: 730 },
         }).decision,
-      ).toBe('below');
+      ).toBe(degreeId === 'law' ? 'pending' : 'below');
     }
   });
 });

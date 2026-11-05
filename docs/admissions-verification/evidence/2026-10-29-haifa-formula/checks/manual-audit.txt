@@ -1,0 +1,7 @@
+PASS: reviewedManifest parser accepts one canonical_change: cs@haifa, cycle2027, 705->700.
+PASS: manifest SHA256 equals exact committed calculator/rulingsHaifaTau-saved-cs.json bytes; response acceptance cutoff700 and official URL match.
+PASS: frozen BGU manifest matches git show b878f97 byte-for-byte; BGU test assertion body is unchanged.
+PASS: evaluator bytes outside the Haifa guard and Haifa exact block equal b878f97.
+PASS: all41 calculator responses HTTP200; minimum spacing after previous response10.050s.
+PASS: git diff --check.
+PASS: official HTML compressed losslessly; original byte SHA256 922225236f40adbd2675d05c5810616ab617d11484b06eebf5898629173b3264. Original whitespace retained inside gzip. Test logs normalize only trailing blank EOF lines.

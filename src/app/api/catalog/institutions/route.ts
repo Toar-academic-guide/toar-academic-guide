@@ -22,7 +22,14 @@ export async function GET() {
 
     logCatalogueResponse('institutions', envelope.meta, summary);
 
-    return Response.json(envelope satisfies ApiEnvelope<CatalogueInstitution[]>);
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueInstitution[]>, {
+      headers: {
+        'Cache-Control':
+          meta.catalogueSource === 'database' && !meta.fallbackReason
+            ? 'public, s-maxage=120, stale-while-revalidate=600'
+            : 'no-store',
+      },
+    });
   } catch (error) {
     const code =
       error instanceof CatalogueQueryError ? error.code : 'CATALOGUE_INSTITUTIONS_INTERNAL_ERROR';
@@ -44,6 +51,9 @@ export async function GET() {
 
     logCatalogueResponse('institutions', envelope.meta, summary);
 
-    return Response.json(envelope satisfies ApiEnvelope<CatalogueInstitution[]>, { status });
+    return Response.json(envelope satisfies ApiEnvelope<CatalogueInstitution[]>, {
+      status,
+      headers: { 'Cache-Control': 'no-store' },
+    });
   }
 }

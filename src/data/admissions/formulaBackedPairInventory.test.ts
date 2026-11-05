@@ -25,14 +25,38 @@ function makeProgram(overrides: Partial<Program> = {}): Program {
 }
 
 describe('formulaBackedPairInventory', () => {
+  it('distinguishes authoritative, withheld and unmapped NULL legacy pairs', () => {
+    const inventory = buildFormulaBackedPairInventory([
+      makeProgram({ id: 'medicine', thresholds: { huji: null, biu: null } }),
+      makeProgram({ id: 'unmapped_program', thresholds: { huji: null } }),
+    ]);
+
+    expect(inventory.pairs).toEqual([
+      expect.objectContaining({ id: 'medicine__huji', cutoff: null }),
+    ]);
+    // Approved test update, Jorje 2026-10-31: retain generic BIU medicine only in the excluded catalogue inventory, without exact coverage.
+    expect(inventory.excludedPairs).toEqual([
+      expect.objectContaining({ id: 'medicine__biu', cutoff: null }),
+    ]);
+    expect(inventory.errors).toEqual([]);
+  });
+
   it('includes exactly the encoded BIU pairs and keeps future and deferred programmes excluded', () => {
     const inventory = buildFormulaBackedPairInventory([
       ...allPrograms,
       makeProgram({ id: 'biu_future', institutionId: 'biu', thresholds: { biu: 700 } }),
     ]);
-    const expected = [...BIU_PUBLISHED_ROUTE_PROGRAM_IDS, 'biu_cs', 'biu_ee', 'biu_socialwork']
+    const expected = [
+      ...BIU_PUBLISHED_ROUTE_PROGRAM_IDS,
+      'biu_cs',
+      'biu_ee',
+      'biu_socialwork',
+      'cs',
+      'ee',
+    ]
       .map((id) => `${id}__biu`)
       .sort();
+    // Approved test update, Jorje 2026-10-28
     expect(
       inventory.pairs
         .filter((pair) => pair.institutionId === 'biu')
@@ -49,9 +73,10 @@ describe('formulaBackedPairInventory', () => {
       'biu_optometry',
       'biu_future',
     ]) {
-      expect(inventory.excludedPairs).toContainEqual(
-        expect.objectContaining({ programId, institutionId: 'biu' }),
-      );
+      // Approved test update, Jorje 2026-10-28
+      expect(
+        ['cs', 'ee'].includes(programId) ? inventory.pairs : inventory.excludedPairs,
+      ).toContainEqual(expect.objectContaining({ programId, institutionId: 'biu' }));
     }
     const reconciliation = reconcileFormulaBackedSeedPairs(inventory, {
       programs: allPrograms.map((program) => ({

@@ -24,9 +24,9 @@ const unchangedPrograms = [
     id: 'bgu_psychology',
     structuredDataSha256: '2aabea44e74869b576a140ec5fac1e2714435596aa38f936bbc52a7350f73099',
     name: 'פסיכולוגיה',
-    title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב',
+    title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב: תנאי קבלה',
     description:
-      'פסיכולוגיה באוניברסיטת בן-גוריון בנגב: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'פסיכולוגיה באוניברסיטת בן-גוריון בנגב: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'bgu',
@@ -39,9 +39,9 @@ const unchangedPrograms = [
     id: 'tau_cs',
     structuredDataSha256: '8158c55cfa799653bed1d042df8d973be1a1b48de29937f194b455239cda3449',
     name: 'מדעי המחשב',
-    title: 'מדעי המחשב – אוניברסיטת תל אביב',
+    title: 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה',
     description:
-      'מדעי המחשב באוניברסיטת תל אביב: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'מדעי המחשב באוניברסיטת תל אביב: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'tau',
@@ -54,9 +54,9 @@ const unchangedPrograms = [
     id: 'nursing',
     structuredDataSha256: '2649cc67211782576c40ebdabfe960a98f7cdef762255bcc6290662a3006bbcd',
     name: 'סיעוד',
-    title: 'לימודי סיעוד: באילו מוסדות לומדים',
+    title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
-      'סיעוד ב-8 מוסדות לימוד: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'סיעוד ב-8 מוסדות לימוד: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'tau',
@@ -97,9 +97,9 @@ const unchangedPrograms = [
     id: 'tlvyaffo_cs',
     structuredDataSha256: '3128a1f6c9654b14cb70ea9b739840dab5e00ee00d5301d565f45fa6261f97e8',
     name: 'מדעי המחשב',
-    title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו',
+    title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה',
     description:
-      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'mta',
@@ -112,9 +112,9 @@ const unchangedPrograms = [
     id: 'colmgmt_business',
     structuredDataSha256: '1c8f153e91cd5124d44b2ac5d379025e82de08edfc8483578fe434f287979c67',
     name: 'מנהל עסקים',
-    title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים',
+    title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -127,9 +127,9 @@ const unchangedPrograms = [
     id: 'colmgmt_law',
     structuredDataSha256: 'cd7b8253c7da8e582a88308253af83fa4d1c38845b7e4624a53355fff32e6498',
     name: 'משפטים',
-    title: 'משפטים – מכללת ניהול – לימודים אקדמיים',
+    title: 'משפטים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'משפטים במכללת ניהול – לימודים אקדמיים: מידע על המסלול בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.',
+      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -202,8 +202,8 @@ describe('program institution attribution', () => {
     'names the provider once for $id without changing canonical',
     async ({ id, institution, location, token }) => {
       const page = (await getPublicProgramPageData(id))!;
-      const title = `הנדסה וטכנולוגיה – ${institution}`;
-      const description = `הנדסה וטכנולוגיה: מידע על המסלול ${location} בקטלוג MyWay ובדיקת סיכויי קבלה אישית בחינם. תנאי הקבלה המחייבים באתר המוסד.`;
+      const title = `הנדסה וטכנולוגיה – ${institution}${id === 'haifa_engineering' ? ': תנאי קבלה' : ''}`;
+      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.`;
       const metadata = await buildProgramMetadata(id);
       expect(metadata).toMatchObject({
         title,
@@ -235,9 +235,9 @@ describe('program institution attribution', () => {
   );
 
   it.each([
-    ['mta_cs', 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו'],
-    ['colman_law', 'משפטים – מכללת ניהול – לימודים אקדמיים'],
-    ['colman_business', 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים'],
+    ['mta_cs', 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה'],
+    ['colman_law', 'משפטים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה'],
+    ['colman_business', 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה'],
   ])('uses the keeper title for alias %s', async (id, title) => {
     expect((await buildProgramMetadata(id)).title).toBe(title);
   });

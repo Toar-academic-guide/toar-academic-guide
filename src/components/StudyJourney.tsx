@@ -1,9 +1,19 @@
 'use client';
 
+import HomeHero from './hero/HomeHero';
+
 import AdmissionEstimate from './AdmissionEstimate';
 import { biuFloorVerdict, type BiuFloorResult } from '@/lib/biuFloorPresentation';
 
-import { useCallback, useEffect, useMemo, useRef, useState, type ReactNode } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+  type ReactNode,
+} from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
@@ -16,8 +26,6 @@ import {
   Check,
   ChevronDown,
   Compass,
-  GraduationCap,
-  MapPin,
   Search,
   SlidersHorizontal,
   X,
@@ -28,6 +36,9 @@ import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalo
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
+  bagrutScoresForMode,
+  exactInProgressSchema,
+  type ExactInProgress,
   LOCATIONS,
   INSTITUTION_TYPES,
   studyFields,
@@ -42,6 +53,8 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  resultSourceLinks,
+  showsOfficialNoCalculationNote,
   isTechnionMedicineScore,
   formatJourneyScore,
   officialUrl,
@@ -71,6 +84,11 @@ import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupporte
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { buildLoginPath, ROUTES } from '@/lib/routes';
 import './StudyJourney.css';
+import { preloadJourneyExactGrades } from './preloadJourneyExactGrades';
+
+if (typeof window !== 'undefined' && window.location.hash === '#grades-exact') {
+  preloadJourneyExactGrades();
+}
 
 const CareerAssessment = dynamic(() => import('./CareerAssessment'));
 const JourneyExactGrades = dynamic(() => import('./JourneyExactGrades'));
@@ -125,13 +143,26 @@ const STEPS = [
 ] as const;
 type Step = (typeof STEPS)[number];
 const DRAFT_KEY = 'myway_study_journey_v2';
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+interface JourneyCatalogue {
+  programs: CatalogueProgram[];
+  institutions: CatalogueInstitution[];
+}
+let cachedCatalogue: JourneyCatalogue | null = null;
+const EMPTY_PROGRAMS: CatalogueProgram[] = [];
+
 interface Draft {
   fields: string[];
+  fieldLabels?: Record<string, string>;
   locations: JourneyLocation[];
   types: InstitutionType[];
   scores: AcademicScores;
+  bagrutPaths?: AcademicScores['bagrut'];
+  exactInProgress?: ExactInProgress;
+  quickInProgress?: string;
   target?: number;
   gradeMode?: 'quick' | 'exact' | 'none';
+  bagrutInputIdentity?: string;
   psyMode?: 'score' | 'target' | 'none';
   selectedRowId?: string;
 }
@@ -154,14 +185,55 @@ function readDraft(): Draft | null {
       academicScores: raw.scores,
     });
     if (!profile.success) return null;
+    const scores = profile.data.academicScores ?? {};
+    const bagrutPaths = userProfileSchema.safeParse({
+      geographicPreference: 'any',
+      academicScores: { bagrut: raw.bagrutPaths },
+    });
+    const exactInProgress = exactInProgressSchema.safeParse(raw.exactInProgress);
+    let gradeMode: Draft['gradeMode'] = ['quick', 'exact', 'none'].includes(raw.gradeMode)
+      ? raw.gradeMode
+      : scores.admissions?.activeBagrutPath;
+    if (
+      gradeMode === 'none' &&
+      !scores.admissions?.activeBagrutPath &&
+      scores.bagrut?.subjectRecord
+    )
+      gradeMode = 'exact';
+    else if (
+      gradeMode === 'none' &&
+      !scores.admissions?.activeBagrutPath &&
+      scores.bagrut?.weightedAverage !== undefined
+    )
+      gradeMode = 'quick';
     return {
       ...EMPTY,
       fields: raw.fields,
+      fieldLabels: Object.fromEntries(
+        Object.entries(
+          raw.fieldLabels && typeof raw.fieldLabels === 'object' && !Array.isArray(raw.fieldLabels)
+            ? raw.fieldLabels
+            : {},
+        ).filter(
+          (entry): entry is [string, string] =>
+            raw.fields.includes(entry[0]) && typeof entry[1] === 'string' && !!entry[1].trim(),
+        ),
+      ),
       locations: raw.locations,
       types: raw.types,
-      scores: profile.data.academicScores ?? {},
+      scores,
+      bagrutPaths: bagrutPaths.success ? bagrutPaths.data.academicScores?.bagrut : undefined,
+      exactInProgress: exactInProgress.success ? exactInProgress.data : undefined,
+      quickInProgress:
+        typeof raw.quickInProgress === 'string' && Number.isFinite(Number(raw.quickInProgress))
+          ? raw.quickInProgress
+          : undefined,
       target: raw.target >= 200 && raw.target <= 800 ? raw.target : undefined,
-      gradeMode: ['quick', 'exact', 'none'].includes(raw.gradeMode) ? raw.gradeMode : undefined,
+      gradeMode,
+      bagrutInputIdentity:
+        gradeMode && typeof raw.bagrutInputIdentity === 'string'
+          ? raw.bagrutInputIdentity
+          : undefined,
       psyMode: ['score', 'target', 'none'].includes(raw.psyMode) ? raw.psyMode : undefined,
       selectedRowId: typeof raw.selectedRowId === 'string' ? raw.selectedRowId : undefined,
     };
@@ -172,7 +244,7 @@ function readDraft(): Draft | null {
 const toggle = <T,>(items: T[], value: T) =>
   items.includes(value) ? items.filter((item) => item !== value) : [...items, value];
 function Primary({
-  children = 'המשך',
+  children = 'המשיכו',
   onClick,
   disabled = false,
 }: {
@@ -215,13 +287,14 @@ function Chips<T extends string>({
 
 export default function StudyJourney({
   initialStep = 'home',
-  browse,
   initialProgramId,
 }: {
   initialStep?: Step;
-  browse?: ReactNode;
   initialProgramId?: string;
 }) {
+  if (initialStep === 'subjects') preloadJourneyExactGrades();
+  const [urlProgramId, setUrlProgramId] = useState<string>();
+  const selectedProgramId = initialProgramId ?? urlProgramId;
   const auth = useAuth();
   const router = useRouter();
   const {
@@ -237,14 +310,23 @@ export default function StudyJourney({
   const [ready, setReady] = useState(false);
   const hadStoredDraft = useRef(false);
   const [step, setStep] = useState<Step>(initialStep);
-  const [programs, setPrograms] = useState<CatalogueProgram[]>([]);
-  const [institutions, setInstitutions] = useState<CatalogueInstitution[]>([]);
+  const [catalogue, setCatalogue] = useState<JourneyCatalogue | null>(null);
+  const programs = catalogue?.programs ?? EMPTY_PROGRAMS;
+  const quickAverageValue =
+    draft.quickInProgress ??
+    String(draft.scores.bagrut?.weightedAverage ?? draft.bagrutPaths?.weightedAverage ?? '');
+  const journeyScores = useMemo(
+    () => bagrutScoresForMode(draft.scores, draft.gradeMode),
+    [draft.scores, draft.gradeMode],
+  );
   const [catalogueError, setCatalogueError] = useState('');
-  const [catalogueLoading, setCatalogueLoading] = useState(true);
+  const [catalogueRefreshing, setCatalogueRefreshing] = useState(true);
+  const catalogueLoading = !catalogue && catalogueRefreshing;
   const [query, setQuery] = useState('');
   const [quizPrompt, setQuizPrompt] = useState(false);
   const dialog = useRef<HTMLDialogElement>(null);
   const heading = useRef<HTMLHeadingElement>(null);
+  const focusHeadingOnNavigation = useRef(false);
   const [quizDraft, setQuizDraft] = useState<CareerAssessmentDraft>();
   const [recommendations, setRecommendations] = useState<RecommendedField[]>([]);
   const [reports, setReports] = useState<Record<string, AdmissionsEvaluationReport>>({});
@@ -263,6 +345,7 @@ export default function StudyJourney({
 
   const go = useCallback(
     (next: Step) => {
+      focusHeadingOnNavigation.current = true;
       setStep(next);
       setMessage('');
       if (next === 'home') router.push(ROUTES.home);
@@ -274,7 +357,12 @@ export default function StudyJourney({
     },
     [router],
   );
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
+    if (cachedCatalogue) setCatalogue(cachedCatalogue);
+    const queryPrograms = new URLSearchParams(window.location.search).getAll('program');
+    setUrlProgramId(
+      initialStep === 'subjects' && queryPrograms.length === 1 ? queryPrograms[0] : undefined,
+    );
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
     if (stored) {
@@ -282,8 +370,9 @@ export default function StudyJourney({
       setActiveId(stored.selectedRowId ?? null);
     }
     setReady(true);
-    const readStep = () => {
+    const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
+      focusHeadingOnNavigation.current = !!event;
       setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
@@ -307,20 +396,32 @@ export default function StudyJourney({
     importedProfile.current = profileIdentity;
     if (auth.user || !hadStoredDraft.current) {
       const scores = profile.academicScores ?? {};
-      setDraft((current) => ({
-        ...current,
-        scores,
-        gradeMode: scores.bagrut?.subjectRecord
+      const profileGradeMode =
+        scores.admissions?.activeBagrutPath ??
+        (scores.bagrut?.subjectRecord
           ? 'exact'
           : scores.bagrut?.weightedAverage
             ? 'quick'
-            : 'none',
-        psyMode: scores.psychometric?.overall ? 'score' : 'none',
-        target: undefined,
-      }));
+            : 'none');
+      setDraft((current) => {
+        const keepBagrutInput = current.bagrutInputIdentity === profileIdentity;
+        return {
+          ...current,
+          scores: keepBagrutInput
+            ? { ...scores, bagrut: bagrutScoresForMode(current.scores, current.gradeMode).bagrut }
+            : scores,
+          gradeMode: keepBagrutInput ? current.gradeMode : profileGradeMode,
+          bagrutInputIdentity: keepBagrutInput ? current.bagrutInputIdentity : undefined,
+          bagrutPaths: keepBagrutInput
+            ? { ...scores.bagrut, ...current.bagrutPaths, ...current.scores.bagrut }
+            : scores.bagrut,
+          psyMode: scores.psychometric?.overall ? 'score' : 'none',
+          target: undefined,
+        };
+      });
     }
   }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
-  useEffect(() => {
+  useIsomorphicLayoutEffect(() => {
     if (!ready) return;
     try {
       sessionStorage.setItem(DRAFT_KEY, JSON.stringify(draft));
@@ -329,6 +430,8 @@ export default function StudyJourney({
     }
   }, [draft, ready]);
   useEffect(() => {
+    if (!focusHeadingOnNavigation.current) return;
+    focusHeadingOnNavigation.current = false;
     heading.current?.focus({ preventScroll: true });
   }, [step]);
   useEffect(() => {
@@ -336,48 +439,61 @@ export default function StudyJourney({
     else if (dialog.current?.open) dialog.current.close();
   }, [quizPrompt]);
   const loadCatalogue = useCallback(async () => {
-    setCatalogueLoading(true);
+    setCatalogueRefreshing(true);
     setCatalogueError('');
     try {
       const [nextPrograms, nextInstitutions] = await Promise.all([
         fetchCataloguePrograms(),
         fetchCatalogueInstitutions(),
       ]);
-      setPrograms(nextPrograms);
-      setInstitutions(nextInstitutions);
+      cachedCatalogue = { programs: nextPrograms, institutions: nextInstitutions };
+      setCatalogue(cachedCatalogue);
     } catch {
       setCatalogueError('לא הצלחנו לטעון את המסלולים. נסו שוב.');
     } finally {
-      setCatalogueLoading(false);
+      setCatalogueRefreshing(false);
     }
   }, []);
   useEffect(() => {
     void loadCatalogue();
   }, [loadCatalogue]);
   const fields = useMemo(() => studyFields(programs), [programs]);
+  useEffect(() => {
+    if (!catalogue) return;
+    setDraft((current) => {
+      const fieldLabels = Object.fromEntries(
+        fields
+          .filter((field) => current.fields.includes(field.id))
+          .map((field) => [field.id, field.name]),
+      );
+      return JSON.stringify(current.fieldLabels) === JSON.stringify(fieldLabels)
+        ? current
+        : { ...current, fieldLabels };
+    });
+  }, [catalogue, fields, draft.fields]);
   const selectedFieldIds = useMemo(
     () => selectedStudyFieldIds(fields, draft.fields),
     [fields, draft.fields],
   );
   const allRows = useMemo(
-    () => journeyRows(studyFields(programs, true), institutions),
-    [programs, institutions],
+    () => journeyRows(studyFields(programs, true), catalogue?.institutions ?? []),
+    [programs, catalogue],
   );
   const preselectedProgram = useRef<string | null>(null);
   useEffect(() => {
     if (
-      !initialProgramId ||
+      !selectedProgramId ||
       !ready ||
-      catalogueLoading ||
-      preselectedProgram.current === initialProgramId
+      catalogueRefreshing ||
+      preselectedProgram.current === selectedProgramId
     )
       return;
     const field = fields.find((entry) =>
-      entry.programs.some((program) => program.id === initialProgramId),
+      entry.programs.some((program) => program.id === selectedProgramId),
     );
     if (!field) return;
-    const row = allRows.find((entry) => entry.program.id === initialProgramId);
-    preselectedProgram.current = initialProgramId;
+    const row = allRows.find((entry) => entry.program.id === selectedProgramId);
+    preselectedProgram.current = selectedProgramId;
     setDraft((current) => ({
       ...current,
       fields: [field.id],
@@ -386,7 +502,7 @@ export default function StudyJourney({
       selectedRowId: row?.id,
     }));
     setActiveId(row?.id ?? null);
-  }, [initialProgramId, ready, catalogueLoading, fields, allRows]);
+  }, [selectedProgramId, ready, catalogueRefreshing, fields, allRows]);
   const selectedRows = useMemo(
     () =>
       distinctRecommendations(allRows).filter(
@@ -440,6 +556,8 @@ export default function StudyJourney({
       activeRow?.institution.programUrl,
     activeRow?.institution.id,
   );
+  const activeSourceLinks = resultSourceLinks(activeRow?.result, activeOfficialUrl);
+  const activeShowsNoCalculationNote = showsOfficialNoCalculationNote(activeRow?.result);
   const description = catalogueDescription(details?.programDescription);
   const counts = useMemo(() => {
     const sets: Partial<Record<JourneyLocation, Set<string>>> = {};
@@ -452,7 +570,23 @@ export default function StudyJourney({
     }
     return Object.fromEntries(Object.entries(sets).map(([area, ids]) => [area, ids.size]));
   }, [allRows, selectedFieldIds, draft.types]);
+  const saveExactProgress = useCallback((exactInProgress: ExactInProgress) => {
+    setDraft((current) => ({ ...current, exactInProgress }));
+  }, []);
   const patch = (updates: Partial<Draft>) => setDraft((current) => ({ ...current, ...updates }));
+  const submitBagrut = (
+    gradeMode: NonNullable<Draft['gradeMode']>,
+    bagrut?: AcademicScores['bagrut'],
+  ) => {
+    patch({
+      gradeMode,
+      bagrutInputIdentity: profileIdentity,
+      exactInProgress: undefined,
+      quickInProgress: undefined,
+      bagrutPaths: { ...draft.bagrutPaths, ...draft.scores.bagrut, ...bagrut },
+      scores: { ...draft.scores, bagrut },
+    });
+  };
   const patchScores = (updates: Partial<AcademicScores>) =>
     patch({ scores: { ...draft.scores, ...updates } });
   const setType = (type: InstitutionType) => {
@@ -498,7 +632,6 @@ export default function StudyJourney({
     },
     [],
   );
-  // Saved programmes use account grades, independently of the current journey or simulation.
   const evaluationScope =
     step === 'saved'
       ? 'saved'
@@ -520,9 +653,28 @@ export default function StudyJourney({
   );
   const usesSavedGrades =
     evaluationScope === 'saved' || (evaluationScope === 'detail' && detailOrigin === 'saved');
-  const evaluationScores = usesSavedGrades
-    ? (profile.academicScores ?? EMPTY.scores)
-    : draft.scores;
+  const evaluationScores = useMemo(
+    () =>
+      usesSavedGrades
+        ? draft.bagrutInputIdentity === profileIdentity
+          ? bagrutScoresForMode(
+              { ...profile.academicScores, bagrut: journeyScores.bagrut },
+              draft.gradeMode,
+            )
+          : bagrutScoresForMode(
+              profile.academicScores ?? EMPTY.scores,
+              profile.academicScores?.admissions?.activeBagrutPath,
+            )
+        : journeyScores,
+    [
+      usesSavedGrades,
+      draft.bagrutInputIdentity,
+      draft.gradeMode,
+      profileIdentity,
+      profile.academicScores,
+      journeyScores,
+    ],
+  );
   const evaluationTarget = usesSavedGrades ? undefined : (simulation ?? draft.target);
   const resultSignature = JSON.stringify([
     evaluationScope,
@@ -538,7 +690,7 @@ export default function StudyJourney({
       viewedResults.current = '';
       return;
     }
-    if (!ready || catalogueLoading || catalogueError || calculating) return;
+    if (!ready || catalogueRefreshing || catalogueError || calculating) return;
     // Wait for the current calculation, including when older reports are still rendered.
     if (draft.fields.length && rows.length && lastEvaluation.current !== resultSignature) return;
     if (draft.fields.length && rows.some((row) => !row.result && !row.failed)) return;
@@ -559,7 +711,7 @@ export default function StudyJourney({
   }, [
     step,
     ready,
-    catalogueLoading,
+    catalogueRefreshing,
     catalogueError,
     calculating,
     draft.fields.length,
@@ -568,7 +720,7 @@ export default function StudyJourney({
     resultSignature,
   ]);
   useEffect(() => {
-    if (!ready || catalogueLoading || !evaluationScope) return;
+    if (!ready || catalogueRefreshing || !evaluationScope) return;
     if (['saved', 'detail'].includes(evaluationScope) && initialProfileStatus !== 'ready') return;
     // A detail reached from results already has a report; a refreshed detail does not.
     if (evaluationScope === 'detail' && (activeRow?.result || activeRow?.failed)) return;
@@ -587,7 +739,7 @@ export default function StudyJourney({
     activeRow?.result,
     activeRow?.failed,
     ready,
-    catalogueLoading,
+    catalogueRefreshing,
     initialProfileStatus,
     resultSignature,
     evaluationTargets,
@@ -632,7 +784,14 @@ export default function StudyJourney({
     }
   }, [step, contactProgramId, contactInstitutionId, contactResultGroup]);
   const saveScores = async () => {
-    if (!(await updateProfile({ academicScores: draft.scores })))
+    const academicScores: AcademicScores = {
+      ...draft.scores,
+      bagrut: { ...draft.bagrutPaths, ...draft.scores.bagrut },
+      ...(draft.gradeMode !== undefined
+        ? { admissions: { ...draft.scores.admissions, activeBagrutPath: draft.gradeMode } }
+        : {}),
+    };
+    if (!(await updateProfile({ academicScores })))
       setMessage('שמירת הציונים לא הושלמה. אפשר להמשיך ולנסות לשמור שוב בהמשך.');
   };
   const selectRow = (row: JourneyRow, next: Step) => {
@@ -681,16 +840,17 @@ export default function StudyJourney({
   const titles: Record<Step, string> = {
     home: '',
     intent: 'אני יודע/ת מה אני רוצה ללמוד',
-    subjects: 'מה מעניין אותך ללמוד?',
-    regions: 'איפה את/ה רוצה ללמוד?',
+    subjects: 'מה מעניין אתכם ללמוד?',
+    regions: 'איפה אתם רוצים ללמוד?',
     'grade-mode': 'איך נבדוק את ציוני הבגרות?',
-    'grades-quick': 'מה ממוצע הבגרות שלך?',
-    'grades-exact': 'ציוני הבגרות שלך',
-    'psy-mode': 'יש לך ציון פסיכומטרי?',
-    'psy-score': 'מה ציון הפסיכומטרי שלך?',
-    'psy-target': 'לאיזה ציון את/ה מכוון/ת?',
-    review: 'מוכנים לגלות את האפשרויות שלך?',
-    results: 'האפשרויות שלך',
+    'grades-quick': 'מה ממוצע הבגרות שלכם?',
+    'grades-exact': 'ציוני הבגרות שלכם',
+    'psy-mode': 'יש לכם ציון פסיכומטרי?',
+    'psy-score': 'מה ציון הפסיכומטרי שלכם?',
+    'psy-target': 'לאיזה ציון אתם מכוונים?',
+    review: 'מוכנים לגלות את האפשרויות שלכם?',
+    results: 'האפשרויות שלכם',
+
     detail: activeRow?.fieldName ?? 'פרטי המסלול',
     alternatives: 'עוד דרכים להתקבל',
     inquiry: 'בואו נעשה את הצעד הבא',
@@ -700,8 +860,8 @@ export default function StudyJourney({
     improve: 'מה יקרה אם נשפר את הציון?',
     plan: 'האפשרויות עם ציון היעד',
     missing: 'השלמת נתונים לחישוב',
-    questionnaire: 'מגלים מה מתאים לך',
-    'quiz-result': 'הכיוונים שמתאימים לך',
+    questionnaire: 'מגלים מה מתאים לכם',
+    'quiz-result': 'הכיוונים שמתאימים לכם',
     account: 'החשבון שלי',
   };
   const stageIndex = ['intent', 'subjects', 'questionnaire', 'quiz-result'].includes(step)
@@ -743,6 +903,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
         <div className="journey-row-info">
@@ -753,11 +914,37 @@ export default function StudyJourney({
                 ? row.institution.name
                 : row.fieldName}
           </button>
-          <span
-            className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
-          >
-            {status.label}
-          </span>
+          {!showsOfficialNoCalculationNote(row.result) && (
+            <span
+              className={`journey-status status-${isTechnionMedicineScore(row.result, row.program.id) && !row.failed ? 'match' : status.group}`}
+            >
+              {status.label}
+            </span>
+          )}
+          {sourceLinks && (
+            <>
+              {resultExplanation(row.result, row.program.id) && (
+                <p className="journey-result-explanation">
+                  {resultExplanation(row.result, row.program.id)}
+                </p>
+              )}
+              <div className="journey-links">
+                {sourceLinks.map(({ href, label }) => (
+                  <ProgramTrackedLink
+                    key={href}
+                    event="institution_site_clicked"
+                    programId={row.program.id}
+                    institutionId={row.institution.id}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    href={href}
+                  >
+                    {label}
+                  </ProgramTrackedLink>
+                ))}
+              </div>
+            </>
+          )}
           {isTechnionMedicineScore(row.result, row.program.id) && !row.failed && (
             <TechnionMedicineComparison score={row.result.score} />
           )}
@@ -765,7 +952,7 @@ export default function StudyJourney({
         </div>
         <div className="journey-row-actions">
           <button className="journey-contact" onClick={() => selectRow(row, 'inquiry')}>
-            יצירת קשר
+            קבלו שיחה מהמוסד
           </button>
           <button
             className="journey-icon-button"
@@ -796,6 +983,8 @@ export default function StudyJourney({
         loginHref={buildLoginPath('/#' + step)}
       />
       <main
+        id="main-content"
+        tabIndex={-1}
         className={`journey-main ${step === 'home' ? 'journey-home' : ''} ${step === 'intent' ? 'journey-intent' : ''} ${['subjects', 'grade-mode', 'grades-quick', 'grades-exact', 'psy-mode', 'psy-score', 'psy-target', 'review', 'detail', 'alternatives', 'quiz-result', 'improve', 'account', 'inquiry', 'offer'].includes(step) ? 'journey-main-narrow' : ''}`}
       >
         {step !== 'home' && (
@@ -821,49 +1010,7 @@ export default function StudyJourney({
           </>
         )}
         {(message || syncError) && <p role="alert">{message || syncError}</p>}
-        {step === 'home' && (
-          <div className="journey-hero">
-            <div className="journey-hero-copy">
-              <p className="journey-hero-intro">
-                הדרך <strong>ללימודים שלך</strong> מתחילה כאן.
-              </p>
-              <h1 ref={heading} tabIndex={-1}>
-                <span className="journey-hero-line">
-                  בוחרים <em className="hero-what">מה</em> ללמוד,
-                </span>
-                <span className="journey-hero-line">
-                  <em className="hero-where">איפה</em> ללמוד
-                </span>
-                <span className="journey-hero-line">
-                  ו<em className="hero-how">איך</em> להתקבל.
-                </span>
-              </h1>
-              <p>בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?</p>
-              <Primary onClick={() => go('intent')}>עזרו לי לבחור מה ללמוד</Primary>
-              <small>אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.</small>
-            </div>
-            <div className="journey-funnel" aria-label="מה ללמוד, איפה ללמוד ואיך להתקבל">
-              <div className="journey-funnel-cloud">
-                <span>מדעי המחשב</span>
-                <span>רפואה</span>
-                <span>פסיכולוגיה</span>
-              </div>
-              {[
-                { name: 'מה', text: 'בוחרים כיוון לימודים', Icon: Compass },
-                { name: 'איפה', text: 'משווים מוסדות ותוכניות', Icon: MapPin },
-                { name: 'איך', text: 'דרך קבלה מותאמת אישית', Icon: GraduationCap },
-              ].map(({ name, text, Icon }) => (
-                <div className="journey-funnel-stage" key={name}>
-                  <div>
-                    <strong>{name}</strong>
-                    <span>{text}</span>
-                  </div>
-                  <Icon size={31} aria-hidden="true" />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+        {step === 'home' && <HomeHero heading={heading} />}
         {step === 'intent' && (
           <>
             <div className="journey-intent-options">
@@ -872,7 +1019,7 @@ export default function StudyJourney({
                 עדיין לא
               </button>
             </div>
-            <p className="journey-helper">גם אם עוד לא החלטת, אפשר להתחיל.</p>
+            <p className="journey-helper">גם אם עוד לא החלטתם, אפשר להתחיל.</p>
           </>
         )}
         <dialog
@@ -890,7 +1037,7 @@ export default function StudyJourney({
           </button>
           <Compass size={30} aria-hidden="true" />
           <h2>נמצא יחד כיוון?</h2>
-          <p>שאלון קצר יעזור לגלות מה מתאים לך.</p>
+          <p>שאלון קצר יעזור לגלות מה מתאים לכם.</p>
           <Primary
             onClick={() => {
               setQuizPrompt(false);
@@ -918,7 +1065,7 @@ export default function StudyJourney({
               <input
                 className="way-input-unframed"
                 aria-label="חיפוש תחום לימודים"
-                placeholder="איזה תחום מעניין אותך?"
+                placeholder="איזה תחום מעניין אתכם?"
                 value={query}
                 onChange={(event) => setQuery(event.target.value)}
               />
@@ -926,9 +1073,12 @@ export default function StudyJourney({
             {!!draft.fields.length && (
               <Chips
                 items={Object.fromEntries(
-                  fields
-                    .filter((field) => draft.fields.includes(field.id))
-                    .map((field) => [field.id, field.name]),
+                  draft.fields.flatMap((id) => {
+                    const label =
+                      fields.find((field) => field.id === id)?.name ??
+                      (!catalogue ? draft.fieldLabels?.[id] : undefined);
+                    return label ? [[id, label]] : [];
+                  }),
                 )}
                 selected={draft.fields}
                 onSelect={(id) => patch({ fields: toggle(draft.fields, id) })}
@@ -1030,29 +1180,19 @@ export default function StudyJourney({
         {step === 'grade-mode' && (
           <section className="journey-narrow">
             <div className="journey-choice-list">
-              <button
-                onClick={() => {
-                  patch({ gradeMode: 'quick' });
-                  go('grades-quick');
-                }}
-              >
+              <button onClick={() => go('grades-quick')}>
                 <strong>יש לי ממוצע בגרות</strong>
                 <span>מזינים ממוצע וממשיכים</span>
                 <ArrowLeft size={20} />
               </button>
-              <button
-                onClick={() => {
-                  patch({ gradeMode: 'exact' });
-                  go('grades-exact');
-                }}
-              >
+              <button onClick={() => go('grades-exact')}>
                 <strong>יש לי ציונים לפי מקצוע</strong>
                 <span>מזינים ציונים או מעלים גיליון PDF</span>
                 <ArrowLeft size={20} />
               </button>
               <button
                 onClick={() => {
-                  patch({ gradeMode: 'none', scores: { ...draft.scores, bagrut: undefined } });
+                  submitBagrut('none');
                   go('psy-mode');
                 }}
               >
@@ -1077,6 +1217,9 @@ export default function StudyJourney({
             className="journey-narrow"
             onSubmit={(event) => {
               event.preventDefault();
+              submitBagrut('quick', {
+                weightedAverage: quickAverageValue ? Number(quickAverageValue) : undefined,
+              });
               afterGrades();
             }}
           >
@@ -1089,14 +1232,8 @@ export default function StudyJourney({
                 max={120}
                 step="any"
                 required
-                value={draft.scores.bagrut?.weightedAverage ?? ''}
-                onChange={(event) =>
-                  patchScores({
-                    bagrut: {
-                      weightedAverage: event.target.value ? Number(event.target.value) : undefined,
-                    },
-                  })
-                }
+                value={quickAverageValue}
+                onChange={(event) => patch({ quickInProgress: event.target.value })}
               />
             </label>
             <div className="journey-actions">
@@ -1104,16 +1241,13 @@ export default function StudyJourney({
             </div>
           </form>
         )}
-        {step === 'grades-exact' && (
+        {step === 'grades-exact' && ready && (
           <JourneyExactGrades
-            initialRecord={draft.scores.bagrut?.subjectRecord}
+            initialRecord={draft.scores.bagrut?.subjectRecord ?? draft.bagrutPaths?.subjectRecord}
+            initialProgress={draft.exactInProgress}
+            onProgress={saveExactProgress}
             onComplete={(record) => {
-              patchScores({
-                bagrut: {
-                  ...draft.scores.bagrut,
-                  subjectRecord: record,
-                },
-              });
+              submitBagrut('exact', { subjectRecord: record });
               afterGrades();
             }}
           />
@@ -1223,11 +1357,9 @@ export default function StudyJourney({
                 ))}
               </div>
             )}
-            {step !== 'psy-score' && (
-              <p className="journey-helper">ציון היעד משמש לבדיקה בלבד ולא יחליף את הציון שלך.</p>
-            )}
+            {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">
-              <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשך'}</Primary>
+              <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשיכו'}</Primary>
             </div>
           </form>
         )}
@@ -1246,10 +1378,16 @@ export default function StudyJourney({
                 ['איפה לומדים', draft.locations.map((id) => LOCATIONS[id]).join(', '), 'regions'],
                 [
                   'בגרות',
-                  draft.scores.bagrut?.subjectRecord
-                    ? `${draft.scores.bagrut.subjectRecord.subjects.length} מקצועות`
-                    : (draft.scores.bagrut?.weightedAverage ?? 'ללא ציון כרגע'),
-                  'grade-mode',
+                  draft.gradeMode === 'quick'
+                    ? `הזנתם ממוצע: ${journeyScores.bagrut?.weightedAverage ?? ''}`
+                    : draft.gradeMode === 'exact'
+                      ? `הזנתם ציונים ב-${journeyScores.bagrut?.subjectRecord?.subjects.length ?? 0} מקצועות`
+                      : 'ללא ציון כרגע',
+                  draft.gradeMode === 'exact'
+                    ? 'grades-exact'
+                    : draft.gradeMode === 'quick'
+                      ? 'grades-quick'
+                      : 'grade-mode',
                 ],
                 [
                   'פסיכומטרי',
@@ -1270,6 +1408,7 @@ export default function StudyJourney({
                 </div>
               ))}
             </div>
+            <p className="journey-helper">הממוצע של כל מוסד מופיע בתוצאות</p>
             <div className="journey-actions">
               <Primary onClick={startResults}>לגלות את האפשרויות שלי</Primary>
             </div>
@@ -1331,7 +1470,7 @@ export default function StudyJourney({
                 />
               </div>
             )}
-            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלכם…</p>}
             {failedReports.length > 0 && (
               <p role="alert">
                 חלק מהחישובים לא נטענו.{' '}
@@ -1340,7 +1479,7 @@ export default function StudyJourney({
                   onClick={() =>
                     void evaluate(
                       selectedRows.filter((row) => failedReports.includes(row.program.id)),
-                      draft.scores,
+                      journeyScores,
                       simulation ?? draft.target,
                       true,
                     )
@@ -1406,7 +1545,7 @@ export default function StudyJourney({
               {step === 'detail' ? (
                 <>
                   <div className="journey-actions journey-detail-actions">
-                    <Primary onClick={() => go('inquiry')}>יצירת קשר</Primary>
+                    <Primary onClick={() => go('inquiry')}>קבלו שיחה מהמוסד</Primary>
                     <button
                       className="journey-secondary"
                       aria-pressed={
@@ -1420,14 +1559,20 @@ export default function StudyJourney({
                     </button>
                   </div>
                   {description && !isBatchCUnsupported && <p>{description}</p>}
-                  <span
-                    className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
-                  >
-                    {calculating && !activeRow.result && !activeRow.failed
-                      ? 'מחשבים התאמה…'
-                      : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id)
-                          .label}
-                  </span>
+                  {!activeShowsNoCalculationNote && (
+                    <span
+                      className={`journey-status status-${isTechnionMedicineScore(activeRow.result, activeRow.program.id) && !activeRow.failed ? 'match' : resultLabel(activeRow.result, activeRow.failed, false, activeRow.program.id).group}`}
+                    >
+                      {calculating && !activeRow.result && !activeRow.failed
+                        ? 'מחשבים התאמה…'
+                        : resultLabel(
+                            activeRow.result,
+                            activeRow.failed,
+                            false,
+                            activeRow.program.id,
+                          ).label}
+                    </span>
+                  )}
                   {isTechnionMedicineScore(activeRow.result, activeRow.program.id) ? (
                     <TechnionMedicineComparison score={activeRow.result.score} />
                   ) : biuFloorResult ? (
@@ -1462,38 +1607,38 @@ export default function StudyJourney({
                   {!biuFloorResult && !activeFootnote && (
                     <AdmissionConditions conditions={activeRow.result?.additionalConditions} />
                   )}
-                  <h2>תנאי קבלה</h2>
-                  {isBatchCUnsupported && (
-                    <TechnionThresholdNotice
-                      programId={activeRow.program.id}
-                      institutionId={activeRow.institution.id}
-                    />
-                  )}
-                  {activeRow.result?.floorChecks ? (
-                    <AdmissionRequirements
-                      requirements={[]}
-                      programId={activeRow.program.id}
-                      institutionId={activeRow.institution.id}
-                      floorChecks={activeRow.result.floorChecks}
-                    />
-                  ) : isBatchCUnsupported ? (
-                    <p>{activeRow.result?.nextAction}</p>
-                  ) : (
-                    <RequirementTiles
-                      program={activeRow.program}
-                      preserveRequirements
-                      verificationIssue={activeRow.result?.degradationReason}
-                      institutionId={activeRow.institution.id}
-                      requirements={
-                        activeRow.program.isListed === false
-                          ? ['אין כרגע מידע עדכני על המסלול.']
-                          : journeyAdmissionRequirements(
-                              details?.specificAdmissionNotes,
-                              activeRow.program,
-                              activeRow.institution.id,
-                            )
-                      }
-                    />
+                  {activeRow.program.isListed !== false && (
+                    <>
+                      <h2>תנאי קבלה</h2>
+                      {isBatchCUnsupported && (
+                        <TechnionThresholdNotice
+                          programId={activeRow.program.id}
+                          institutionId={activeRow.institution.id}
+                        />
+                      )}
+                      {activeRow.result?.floorChecks ? (
+                        <AdmissionRequirements
+                          requirements={[]}
+                          programId={activeRow.program.id}
+                          institutionId={activeRow.institution.id}
+                          floorChecks={activeRow.result.floorChecks}
+                        />
+                      ) : isBatchCUnsupported ? (
+                        <p>{activeRow.result?.nextAction}</p>
+                      ) : (
+                        <RequirementTiles
+                          program={activeRow.program}
+                          preserveRequirements
+                          verificationIssue={activeRow.result?.degradationReason}
+                          institutionId={activeRow.institution.id}
+                          requirements={journeyAdmissionRequirements(
+                            details?.specificAdmissionNotes,
+                            activeRow.program,
+                            activeRow.institution.id,
+                          )}
+                        />
+                      )}
+                    </>
                   )}
                   {biuFloorResult?.decision === 'below' &&
                     biuFloorResult.floorCaveats?.some((caveat) => caveat.kind === 'reservist') && (
@@ -1508,26 +1653,38 @@ export default function StudyJourney({
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          <button onClick={() => go('missing')}>
-                            {activeRow.result?.scoreAssessment
-                              ? 'עדכון נתונים ותנאים נוספים'
-                              : 'השלמת נתונים לחישוב'}
-                          </button>
+                          {!activeShowsNoCalculationNote && (
+                            <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>
+                          )}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
-                    {activeOfficialUrl && (
-                      <ProgramTrackedLink
-                        event="institution_site_clicked"
-                        programId={activeRow.program.id}
-                        institutionId={activeRow.institution.id}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        href={activeOfficialUrl}
-                      >
-                        לאתר המוסד
-                      </ProgramTrackedLink>
-                    )}
+                    {activeSourceLinks
+                      ? activeSourceLinks.map(({ href, label }) => (
+                          <ProgramTrackedLink
+                            key={href}
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={href}
+                          >
+                            {label}
+                          </ProgramTrackedLink>
+                        ))
+                      : activeOfficialUrl && (
+                          <ProgramTrackedLink
+                            event="institution_site_clicked"
+                            programId={activeRow.program.id}
+                            institutionId={activeRow.institution.id}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            href={activeOfficialUrl}
+                          >
+                            לאתר המוסד
+                          </ProgramTrackedLink>
+                        )}
                     <ProgramShareButton
                       key={activeRow.program.id}
                       programId={activeRow.program.id}
@@ -1559,9 +1716,9 @@ export default function StudyJourney({
                       </article>
                     ))
                   ) : (
-                    <p>אפשר לברר עם צוות MyWay אילו דרכי קבלה נוספות רלוונטיות לך.</p>
+                    <p>יש עוד דרכים להתקבל. השאירו פרטים והמוסד יחזור אליכם עם האפשרויות.</p>
                   )}
-                  <Primary onClick={() => go('inquiry')}>בואו נבדוק יחד</Primary>
+                  <Primary onClick={() => go('inquiry')}>קבלו שיחה מהמוסד</Primary>
                 </>
               )}
             </section>
@@ -1600,7 +1757,7 @@ export default function StudyJourney({
         {step === 'saved' && (
           <section>
             {catalogueStatus}
-            {calculating && <p role="status">בודקים את ההתאמה לציונים שלך…</p>}
+            {calculating && <p role="status">בודקים את ההתאמה לציונים שלכם…</p>}
             {failedReports.length > 0 && (
               <p role="alert">
                 חלק מהחישובים לא נטענו.{' '}
@@ -1609,7 +1766,7 @@ export default function StudyJourney({
                   onClick={() =>
                     void evaluate(
                       savedRows.filter((row) => failedReports.includes(row.program.id)),
-                      profile.academicScores ?? EMPTY.scores,
+                      evaluationScores,
                       undefined,
                       true,
                     )
@@ -1622,7 +1779,7 @@ export default function StudyJourney({
             {!profile.savedProgramIds?.length ? (
               <div className="journey-empty">
                 <Bookmark size={36} />
-                <h2>כאן יישמרו המסלולים שמעניינים אותך</h2>
+                <h2>כאן יישמרו המסלולים שמעניינים אתכם</h2>
                 <Primary onClick={() => go('results')}>לגלות אפשרויות</Primary>
               </div>
             ) : (
@@ -1671,28 +1828,26 @@ export default function StudyJourney({
                 <article key={row.id}>
                   <h2>{row.fieldName}</h2>
                   <p>{row.institution.name}</p>
-                  <AdmissionRequirements
-                    programId={row.program.id}
-                    institutionId={row.institution.id}
-                    requirements={
-                      row.program.isListed === false
-                        ? ['אין כרגע מידע עדכני על המסלול.']
-                        : journeyAdmissionRequirements(
-                            row.program.institutionDetails?.find(
-                              (detail) => detail.institutionName === row.institution.name,
-                            )?.specificAdmissionNotes,
-                            row.program,
-                            row.institution.id,
-                          )
-                    }
-                  />
+                  {row.program.isListed !== false && (
+                    <AdmissionRequirements
+                      programId={row.program.id}
+                      institutionId={row.institution.id}
+                      requirements={journeyAdmissionRequirements(
+                        row.program.institutionDetails?.find(
+                          (detail) => detail.institutionName === row.institution.name,
+                        )?.specificAdmissionNotes,
+                        row.program,
+                        row.institution.id,
+                      )}
+                    />
+                  )}
                   {row.program.id === 'technion_ee' && (
                     <TechnionThresholdNotice
                       programId={row.program.id}
                       institutionId={row.institution.id}
                     />
                   )}
-                  <Primary onClick={() => selectRow(row, 'inquiry')}>יצירת קשר</Primary>
+                  <Primary onClick={() => selectRow(row, 'inquiry')}>קבלו שיחה מהמוסד</Primary>
                 </article>
               ))}
             {compareIds.length < 2 && (
@@ -1803,7 +1958,6 @@ export default function StudyJourney({
             )}
           </section>
         )}
-        {step === 'home' && browse}
       </main>
     </WayPageShell>
   );

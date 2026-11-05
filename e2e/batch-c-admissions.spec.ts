@@ -71,10 +71,14 @@ for (const width of [390, 1440]) {
         ).toMatch(/right|start/);
         const main = page.getByRole('main');
         await expect(main.getByText(result.nextAction, { exact: true })).toBeVisible();
-        await expect(main.getByRole('button', { name: 'יצירת קשר', exact: true })).toBeVisible();
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
+        await expect(
+          main.getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),
+        ).toBeVisible();
         await expect(main.getByRole('button', { name: 'שמירה לרשימה', exact: true })).toBeVisible();
         await expect(
-          main.getByRole('button', { name: 'השלמת נתונים לחישוב', exact: true }),
+          // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
+          main.getByRole('button', { name: 'השלימו וקבלו תשובה', exact: true }),
         ).toHaveCount(0);
         await expect(main.getByRole('textbox', { name: /מתואם|סכם|מצרף|ציון קבלה/ })).toHaveCount(
           0,

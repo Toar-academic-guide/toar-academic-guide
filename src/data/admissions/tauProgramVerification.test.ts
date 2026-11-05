@@ -1,8 +1,12 @@
 import { describe, expect, it, vi } from 'vitest';
 
 import {
-  TAU_PROGRAM_VERIFICATION_METADATA,
+  TAU_ARCHITECTURE_CONTRACT,
+  TAU_ARCHITECTURE_FIXTURES,
+  TAU_ARCHITECTURE_REQUIREMENTS_URL,
   TAU_BIOLOGY_CONTRACT,
+  TAU_BIOLOGY_FIXTURES,
+  TAU_PROGRAM_VERIFICATION_METADATA,
   TAU_LEGACY_BIOLOGY_CONTRACT,
   TAU_ECONOMICS_CONTRACT,
   TAU_LEGACY_ECONOMICS_CONTRACT,
@@ -30,6 +34,7 @@ import {
   TAU_SOCIAL_WORK_CONTRACT,
   TAU_SOCIAL_WORK_FIXTURES,
 } from './tauProgramVerification';
+import { getFormulaPairVerificationEntry } from './formulaBackedVerificationLedger';
 import {
   evaluateProgramVerification,
   fingerprintVerificationFixtures,
@@ -403,3 +408,324 @@ function jsonResponse(body: unknown): Response {
     headers: { 'content-type': 'application/json' },
   });
 }
+
+describe('TAU Architecture manual gate', () => {
+  it('records the current composite cutoffs and canonical requirements URL', () => {
+    expect(TAU_ARCHITECTURE_CONTRACT.calculation.cutoff).toEqual({
+      acceptance: 629,
+      rejection: 600,
+    });
+    expect(TAU_ARCHITECTURE_REQUIREMENTS_URL).toBe(
+      'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+    );
+    expect(TAU_PROGRAM_VERIFICATION_METADATA.architecture__tau.requirementsUrl).toBe(
+      TAU_ARCHITECTURE_REQUIREMENTS_URL,
+    );
+  });
+
+  it('keeps English 100 from the university-wide BA conditions', () => {
+    expect(TAU_ARCHITECTURE_CONTRACT.calculation.gates).toContainEqual({
+      id: 'tau-architecture:english-minimum',
+      kind: 'language',
+      field: 'psychometricEnglish',
+      minimum: 100,
+      description: expect.stringContaining('https://go.tau.ac.il/he/ba/admissions'),
+    });
+  });
+
+  it('represents above 550 as an integer psychometric minimum of 551', () => {
+    expect(TAU_ARCHITECTURE_CONTRACT.calculation.gates).toContainEqual({
+      id: 'tau-architecture:psychometric-minimum',
+      kind: 'minimum',
+      field: 'psychometric',
+      minimum: 551,
+      description: expect.stringContaining('מעל 550'),
+    });
+  });
+
+  it('records all three mathematics routes', () => {
+    expect(TAU_ARCHITECTURE_CONTRACT.calculation.gates).toContainEqual({
+      id: 'tau-architecture:mathematics-route',
+      kind: 'subject',
+      field: 'bagrutSubjectRecord',
+      description: expect.stringMatching(/5.*70.*4.*80.*3.*90/),
+    });
+  });
+
+  it('requires the 50/50 screening test without an advanced-year portfolio/interview gate', () => {
+    const gates = TAU_ARCHITECTURE_CONTRACT.calculation.gates;
+    expect(gates).toHaveLength(4);
+    expect(gates).toContainEqual({
+      id: 'tau-architecture:screening-test',
+      kind: 'manual',
+      field: 'architectureScreeningTest',
+      description: expect.stringMatching(/50%.*50%.*מבחן מיון/),
+    });
+    expect(JSON.stringify(gates)).not.toMatch(/portfolio|interview|תיק עבודות|ראיון/i);
+  });
+
+  it('removes positive verdict fixtures and preserves the captured below fixture', () => {
+    expect(TAU_ARCHITECTURE_FIXTURES).toEqual([
+      {
+        id: 'architecture__tau:below:2026-2027',
+        pairId: 'architecture__tau',
+        admissionCycle: '2026-2027',
+        verdict: 'below',
+        input: {
+          psychometric: 620,
+          bagrut: 90,
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              {
+                subjectId: 'mathematics',
+                units: 4,
+                grade: 80,
+              },
+              {
+                subjectId: 'english',
+                units: 5,
+                grade: 85,
+              },
+              {
+                subjectId: 'history',
+                units: 2,
+                grade: 80,
+              },
+              {
+                subjectId: 'bible',
+                units: 2,
+                grade: 78,
+              },
+            ],
+          },
+        },
+        expected: {
+          score: 548,
+          verdict: 'below',
+        },
+        sourceFingerprint:
+          'sha256:ca1b8b5fc2382bb0e899de53238ee2aebd132b33df642393acb73f26a4f2f9e0',
+        capturedAt: '2026-07-26T06:00:00.000Z',
+      },
+    ]);
+    expect(
+      TAU_ARCHITECTURE_FIXTURES.some(
+        (fixture) =>
+          fixture.verdict === 'accepted' ||
+          fixture.verdict === 'eligible_to_apply' ||
+          fixture.expected.verdict === 'accepted' ||
+          fixture.expected.verdict === 'eligible_to_apply',
+      ),
+    ).toBe(false);
+    expect(TAU_ARCHITECTURE_CONTRACT.fixtureIds).toEqual(['architecture__tau:below:2026-2027']);
+    expect(TAU_ARCHITECTURE_CONTRACT.fixtureSetFingerprint).toBe(
+      fingerprintVerificationFixtures(TAU_ARCHITECTURE_FIXTURES),
+    );
+  });
+
+  it('withholds decisions through unverified proof while preserving the reviewed source id', () => {
+    expect(TAU_ARCHITECTURE_CONTRACT.calculation.mode).toBe('official_replay');
+    expect(TAU_ARCHITECTURE_CONTRACT.sourceFingerprint).toBe(
+      'sha256:ca1b8b5fc2382bb0e899de53238ee2aebd132b33df642393acb73f26a4f2f9e0',
+    );
+    expect(TAU_ARCHITECTURE_CONTRACT.proof).toEqual({
+      state: 'unverified',
+      comparedScore: false,
+      comparedVerdict: false,
+      liveComparedAt: null,
+      sourceFingerprint: TAU_ARCHITECTURE_CONTRACT.sourceFingerprint,
+    });
+    expect(
+      evaluateProgramVerification({
+        contract: TAU_ARCHITECTURE_CONTRACT,
+        fixtures: TAU_ARCHITECTURE_FIXTURES,
+        currentAdmissionCycle: '2026-2027',
+        currentSourceFingerprint: TAU_ARCHITECTURE_CONTRACT.sourceFingerprint,
+      }),
+    ).toMatchObject({ state: 'authority_unavailable', capability: 'authority_unavailable' });
+    expect(getFormulaPairVerificationEntry('architecture__tau')?.state).toBe('withheld');
+  });
+
+  it('explains the screening test to students in Hebrew', () => {
+    const reason = TAU_PROGRAM_VERIFICATION_METADATA.architecture__tau.ledgerReason;
+    expect(reason).toMatch(/[א-ת]/);
+    expect(reason).toContain('מבחן מיון');
+    expect(reason).not.toMatch(/[a-z]/i);
+    expect(getFormulaPairVerificationEntry('architecture__tau')?.reason).toBe(reason);
+  });
+});
+
+describe('TAU Biology independence from Architecture', () => {
+  it('preserves the complete origin/main biology contract', () => {
+    expect(TAU_BIOLOGY_CONTRACT).toEqual({
+      pairId: 'biology__tau',
+      programId: 'biology',
+      institutionId: 'tau',
+      officialProgramId: '045511050000',
+      admissionCycle: '2026-2027',
+      source: {
+        targetId: 'tau-biology-live',
+        url: 'https://go.tau.ac.il/graphql',
+      },
+      calculation: {
+        adapterId: 'tau',
+        mode: 'official_replay',
+        formulaFamily: 'tau_hatama',
+        requiredInputs: ['psychometric_english'],
+        cutoff: {
+          acceptance: 576,
+          rejection: 575,
+        },
+        gates: [
+          {
+            id: 'tau-biology:english-minimum',
+            kind: 'language',
+            field: 'psychometricEnglish',
+            minimum: 100,
+            description: 'TAU requires at least English level Advanced A.',
+          },
+          {
+            id: 'tau-biology:science-requirements',
+            kind: 'manual',
+            field: 'bagrutSubjectRecord',
+            description:
+              'Biology, chemistry, and other science-route requirements remain subject to official review.',
+          },
+        ],
+      },
+      fixtureIds: ['biology__tau:accepted:2026-2027', 'biology__tau:below:2026-2027'],
+      fixtureSetFingerprint:
+        'sha256:3ab20003e8a217f447a0244827613ee626d46af1e0e1bc4c57f94824741a3eaa',
+      sourceFingerprint: 'sha256:15b31e2df3be2f353470453fe3e83eec36d7a0f25ccdc03aaf4d11f65c8a8a29',
+      proof: {
+        state: 'verified',
+        comparedScore: true,
+        comparedVerdict: true,
+        liveComparedAt: '2026-07-26T06:01:00.000Z',
+        sourceFingerprint:
+          'sha256:15b31e2df3be2f353470453fe3e83eec36d7a0f25ccdc03aaf4d11f65c8a8a29',
+      },
+    });
+  });
+
+  it('preserves both complete origin/main biology fixtures and their fingerprint', () => {
+    expect(TAU_BIOLOGY_FIXTURES).toEqual([
+      {
+        id: 'biology__tau:accepted:2026-2027',
+        pairId: 'biology__tau',
+        admissionCycle: '2026-2027',
+        verdict: 'accepted',
+        input: {
+          psychometric: 680,
+          bagrut: 110,
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              {
+                subjectId: 'mathematics',
+                units: 5,
+                grade: 82,
+              },
+              {
+                subjectId: 'english',
+                units: 5,
+                grade: 90,
+              },
+              {
+                subjectId: 'history',
+                units: 2,
+                grade: 92,
+              },
+              {
+                subjectId: 'bible',
+                units: 2,
+                grade: 88,
+              },
+            ],
+          },
+        },
+        expected: {
+          score: 679,
+          verdict: 'accepted',
+        },
+        sourceFingerprint:
+          'sha256:15b31e2df3be2f353470453fe3e83eec36d7a0f25ccdc03aaf4d11f65c8a8a29',
+        capturedAt: '2026-07-26T06:00:00.000Z',
+      },
+      {
+        id: 'biology__tau:below:2026-2027',
+        pairId: 'biology__tau',
+        admissionCycle: '2026-2027',
+        verdict: 'below',
+        input: {
+          psychometric: 620,
+          bagrut: 90,
+          psychometricEnglish: 110,
+          bagrutSubjectRecord: {
+            schemaVersion: 1,
+            sector: 'jewish',
+            subjects: [
+              {
+                subjectId: 'mathematics',
+                units: 4,
+                grade: 80,
+              },
+              {
+                subjectId: 'english',
+                units: 5,
+                grade: 85,
+              },
+              {
+                subjectId: 'history',
+                units: 2,
+                grade: 80,
+              },
+              {
+                subjectId: 'bible',
+                units: 2,
+                grade: 78,
+              },
+            ],
+          },
+        },
+        expected: {
+          score: 548,
+          verdict: 'below',
+        },
+        sourceFingerprint:
+          'sha256:15b31e2df3be2f353470453fe3e83eec36d7a0f25ccdc03aaf4d11f65c8a8a29',
+        capturedAt: '2026-07-26T06:00:00.000Z',
+      },
+    ]);
+    expect(TAU_BIOLOGY_CONTRACT.fixtureSetFingerprint).toBe(
+      'sha256:3ab20003e8a217f447a0244827613ee626d46af1e0e1bc4c57f94824741a3eaa',
+    );
+    expect(fingerprintVerificationFixtures(TAU_BIOLOGY_FIXTURES)).toBe(
+      'sha256:3ab20003e8a217f447a0244827613ee626d46af1e0e1bc4c57f94824741a3eaa',
+    );
+  });
+
+  it.each([
+    'biology__tau',
+    'communication__tau',
+    'political_science__tau',
+    'education__tau',
+    'economics__tau',
+    'tau_biology__tau',
+  ])('keeps %s exact', (pairId) => {
+    const { contract, fixtures } = TAU_PROGRAM_VERIFICATION_METADATA[pairId];
+    expect(
+      evaluateProgramVerification({
+        contract,
+        fixtures,
+        currentAdmissionCycle: '2026-2027',
+        currentSourceFingerprint: contract.sourceFingerprint,
+      }),
+    ).toEqual({ state: 'exact', capability: 'exact', issues: [] });
+  });
+});

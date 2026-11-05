@@ -1,3 +1,5 @@
+import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
+import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import 'server-only';
@@ -50,6 +52,7 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   string,
   Extract<AdmissionsEvaluationCapability, 'manual_gate' | 'requirements_only'>
 > = {
+  architecture__tau: 'manual_gate',
   colmgmt_cs__colman: 'manual_gate',
   medicine__tau: 'manual_gate',
   nutrition__tau: 'requirements_only',
@@ -430,6 +433,8 @@ const EXACT_PROGRAM_TARGETS: Record<string, ExactCapabilityTarget> = {
       nodeId: 8209,
       externalId: '088111010000',
       scoreField: 'hatama',
+      searchText: 'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements',
+      decisionMode: 'eligible_to_apply',
     },
     requiredInputs: ['psychometric_english'],
   },
@@ -1357,4 +1362,17 @@ function hasDecisionThreshold(program: CatalogueProgram, institutionId: string):
     (sekhemThreshold !== undefined && sekhemThreshold !== null) ||
     (directPsychometric !== undefined && directPsychometric !== null)
   );
+}
+
+/** Academic evidence never promotes the final-stage medicine ledger entry. */
+export function getMedicineAcademicVerification(
+  programId: string,
+  institutionId: string,
+  extra: AdmissionsExtraInputs | undefined,
+) {
+  if (!isMedicineAcademicPair(programId, institutionId) || !usesMedicineAcademicStage(extra))
+    return undefined;
+  return MEDICINE_ACADEMIC_REFERENCE_CASES[
+    institutionId as keyof typeof MEDICINE_ACADEMIC_REFERENCE_CASES
+  ];
 }

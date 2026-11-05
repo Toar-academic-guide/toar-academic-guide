@@ -1,0 +1,56 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts (18 tests | 2 failed) 118ms
+     × enumerates every static Haifa pair and returns the honest note without a composite ask 22ms
+     × uses explicit actual exam years and section scores locally once ordinary Haifa inputs are complete 6ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts > #320 request-shape compatibility at 12fd33f > enumerates every static Haifa pair and returns the honest note without a composite ask
+AssertionError: haifa_engineering: expected 'unsupported' to be 'tracked_missing_rule' // Object.is equality
+
+Expected: "tracked_missing_rule"
+Received: "unsupported"
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts:139:39
+    137|         else {
+    138|           // Approved test update, Jorje 2026-10-28
+    139|           expect(result.kind, row.id).toBe('tracked_missing_rule');
+       |                                       ^
+    140|         }
+    141|         // Approved test update, Jorje 2026-10-29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts > #320 request-shape compatibility at 12fd33f > uses explicit actual exam years and section scores locally once ordinary Haifa inputs are complete
+AssertionError: expected { …(15) } to match object { kind: 'exact', score: 606 }
+(26 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "kind": "exact",
+-   "score": 606,
++   "score": 493,
+  }
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts:187:20
+    185|     );
+    186|     // Approved test update: Jorje 2026-10-29, Haifa local formula; va…
+    187|     expect(result).toMatchObject({ kind: 'exact', score: 606 });
+       |                    ^
+    188|     // Approved test update: Jorje 2026-10-29, Haifa local formula; va…
+    189|     expect(fetcher).not.toHaveBeenCalled();
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed (1)
+      Tests  2 failed | 16 passed (18)
+   Start at  14:55:59
+   Duration  2.23s (transform 1.08s, setup 99ms, import 1.84s, tests 118ms, environment 0ms)

@@ -27,6 +27,7 @@ jobs:
       applicable: ${{ steps.classify.outputs.applicable }}
       # The base policy may not emit this yet: empty/missing means run everything.
       docs_only: ${{ steps.classify.outputs.docs_only }}
+      data_health_required: ${{ steps.classify.outputs.data_health_required }}
 
     steps:
       - name: Checkout repository history
@@ -347,7 +348,9 @@ jobs:
           npm exec vitest -- \
             src/data/admissions/mondayEvidence.test.ts \
             src/server/admissions/catalogueEvidenceCoverage.test.ts \
-            src/server/admissions/calculatorCoverage.test.ts \
+            src/lib/admissionsCoverageRetirement.test.ts \
+            src/lib/admissionsEvaluationSerialization.test.ts \
+            src/app/api/admissions/evaluate/serialization.test.ts \
             src/server/admissions/capabilityMatrix.test.ts \
             src/server/admissions/evaluator.test.ts \
             --run
@@ -460,7 +463,9 @@ jobs:
     needs:
       - production-sensitive-paths
       - build
-    if: ${{ !cancelled() && needs.build.result == 'success' }}
+    if: >-
+      ${{ !cancelled() && needs.build.result == 'success' &&
+          (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.data_health_required != 'false') }}
     env:
       CI: true
       CATALOGUE_SOURCE_MODE: static
@@ -469,42 +474,32 @@ jobs:
       INTERNAL_ADMIN_E2E_TOKEN: ci-internal-data-health-smoke
 
     steps:
-      - name: Docs-only PR (heavy steps skipped)
-        if: ${{ github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true' }}
-        run: echo "Docs-only PR; heavy steps skipped. This check still reports success."
-
       - name: Checkout repository
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/checkout@v7
 
       - name: Setup Node.js
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         uses: actions/setup-node@v7
         with:
           node-version: 24
           cache: npm
 
       - name: Install dependencies
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm ci
 
       - name: Install Playwright browsers
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npx playwright install --with-deps chromium
 
       - name: Build application
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: npm run build
 
       - name: Run internal data-health smoke
-        if: ${{ github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true' }}
         run: |
           npm start &
           npx --yes wait-on http://localhost:3000 --timeout 30000
           npx playwright test e2e/internal-data-health.spec.ts
 
       - name: Upload internal data-health smoke report
-        if: ${{ failure() && (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true') }}
+        if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
           name: playwright-report-internal-data-health
@@ -628,7 +623,7 @@ jobs:
         run: npm run db:operational:verify
 
   # ---------------------------------------------------------------------------
-  # Final PR gate: skipped builds or smokes must never produce a green PR
+  # Only the internal smoke may be skipped, on a positively classified unrelated PR.
   # ---------------------------------------------------------------------------
   pr-gate-integrity:
     name: PR gate integrity
@@ -647,12 +642,17 @@ jobs:
           BUILD_RESULT: ${{ needs.build.result }}
           PLAYWRIGHT_RESULT: ${{ needs.e2e-pr.result }}
           DATA_HEALTH_RESULT: ${{ needs.internal-data-health-smoke.result }}
+          DATA_HEALTH_REQUIRED: ${{ needs.production-sensitive-paths.outputs.data_health_required }}
         run: |
           echo "Classify production-sensitive changes: $CLASSIFY_RESULT"
           echo "Build application: $BUILD_RESULT"
           echo "Playwright PR smoke: $PLAYWRIGHT_RESULT"
           echo "Internal data-health smoke: $DATA_HEALTH_RESULT"
-          if [[ "$CLASSIFY_RESULT" != "success" || "$BUILD_RESULT" != "success" || "$PLAYWRIGHT_RESULT" != "success" || "$DATA_HEALTH_RESULT" != "success" ]]; then
+          if [[ "$CLASSIFY_RESULT" != "success" || "$BUILD_RESULT" != "success" || "$PLAYWRIGHT_RESULT" != "success" ]]; then
             echo "::error::Classification and all PR build and smoke gates must succeed; skipped, failed, or cancelled gates block the PR."
+            exit 1
+          fi
+          if [[ "$DATA_HEALTH_RESULT" != "success" && !( "$DATA_HEALTH_REQUIRED" == "false" && "$DATA_HEALTH_RESULT" == "skipped" ) ]]; then
+            echo "::error::Internal data-health smoke must pass unless the classifier explicitly allows it to be skipped."
             exit 1
           fi

@@ -72,7 +72,7 @@ export default function TauPhysiotherapyFields({
         )}
         {select(
           'tauPhysiotherapyMoocBonusConfirmed',
-          'האם מגיע לך בונוס הקורס המקוון לפיזיותרפיה?',
+          'האם מגיע לכם בונוס הקורס המקוון לפיזיותרפיה?',
         )}
       </div>
       <p className="mt-3 text-xs leading-relaxed text-slate-600">

@@ -1,0 +1,4461 @@
+{
+ "generated": "2026-10-29",
+ "calculator": "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+ "year": "2026 (תשפ\"ז) semester 001",
+ "model": "model/haifa_model.py haifa_score()",
+ "composite_vectors": [
+  {
+   "source": "raw/chances1-1793258405009.json#accounting|V1",
+   "programme": "accounting",
+   "program_id": "52261493",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 659
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#accounting|V2",
+   "programme": "accounting",
+   "program_id": "52261493",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 680,
+    "reject": 659
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#accounting|V3",
+   "programme": "accounting",
+   "program_id": "52261493",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 680,
+    "reject": 659
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#biology|V1",
+   "programme": "biology",
+   "program_id": "52255174",
+   "hug": "SC0006",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 640,
+    "reject": 619
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#biology|V2",
+   "programme": "biology",
+   "program_id": "52255174",
+   "hug": "SC0006",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 640,
+    "reject": 619
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#biology|V3",
+   "programme": "biology",
+   "program_id": "52255174",
+   "hug": "SC0006",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 640,
+    "reject": 619
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_policyid|V1",
+   "programme": "communication",
+   "program_id": "52253864",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_policyid|V2",
+   "programme": "communication",
+   "program_id": "52253864",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_policyid|V3",
+   "programme": "communication",
+   "program_id": "52253864",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_dual|V1",
+   "programme": "communication",
+   "program_id": "52253862",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_dual|V2",
+   "programme": "communication",
+   "program_id": "52253862",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#communication_dual|V3",
+   "programme": "communication",
+   "program_id": "52253862",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#cs|V1",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#cs|V2",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#cs|V3",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#economics|V1",
+   "programme": "economics",
+   "program_id": "52261490",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 660,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#economics|V2",
+   "programme": "economics",
+   "program_id": "52261490",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 660,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#economics|V3",
+   "programme": "economics",
+   "program_id": "52261490",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 660,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#infosystems_policyid|V1",
+   "programme": "infosystems",
+   "program_id": "52256686",
+   "hug": "SC0026",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 649
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#infosystems_policyid|V2",
+   "programme": "infosystems",
+   "program_id": "52256686",
+   "hug": "SC0026",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 680,
+    "reject": 649
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#infosystems_policyid|V3",
+   "programme": "infosystems",
+   "program_id": "52256686",
+   "hug": "SC0026",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 680,
+    "reject": 649
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#law|V1",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#law|V2",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 524,
+    "psychometric_shown": 554,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 524
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#law|V3",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 722,
+    "psychometric_shown": 671,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 722
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#math|V1",
+   "programme": "math",
+   "program_id": "52257936",
+   "hug": "SC0030",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 610,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#math|V2",
+   "programme": "math",
+   "program_id": "52257936",
+   "hug": "SC0030",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 610,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#math|V3",
+   "programme": "math",
+   "program_id": "52257936",
+   "hug": "SC0030",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 610,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#nursing|V1",
+   "programme": "nursing",
+   "program_id": "52257430",
+   "hug": "SC0034",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 580,
+    "reject": 569
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#nursing|V2",
+   "programme": "nursing",
+   "program_id": "52257430",
+   "hug": "SC0034",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 580,
+    "reject": 569
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#nursing|V3",
+   "programme": "nursing",
+   "program_id": "52257430",
+   "hug": "SC0034",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 580,
+    "reject": 569
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#occupational_therapy|V1",
+   "programme": "occupational_therapy",
+   "program_id": "52255365",
+   "hug": "SC0046",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 610,
+    "reject": 594
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#occupational_therapy|V2",
+   "programme": "occupational_therapy",
+   "program_id": "52255365",
+   "hug": "SC0046",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 610,
+    "reject": 594
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#occupational_therapy|V3",
+   "programme": "occupational_therapy",
+   "program_id": "52255365",
+   "hug": "SC0046",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 610,
+    "reject": 594
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#physiotherapy|V1",
+   "programme": "physiotherapy",
+   "program_id": "52256372",
+   "hug": "SC0040",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#physiotherapy|V2",
+   "programme": "physiotherapy",
+   "program_id": "52256372",
+   "hug": "SC0040",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 680,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#physiotherapy|V3",
+   "programme": "physiotherapy",
+   "program_id": "52256372",
+   "hug": "SC0040",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 680,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#political_science|V1",
+   "programme": "political_science",
+   "program_id": "52254686",
+   "hug": "SC0020",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 580,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#political_science|V2",
+   "programme": "political_science",
+   "program_id": "52254686",
+   "hug": "SC0020",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 580,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#political_science|V3",
+   "programme": "political_science",
+   "program_id": "52254686",
+   "hug": "SC0020",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 580,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V2",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V3",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#social_work|V1",
+   "programme": "social_work",
+   "program_id": "52253943",
+   "hug": "SC0037",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 615,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#social_work|V2",
+   "programme": "social_work",
+   "program_id": "52253943",
+   "hug": "SC0037",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 615,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#social_work|V3",
+   "programme": "social_work",
+   "program_id": "52253943",
+   "hug": "SC0037",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 615,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#sociology_policyid|V1",
+   "programme": "sociology",
+   "program_id": "52252907",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 540,
+    "reject": 539
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#sociology_policyid|V2",
+   "programme": "sociology",
+   "program_id": "52252907",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 540,
+    "reject": 539
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#sociology_policyid|V3",
+   "programme": "sociology",
+   "program_id": "52252907",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 540,
+    "reject": 539
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#statistics|V1",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#statistics|V2",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#statistics|V3",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2021",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2021",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2020",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2020",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2019",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2019",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 700,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "half",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 700
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2017",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2017",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 700,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "half",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 700
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2016",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2016",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 700,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "half",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 700
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|bag_year=2015",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2015",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 699,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 699
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|psy_year=2019",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2019",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|psy_year=2018",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2018",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#psychology|V1|psy_year=2012",
+   "request": {
+    "year": "2026",
+    "semester": "001",
+    "hug": "SC0042",
+    "program": "52252391",
+    "bag_type": "001",
+    "bag_year": "2025",
+    "bag_avg": "103.5",
+    "psy_year": "2012",
+    "psy_math": "140",
+    "psy_verbal": "130",
+    "psy_english": "135"
+   },
+   "haifa": {
+    "return": {
+     "number": "242",
+     "errorType": "MSG",
+     "type": "E",
+     "message": "לא ניתן לחשב סיכויי קבלה , ותק פסיכומטרי גדול מ- 10 שנים"
+    }
+   },
+   "match": null
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#statistics|V2|bag_year=2018",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2018",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 556,
+    "psychometric_shown": 554,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "half",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 556
+   },
+   "match": true
+  },
+  {
+   "source": "raw/chances1-1793258405009.json#statistics|V2|bag_year=2014",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 570,
+    "psychometric_shown": 554,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 570
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|140/130/135",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|130/140/135",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 130,
+    "V": 140,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 694,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 693.6671,
+    "PM_ceil": 694,
+    "weighted": 694
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|135/135/135",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 135,
+    "V": 135,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 699,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 698.8127,
+    "PM_ceil": 699,
+    "weighted": 699
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|150/120/135",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 120,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 715,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 714.2493,
+    "PM_ceil": 715,
+    "weighted": 715
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|120/150/135",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 120,
+    "V": 150,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 684,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 683.3761,
+    "PM_ceil": 684,
+    "weighted": 684
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|140/140/115",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 140,
+    "E": 115,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 715,
+    "psychometric_shown": 699,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 714.2493,
+    "PM_ceil": 715,
+    "weighted": 715
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|50/50/50",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 50,
+    "V": 50,
+    "E": 50,
+    "pc_used": 218
+   },
+   "haifa": {
+    "weighted": 218,
+    "psychometric_shown": 218,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 217.7047,
+    "PM_ceil": 218,
+    "weighted": 218
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|60/60/60",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 60,
+    "V": 60,
+    "E": 60,
+    "pc_used": 274
+   },
+   "haifa": {
+    "weighted": 275,
+    "psychometric_shown": 274,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 274.3056,
+    "PM_ceil": 275,
+    "weighted": 275
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|70/70/70",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 70,
+    "V": 70,
+    "E": 70,
+    "pc_used": 331
+   },
+   "haifa": {
+    "weighted": 331,
+    "psychometric_shown": 331,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 330.9066,
+    "PM_ceil": 331,
+    "weighted": 331
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|80/80/80",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 80,
+    "V": 80,
+    "E": 80,
+    "pc_used": 388
+   },
+   "haifa": {
+    "weighted": 388,
+    "psychometric_shown": 388,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 387.5075,
+    "PM_ceil": 388,
+    "weighted": 388
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|90/90/90",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 90,
+    "V": 90,
+    "E": 90,
+    "pc_used": 444
+   },
+   "haifa": {
+    "weighted": 445,
+    "psychometric_shown": 444,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 444.1085,
+    "PM_ceil": 445,
+    "weighted": 445
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|100/100/100",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 501,
+    "psychometric_shown": 501,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 501
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|110/110/110",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 110,
+    "V": 110,
+    "E": 110,
+    "pc_used": 557
+   },
+   "haifa": {
+    "weighted": 558,
+    "psychometric_shown": 557,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 557.3103,
+    "PM_ceil": 558,
+    "weighted": 558
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|130/130/130",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 130,
+    "V": 130,
+    "E": 130,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 671,
+    "psychometric_shown": 671,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 671
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|140/140/140",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 140,
+    "E": 140,
+    "pc_used": 727
+   },
+   "haifa": {
+    "weighted": 728,
+    "psychometric_shown": 727,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 727.1132,
+    "PM_ceil": 728,
+    "weighted": 728
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|145/145/145",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 145,
+    "V": 145,
+    "E": 145,
+    "pc_used": 758
+   },
+   "haifa": {
+    "weighted": 756,
+    "psychometric_shown": 758,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 755.4136,
+    "PM_ceil": 756,
+    "weighted": 756
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|150/150/150",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 784,
+    "psychometric_shown": 800,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 784
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|117/109/95",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 570,
+    "psychometric_shown": 554,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 570
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|125/140/120",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 671,
+    "psychometric_shown": 671,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 671
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|101/99/87",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 101,
+    "V": 99,
+    "E": 87,
+    "pc_used": 486
+   },
+   "haifa": {
+    "weighted": 496,
+    "psychometric_shown": 486,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 495.0493,
+    "PM_ceil": 496,
+    "weighted": 496
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|144/118/131",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 144,
+    "V": 118,
+    "E": 131,
+    "pc_used": 676
+   },
+   "haifa": {
+    "weighted": 690,
+    "psychometric_shown": 676,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 689.5507,
+    "PM_ceil": 690,
+    "weighted": 690
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|88/103/142",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 88,
+    "V": 103,
+    "E": 142,
+    "pc_used": 528
+   },
+   "haifa": {
+    "weighted": 492,
+    "psychometric_shown": 528,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 491.4474,
+    "PM_ceil": 492,
+    "weighted": 492
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|131/127/110",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 131,
+    "V": 127,
+    "E": 110,
+    "pc_used": 643
+   },
+   "haifa": {
+    "weighted": 658,
+    "psychometric_shown": 643,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 657.1338,
+    "PM_ceil": 658,
+    "weighted": 658
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#stat_ignored|112/121/99",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 112,
+    "V": 121,
+    "E": 99,
+    "pc_used": 574
+   },
+   "haifa": {
+    "weighted": 581,
+    "psychometric_shown": 574,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 580.4653,
+    "PM_ceil": 581,
+    "weighted": 581
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#psych_ignored|117/109/95",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 554,
+    "psychometric_shown": 554,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 554
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#psych_ignored|144/118/131",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "100",
+    "bag_year": "2014",
+    "psy_year": "2026",
+    "Q": 144,
+    "V": 118,
+    "E": 131,
+    "pc_used": 676
+   },
+   "haifa": {
+    "weighted": 676,
+    "psychometric_shown": 676,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "expired",
+    "BT": 670.0,
+    "PM_exact": 689.5507,
+    "PM_ceil": 690,
+    "weighted": 676
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#law_half|2019|V1",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2019",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 700,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "half",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 700
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#law_ignored|2015|V1",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2015",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 699,
+    "psychometric_shown": 699,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "expired",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 699
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#cs_half|2019|V1",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2019",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 704,
+    "psychometric_shown": 699,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "half",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 704
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe2-1793258987745.json#sociology_day|V1",
+   "programme": "sociology",
+   "program_id": "52252912",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 540,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe3-1793259682735.json#psych_btround|100.05|100s",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "100.05",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 543,
+    "psychometric_shown": 501,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 670.5,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 543
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe3-1793259682735.json#stat_btround|100.05|100s",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "100.05",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 543,
+    "psychometric_shown": 501,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 670.5,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 543
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe3-1793259682735.json#sociology_day|V2",
+   "programme": "sociology",
+   "program_id": "52252912",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 529,
+    "psychometric_shown": 554,
+    "accept": 540,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 529
+   },
+   "match": true
+  },
+  {
+   "source": "raw/probe3-1793259682735.json#sociology_day|V3",
+   "programme": "sociology",
+   "program_id": "52252912",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 713,
+    "psychometric_shown": 671,
+    "accept": 540,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 713
+   },
+   "match": true
+  },
+  {
+   "source": "raw/ui-1793259566427.json#ui",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "103.5",
+    "bag_year": "2025",
+    "psy_year": "2026",
+    "Q": 140,
+    "V": 130,
+    "E": 135,
+    "pc_used": 699
+   },
+   "haifa": {
+    "weighted": 701,
+    "psychometric_shown": 699,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 705.0,
+    "PM_exact": 703.9582,
+    "PM_ceil": 704,
+    "weighted": 701
+   },
+   "match": true
+  },
+  {
+   "source": "raw/ui-1793259566427.json#ui",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "78.52",
+    "bag_year": "2024",
+    "psy_year": "2026",
+    "Q": 117,
+    "V": 109,
+    "E": 95,
+    "pc_used": 554
+   },
+   "haifa": {
+    "weighted": 541,
+    "psychometric_shown": 554,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 455.2,
+    "PM_exact": 569.1451,
+    "PM_ceil": 570,
+    "weighted": 541
+   },
+   "match": true
+  },
+  {
+   "source": "raw/ui-1793259566427.json#ui",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "117",
+    "bag_year": "2023",
+    "psy_year": "2025",
+    "Q": 125,
+    "V": 140,
+    "E": 120,
+    "pc_used": 671
+   },
+   "haifa": {
+    "weighted": 722,
+    "psychometric_shown": 671,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 840.0,
+    "PM_exact": 670.5122,
+    "PM_ceil": 671,
+    "weighted": 722
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#accounting-high",
+   "programme": "accounting",
+   "program_id": "52261493",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 680,
+    "reject": 659
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#accounting-low",
+   "programme": "accounting",
+   "program_id": "52261493",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 680,
+    "reject": 659
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#biology-high",
+   "programme": "biology",
+   "program_id": "52255174",
+   "hug": "SC0006",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 640,
+    "reject": 619
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#biology-low",
+   "programme": "biology",
+   "program_id": "52255174",
+   "hug": "SC0006",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 640,
+    "reject": 619
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#communication-high",
+   "programme": "communication",
+   "program_id": "52253864",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#communication-low",
+   "programme": "communication",
+   "program_id": "52253864",
+   "hug": "SC0052",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 550,
+    "reject": 499
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#cs-high",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#cs-low",
+   "programme": "cs",
+   "program_id": "52256544",
+   "hug": "SC0021",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 700,
+    "reject": 679
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#economics-high",
+   "programme": "economics",
+   "program_id": "52261490",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 660,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#economics-low",
+   "programme": "economics",
+   "program_id": "52261490",
+   "hug": "SC0017",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 660,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#infosystems-high",
+   "programme": "infosystems",
+   "program_id": "52256686",
+   "hug": "SC0026",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 680,
+    "reject": 649
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#infosystems-low",
+   "programme": "infosystems",
+   "program_id": "52256686",
+   "hug": "SC0026",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 680,
+    "reject": 649
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#law-high",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 821,
+    "psychometric_shown": 800,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 821
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#law-low",
+   "programme": "law",
+   "program_id": "52255476",
+   "hug": "SC0029",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 492,
+    "psychometric_shown": 501,
+    "accept": 680,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "3:7",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 492
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#math-high",
+   "programme": "math",
+   "program_id": "52257936",
+   "hug": "SC0030",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 610,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#math-low",
+   "programme": "math",
+   "program_id": "52257936",
+   "hug": "SC0030",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 610,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#nursing-high",
+   "programme": "nursing",
+   "program_id": "52257430",
+   "hug": "SC0034",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 580,
+    "reject": 569
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#nursing-low",
+   "programme": "nursing",
+   "program_id": "52257430",
+   "hug": "SC0034",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 580,
+    "reject": 569
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#occupational_therapy-high",
+   "programme": "occupational_therapy",
+   "program_id": "52255365",
+   "hug": "SC0046",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 610,
+    "reject": 594
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#occupational_therapy-low",
+   "programme": "occupational_therapy",
+   "program_id": "52255365",
+   "hug": "SC0046",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 610,
+    "reject": 594
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#physiotherapy-high",
+   "programme": "physiotherapy",
+   "program_id": "52256372",
+   "hug": "SC0040",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 680,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#physiotherapy-low",
+   "programme": "physiotherapy",
+   "program_id": "52256372",
+   "hug": "SC0040",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 680,
+    "reject": 639
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#political_science-high",
+   "programme": "political_science",
+   "program_id": "52254686",
+   "hug": "SC0020",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 580,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#political_science-low",
+   "programme": "political_science",
+   "program_id": "52254686",
+   "hug": "SC0020",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 580,
+    "reject": 519
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#psychology-high",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#psychology-low",
+   "programme": "psychology",
+   "program_id": "52252391",
+   "hug": "SC0042",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 650,
+    "reject": 629
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#social_work-high",
+   "programme": "social_work",
+   "program_id": "52253943",
+   "hug": "SC0037",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 615,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#social_work-low",
+   "programme": "social_work",
+   "program_id": "52253943",
+   "hug": "SC0037",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 615,
+    "reject": 579
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#sociology-high",
+   "programme": "sociology",
+   "program_id": "52252907",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 818,
+    "psychometric_shown": 800,
+    "accept": 540,
+    "reject": 539
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 818
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#sociology-low",
+   "programme": "sociology",
+   "program_id": "52252907",
+   "hug": "SC0032",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 540,
+    "reject": 539
+   },
+   "reconstruction": {
+    "kind": "PC",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#statistics-high",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "120",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 150,
+    "V": 150,
+    "E": 150,
+    "pc_used": 800
+   },
+   "haifa": {
+    "weighted": 806,
+    "psychometric_shown": 800,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 870.0,
+    "PM_exact": 783.7141,
+    "PM_ceil": 784,
+    "weighted": 806
+   },
+   "match": true
+  },
+  {
+   "source": "repo:docs/admissions-verification/2026-09-28-haifa-official.json#statistics-low",
+   "programme": "statistics",
+   "program_id": "52253965",
+   "hug": "SC0033",
+   "inputs": {
+    "bag_avg": "80",
+    "bag_year": "2026",
+    "psy_year": "2026",
+    "Q": 100,
+    "V": 100,
+    "E": 100,
+    "pc_used": 501
+   },
+   "haifa": {
+    "weighted": 493,
+    "psychometric_shown": 501,
+    "accept": 630,
+    "reject": 599
+   },
+   "reconstruction": {
+    "kind": "PM",
+    "ratio": "1:3",
+    "age_band": "full",
+    "BT": 470.0,
+    "PM_exact": 500.7094,
+    "PM_ceil": 501,
+    "weighted": 493
+   },
+   "match": true
+  }
+ ],
+ "bagrut_average_vectors": [
+  {
+   "label": "B1_audit",
+   "subjects": [
+    [
+     "1",
+     2,
+     80
+    ],
+    [
+     "34",
+     2,
+     85
+    ],
+    [
+     "899",
+     5,
+     95
+    ],
+    [
+     "16",
+     5,
+     85
+    ],
+    [
+     "11",
+     2,
+     85
+    ],
+    [
+     "22",
+     2,
+     80
+    ],
+    [
+     "10",
+     2,
+     85
+    ],
+    [
+     "35",
+     5,
+     90
+    ],
+    [
+     "36",
+     5,
+     80
+    ]
+   ],
+   "haifa": "103.50",
+   "reconstructed": 103.5
+  },
+  {
+   "label": "B2_all100",
+   "subjects": [
+    [
+     "1",
+     2,
+     100
+    ],
+    [
+     "34",
+     2,
+     100
+    ],
+    [
+     "11",
+     2,
+     100
+    ],
+    [
+     "22",
+     2,
+     100
+    ],
+    [
+     "10",
+     2,
+     100
+    ],
+    [
+     "35",
+     5,
+     100
+    ],
+    [
+     "16",
+     5,
+     100
+    ],
+    [
+     "36",
+     5,
+     100
+    ]
+   ],
+   "haifa": "117.00",
+   "reconstructed": 117.0
+  },
+  {
+   "label": "B3_math4_59",
+   "subjects": [
+    [
+     "1",
+     2,
+     70
+    ],
+    [
+     "34",
+     2,
+     70
+    ],
+    [
+     "11",
+     2,
+     70
+    ],
+    [
+     "22",
+     2,
+     70
+    ],
+    [
+     "10",
+     2,
+     70
+    ],
+    [
+     "35",
+     4,
+     59
+    ],
+    [
+     "16",
+     4,
+     60
+    ],
+    [
+     "57",
+     5,
+     90
+    ]
+   ],
+   "haifa": "78.52",
+   "reconstructed": 78.52
+  },
+  {
+   "label": "B4_math4_60",
+   "subjects": [
+    [
+     "1",
+     2,
+     70
+    ],
+    [
+     "34",
+     2,
+     70
+    ],
+    [
+     "11",
+     2,
+     70
+    ],
+    [
+     "22",
+     2,
+     70
+    ],
+    [
+     "10",
+     2,
+     70
+    ],
+    [
+     "35",
+     4,
+     60
+    ],
+    [
+     "16",
+     4,
+     60
+    ],
+    [
+     "57",
+     5,
+     90
+    ]
+   ],
+   "haifa": "82.17",
+   "reconstructed": 82.17
+  },
+  {
+   "label": "B5_unlisted_cyber",
+   "subjects": [
+    [
+     "1",
+     2,
+     70
+    ],
+    [
+     "34",
+     2,
+     70
+    ],
+    [
+     "11",
+     2,
+     70
+    ],
+    [
+     "22",
+     2,
+     70
+    ],
+    [
+     "10",
+     2,
+     70
+    ],
+    [
+     "35",
+     4,
+     60
+    ],
+    [
+     "16",
+     4,
+     60
+    ],
+    [
+     "782",
+     5,
+     90
+    ]
+   ],
+   "haifa": "77.83",
+   "reconstructed": 77.83
+  },
+  {
+   "label": "B6_drop_low_elective",
+   "subjects": [
+    [
+     "1",
+     2,
+     80
+    ],
+    [
+     "34",
+     2,
+     85
+    ],
+    [
+     "899",
+     5,
+     95
+    ],
+    [
+     "16",
+     5,
+     85
+    ],
+    [
+     "11",
+     2,
+     85
+    ],
+    [
+     "22",
+     2,
+     80
+    ],
+    [
+     "10",
+     2,
+     85
+    ],
+    [
+     "35",
+     5,
+     90
+    ],
+    [
+     "36",
+     5,
+     80
+    ],
+    [
+     "57",
+     5,
+     60
+    ]
+   ],
+   "haifa": "103.50",
+   "reconstructed": 103.5
+  },
+  {
+   "label": "B7_lit5_bible_low",
+   "subjects": [
+    [
+     "1",
+     2,
+     40
+    ],
+    [
+     "34",
+     2,
+     85
+    ],
+    [
+     "16",
+     5,
+     85
+    ],
+    [
+     "11",
+     2,
+     85
+    ],
+    [
+     "22",
+     2,
+     80
+    ],
+    [
+     "10",
+     5,
+     80
+    ],
+    [
+     "35",
+     5,
+     90
+    ],
+    [
+     "36",
+     5,
+     80
+    ]
+   ],
+   "haifa": "100.18",
+   "reconstructed": 100.18
+  },
+  {
+   "label": "B8_chem4_bio5",
+   "subjects": [
+    [
+     "1",
+     2,
+     90
+    ],
+    [
+     "34",
+     2,
+     90
+    ],
+    [
+     "11",
+     2,
+     90
+    ],
+    [
+     "22",
+     2,
+     90
+    ],
+    [
+     "10",
+     2,
+     90
+    ],
+    [
+     "35",
+     3,
+     90
+    ],
+    [
+     "16",
+     4,
+     90
+    ],
+    [
+     "37",
+     4,
+     90
+    ],
+    [
+     "43",
+     5,
+     95
+    ]
+   ],
+   "haifa": "101.92",
+   "reconstructed": 101.92
+  }
+ ]
+}

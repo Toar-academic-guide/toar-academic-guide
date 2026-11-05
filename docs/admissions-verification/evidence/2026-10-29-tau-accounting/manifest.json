@@ -1,0 +1,37 @@
+{
+  "url": "https://go.tau.ac.il/graphql",
+  "programme": "tau_accounting",
+  "calls": [
+    {
+      "name": "score",
+      "startedAt": "2026-10-28T23:26:22.130870+00:00",
+      "completedAt": "2026-10-28T23:26:23.437446+00:00",
+      "status": 200,
+      "requestFile": "score.request.txt",
+      "responseFile": "score.response.txt",
+      "requestSha256": "bd1f897439f4096dcee59756d6b202be5a756b9a8cc448fc8bfb21548996fe51",
+      "responseSha256": "9e9920db30b052a76c470002012397e1c2d27195019b8ebc679e716a202bf3d7",
+      "outcome": "HTTP200 HTML Request Rejected; not a calculator response"
+    },
+    {
+      "name": "programme",
+      "startedAt": "2026-10-28T23:26:31.638010+00:00",
+      "completedAt": "2026-10-28T23:26:33.170220+00:00",
+      "status": 200,
+      "requestFile": "programme.request.txt",
+      "responseFile": "programme.response.txt",
+      "requestSha256": "7a001fa5c23ae4d2e3fe5ea263e7ee89559ac57de02ae6d75bac1100587ba916",
+      "responseSha256": "15380944f82a980afb8cd79455e2d699d2c7026c0ba5986a6a0b87c7772d3eb6",
+      "outcome": "HTTP200 HTML Request Rejected; not a calculator response"
+    }
+  ],
+  "existingSuccessfulScoreCapture": {
+    "path": "docs/admissions-verification/evidence/2026-10-29-bugs-first-official.json",
+    "sha256": "af4f46eea662c09365b9aa8e878bdad3665d19fa7bd2a4ed71d46c631b400ba0",
+    "capturedAt": "2026-10-28T19:00:03.772687+00:00",
+    "pointer": "tauGraphqlCalls[2].response.data.getLastScore.body.hatama_nihul",
+    "value": "688",
+    "mapping": "accounting/tau_accounting -> hatama_nihul, node11815, externalId121111050000; existing reviewed mappings in capabilityMatrix.ts and TAU_ACCOUNTING_CONTRACT",
+    "bonusFlag": "reali10=1 in the existing captured envelope affects engineering/exact-sciences output, not hatama_nihul; the accounting request remains reali10=0"
+  }
+}

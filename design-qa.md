@@ -1,5 +1,13 @@
 # Assessment Intro Visual QA
 
+## Public sekhem calculator — 2026-10-28
+
+- Real public route checked locally at 1280×900 and 390×900 through Playwright's bounded webServer, with explicit static catalogue mode. All evaluate/enquiry POSTs were intercepted before navigation; enquiries never reached a database.
+- Inspected empty and result viewport captures in the local Playwright report. Shared Way artwork stays in its reserved band, navbar clears the heading, subject fields and numeric values align right, mobile controls remain visible and the page has no horizontal overflow. The subject table uses separate borders so input spacing survives the global table reset.
+- Checked filled raw subjects/sections, add/remove, conditional Haifa fields, honest text-only HUJI route, API-owned numbers, institution-specific CTAs, real-pair lead modal, unchecked preparation consent, Escape/focus return and mocked success.
+- Approved departures from the original mockup: returned thresholds/verdicts and real gate names, one no-composite line, no repeated formula-year caption, programme choices and CTA per institution, extra ordinary/response-required inputs, and updated average copy. Navigation is unchanged.
+- These captures use mocked admissions responses and are local QA only. They do not replace real preview/prod screenshots with real catalogue data or joint Amit/Yonatan approval. No deployment, outreach or approval request was performed.
+
 Date: 2026-09-16. Scope: replace clipped artwork and refine the four guidance bubbles.
 
 ## Evidence

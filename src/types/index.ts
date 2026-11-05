@@ -265,6 +265,7 @@ export interface AdmissionsProfileInputs
     TauPhysiotherapyInputs,
     HaifaAdmissionsInputs,
     HujiMedicineInputs {
+  activeBagrutPath?: 'quick' | 'exact' | 'none';
   bguEngineering?: import('./bguEngineering').BguEngineeringInputs;
   /** Official Architecture average, without doubled mathematics weight; capped at 119. */
   technionArchitectureBagrutAverage?: number;

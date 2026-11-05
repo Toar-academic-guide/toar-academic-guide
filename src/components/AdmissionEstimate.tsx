@@ -13,8 +13,7 @@ export default function AdmissionEstimate({
   const reason = result.estimationReason ?? '';
   const yearReasons = reason.match(/שנת (?:הבגרות|הפסיכומטרי)[^.]*\./g) ?? [];
   const averageEstimated = !yearReasons.length || reason.includes('הממוצע הכללי');
-  const averageNotice =
-    'הערכה: חישבנו לפי הממוצע הכללי שהזנת, לא לפי ממוצע המוסד. להערכה מדויקת יותר, הזינו ציונים לפי מקצוע.';
+  const averageNotice = 'רוצים תשובה מדויקת יותר? הזינו ציונים לפי מקצוע.';
   const yearNotice = yearReasons.join(' ');
   const text = averageEstimated
     ? [averageNotice, yearNotice].filter(Boolean).join(' ')

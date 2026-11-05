@@ -1,3 +1,4 @@
+import { HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS } from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import type { InstitutionDetail } from '@/data/degrees/types';
 import { DANON_PROGRAM_NAMES } from '@/data/admissions/danon';
@@ -6,6 +7,7 @@ import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { repairSamSpiegelUrls } from '@/data/admissions/samSpiegelUrls';
 import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
+import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
 import { applyHaifaOfficialUrls } from '@/data/admissions/haifaOfficialUrls';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import type {
@@ -220,7 +222,14 @@ export function serializeProgramRow(args: {
   for (const threshold of thresholds) {
     if (threshold.thresholdKind === 'sekhem') {
       thresholdMap[threshold.universityId] = threshold.thresholdValue;
-    } else if (threshold.thresholdValue !== null && program.id !== 'haifa_psychology') {
+    } else if (
+      threshold.thresholdValue !== null &&
+      program.id !== 'haifa_psychology' &&
+      !(
+        threshold.universityId === 'huji' &&
+        HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS.includes(program.id)
+      )
+    ) {
       directPsychometricMap[threshold.universityId] = threshold.thresholdValue;
     }
   }
@@ -277,7 +286,10 @@ export function serializeProgramRow(args: {
     ],
   };
   const repaired = [
+    'haifa_cs',
     'haifa_psychology',
+    'mon_12220708942_cs',
+    'huji_psychology',
     'afeka_ee',
     'afeka_softwareeng',
     'afeka_cs',
@@ -287,8 +299,8 @@ export function serializeProgramRow(args: {
     'jerusalem_academy_dance',
     'rubin_classical',
   ].includes(program.id)
-    ? applyCatalogueContentRepair(serialized)
+    ? applyHaifaOfficialUrls(applyCatalogueContentRepair(serialized))
     : applyHaifaOfficialUrls(serialized);
-  const curriculum = applyJamdCurriculum(repaired);
+  const curriculum = applyJamdCurriculum(applyEngineeringMathRequirements(repaired));
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }

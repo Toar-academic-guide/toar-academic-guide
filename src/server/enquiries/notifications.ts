@@ -1,13 +1,14 @@
 import 'server-only';
 import type { EnquiryRecord } from '@/lib/enquiries';
 import { postAdmissionsReviewSlackMessage } from '@/server/automation/admissionsReviewSlack';
+import { canForwardToPrep } from './prepForwarding';
 
 const MONDAY_ENQUIRIES_BOARD_URL = 'https://malichi-hub.monday.com/boards/18436300533';
 const PREP_CONSENT_LABEL = 'הסכמה להעברה לחברת הכנה';
 
 type EnquirySlackInput = Pick<
   EnquiryRecord,
-  'programName' | 'institutionName' | 'requestId' | 'prepConsent'
+  'programName' | 'institutionName' | 'requestId' | 'prepConsent' | 'prepConsentText'
 >;
 
 function escapeSlackText(value: string): string {
@@ -17,6 +18,10 @@ function escapeSlackText(value: string): string {
 export function buildEnquirySlackMessage(enquiry: EnquirySlackInput, mondayItemId: string | null) {
   const programName = escapeSlackText(enquiry.programName);
   const institutionName = escapeSlackText(enquiry.institutionName);
+  const canForward = canForwardToPrep({
+    prep_consent: enquiry.prepConsent,
+    prep_consent_text: enquiry.prepConsentText,
+  });
   const mondayUrl = mondayItemId
     ? `${MONDAY_ENQUIRIES_BOARD_URL}/pulses/${mondayItemId}`
     : MONDAY_ENQUIRIES_BOARD_URL;
@@ -24,7 +29,7 @@ export function buildEnquirySlackMessage(enquiry: EnquirySlackInput, mondayItemI
     text: [
       `פנייה חדשה: ${programName}${institutionName ? ` · ${institutionName}` : ''}`,
       `מזהה פנייה: ${enquiry.requestId}`,
-      `${PREP_CONSENT_LABEL}: ${enquiry.prepConsent === true ? 'כן' : 'לא'}`,
+      `${PREP_CONSENT_LABEL}: ${canForward ? 'כן' : 'לא'}`,
       `קישור במאנדיי: ${mondayUrl}`,
     ].join('\n'),
     blocks: [],

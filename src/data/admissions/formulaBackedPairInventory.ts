@@ -1,6 +1,10 @@
 import type { Program } from '@/data/degrees/types';
 import { isBiuPublishedRoutePair } from './biuPublishedRoutes';
 import { INSTITUTIONS, INSTITUTION_BY_ID, type InstitutionId } from '@/data/institutions';
+import { getHujiProgramVerificationMetadata } from './hujiProgramVerification';
+import { evaluateProgramVerification } from '@/server/admissions/verification/programVerification';
+import { canonicalProgramId } from '@/lib/seo/programAliases';
+import { getBguProgramConfig } from './bguProgramVerification';
 
 export const FORMULA_BACKED_INSTITUTION_IDS = [
   'tau',
@@ -63,6 +67,8 @@ interface ProgramPairResolution {
 const INCLUDED_INSTITUTION_IDS = new Set<string>(FORMULA_BACKED_INSTITUTION_IDS);
 const EXCLUDED_INSTITUTION_IDS = new Set<string>(FORMULA_BACKED_EXCLUDED_INSTITUTION_IDS);
 const REVIEWED_REQUIREMENTS_PAIR_IDS = new Set(['colmgmt_cs__colman', 'biu_socialwork__biu']);
+// Retain researched catalogue requirements without admitting this pair to exact coverage.
+const WITHHELD_NULL_PAIR_IDS = new Set(['medicine__biu']);
 
 export function formulaBackedPairId(programId: string, institutionId: string): string {
   return `${programId}__${institutionId}`;
@@ -99,7 +105,26 @@ function pairFor(args: {
   };
 }
 
-function resolveProgramPairs(program: Program): ProgramPairResolution {
+function hasIndependentCutoff(programId: string, universityId: string): boolean {
+  if (universityId !== 'huji') return false;
+  // The capability matrix uses these same artifacts to select the HUJI adapter,
+  // which reads published cutoffs or the verified medicine policy, not this static.
+  const artifact = getHujiProgramVerificationMetadata(`${programId}__huji`);
+  return Boolean(
+    artifact &&
+    Number.isFinite(artifact.contract.calculation.cutoff.acceptance) &&
+    evaluateProgramVerification({
+      ...artifact,
+      currentAdmissionCycle: artifact.contract.admissionCycle,
+      currentSourceFingerprint: artifact.contract.sourceFingerprint,
+    }).state === 'exact',
+  );
+}
+
+function resolveProgramPairs(
+  program: Program,
+  programsById: Map<string, Program>,
+): ProgramPairResolution {
   const pairsById = new Map<string, FormulaBackedPair>();
   const errors: FormulaBackedPairInventoryError[] = [];
 
@@ -130,7 +155,11 @@ function resolveProgramPairs(program: Program): ProgramPairResolution {
     }
 
     for (const [universityId, threshold] of Object.entries(program.thresholds ?? {})) {
-      if (threshold === null) {
+      if (
+        threshold === null &&
+        !hasIndependentCutoff(program.id, universityId) &&
+        !WITHHELD_NULL_PAIR_IDS.has(formulaBackedPairId(program.id, universityId))
+      ) {
         continue;
       }
 
@@ -150,6 +179,17 @@ function resolveProgramPairs(program: Program): ProgramPairResolution {
     }
   }
 
+  const correctedBguProgramId = canonicalProgramId(program.id, 'bgu');
+  if (
+    program.admissionType === 'sekhem' &&
+    correctedBguProgramId !== canonicalProgramId(program.id) &&
+    programsById.has(correctedBguProgramId)
+  ) {
+    const pair = pairFor({ program, institutionId: 'bgu', discovery: 'reviewed_override' });
+    pair.cutoff = getBguProgramConfig(correctedBguProgramId).acceptance;
+    pairsById.set(pair.id, pair);
+  }
+
   const reviewedOverrideId = formulaBackedPairId(program.id, program.institutionId ?? '');
   if (REVIEWED_REQUIREMENTS_PAIR_IDS.has(reviewedOverrideId) && program.institutionId) {
     addPair(program.institutionId, 'reviewed_override');
@@ -167,9 +207,10 @@ export function buildFormulaBackedPairInventory(
   const pairsById = new Map<string, FormulaBackedPair>();
   const excludedPairsById = new Map<string, FormulaBackedPair>();
   const errors: FormulaBackedPairInventoryError[] = [];
+  const programsById = new Map(programs.map((program) => [program.id, program]));
 
   for (const program of programs) {
-    const resolution = resolveProgramPairs(program);
+    const resolution = resolveProgramPairs(program, programsById);
     errors.push(...resolution.errors);
 
     for (const pair of resolution.pairs) {

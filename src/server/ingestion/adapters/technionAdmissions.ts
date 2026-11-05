@@ -50,7 +50,11 @@ export function hasTechnionRequiredSubjectRecord(
 ): record is BagrutSubjectRecord {
   if (!record) return false;
   const byId = new Map(bagrutExamSubjects(record).map((subject) => [subject.subjectId, subject]));
+  // Official form: yHebrew is Hebrew for Arabic speakers, separate from yHabaa.
+  // Empty rows serialize as units=0 / grade=''. Captured 2026-10-25 at
+  // https://admissions.technion.ac.il/sekem-calculator/ (validation checked 2026-10-28).
   return TECHNION_SUBJECT_FIELDS.every(([subjectId]) => {
+    if (subjectId === 'hebrew' && !byId.has(subjectId)) return true;
     const subject = byId.get(subjectId);
     return subject && Number.isFinite(subject.units) && Number.isFinite(subject.grade);
   });
@@ -89,9 +93,9 @@ export async function runTechnionAdmissionsProof(
       bagrutExamSubjects(subjectRecord).map((subject) => [subject.subjectId, subject]),
     );
     for (const [subjectId, unitsField, gradeField] of TECHNION_SUBJECT_FIELDS) {
-      const subject = subjectsById.get(subjectId)!;
-      params.set(unitsField, String(subject.units));
-      params.set(gradeField, String(subject.grade));
+      const subject = subjectsById.get(subjectId);
+      params.set(unitsField, subject ? String(subject.units) : '0');
+      params.set(gradeField, subject ? String(subject.grade) : '');
     }
 
     const response = await fetcher(TECHNION_SUBMIT_URL, {

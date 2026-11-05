@@ -61,10 +61,15 @@ describe('calculatorCoverage', () => {
 
   it('reports pair-level formula coverage without institution-wide exact claims', () => {
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds three withheld pairs; exact remains 125.
+    // Approved test update, Jorje 2026-10-28
     expect(formulaBackedPairCoverage).toMatchObject({
-      total: 141,
+      // Approved test update, Jorje 2026-10-31: generic BGU medicine added to inventory as withheld (no exact replay proof).
+      total: 144,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula count move (same as other 5 files); file granted by Oded.
       exact: 125,
-      withheld: 15,
+      // Approved test update: Jorje 2026-10-29, Haifa local formula count move (same as other 5 files); file granted by Oded.
+      // Approved test update, Jorje 2026-10-31: generic BGU medicine added to inventory as withheld (no exact replay proof).
+      withheld: 18,
       isComplete: false,
     });
 

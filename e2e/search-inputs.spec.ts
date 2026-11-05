@@ -7,8 +7,8 @@ const searchFields = ['subjects', 'results-institutions', 'bagrut-electives'] as
 async function openSearch(page: Page, field: (typeof searchFields)[number]) {
   if (field === 'bagrut-electives') {
     await page.goto('/app/profile');
-    await page.getByRole('button', { name: 'המשך למקצועות חובה' }).click();
-    await page.getByRole('button', { name: 'המשך למקצועות בחירה' }).click();
+    await page.getByRole('button', { name: 'המשיכו למקצועות חובה' }).click();
+    await page.getByRole('button', { name: 'המשיכו למקצועות בחירה' }).click();
     return page.getByPlaceholder('חפשו מקצוע... (לדוגמה: פיזיקה, ביולוגיה)');
   }
 

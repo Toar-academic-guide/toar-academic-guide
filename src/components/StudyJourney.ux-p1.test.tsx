@@ -42,6 +42,39 @@ describe('UX P1 subject selection', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  it.each(['home', 'subjects'] as const)(
+    'does not focus the journey heading on initial mount at %s',
+    async (initialStep) => {
+      render(<StudyJourney initialStep={initialStep} />);
+      const heading = await screen.findByRole('heading', { level: 1 });
+      expect(document.activeElement).not.toBe(heading);
+    },
+  );
+
+  it('does not focus the heading when restoring a draft and URL step on load', async () => {
+    window.history.replaceState(null, '', '/app/calculator#regions');
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({ fields: ['cs'], locations: ['all'], types: ['all'], scores: {} }),
+    );
+    render(<StudyJourney initialStep="subjects" />);
+    const heading = await screen.findByRole('heading', { name: 'איפה אתם רוצים ללמוד?' });
+    expect(document.activeElement).not.toBe(heading);
+  });
+
+  it('focuses the journey heading after the student continues and goes back', async () => {
+    render(<StudyJourney initialStep="subjects" />);
+    fireEvent.click((await screen.findAllByRole('button', { name: 'מדעי המחשב' }))[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'איפה אתם רוצים ללמוד?' }),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    expect(document.activeElement).toBe(
+      screen.getByRole('heading', { name: 'מה מעניין אתכם ללמוד?' }),
+    );
+  });
+
   it('finds every engineering subject and the hub when searching הנדסה', async () => {
     render(<StudyJourney initialStep="subjects" />);
     const search = await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
@@ -68,9 +101,9 @@ describe('UX P1 subject selection', () => {
         target: { value: query },
       });
       fireEvent.click(screen.getByRole('button', { name: 'הנדסה וטכנולוגיה' }));
-      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false);
-      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
-      fireEvent.click(screen.getByRole('button', { name: 'המשך' }));
+      expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', false);
+      fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
+      fireEvent.click(screen.getByRole('button', { name: 'המשיכו' }));
       fireEvent.click(screen.getByRole('button', { name: /אין לי כרגע ציוני בגרות/ }));
       fireEvent.click(screen.getByRole('button', { name: 'בלי פסיכומטרי כרגע' }));
       fireEvent.click(screen.getByRole('button', { name: 'לגלות את האפשרויות שלי' }));
@@ -95,7 +128,7 @@ describe('UX P1 subject selection', () => {
     );
     render(<StudyJourney initialStep="subjects" initialProgramId="tau_cs" />);
     await waitFor(() => {
-      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false);
+      expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', false);
       expect(JSON.parse(window.sessionStorage.getItem('myway_study_journey_v2')!)).toMatchObject({
         fields: ['cs'],
         locations: ['all'],
@@ -114,15 +147,15 @@ describe('UX P1 subject selection', () => {
   it('allows the student to change the preselected field without forcing it back', async () => {
     render(<StudyJourney initialStep="subjects" initialProgramId="tau_cs" />);
     await waitFor(() =>
-      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false),
+      expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', false),
     );
     fireEvent.click(screen.getAllByRole('button', { name: 'מדעי המחשב' })[0]);
-    expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', true);
   });
 
   it('keeps unknown programme IDs in the ordinary empty chooser', async () => {
     render(<StudyJourney initialStep="subjects" initialProgramId="missing-program" />);
     await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
-    expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', true);
+    expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', true);
   });
 });

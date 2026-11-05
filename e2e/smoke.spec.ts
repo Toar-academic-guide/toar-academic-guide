@@ -16,7 +16,7 @@ test.describe('Smoke tests', () => {
 
   test('landing page loads and shows main heading', async ({ page }) => {
     await page.goto('/');
-    await expect(page).toHaveTitle('MyWay | הדרך שלך ללימודים');
+    await expect(page).toHaveTitle('מחשבון סיכויי קבלה לתואר לפי בגרות ופסיכומטרי | MyWay');
     // The page should render without a crash — verify a visible element exists
     const body = page.locator('body');
     await expect(body).toBeVisible();
@@ -24,7 +24,7 @@ test.describe('Smoke tests', () => {
 
   test('page has a navigation bar', async ({ page }) => {
     await page.goto('/');
-    const nav = page.locator('nav');
+    const nav = page.getByRole('navigation', { name: 'ניווט ראשי' });
     await expect(nav).toBeVisible();
   });
 

@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import reviewedManifest from './__fixtures__/reviewedManifest-2026-10-25.json';
 import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
 
 vi.mock('server-only', () => ({}));

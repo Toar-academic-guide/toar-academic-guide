@@ -8,6 +8,7 @@ import { bguPsychologyInputsShape } from '@/lib/bguPsychologyInputs';
 import { haifaAdmissionsInputsShape } from '@/lib/haifaAdmissionsInputs';
 import { bguSocialScienceInputsShape } from '@/lib/bguSocialScienceInputs';
 import { z } from 'zod';
+import { medicineAcademicInputsShape } from './medicineAcademicInputs';
 import { bguEngineeringSchema } from '@/lib/bguEngineeringSchema';
 import {
   admissionsBagrutSubjectRecordSchema,
@@ -21,6 +22,7 @@ export const admissionsEvaluationSchema = z.object({
   bagrutAverageEstimated: z.literal(true).optional(),
   extraInputs: z
     .object({
+      ...medicineAcademicInputsShape,
       bguEngineering: bguEngineeringSchema.optional(),
       psychometricMath: z.number().int().min(50).max(150).optional(),
       psychometricVerbal: z.number().int().min(50).max(150).optional(),
@@ -29,13 +31,13 @@ export const admissionsEvaluationSchema = z.object({
       bagrutProfileSchemaVersion: z.union([z.literal(1), z.literal(2)]).optional(),
       bagrutSector: bagrutSectorSchema.optional(),
       mathUnits: z.number().int().min(3).max(5).optional(),
-      mathGrade: z.number().int().min(50).max(100).optional(),
+      mathGrade: z.number().int().min(0).max(100).optional(),
       englishUnits: z.number().int().min(3).max(5).optional(),
-      englishGrade: z.number().int().min(50).max(100).optional(),
+      englishGrade: z.number().int().min(0).max(100).optional(),
       physicsUnits: z.number().int().min(3).max(5).optional(),
-      physicsGrade: z.number().int().min(50).max(100).optional(),
+      physicsGrade: z.number().int().min(0).max(100).optional(),
       csUnits: z.number().int().min(3).max(5).optional(),
-      csGrade: z.number().int().min(50).max(100).optional(),
+      csGrade: z.number().int().min(0).max(100).optional(),
       tauBagrutAverage: z.number().min(50).max(130).optional(),
       ...colmanBagrutInputsShape,
       technionArchitectureBagrutAverage: z.number().min(0).max(119).optional(),

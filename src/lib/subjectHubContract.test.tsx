@@ -3,13 +3,15 @@ import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import SubjectIndexPage from '@/app/programs/page';
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
-import { HomeBrowse, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { CatalogueFooter, HubLinks, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import SiteFooter from '@/components/SiteFooter';
 import sitemap from '@/app/sitemap';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import {
   buildSubjectHubs,
   getPublicRelatedPrograms,
   getPublicSubjectHub,
+  getPublicSubjectIndex,
 } from '@/lib/publicCatalogueLinks';
 import { SITE_URL } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -149,16 +151,25 @@ describe.each(Object.entries(catalogues))('subject hub contract on the %s', (_, 
     }
   });
 
-  it('never points a home browse link or a related-programmes hub link at a 0-programme hub', async () => {
+  // Approved test update, Jorje 2026-10-31
+  it('never points a footer, subject-index or related-programmes hub link at a 0-programme hub', async () => {
     const { catalogue } = await load();
     const zero = new Set(
       (await hubPages())
         .filter((page) => page.programLinks === 0)
         .map((page) => `/programs/${page.id}`),
     );
-    const browse = renderToStaticMarkup(await HomeBrowse());
-    expect(browse).toContain('browse-title');
-    expect(hrefs(browse).filter((href) => zero.has(href))).toEqual([]);
+    const footer = renderToStaticMarkup(
+      <>
+        <CatalogueFooter />
+        <SiteFooter />
+      </>,
+    );
+    const index = renderToStaticMarkup(<HubLinks hubs={await getPublicSubjectIndex()} />);
+    for (const html of [footer, index]) {
+      expect(hrefs(html).length).toBeGreaterThan(0);
+      expect(hrefs(html).filter((href) => zero.has(href))).toEqual([]);
+    }
     for (const program of catalogue.programs) {
       if (catalogue.generalProgramIds.has(program.id)) continue;
       const related = renderToStaticMarkup(

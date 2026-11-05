@@ -1,5 +1,6 @@
 vi.mock('server-only', () => ({}));
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { ENQUIRY_PREP_CONSENT } from '@/lib/enquiries';
 import { notifyEnquiry } from './notifications';
 import * as notifications from './notifications';
 import * as slackDelivery from '@/server/automation/admissionsReviewSlack';
@@ -114,6 +115,60 @@ describe('private enquiry Slack notifications', () => {
       'private provider response',
     );
   });
+
+  it.each([
+    ['unticked', { prepConsent: false }],
+    [
+      'forged unticked evidence',
+      {
+        prepConsent: false,
+        prepConsentText: 'forged attestation',
+        prepConsentAt: new Date('2000-01-01'),
+      },
+    ],
+    ['missing stored age attestation', { prepConsent: true, prepConsentText: null }],
+    [
+      'obsolete stored age attestation',
+      { prepConsent: true, prepConsentText: 'obsolete attestation' },
+    ],
+  ])('keeps %s prep notification contact-free and internal', async (_label, evidence) => {
+    const lead = {
+      ...enquiry,
+      programId: 'psychometric-preparation',
+      programName: 'הכנה לפסיכומטרי',
+      institutionId: '',
+      institutionName: '',
+      resultStatus: 'unknown' as const,
+      ...evidence,
+    };
+    await notifyEnquiry(lead, null);
+    expect(fetch).toHaveBeenCalledOnce();
+    const [url, options] = vi.mocked(fetch).mock.calls[0];
+    expect(url).toBe('https://slack.com/api/chat.postMessage');
+    const payload = JSON.parse(options?.body as string);
+    expect(payload).toEqual({
+      channel: 'C_LEADS',
+      text: [
+        'פנייה חדשה: הכנה לפסיכומטרי',
+        `מזהה פנייה: ${enquiry.requestId}`,
+        'הסכמה להעברה לחברת הכנה: לא',
+        'קישור במאנדיי: https://malichi-hub.monday.com/boards/18436300533',
+      ].join('\n'),
+      blocks: [],
+      unfurl_links: false,
+      unfurl_media: false,
+    });
+    for (const value of [
+      enquiry.name,
+      enquiry.phone,
+      enquiry.email,
+      enquiry.message,
+      'forged attestation',
+      'obsolete attestation',
+    ]) {
+      expect(options?.body).not.toContain(value);
+    }
+  });
 });
 
 describe('PII-free Hebrew lead pings', () => {
@@ -126,7 +181,7 @@ describe('PII-free Hebrew lead pings', () => {
     psychometric: 680,
     sourcePath: '/private-student-path',
     prepConsent: true,
-    prepConsentText: 'PRIVATE_CONSENT_TEXT',
+    prepConsentText: ENQUIRY_PREP_CONSENT,
     prepConsentAt: new Date('2026-10-26T10:00:00Z'),
   };
   const boardUrl = 'https://malichi-hub.monday.com/boards/18436300533';
@@ -202,6 +257,7 @@ describe('PII-free Hebrew lead pings', () => {
           institutionName: enquiry.institutionName,
           requestId: enquiry.requestId,
           prepConsent: true,
+          prepConsentText: ENQUIRY_PREP_CONSENT,
         },
         '456',
       ),

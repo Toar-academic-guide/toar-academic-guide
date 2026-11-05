@@ -1,0 +1,1170 @@
+
+> toar-academic-guide@0.1.0 guard:pre-pr
+> node scripts/pre-pr-guard.mjs
+
+Pre-PR guard: checking migration grants.
+Pre-PR guard: running migration consistency check.
+
+> toar-academic-guide@0.1.0 db:migrate:check
+> drizzle-kit check
+
+No config path provided, using default 'drizzle.config.ts'
+Reading config file '/workspace/toar-wt-haifa-formula/drizzle.config.ts'
+Warning: 0002_loud_texas_twister (idx: 2, when: 1781295195148) follows 0001_calculator_configs (idx: 1, when: 1781300000000) in the journal, but its timestamp is not greater. If the earlier entry has already been applied, the migrator will skip this entry. Journal timestamps must strictly increase in entry order.
+Everything's fine 🐶🔥
+Pre-PR guard: running catalogue seed dry-run.
+
+> toar-academic-guide@0.1.0 db:seed:dry-run
+> node scripts/seed-catalogue.mjs --dry-run
+
+{
+  "counts": {
+    "institutions": 215,
+    "programs": 403,
+    "programInstitutions": 469,
+    "admissionRequirements": 469,
+    "admissionThresholds": 187,
+    "sourceUrls": 1272,
+    "requirementVersions": 469
+  },
+  "validationErrors": []
+}
+Pre-PR guard: high-risk production paths changed:
+  - src/app/api/admissions/evaluate/batchC.test.ts
+  - src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts
+  - src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts
+  - src/data/admissions/bguCutoffsManifest.test.ts
+  - src/data/admissions/formulaBackedVerificationLedger.ts
+  - src/data/admissions/haifaAdmissionFormula.ts
+  - src/data/admissions/haifaFormula.test.ts
+  - src/data/admissions/haifaProgramVerification.ts
+  - src/data/admissions/haifaProgrammePolicies.json
+  - src/data/admissions/reviewedManifest.json
+  - src/data/degrees/academic.ts
+  - src/data/degrees/academicPrograms.ts
+  - src/server/admissions/__fixtures__/reviewedManifest-2026-10-29-bgu.json
+  - src/server/admissions/batchCUnsupportedPathEvaluation.test.ts
+  - src/server/admissions/evaluator.test.ts
+  - src/server/admissions/evaluator.ts
+  - src/server/admissions/haifaProgrammePolicy.ts
+Pre-PR guard: verifying committed Monday admissions evidence.
+
+> toar-academic-guide@0.1.0 monday:verify-admissions-evidence
+> node scripts/verify-monday-admissions-evidence.mjs
+
+{
+  "verified": true,
+  "records": 212,
+  "notApplicable": 2,
+  "structuredRequirementQueue": 2,
+  "blockedOfficialSource": 1
+}
+Pre-PR guard: raw Monday export not found; skipping local regeneration drift check.
+Pre-PR guard: running targeted catalogue/data-health/calculator tests.
+
+> toar-academic-guide@0.1.0 test
+> vitest run src/data/degrees/index.test.ts src/data/admissions/catalogueContentRepair.test.ts src/lib/seo/seo.test.ts src/lib/requirementTiles.test.ts src/components/RequirementTiles.test.tsx src/components/AdmissionRequirements.test.tsx src/components/AdmissionRequirements.biuFloors.test.tsx src/components/StudyJourney.account.test.tsx src/lib/studyJourney.test.ts src/components/StudyJourney.ux-p1.test.tsx src/components/JourneyExactGrades.test.tsx src/app/app/calculator/page.test.tsx src/lib/haifaOfficialUrls.test.ts src/server/catalogue/serializers.test.ts src/lib/__tests__/StudyJourney.technionWinter.test.tsx scripts/check-haifa-official-urls.test.ts src/lib/bagrutPdf.test.ts src/components/EnquiryForm.test.tsx src/app/api/enquiries/route.test.ts src/server/enquiries/repository.test.ts src/server/enquiries/notifications.test.ts src/db/migrations/enquiriesRls.test.ts src/lib/posthogPrivacy.test.ts src/lib/leadAttribution.test.ts src/lib/enquirySourcePath.test.ts src/lib/sessionAttribution.analytics.test.ts src/server/enquiries/monday.test.ts src/server/enquiries/scoreBands.test.ts src/proxy.test.ts src/data/admissions/mondayEvidence.test.ts src/data/admissions/formulaBackedPairInventory.test.ts src/data/admissions/formulaBackedVerificationLedger.test.ts src/server/admissions/catalogueEvidenceCoverage.test.ts src/lib/admissionsCoverageRetirement.test.ts src/lib/admissionsEvaluationSerialization.test.ts src/app/api/admissions/evaluate/serialization.test.ts src/app/sekhem-calculator/page.test.tsx src/components/BagrutSubjectRows.test.tsx src/components/HaifaQualificationFields.filtered.test.tsx src/components/sekhem/SekhemCalculator.test.tsx src/components/sekhem/RequiredAdmissionsInputs.test.tsx src/components/sekhem/SekhemResults.test.tsx src/components/sekhem/SekhemResults.mapping.test.tsx src/lib/sekhemCalculator.test.ts src/lib/sekhemCalculatorGuard.test.ts src/lib/publishedCompositeThresholds.test.ts src/lib/seo/sekhemThresholdLinks.test.tsx src/server/admissions/capabilityMatrix.test.ts src/server/admissions/evaluator.test.ts src/server/admissions/evaluationInputs.test.ts src/lib/admissionsEvaluationClient.test.ts src/components/AppExperience.test.tsx src/server/admissions/evaluationSnapshot.test.ts src/server/admissions/rateLimit.test.ts src/server/admissions/tauPhysiotherapyEvaluation.test.ts src/server/admissions/colmanBagrutEvaluation.test.ts src/server/admissions/colmanPublishedRoutesEvaluation.test.ts src/server/admissions/reichmanPublishedRoutesEvaluation.test.ts src/server/admissions/telhaiPublishedRoutesEvaluation.test.ts src/server/admissions/onoPublishedRoutesEvaluation.test.ts src/server/admissions/ruppinComputerScienceEvaluation.test.ts src/app/api/admissions/evaluate/batchA.test.ts src/server/admissions/batchBManualPathEvaluation.test.ts src/app/api/admissions/evaluate/batchB.test.ts src/server/admissions/batchCUnsupportedPathEvaluation.test.ts src/app/api/admissions/evaluate/batchC.test.ts src/server/admissions/mtaComputerScienceEvaluation.test.ts src/server/admissions/mtaPublishedRoutesEvaluation.test.ts src/server/admissions/mtaCombinedScore.test.ts src/server/admissions/biuPublishedRoutesEvaluation.test.ts src/server/admissions/biuLawChannels.test.ts src/server/admissions/biuFloorChannels.test.ts src/app/api/admissions/evaluate/biu.test.ts src/app/api/admissions/evaluate/mta.test.ts src/app/api/admissions/evaluate/afeka.test.ts src/server/admissions/officialRequirements4.test.ts src/server/admissions/officialRequirements5.test.ts src/server/admissions/bguEngineeringPolicy.test.ts src/server/admissions/tauComputerSciencePolicy.test.ts src/server/admissions/bguQuantitativeRoutes.test.ts src/server/admissions/tauManagementPolicy.test.ts src/server/ingestion/adapters/tauAdmissions.test.ts src/server/ingestion/adapters/bguAdmissions.test.ts src/server/admissions/bguPsychologyRoutes.test.ts src/server/admissions/hujiMedicinePolicy.test.ts src/server/ingestion/adapters/hujiAdmissions.test.ts src/components/AcademicProfileForm.test.tsx src/server/admissions/bguHealthRoutes.test.ts src/server/admissions/bguSocialScienceRoutes.test.ts src/server/ingestion/adapters/technionAdmissions.test.ts src/server/admissions/technionWinterThresholds.test.ts src/server/ingestion/adapters/haifaAdmissions.test.ts src/server/admissions/haifaProgrammePolicy.test.ts src/server/admissions/verification/programVerification.test.ts src/server/ingestion/admissionsLiveProofRunner.test.ts src/server/admissions/admissionsReleasePublisher.test.ts src/server/admissions/productionSchemaPreflight.test.ts src/db/migrations/freshnessReviewHandoffAccessRls.test.ts src/server/admissions/rateLimit.test.ts src/server/admissions/e2eSmokeWorkflow.test.ts scripts/lib/production-schema-snapshot.test.ts src/server/admissions/productionSensitivePaths.test.ts src/server/catalogue/queries.test.ts src/server/data-health/queries.test.ts src/db/seeds/catalogueSeed.test.ts src/db/seeds/mtaCatalogueMirror.test.ts src/components/CalculatorResults.test.tsx src/components/LandingPage.test.tsx src/app/internal/data-health/page.test.tsx src/app/internal/data-health/DataHealthDashboard.test.tsx src/app/api/catalog/programs/route.test.ts src/app/api/catalog/institutions/route.test.ts src/app/api/admissions/evaluate/route.test.ts src/app/api/admissions/evaluate/bugsFirst.test.ts src/app/api/admissions/evaluate/engineeringMath.test.ts src/app/api/admissions/evaluate/uxFollowups.test.ts src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts src/data/admissions/publicCatalogueCopy.test.ts src/lib/__tests__/TechnionMedicineComparison.test.tsx src/data/admissions/engineeringMathRequirements.test.ts src/app/api/admissions/evaluate/aliases.test.ts src/app/api/admissions/evaluate/reichman.test.ts src/app/api/profile/route.test.ts src/server/user/profile.test.ts src/server/user/profileSchema.test.ts src/server/user/migration.test.ts src/server/admission-alerts/profileRefresh.test.ts src/server/admission-alerts/transitionProcessor.test.ts src/server/admission-alerts/deliveryWorker.test.ts src/server/admission-alerts/deliveryPreparation.test.ts src/components/AdmissionAlertManager.test.tsx src/app/api/admission-alerts/route.test.ts src/app/api/admission-alerts/[subscriptionId]/route.test.ts src/app/api/_lib/auth.test.ts src/server/admission-alerts/resendProvider.test.ts src/server/admission-alerts/webhookService.test.ts src/app/api/admission-alerts/webhooks/resend/route.test.ts src/app/api/admission-alerts/unsubscribe/route.test.ts src/server/admission-alerts/deliveryRuntime.test.ts src/server/admission-alerts/transitionWork.test.ts src/server/admission-alerts/subscriptionService.test.ts src/server/admission-alerts/baselineEvaluator.test.ts src/server/admission-alerts/processingRuntime.test.ts
+
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/server/data-health/queries.test.ts (26 tests | 1 failed) 118ms
+     × reports complete catalogue readiness without false missing-link issues 40ms
+ ❯ src/server/admissions/evaluator.test.ts (449 tests | 2 failed) 1984ms
+   × 07:24 calculated Haifa provenance: {"defaulted":true,"subjects":false,"proxy":false} 26ms
+   × 07:24 calculated Haifa provenance: {"defaulted":true,"subjects":true,"proxy":false} 6ms
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts (40 tests | 10 failed) 322ms
+   × A/F every Haifa programme has the exact honest official-source note and never asks for its average 112ms
+   × uses student terminology in the three admission-copy strings introduced by PR318 18ms
+   × saved Haifa average gives the same honest note as a proxy for haifa_psychology 17ms
+   × saved Haifa average gives the same honest note as a proxy for psychology 3ms
+   × non-psychology saved Haifa results stay unchanged from main across the static catalogue 18ms
+   × non-psychology saved Haifa results stay unchanged from main across the saved_audit catalogue 2ms
+   × saved haifa_communication keeps its live exact score and uses student terminology 2ms
+   × saved communication keeps its live exact score and uses student terminology 1ms
+   × H2 returns the honest note for captured average-only Haifa programme psychology 1ms
+   × H2 returns the honest note for captured average-only Haifa programme haifa_psychology 2ms
+ ❯ src/app/api/admissions/evaluate/bugsFirst.test.ts (82 tests | 2 failed) 341ms
+   × psychology keeps Haifa psychology withheld 15ms
+   × haifa_psychology keeps Haifa psychology withheld 2ms
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx (11 tests | 1 failed) 886ms
+     × 'Haifa official combined score and pro…' 32ms
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts (18 tests | 3 failed) 116ms
+     × enumerates every static Haifa pair and returns the honest note without a composite ask 8ms
+     × enumerates every saved audit Haifa pair and returns the honest note without a composite ask 3ms
+     × preserves explicit Haifa averages while returning the honest note when they are absent 6ms
+ ❯ src/data/admissions/formulaBackedVerificationLedger.test.ts (135 tests | 2 failed) 88ms
+     × counts only fully proved pairs as exact 7ms
+     × records an authority-specific reason for every withheld pair 1ms
+ ❯ src/lib/seo/sekhemThresholdLinks.test.tsx (7 tests | 2 failed) 4292ms
+     × links exactly every programme whose rendered requirements contain a composite cutoff 3603ms
+     × places the link beside the published requirements in the actual programme route 14ms
+ ❯ src/lib/publishedCompositeThresholds.test.ts (24 tests | 1 failed) 676ms
+     × selects the 40 supported static pages from the same resolved requirements the page renders 666ms
+ ❯ src/lib/admissionsCoverageRetirement.test.ts (1 test | 1 failed) 11ms
+   × retains the pair-level verification baseline independently of the institution registry 8ms
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 25 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/lib/admissionsCoverageRetirement.test.ts > retains the pair-level verification baseline independently of the institution registry
+AssertionError: expected { total: 143, exact: 125, …(5) } to match object { total: 143, exact: 123, …(2) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "exact": 123,
++   "exact": 125,
+    "isComplete": false,
+    "total": 143,
+-   "withheld": 19,
++   "withheld": 17,
+  }
+
+ ❯ src/lib/admissionsCoverageRetirement.test.ts:15:5
+     13|   expect(
+     14|     formulaPairVerificationCompletion(inventory, FORMULA_BACKED_VERIFI…
+     15|   ).toMatchObject({
+       |     ^
+     16|     total: 143,
+     17|     exact: 123,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/25]⎯
+
+ FAIL  src/lib/publishedCompositeThresholds.test.ts > published composite threshold selector > selects the 40 supported static pages from the same resolved requirements the page renders
+AssertionError: expected [ 'accounting', 'architecture', …(39) ] to deeply equal [ 'accounting', 'architecture', …(38) ]
+
+- Expected
++ Received
+
+@@ -14,10 +14,11 @@
+    "haifa_accounting",
+    "haifa_communication",
+    "haifa_infosystems",
+    "haifa_nursing",
+    "haifa_politicalscience",
++   "haifa_psychology",
+    "haifa_sociology",
+    "huji_accounting",
+    "huji_business",
+    "huji_law",
+    "law",
+
+ ❯ src/lib/publishedCompositeThresholds.test.ts:78:45
+     76|       }),
+     77|     );
+     78|     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_P…
+       |                                             ^
+     79|     expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(40);
+     80|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/25]⎯
+
+ FAIL  src/components/sekhem/SekhemResults.mapping.test.tsx > real evaluator → batch POST → calculator result rows > 'Haifa official combined score and pro…'
+AssertionError: expected [ Array(2) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "data": {},
++   },
++   {
++     "data": [
++       {
++         "results": [
++           {
++             "content": [
++               {
++                 "label": "התכנית המבוקשת",
++                 "notes": [],
++                 "type": "text",
++                 "value": "",
++               },
++               {
++                 "label": "הציון המשוקלל שלך",
++                 "notes": [],
++                 "type": "num",
++                 "value": "806",
++               },
++               {
++                 "label": "חתך קבלה",
++                 "notes": [],
++                 "type": "num",
++                 "value": "700",
++               },
++               {
++                 "label": "חתך דחייה",
++                 "notes": [
++                   {
++                     "note": "מתחת לחתך זה - אין אפשרות קבלה!",
++                   },
++                   {
++                     "note": "מעל חתך זה קבלה אינה מובטחת ויש לעקוב אחר התעדכנות חתך קבלה",
++                   },
++                 ],
++                 "type": "num",
++                 "value": "679",
++               },
++               {
++                 "label": "ציון הפסיכומטרי שלך",
++                 "notes": [],
++                 "type": "num",
++                 "value": "800",
++               },
++             ],
++           },
++           {
++             "slider": {
++               "approve": "700",
++               "display": "true",
++               "reject": "679",
++               "shiklul": "806",
++             },
++           },
++           {
++             "otherConditions": [
++               {
++                 "text": "75 בבגרות מתמטיקה 5 יח\"ל",
++               },
++               {
++                 "text": "או",
++               },
++               {
++                 "text": "90 בבגרות מתמטיקה 4 יח\"ל",
++               },
++               {
++                 "text": "יע\"ל 125 עבור מועמדים ששפת ההוראה",
++               },
++               {
++                 "text": "בבית ספרם לא היתה עברית",
++               },
++             ],
++           },
++         ],
++       },
++     ],
++   },
++ ]
+
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx:263:32
+    261|     expect(result.score).toBe(profile.expected.score);
+    262|     expect(result.threshold).toBe(profile.expected.threshold);
+    263|     expect(remainingResponses).toEqual([]);
+       |                                ^
+    264|     expect(fetcher).toHaveBeenCalledTimes(profile.responses?.length ??…
+    265|     const row = screen.queryByTestId(`result-${profile.programId}-${pr…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/25]⎯
+
+ FAIL  src/data/admissions/formulaBackedVerificationLedger.test.ts > formula-backed verification ledger > counts only fully proved pairs as exact
+AssertionError: expected { total: 143, exact: 125, …(5) } to match object { total: 143, exact: 123, …(2) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "exact": 123,
++   "exact": 125,
+    "isComplete": false,
+    "total": 143,
+-   "withheld": 19,
++   "withheld": 17,
+  }
+
+ ❯ src/data/admissions/formulaBackedVerificationLedger.test.ts:67:24
+     65|     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds…
+     66|     // Approved test update, Jorje 2026-10-28
+     67|     expect(completion).toMatchObject({
+       |                        ^
+     68|       total: 143,
+     69|       exact: 123,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/25]⎯
+
+ FAIL  src/data/admissions/formulaBackedVerificationLedger.test.ts > formula-backed verification ledger > records an authority-specific reason for every withheld pair
+AssertionError: expected [ { …(10) }, …(16) ] to have a length of 19 but got 17
+
+- Expected
++ Received
+
+- 19
++ 17
+
+ ❯ src/data/admissions/formulaBackedVerificationLedger.test.ts:143:22
+    141|     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds…
+    142|     // Approved test update, Jorje 2026-10-28
+    143|     expect(withheld).toHaveLength(19);
+       |                      ^
+    144|     expect(withheld.every((entry) => entry.reason.length > 80)).toBe(t…
+    145|     expect(withheld.every((entry) => entry.sourceUrl.startsWith('https…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/25]⎯
+
+ FAIL  src/lib/seo/sekhemThresholdLinks.test.tsx > published-threshold calculator links > links exactly every programme whose rendered requirements contain a composite cutoff
+AssertionError: expected [ 'accounting', 'architecture', …(39) ] to have a length of 40 but got 41
+
+- Expected
++ Received
+
+- 40
++ 41
+
+ ❯ src/lib/seo/sekhemThresholdLinks.test.tsx:144:20
+    142|     expect(unlinkedThresholds(rows)).toEqual([]);
+    143|     expect(linked).toEqual(thresholds);
+    144|     expect(linked).toHaveLength(40);
+       |                    ^
+    145|     expect(linked).toEqual(
+    146|       expect.arrayContaining([
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/25]⎯
+
+ FAIL  src/lib/seo/sekhemThresholdLinks.test.tsx > published-threshold calculator links > places the link beside the published requirements in the actual programme route
+AssertionError: expected <a …(2)></a> to be null
+
+- Expected:
+null
+
++ Received:
+<a
+  class="text-[var(--way-primary)] underline underline-offset-4"
+  href="/sekhem-calculator?program=haifa_psychology"
+>
+  מחשבון סכם וסיכויי קבלה
+</a>
+
+ ❯ src/lib/seo/sekhemThresholdLinks.test.tsx:230:18
+    228|       'a[href="/sekhem-calculator?program=haifa_psychology"]',
+    229|     );
+    230|     expect(link).toBeNull(); // This programme currently has no verifi…
+       |                  ^
+    231|     expect(heading.parentElement!.textContent).toContain('650');
+    232|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[7/25]⎯
+
+ FAIL  src/server/admissions/evaluator.test.ts > 07:24 calculated Haifa provenance: {"defaulted":true,"subjects":false,"proxy":false}
+ FAIL  src/server/admissions/evaluator.test.ts > 07:24 calculated Haifa provenance: {"defaulted":true,"subjects":true,"proxy":false}
+AssertionError: expected 699 to be 702 // Object.is equality
+
+- Expected
++ Received
+
+- 702
++ 699
+
+ ❯ src/server/admissions/evaluator.test.ts:4877:35
+    4875|     return;
+    4876|   }
+    4877|   expect(report.results[0].score).toBe(proxy ? 806 : 702);
+       |                                   ^
+    4878|   expect(report.results[0].estimated === true).toBe(defaulted);
+    4879|   if (defaulted) {
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[8/25]⎯
+
+ FAIL  src/server/data-health/queries.test.ts > summarizeDataHealthRows > reports complete catalogue readiness without false missing-link issues
+AssertionError: expected { total: 143, exact: 125, …(5) } to match object { total: 143, exact: 123, …(2) }
+(10 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+-   "exact": 123,
++   "exact": 125,
+    "isComplete": false,
+    "total": 143,
+-   "withheld": 19,
++   "withheld": 17,
+  }
+
+ ❯ src/server/data-health/queries.test.ts:349:40
+    347|     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds…
+    348|     // Approved test update, Jorje 2026-10-28
+    349|     expect(report.formulaVerification).toMatchObject({
+       |                                        ^
+    350|       total: 143,
+    351|       exact: 123,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[9/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/bugsFirst.test.ts > psychology keeps Haifa psychology withheld
+ FAIL  src/app/api/admissions/evaluate/bugsFirst.test.ts > haifa_psychology keeps Haifa psychology withheld
+AssertionError: expected { …(11) } to match object { kind: 'authority_unavailable', …(1) }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "decision": "unknown",
+-   "kind": "authority_unavailable",
++   "kind": "needs_input",
+  }
+
+ ❯ src/app/api/admissions/evaluate/bugsFirst.test.ts:211:20
+    209|       fetcher,
+    210|     );
+    211|     expect(result).toMatchObject({
+       |                    ^
+    212|       kind: 'authority_unavailable',
+    213|       decision: 'unknown',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[10/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > A/F every Haifa programme has the exact honest official-source note and never asks for its average
+AssertionError: [{"catalogue":"static","id":"cs","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"psychology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"law","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"economics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_cs","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_psychology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_law","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_economics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_biology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_socialwork","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_nursing","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month","haifa_science_units"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד."},{"catalogue":"static","id":"haifa_accounting","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_communication","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_politicalscience","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_statistics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_math","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_infosystems","kind":"needs_input","requiredInputs":["haifa_information_systems_track"],"officialUrls":[],"explanation":"יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."},{"catalogue":"static","id":"haifa_physiotherapy","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"static","id":"haifa_sociology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"static","id":"haifa_engineering","kind":"unsupported","requiredInputs":[],"officialUrls":["https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?utm_source=myway&utm_medium=referral"],"explanation":"תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו."},{"catalogue":"saved_audit","id":"haifa_cs","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_psychology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_law","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_economics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_biology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_socialwork","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_nursing","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month","haifa_science_units"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד."},{"catalogue":"saved_audit","id":"haifa_accounting","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_communication","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_politicalscience","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_statistics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_math","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"haifa_infosystems","kind":"needs_input","requiredInputs":["haifa_information_systems_track"],"officialUrls":[],"explanation":"יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה."},{"catalogue":"saved_audit","id":"haifa_physiotherapy","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"haifa_sociology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"cs","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"psychology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"law","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"economics","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"biology","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"social_work","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"nursing","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month","haifa_science_units"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד."},{"catalogue":"saved_audit","id":"accounting","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."},{"catalogue":"saved_audit","id":"occupational_therapy","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month","haifa_ot_failed_selection_attempts","haifa_ot_unjustified_absence"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, ניסיונות מיון בריפוי בעיסוק, היעדרות מריאיון בריפוי בעיסוק."},{"catalogue":"saved_audit","id":"communication","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"political_science","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית."},{"catalogue":"saved_audit","id":"physiotherapy","kind":"needs_input","requiredInputs":["haifa_hebrew_qualification","haifa_psychometric_month"],"officialUrls":[],"explanation":"לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי."}]: expected [ Array(47) ] to deeply equal []
+
+- Expected
++ Received
+
+- []
++ [
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "cs",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "psychology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "law",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "economics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_cs",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_psychology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_law",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_economics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_biology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_socialwork",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד.",
++     "id": "haifa_nursing",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++       "haifa_science_units",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_accounting",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_communication",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_politicalscience",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_statistics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_math",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה.",
++     "id": "haifa_infosystems",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_information_systems_track",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_physiotherapy",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_sociology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "static",
++     "explanation": "תנאי הקבלה שונים בין המסלולים בתחום הזה, ולכן אין כאן חישוב קבלה שאפשר להסתמך עליו.",
++     "id": "haifa_engineering",
++     "kind": "unsupported",
++     "officialUrls": [
++       "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?utm_source=myway&utm_medium=referral",
++     ],
++     "requiredInputs": [],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_cs",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_psychology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_law",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_economics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_biology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_socialwork",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד.",
++     "id": "haifa_nursing",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++       "haifa_science_units",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_accounting",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_communication",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_politicalscience",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_statistics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_math",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "יש לבחור את מסלול מערכות המידע המדויק בחיפה כדי לחשב סיכויי קבלה.",
++     "id": "haifa_infosystems",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_information_systems_track",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "haifa_physiotherapy",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "haifa_sociology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "cs",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "psychology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "law",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "economics",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "biology",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "social_work",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, יחידות מדעיות לסיעוד.",
++     "id": "nursing",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++       "haifa_science_units",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "accounting",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי, ניסיונות מיון בריפוי בעיסוק, היעדרות מריאיון בריפוי בעיסוק.",
++     "id": "occupational_therapy",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++       "haifa_ot_failed_selection_attempts",
++       "haifa_ot_unjustified_absence",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "communication",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית.",
++     "id": "political_science",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++     ],
++   },
++   {
++     "catalogue": "saved_audit",
++     "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: הבסיס לדרישת העברית, חודש הפסיכומטרי.",
++     "id": "physiotherapy",
++     "kind": "needs_input",
++     "officialUrls": [],
++     "requiredInputs": [
++       "haifa_hebrew_qualification",
++       "haifa_psychometric_month",
++     ],
++   },
++ ]
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:59:46
+     57|     }
+     58|   }
+     59|   expect(failures, JSON.stringify(failures)).toEqual([]);
+       |                                              ^
+     60| });
+     61|
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[11/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > uses student terminology in the three admission-copy strings introduced by PR318
+AssertionError: expected 'needs_input' to be 'authority_unavailable' // Object.is equality
+
+Expected: "authority_unavailable"
+Received: "needs_input"
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:74:27
+     72|     gapApplicant(),
+     73|   );
+     74|   expect(psychology.kind).toBe('authority_unavailable');
+       |                           ^
+     75|   // Approved test update: Jorje 2026-10-29, option A, ledger-withheld…
+     76|   expect(psychology.explanation).toBe(HAIFA_NO_CALCULATION_NOTE);
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[12/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved Haifa average gives the same honest note as a proxy for haifa_psychology
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved Haifa average gives the same honest note as a proxy for psychology
+AssertionError: expected { capability: 'needs_input', …(4) } to deeply equal { …(5) }
+
+- Expected
++ Received
+
+  {
+-   "capability": "authority_unavailable",
++   "capability": "needs_input",
+    "decision": "unknown",
+-   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה סף הקבלה השמור למסלול הוא 650 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+-   "kind": "authority_unavailable",
+-   "officialUrls": [
+-     "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+-   ],
++   "explanation": "לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי.",
++   "kind": "needs_input",
++   "officialUrls": undefined,
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:214:33
+    212|     const { result } = await gapEvaluate(program, 'haifa', saved);
+    213|     const { result: proxyResult } = await gapEvaluate(program, 'haifa'…
+    214|     expect(haifaAnswer(result)).toEqual(haifaAnswer(proxyResult));
+       |                                 ^
+    215|     expect(result).toMatchObject({
+    216|       kind: 'authority_unavailable',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[13/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > non-psychology saved Haifa results stay unchanged from main across the static catalogue
+AssertionError: cs: expected { capability: 'exact', …(7) } to strictly equal { capability: 'exact', …(7) }
+
+- Expected
++ Received
+
+@@ -1,11 +1,12 @@
+  {
+    "capability": "exact",
+    "decision": "below",
+-   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..",
++   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "exact",
+    "officialUrls": [
++     "https://admissions.haifa.ac.il/score-calculation/",
+      "https://admissions.haifa.ac.il/computer-information-science/program/3210",
+    ],
+    "requiredInputs": undefined,
+    "score": 611,
+    "threshold": 700,
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:456:52
+    454|       expect(baseline, program.id).toBeDefined();
+    455|       const { result } = await gapEvaluate(program, 'haifa', saved);
+    456|       expect(savedHaifaAnswer(result), program.id).toStrictEqual(basel…
+       |                                                    ^
+    457|     }
+    458|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[14/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > non-psychology saved Haifa results stay unchanged from main across the saved_audit catalogue
+AssertionError: haifa_cs: expected { capability: 'exact', …(7) } to strictly equal { capability: 'exact', …(7) }
+
+- Expected
++ Received
+
+@@ -1,11 +1,12 @@
+  {
+    "capability": "exact",
+    "decision": "below",
+-   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..",
++   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 680 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג.. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "exact",
+    "officialUrls": [
++     "https://admissions.haifa.ac.il/score-calculation/",
+      "https://admissions.haifa.ac.il/computer-information-science/program/3210",
+    ],
+    "requiredInputs": undefined,
+    "score": 611,
+    "threshold": 700,
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:456:52
+    454|       expect(baseline, program.id).toBeDefined();
+    455|       const { result } = await gapEvaluate(program, 'haifa', saved);
+    456|       expect(savedHaifaAnswer(result), program.id).toStrictEqual(basel…
+       |                                                    ^
+    457|     }
+    458|   },
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[15/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved haifa_communication keeps its live exact score and uses student terminology
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved communication keeps its live exact score and uses student terminology
+AssertionError: expected { …(16) } to match object { capability: 'exact', …(5) }
+(23 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "capability": "exact",
+-   "decision": "below",
+-   "explanation": "לפי תנאי התוכנית הרשמיים, עדיין חסר לעמוד בדרישות הבאות: ציון הקבלה נמוך מסף ההמתנה 500 במסלול הרגיל. ניתן לבדוק אפיקים אחרים בעמוד החוג..",
+-   "kind": "exact",
+-   "score": 493,
++   "decision": "eligible_to_apply",
++   "explanation": "ציון הקבלה עומד בסף 550 ותנאי הסף האקדמיים שנמסרו מתקיימים. ההחלטה הסופית נתונה לאוניברסיטה. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
++   "kind": "manual_gate",
++   "score": 620,
+    "threshold": 550,
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:467:20
+    465|     const program = savedGapPrograms.find((program) => program.id === …
+    466|     const { result, fetcher } = await gapEvaluate(program, 'haifa', sa…
+    467|     expect(result).toMatchObject({
+       |                    ^
+    468|       capability: 'exact',
+    469|       kind: 'exact',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[16/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > H2 returns the honest note for captured average-only Haifa programme psychology
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > H2 returns the honest note for captured average-only Haifa programme haifa_psychology
+AssertionError: expected { …(13) } to match object { kind: 'authority_unavailable', …(3) }
+(22 matching properties omitted from actual)
+
+- Expected
++ Received
+
+  {
+    "capability": "authority_unavailable",
+-   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה",
++   "explanation": "עדיין לא מחשבים כאן את ציון הקבלה של חיפה סף הקבלה השמור למסלול הוא 650 בציון המוסדי. נתוני הבסיס אומתו ב־28.10.2026, למחזור 2026-2027.",
+    "kind": "authority_unavailable",
+    "officialUrls": [
+-     "https://admissions.haifa.ac.il/score-calculation/",
+      "https://applicants.haifa.ac.il/enrollmentChances/index.html",
+    ],
+  }
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:566:22
+    564|       });
+    565|     } else {
+    566|       expect(result).toMatchObject({
+       |                      ^
+    567|         kind,
+    568|         capability: kind,
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[17/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts > #320 request-shape compatibility at 12fd33f > enumerates every static Haifa pair and returns the honest note without a composite ask
+AssertionError: cs: expected 'needs_input' to be 'tracked_missing_rule' // Object.is equality
+
+Expected: "tracked_missing_rule"
+Received: "needs_input"
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts:139:39
+    137|         else {
+    138|           // Approved test update, Jorje 2026-10-28
+    139|           expect(result.kind, row.id).toBe('tracked_missing_rule');
+       |                                       ^
+    140|         }
+    141|         // Approved test update, Jorje 2026-10-29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[18/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts > #320 request-shape compatibility at 12fd33f > enumerates every saved audit Haifa pair and returns the honest note without a composite ask
+AssertionError: haifa_cs: expected 'needs_input' to be 'tracked_missing_rule' // Object.is equality
+
+Expected: "tracked_missing_rule"
+Received: "needs_input"
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts:139:39
+    137|         else {
+    138|           // Approved test update, Jorje 2026-10-28
+    139|           expect(result.kind, row.id).toBe('tracked_missing_rule');
+       |                                       ^
+    140|         }
+    141|         // Approved test update, Jorje 2026-10-29
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[19/25]⎯
+
+ FAIL  src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts > #320 request-shape compatibility at 12fd33f > preserves explicit Haifa averages while returning the honest note when they are absent
+AssertionError: expected [ 'haifa_hebrew_qualification' ] to be undefined
+
+- Expected:
+undefined
+
++ Received:
+[
+  "haifa_hebrew_qualification",
+]
+
+ ❯ src/app/api/admissions/evaluate/sekhemCalculatorGap.test.ts:163:41
+    161|     );
+    162|     // Approved test update, Jorje 2026-10-28
+    163|     expect(first.result.requiredInputs).toBeUndefined();
+       |                                         ^
+    164|     expect(first.result).toMatchObject({
+    165|       kind: 'tracked_missing_rule',
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[20/25]⎯
+
+
+ Test Files  10 failed | 133 passed (143)
+      Tests  25 failed | 3457 passed (3482)
+   Start at  15:00:19
+   Duration  31.25s (transform 21.67s, setup 13.47s, import 92.66s, tests 68.59s, environment 17.50s)

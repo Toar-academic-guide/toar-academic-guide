@@ -79,11 +79,11 @@ const D: Record<string, InstitutionDetail[]> = {
   huji_psychology: [
     {
       institutionName: 'האוניברסיטה העברית בירושלים',
-      durationYears: 4,
+      durationYears: 3,
       estimatedStudentsPerYear: 'כ-150 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['קבלה ישירה בפסיכומטרי ≥ 660 (ללא תלות בסכ"ם)'],
+      specificAdmissionNotes: ['קבלה ישירה לבעלי תעודת בגרות: ציון 725 ומעלה בפסיכומטרי.'],
       officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
     },
   ],
@@ -129,6 +129,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
       officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+      programUrl: 'https://info.huji.ac.il/bachelor/Life-Sciences',
     },
   ],
   huji_socialwork: [
@@ -403,6 +404,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ממוצע בגרות ≥ 100 — מומלץ'],
       officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+      programUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=new-info',
     },
   ],
   tau_accounting: [
@@ -515,7 +517,11 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-100 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ראיון אישי — מחייב', 'ממוצע בגרות ≥ 100 — מומלץ מאוד'],
+      specificAdmissionNotes: [
+        '92 — סף זימון משוער למבחן מו״ר.',
+        'ראיון אישי — מחייב',
+        'ממוצע בגרות ≥ 100 — מומלץ מאוד',
+      ],
       officialCalculatorUrl: 'https://admissions.technion.ac.il/',
     },
   ],
@@ -868,9 +874,9 @@ const D: Record<string, InstitutionDetail[]> = {
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
-        '5 יח"ל מתמטיקה — חובה',
-        'ציון פסיכומטרי מינימלי: 650',
-        'ממוצע בגרות מינימלי: 85',
+        'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
+        'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
       ],
       officialCalculatorUrl: HAIFA_CALCULATOR_URL,
       programUrl: HAIFA_PROGRAM_URLS.haifa_cs,
@@ -1477,7 +1483,7 @@ export const academicPrograms: Program[] = [
     admissionType: 'sekhem',
     admissionRequirements: [],
     thresholds: { tau: null, huji: 725, technion: null, bgu: null },
-    directPsychometric: { huji: 660 },
+    directPsychometric: { huji: 725 },
     institutionDetails: D['huji_psychology'],
   },
   {
@@ -1529,7 +1535,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 640, technion: null, bgu: null },
+    // Official cutoff 19 uses HUJI's 11–30 scale, not this legacy 200–800 column.
+    // https://info.huji.ac.il/bachelor/Life-Sciences
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_biology'],
   },
   {
@@ -1555,7 +1563,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 775, technion: null, bgu: null },
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_medicine'],
   },
 
@@ -1722,7 +1730,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 770, huji: null, technion: null, bgu: null },
+    thresholds: { tau: 726.44, huji: null, technion: null, bgu: null },
     institutionDetails: D['tau_medicine'],
   },
 
@@ -2025,7 +2033,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.cs,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 705 },
+    thresholds: { haifa: 700 },
     institutionDetails: D['haifa_cs'],
   },
   {
@@ -2159,7 +2167,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.statistics,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { haifa: 650 },
+    thresholds: { haifa: 630 },
     institutionDetails: D['haifa_statistics'],
   },
   {
@@ -2281,7 +2289,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { biu: 740 },
+    thresholds: { biu: null },
     institutionDetails: D['biu_medicine'],
   },
   {
@@ -3120,7 +3128,6 @@ export const academicPrograms: Program[] = [
           'מעל גיל 30: ראיון קבלה ובגרות מלאה',
           'תואר קודם ממוסד מוכר, 24 נ״ז מהאוניברסיטה הפתוחה או תעודת הנדסאי: קבלה ישירה. בעלי רקע לימודי קודם אחר: ראיון קבלה',
           'אפיק מעבר לאקדמיה: למי שיש בגרות מלאה ולא עומדים בתנאי הממוצע. צריך לעבור מקבץ קורסים אקדמיים לפני תחילת הלימודים.',
-          'המחשבון בודק רק ממוצע בגרות ופסיכומטרי. מסלול גיל 30+, תואר קודם ואפיק המעבר לא נבדקים בו.',
         ],
         officialCalculatorUrl: '',
         programUrl: 'https://www.ono.ac.il/curriculum/llb/',

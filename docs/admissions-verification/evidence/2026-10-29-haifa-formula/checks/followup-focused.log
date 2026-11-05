@@ -1,0 +1,96 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts (40 tests | 1 failed) 222ms
+   × saved psychology reaches its missing-month gate while a proxy keeps the Haifa note 8ms
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx (11 tests | 1 failed) 251ms
+     × 'Haifa official combined score and pro…' 10ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  src/components/sekhem/SekhemResults.mapping.test.tsx > real evaluator → batch POST → calculator result rows > 'Haifa official combined score and pro…'
+TestingLibraryElementError: Unable to find an element with the text: הציונים מתחת לסף. This could be because the text is broken up by multiple elements. In this case, you can provide a function for your text matcher to make your matcher more flexible.
+
+Ignored nodes: comments, script, style
+[36m<div[39m
+  [33mdata-capability[39m=[32m"exact"[39m
+  [33mdata-decision[39m=[32m"eligible_to_apply"[39m
+  [33mdata-kind[39m=[32m"manual_gate"[39m
+  [33mdata-testid[39m=[32m"result-haifa_cs-haifa"[39m
+[36m>[39m
+  [36m<div[39m
+    [33mclass[39m=[32m"flex flex-wrap items-baseline gap-x-5 gap-y-2"[39m
+  [36m>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"block text-3xl font-semibold tabular-nums"[39m
+        [33mdata-result-number[39m=[32m"score"[39m
+        [33mdir[39m=[32m"ltr"[39m
+      [36m>[39m
+        [0m806[0m
+      [36m</span>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"text-sm text-(--text-body)"[39m
+      [36m>[39m
+        [0mציון הקבלה[0m
+      [36m</span>[39m
+    [36m</div>[39m
+    [36m<div>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"block text-sm text-(--text-body)"[39m
+      [36m>[39m
+        [0mסף קבלה[0m
+      [36m</span>[39m
+      [36m<span[39m
+        [33mclass[39m=[32m"tabular-nums"[39m
+        [33mdata-result-number[39m=[32m"threshold"[39m
+        [33mdir[39m=[32m"ltr"[39m
+      [36m>[39m
+        [0m700[0m
+      [36m</span>[39m
+    [36m</div>[39m
+  [36m</div>[39m
+  [36m<p[39m
+    [33mclass[39m=[32m"mt-3 font-medium "[39m
+  [36m>[39m
+    [0mעדיין לא מחשבים כאן את ציון הקבלה של חיפה[0m
+  [36m</p>[39m
+[36m</div>[39m
+ ❯ Object.getElementError node_modules/@testing-library/dom/dist/config.js:37:19
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:76:38
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:52:17
+ ❯ node_modules/@testing-library/dom/dist/query-helpers.js:95:19
+ ❯ src/components/sekhem/SekhemResults.mapping.test.tsx:292:27
+    290|               ? 'הציונים עומדים בתנאי הקבלה'
+    291|               : 'הציונים מתחת לסף';
+    292|       expect(within(row!).getByText(expectedVerdict)).toBeTruthy();
+       |                           ^
+    293|       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
+    294|       for (const gate of result.additionalConditions ?? [])
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts > saved psychology reaches its missing-month gate while a proxy keeps the Haifa note
+AssertionError: expected '{"institution":{"id":"haifa","name":"…' not to contain '650'
+
+Expected: "650"
+Received: "{"institution":{"id":"haifa","name":"אוניברסיטת חיפה","region":"north","domain":"haifa.ac.il","logoUrl":"https://upload.wikimedia.org/wikipedia/commons/e/e1/University_of_Haifa_logo.svg","programUrl":"https://www.haifa.ac.il/ba_programs/","calculatorUrl":"https://applicants.haifa.ac.il/enrollmentChances/index.html","universityId":"haifa"},"linkedInstitutionId":"haifa","capability":"needs_input","kind":"needs_input","decision":"unknown","confidence":"low","sourceLabel":"נדרשים נתונים נוספים","explanation":"לבדיקת חיפה חסרים הנתונים הבאים: חודש הפסיכומטרי.","nextAction":"השלימו את הנתונים החסרים בפרופיל האקדמי, בסעיף ״תנאי החוגים באוניברסיטת חיפה״ ובמקצועות הבגרות.","requiredInputs":["haifa_psychometric_month"],"snapshot":{"evaluatorVersion":"admissions-evaluator-v2","ruleVersion":"admissions-evaluator-v2:haifa:needs_input","ruleFingerprint":"sha256:36bf1b6ddf436c05971d513b758252d1f365032685df0840ccabb28f2658da17","inputDigest":"sha256:dfcc7d29c1a517f5320226e3bd7e1f10a38ed0664babd07a9edfba6dd4847e5e","evaluationDigest":"sha256:9a3c56e5ffb03bdd25f8fd60b8d7d8940fa58ffb8b50ef059a362fe8dd1d9ca2"}}"
+
+ ❯ src/app/api/admissions/evaluate/rulingsHaifaTau.test.ts:222:42
+    220|     });
+    221|     for (const answer of [result, proxyResult]) {
+    222|       expect(JSON.stringify(answer)).not.toContain('650');
+       |                                          ^
+    223|       expect(answer.degradationReason).toBeUndefined();
+    224|     }
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  2 failed | 9 passed (11)
+      Tests  2 failed | 964 passed (966)
+   Start at  15:15:04
+   Duration  6.63s (transform 8.03s, setup 1.02s, import 17.73s, tests 6.52s, environment 1.16s)

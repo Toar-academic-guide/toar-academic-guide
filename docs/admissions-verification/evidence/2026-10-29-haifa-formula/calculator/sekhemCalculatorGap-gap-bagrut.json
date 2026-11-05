@@ -1,0 +1,25 @@
+{
+  "label": "sekhemCalculatorGap-gap-bagrut",
+  "operation": "calculateBagrutAvg",
+  "params": {
+    "diploma": "001",
+    "data": "[{\"subject\":\"35\",\"units\":\"5\",\"grade\":\"90\"},{\"subject\":\"16\",\"units\":\"5\",\"grade\":\"85\"},{\"subject\":\"36\",\"units\":\"5\",\"grade\":\"90\"},{\"subject\":\"11\",\"units\":\"2\",\"grade\":\"88\"},{\"subject\":\"22\",\"units\":\"2\",\"grade\":\"85\"},{\"subject\":\"34\",\"units\":\"2\",\"grade\":\"88\"},{\"subject\":\"10\",\"units\":\"2\",\"grade\":\"90\"},{\"subject\":\"1\",\"units\":\"2\",\"grade\":\"88\"}]"
+  },
+  "url": "https://applicants.haifa.ac.il/enrollmentChances/CandChancesServlet?operation=calculateBagrutAvg&diploma=001&data=%5B%7B%22subject%22%3A%2235%22%2C%22units%22%3A%225%22%2C%22grade%22%3A%2290%22%7D%2C%7B%22subject%22%3A%2216%22%2C%22units%22%3A%225%22%2C%22grade%22%3A%2285%22%7D%2C%7B%22subject%22%3A%2236%22%2C%22units%22%3A%225%22%2C%22grade%22%3A%2290%22%7D%2C%7B%22subject%22%3A%2211%22%2C%22units%22%3A%222%22%2C%22grade%22%3A%2288%22%7D%2C%7B%22subject%22%3A%2222%22%2C%22units%22%3A%222%22%2C%22grade%22%3A%2285%22%7D%2C%7B%22subject%22%3A%2234%22%2C%22units%22%3A%222%22%2C%22grade%22%3A%2288%22%7D%2C%7B%22subject%22%3A%2210%22%2C%22units%22%3A%222%22%2C%22grade%22%3A%2290%22%7D%2C%7B%22subject%22%3A%221%22%2C%22units%22%3A%222%22%2C%22grade%22%3A%2288%22%7D%5D",
+  "method": "GET",
+  "startedAt": "2026-10-29T12:54:38.330Z",
+  "finishedAt": "2026-10-29T12:54:38.643Z",
+  "status": 200,
+  "json": {
+    "data": {
+      "note": "הממוצע שחושב הינו ממוצע אופטימלי הכולל בונוסים",
+      "avg": "105.12"
+    },
+    "return": {
+      "number": "",
+      "errorType": "",
+      "type": "S",
+      "message": ""
+    }
+  }
+}

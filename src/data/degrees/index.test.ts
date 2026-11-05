@@ -3,11 +3,34 @@ import { describe, expect, it } from 'vitest';
 import { buildFormulaBackedPairInventory } from '../admissions/formulaBackedPairInventory';
 import { mondayAdmissionsEvidence } from '../admissions/mondayEvidence';
 import repair from '../admissions/catalogueContentRepair.json';
-import { INSTITUTIONS } from '../institutions';
+import { INSTITUTIONS, INSTITUTION_BY_ID } from '../institutions';
 import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
+
+describe('curated Hadassah programme name', () => {
+  const program = allPrograms.find((row) => row.id === 'hadassah_general_academic')!;
+
+  it('uses the official curated Hadassah institution name', () => {
+    expect(program.institution).toBe('המרכז האקדמי הרב תחומי ירושלים');
+    expect(program.institution).toBe(INSTITUTION_BY_ID.hadassah.name);
+  });
+
+  it('ends the Hadassah programme name with the curated institution name', () => {
+    expect(program.name.endsWith(` - ${INSTITUTION_BY_ID.hadassah.name}`)).toBe(true);
+  });
+
+  it('uses the curated Hadassah name in institution details', () => {
+    expect(program.institutionDetails?.[0]?.institutionName).toBe(INSTITUTION_BY_ID.hadassah.name);
+  });
+
+  it('keeps the former Hadassah name out of all Hadassah programme names', () => {
+    const hadassahPrograms = allPrograms.filter((row) => row.institutionId === 'hadassah');
+    expect(hadassahPrograms.length).toBeGreaterThan(0);
+    expect(hadassahPrograms.filter((row) => row.name.includes('הדסה'))).toEqual([]);
+  });
+});
 
 it.each(['afeka_ee', 'afeka_softwareeng', 'afeka_cs'])(
   'keeps %s alternative routes out of legacy cumulative facts',
@@ -42,16 +65,20 @@ describe('formula-backed pair catalogue', () => {
 
     expect(inventory.errors).toEqual([]);
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 adds CS, EE and social work to the denominator.
-    expect(inventory.total).toBe(141);
+    // Approved test update, Jorje 2026-10-28
+    // Approved test update, Jorje 2026-10-31: generic BGU medicine adds one pair while HUJI retains independent cutoff authority.
+    expect(inventory.total).toBe(144);
     // Approved by Jorje 2026-10-25 02:10 (4): final BIU brief §2 expands BIU from seven to ten routed pairs.
+    // Approved test update, Jorje 2026-10-28
     expect(inventory.totalsByInstitution).toEqual({
       tau: 33,
       huji: 28,
-      bgu: 28,
+      // Approved test update, Jorje 2026-10-31: the generic medicine listing adds one BGU pair without new exact coverage.
+      bgu: 29,
       haifa: 27,
       technion: 14,
       colman: 1,
-      biu: 10,
+      biu: 12,
     });
   });
 });

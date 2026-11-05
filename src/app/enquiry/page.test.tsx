@@ -1,14 +1,18 @@
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { metadata as rootMetadata } from '@/app/layout';
 import ProgramPage from '@/app/programs/[programId]/page';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
+import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
-import EnquiryPage from './page';
+import EnquiryPage, { metadata } from './page';
 import failedLinks from './__fixtures__/failed-links.json';
 
 vi.mock('server-only', () => ({}));
+vi.mock('@/context/AuthContext', () => ({ AuthProvider: () => null }));
+vi.mock('@vercel/analytics/next', () => ({ Analytics: () => null }));
 vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => children,
 }));
@@ -67,6 +71,64 @@ beforeEach(() => {
 });
 
 describe('enquiry link integrity', () => {
+  it('keeps free-course claims out of the site default description', () => {
+    expect(SITE_DESCRIPTION).not.toMatch(/חינם|בחינם/);
+  });
+
+  it('keeps free-course claims out of the resolved enquiry metadata', () => {
+    // Next merges route metadata shallowly: page fields replace layout fields.
+    const resolved = { ...rootMetadata, ...metadata };
+    expect(resolved.description).toBe(SITE_DESCRIPTION);
+    expect(resolved.description).not.toMatch(/חינם|בחינם/);
+    for (const social of [resolved.openGraph, resolved.twitter]) {
+      if (social?.description != null) {
+        expect(social.description).not.toMatch(/חינם|בחינם/);
+      }
+    }
+  });
+
+  it('renders the approved prep intro before the unchanged title and action', async () => {
+    const markup = await form('/enquiry?program=psychometric-preparation');
+    expect(markup).toContain('>הציון שלכם בפסיכומטרי מתחיל בהכנה</h1>');
+    expect(markup).toContain(
+      '<p class="mt-2">ברוב המוסדות בישראל, הציון הפסיכומטרי נכנס לסכם יחד עם ציוני הבגרות, ולכן הוא שווה הכנה רצינית. החל מדצמבר 2026 הבחינה כוללת שני תחומים בלבד: חשיבה מילולית וחשיבה כמותית, בציון של 200 עד 800. המרכז הארצי לבחינות ולהערכה כותב זאת במפורש: מי שמתכונן צפוי להשיג ציון גבוה יותר, והשיפור תלוי בעיקר ברצינות ובהשקעה. השאירו פרטים ותתחילו להתכונן נכון.</p><p class="mt-2">הכנה לפסיכומטרי</p>',
+    );
+    expect(markup).toContain('השאירו פרטים</button>');
+    expect(markup).not.toContain('רוצים תשובות ישר מהמוסד?');
+    const hero = markup.match(/<section\b[^>]*>[\s\S]*?<\/section>/)?.[0];
+    const dialog = markup.match(/<dialog\b[^>]*>[\s\S]*?<\/dialog>/)?.[0];
+    expect(hero).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(dialog).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(`${hero}${dialog}`).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/); // Approved test update, Jorje 2026-10-30
+  });
+
+  it('allows the approved government-course sentence as the only free-course claim', async () => {
+    const markup = await form('/enquiry?program=psychometric-preparation');
+    const sentence = 'הקורס מוצע בחינם לכל דורש, ולמי שרוצה יותר יש לצדו גם מסלול מתוגבר בתשלום.';
+    const sentenceMarkup = sentence.replace(
+      'מסלול מתוגבר בתשלום',
+      '<strong>מסלול מתוגבר בתשלום</strong>',
+    );
+    const reading = markup.match(/<section\b[^>]*data-prep-content[^>]*>[\s\S]*?<\/section>/)?.[0];
+    const renderedText = markup.replace(/<[^>]*>/g, '');
+    expect(reading).toContain(`<p>${sentenceMarkup}</p>`); // Approved test update, Jorje 2026-10-30
+    expect(renderedText).toContain(sentence); // Approved test update, Jorje 2026-10-30
+    expect(markup.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.replace(sentence, '')).not.toMatch(/חינם/); // Approved test update, Jorje 2026-10-30
+  });
+
+  it('keeps the institution enquiry intro unchanged', async () => {
+    const markup = await form('/enquiry?program=cs&institution=reichman');
+    expect(markup).toContain('>רוצים תשובות ישר מהמוסד?</h1>');
+    expect(markup).not.toContain('הציון שלכם בפסיכומטרי מתחיל בהכנה');
+    expect(markup).not.toContain('ברוב המוסדות בישראל');
+  });
+
+  it('keeps enquiry pages noindex with links followed', () => {
+    expect(metadata.robots).toEqual({ index: false, follow: true });
+  });
+
   it.each([
     '/enquiry?program=accounting&institution=colman',
     '/enquiry?program=cs&institution=reichman',

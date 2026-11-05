@@ -26,6 +26,41 @@ const bguRecord: BagrutSubjectRecordV2 = {
 };
 
 describe('evaluation input derivation and provenance', () => {
+  it('uses medicine subjects over stale institutional values and never proxies missing subjects', () => {
+    const normalized = normalizeEvaluationInputs({
+      degreeId: 'medicine',
+      bagrut: 120,
+      extraInputs: {
+        medicineStage: 'academic',
+        bagrutSubjectRecord: bguRecord,
+        tauBagrutAverage: 60,
+        bguBagrutAverage: 60,
+        hujiBagrutAverage: 60,
+      },
+    });
+    expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+    expect(normalized.input.extraInputs.tauBagrutAverage).not.toBe(60);
+    const missing = normalizeEvaluationInputs({
+      degreeId: 'medicine',
+      bagrut: 120,
+      extraInputs: { medicineStage: 'academic', tauBagrutAverage: 120 },
+    });
+    expect(missing.input.extraInputs.tauBagrutAverage).toBeUndefined();
+    expect(missing.input.extraInputs.bguBagrutAverage).toBeUndefined();
+  });
+  it.each(['other', 'external_1977_or_later'] as const)(
+    'derives the BGU average from a non-internal %s certificate',
+    (certificateType) => {
+      const normalized = normalizeEvaluationInputs({
+        degreeId: 'bgu_cs',
+        extraInputs: { bagrutSubjectRecord: { ...bguRecord, certificateType } },
+      });
+
+      expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+      expect(normalized.reasons.bgu).toBeUndefined();
+    },
+  );
+
   it('uses the reviewed BGU worked example (111.9), deriving the generic unit average separately', () => {
     const source = { degreeId: 'bgu_cs', extraInputs: { bagrutSubjectRecord: bguRecord } };
     const before = structuredClone(source);
@@ -76,16 +111,19 @@ describe('evaluation input derivation and provenance', () => {
       bagrut: 105,
       psychometric: 650,
     });
+    // Approved test update, Jorje 2026-10-31: never manufacture a Haifa average proxy; retain both cycle defaults.
     expect(normalized.input.extraInputs).toMatchObject({
       bguBagrutAverage: 105,
       tauBagrutAverage: 105,
-      haifaBagrutAverage: 105,
       colmanBagrutAverage: 105,
       haifaBagrutYear: HAIFA_ADMISSION_YEAR,
       haifaPsychometricYear: HAIFA_ADMISSION_YEAR,
     });
-    for (const id of ['bgu', 'tau', 'haifa', 'colman'])
+    // Approved test update, Jorje 2026-10-31: Haifa no longer uses the overall average as an institutional proxy.
+    for (const id of ['bgu', 'tau', 'colman'])
       expect(normalized.reasons[id].join(' ')).toContain('105');
+    // Approved test update, Jorje 2026-10-31: retain year assumptions without introducing a Haifa average.
+    expect(normalized.input.extraInputs.haifaBagrutAverage).toBeUndefined();
     expect(normalized.input.extraInputs.bagrutSubjectRecord).toBeUndefined();
     expect(normalized.input.extraInputs.psychometricMath).toBeUndefined();
     expect(normalized.input.extraInputs.haifaAdmissionQualification).toBeUndefined();

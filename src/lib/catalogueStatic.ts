@@ -19,7 +19,11 @@ function getLinkedInstitutionIds(program: Program): InstitutionId[] {
     program.thresholds == null
       ? []
       : (Object.entries(program.thresholds)
-          .filter(([, threshold]) => threshold !== null)
+          .filter(
+            ([institutionId, threshold]) =>
+              threshold !== null ||
+              program.nullThresholdLinks?.includes(institutionId as InstitutionId),
+          )
           .map(([institutionId]) => institutionId) as InstitutionId[]);
 
   if (thresholdInstitutions.length > 0) {

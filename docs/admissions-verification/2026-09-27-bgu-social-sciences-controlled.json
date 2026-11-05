@@ -4,7 +4,7 @@
     "checkedAt": "2026-09-27T19:18:55.788Z",
     "actualScore": 600,
     "actualVerdict": "below",
-    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "sourceFingerprint": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
@@ -23,7 +23,7 @@
     "checkedAt": "2026-09-27T19:18:55.967Z",
     "actualScore": 601,
     "actualVerdict": "eligible_to_apply",
-    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "sourceFingerprint": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
@@ -42,7 +42,7 @@
     "checkedAt": "2026-09-27T19:18:56.138Z",
     "actualScore": 600,
     "actualVerdict": "below",
-    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "sourceFingerprint": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
@@ -61,7 +61,7 @@
     "checkedAt": "2026-09-27T19:18:56.306Z",
     "actualScore": 601,
     "actualVerdict": "eligible_to_apply",
-    "sourceFingerprint": "sha256:dcdf8633d590fecb0bac59ac4df6c62564b45981a299566b273ab06921b225aa",
+    "sourceFingerprint": "sha256:5b0fce8edde6c36a51489c5a482532abfabd404a9920bf5d01733c4498c50b7c",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=144&p_pat1=1&p_spe1=12&p_institution=0&p_degree_level=1",
@@ -80,7 +80,7 @@
     "checkedAt": "2026-09-27T19:18:56.483Z",
     "actualScore": 286,
     "actualVerdict": "below",
-    "sourceFingerprint": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+    "sourceFingerprint": "sha256:88519534d5bfef4149998f75dcd34296b1b80104989916c6f8b27f370f86fed5",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
@@ -99,7 +99,7 @@
     "checkedAt": "2026-09-27T19:18:56.653Z",
     "actualScore": 287,
     "actualVerdict": "eligible_to_apply",
-    "sourceFingerprint": "sha256:e49ccf7d65a2611d661808fad528350cc08a76f689f36f40b15c4a32f875374a",
+    "sourceFingerprint": "sha256:88519534d5bfef4149998f75dcd34296b1b80104989916c6f8b27f370f86fed5",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=183&p_pat1=2&p_degree_level=1",
@@ -118,7 +118,7 @@
     "checkedAt": "2026-09-27T19:18:56.821Z",
     "actualScore": 286,
     "actualVerdict": "below",
-    "sourceFingerprint": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+    "sourceFingerprint": "sha256:cfbedeb57024d37891346553ad81d9f730a2510c2a24f53d1034a38c66160ca3",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1",
@@ -137,7 +137,7 @@
     "checkedAt": "2026-09-27T19:18:57.004Z",
     "actualScore": 287,
     "actualVerdict": "eligible_to_apply",
-    "sourceFingerprint": "sha256:ed04d32e92b442c87e115924f5c2920b1fe0f82918223b0fab903d65f74332d5",
+    "sourceFingerprint": "sha256:cfbedeb57024d37891346553ad81d9f730a2510c2a24f53d1034a38c66160ca3",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=129&p_pat1=2&p_degree_level=1",
@@ -156,7 +156,7 @@
     "checkedAt": "2026-09-27T19:18:57.185Z",
     "actualScore": 274,
     "actualVerdict": "below",
-    "sourceFingerprint": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+    "sourceFingerprint": "sha256:3fe1f13b6c614477ac6e96d8acd95e02a4cd405acf378d1c44c155b1d99c3ede",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1",
@@ -175,7 +175,7 @@
     "checkedAt": "2026-09-27T19:18:57.358Z",
     "actualScore": 274,
     "actualVerdict": "eligible_to_apply",
-    "sourceFingerprint": "sha256:d25de63ea5d1914eba50dd7e6a305b6691f480bce3296830845e654b48ea27cf",
+    "sourceFingerprint": "sha256:3fe1f13b6c614477ac6e96d8acd95e02a4cd405acf378d1c44c155b1d99c3ede",
     "rawResponseMetadata": [
       {
         "endpoint": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=138&p_pat1=2&p_institution=0&p_degree_level=1",

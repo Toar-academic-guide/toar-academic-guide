@@ -221,3 +221,58 @@ it.each([
     }
   },
 );
+
+// Generic IDs keep their other institutions; agreement is scoped to this pair.
+describe('generic and institution-specific admissions IDs', () => {
+  beforeEach(() => resetAdmissionsEvaluationRateLimitForTests());
+  it.each([
+    ['haifa', 'psychology', 'haifa_psychology'],
+    ['biu', 'cs', 'biu_cs'],
+    ['biu', 'ee', 'biu_ee'],
+    ['biu', 'law', 'biu_law'],
+    ['biu', 'criminology', 'biu_criminology'],
+    ['tau', 'business', 'tau_business'],
+    ['tau', 'accounting', 'tau_accounting'],
+  ])(
+    '%s: %s preserves its identity and agrees with %s',
+    async (institutionId, generic, specific) => {
+      const degreeIds = [generic, specific];
+      const response = await request({
+        degreeIds,
+        bagrut: 92.1,
+        psychometric: 700,
+        extraInputs: {
+          mathUnits: 5,
+          mathGrade: 90,
+          englishUnits: 5,
+          englishGrade: 85,
+          physicsUnits: 5,
+          physicsGrade: 80,
+          psychometricMath: 140,
+          psychometricVerbal: 130,
+          psychometricEnglish: 135,
+        },
+      });
+      expect(response.status).toBe(200);
+      const { data } = await response.json();
+      expect(data.failedDegreeIds).toEqual([]);
+      const pairResults = degreeIds.map((id) => {
+        expect(data.reports[id].input.degreeId).toBe(id);
+        expect(data.reports[id].program.id).toBe(id);
+        const { snapshot, ...result } = data.reports[id].results.find(
+          (r: { linkedInstitutionId: string }) => r.linkedInstitutionId === institutionId,
+        );
+        expect(snapshot.inputDigest).toBe(data.reports[id].inputDigest);
+        return result;
+      });
+      expect(pairResults[0]).toEqual(pairResults[1]);
+      if (institutionId === 'haifa')
+        expect(pairResults[0]).toMatchObject({
+          kind: 'authority_unavailable',
+          decision: 'unknown',
+        });
+      if (institutionId === 'biu' && generic === 'cs')
+        expect(pairResults[0]).toMatchObject({ kind: 'estimated' });
+    },
+  );
+});

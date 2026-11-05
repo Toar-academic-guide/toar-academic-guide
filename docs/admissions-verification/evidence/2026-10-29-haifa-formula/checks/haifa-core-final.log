@@ -1,0 +1,11 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/toar-wt-haifa-formula
+
+
+ Test Files  5 passed (5)
+      Tests  377 passed (377)
+   Start at  15:02:05
+   Duration  2.85s (transform 3.53s, setup 503ms, import 8.12s, tests 678ms, environment 0ms)

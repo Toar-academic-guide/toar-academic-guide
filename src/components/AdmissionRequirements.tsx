@@ -122,6 +122,10 @@ export default function AdmissionRequirements({
   );
   const additional = overview ? requirements : requirements.slice(3);
 
+  const hasMultilineRequirement = floorChecks?.some(
+    (row) => typeof row.displayValue === 'string' && row.displayValue.includes('; '),
+  );
+
   return (
     <div className="mt-3 text-right text-sm text-[#35415b]" dir="rtl">
       {floorChecks && (
@@ -132,16 +136,30 @@ export default function AdmissionRequirements({
           >
             <thead>
               <tr className="border-b border-[var(--border)] text-[var(--text-muted)]">
-                <th scope="col" className="w-[30%] py-2 pe-2 font-medium">
+                <th
+                  scope="col"
+                  className={
+                    hasMultilineRequirement
+                      ? 'w-[20%] py-2 pe-2 font-medium'
+                      : 'w-[30%] py-2 pe-2 font-medium'
+                  }
+                >
                   תנאי
                 </th>
-                <th scope="col" className="w-[15%] py-2 pe-2 font-medium">
+                <th
+                  scope="col"
+                  className={
+                    hasMultilineRequirement
+                      ? 'w-[25%] py-2 pe-2 font-medium'
+                      : 'w-[15%] py-2 pe-2 font-medium'
+                  }
+                >
                   נדרש
                 </th>
-                <th scope="col" className="w-[15%] py-2 pe-2 font-medium">
+                <th scope="col" className="w-[25%] py-2 pe-2 font-medium">
                   שלך
                 </th>
-                <th scope="col" className="w-[40%] py-2 font-medium">
+                <th scope="col" className="w-[30%] py-2 font-medium">
                   בדיקה
                 </th>
               </tr>
@@ -159,72 +177,94 @@ export default function AdmissionRequirements({
                 </tr>
                 {floorChecks
                   .filter((row) => row.channel === channel)
-                  .map((row, index) => (
-                    <tr
-                      key={`${row.label}:${index}`}
-                      className="border-b border-[var(--border)] align-top"
-                    >
-                      <th scope="row" className="py-2 pe-2 font-normal [overflow-wrap:anywhere]">
-                        <a
-                          href={institutionLink(row.sourceUrl, institutionId)}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
-                        >
-                          {row.label}
-                        </a>
-                      </th>
-                      <td className="py-2 pe-2 tabular-nums">{row.displayValue}</td>
-                      <td className="py-2 pe-2 tabular-nums">{row.studentValue ?? '—'}</td>
-                      <td className="py-2 [overflow-wrap:anywhere]">
-                        <span>
-                          {
-                            (
-                              {
-                                pass: 'עומד/ת',
-                                miss: 'לא עומד/ת',
-                                missing: 'חסר נתון',
-                                conflicting: 'מקורות סותרים',
-                                soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
-                              } as const
-                            )[row.status]
-                          }
-                        </span>
-                        {row.note && (
-                          <span className="mt-1 block text-[var(--text-muted)]">{row.note}</span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
+                  .map((row, index) => {
+                    const requirementLines =
+                      typeof row.displayValue === 'string' && row.displayValue.includes('; ')
+                        ? row.displayValue.split('; ')
+                        : undefined;
+                    return (
+                      <tr
+                        key={`${row.label}:${index}`}
+                        className="border-b border-[var(--border)] align-top"
+                      >
+                        <th scope="row" className="py-2 pe-2 font-normal">
+                          <a
+                            href={institutionLink(row.sourceUrl, institutionId)}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
+                          >
+                            {row.label}
+                          </a>
+                        </th>
+                        <td className="py-2 pe-2 tabular-nums">
+                          {requirementLines
+                            ? requirementLines.map((line) => (
+                                <span key={line} className="block whitespace-nowrap">
+                                  {line}
+                                </span>
+                              ))
+                            : row.displayValue}
+                        </td>
+                        <td className="py-2 pe-2 tabular-nums">
+                          {typeof row.studentValue === 'string'
+                            ? row.studentValue
+                                .replace(/(\d) +(יח״ל)/g, '$1\u00a0$2')
+                                .replace(/(בציון) +(\d)/g, '$1\u00a0$2')
+                            : (row.studentValue ?? '—')}
+                        </td>
+                        <td className="py-2 [overflow-wrap:anywhere]">
+                          <span>
+                            {
+                              (
+                                {
+                                  pass: 'עומד/ת',
+                                  miss: 'לא עומד/ת',
+                                  missing: 'חסר נתון',
+                                  conflicting: 'מקורות סותרים',
+                                  soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
+                                } as const
+                              )[row.status]
+                            }
+                          </span>
+                          {row.note && (
+                            <span className="mt-1 block text-[var(--text-muted)]">{row.note}</span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
               </tbody>
             ))}
           </table>
-          <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-            {programId !== 'biu_law' &&
-              programId !== 'law' &&
-              'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
-            <a
-              href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-            >
-              המחשבון הרשמי של בר-אילן
-            </a>
-            {programId === 'biu_ee' && (
-              <>
-                {'; '}
-                <a
-                  href={institutionLink(BIU_ENGINEERING_URL, 'biu')}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-                >
-                  תנאי הקבלה בפקולטה להנדסה
-                </a>
-              </>
-            )}
-          </p>
+          {institutionId !== 'tau' && (
+            <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
+              {programId !== 'biu_law' &&
+                programId !== 'law' &&
+                'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
+              <a
+                href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+              >
+                המחשבון הרשמי של בר-אילן
+              </a>
+              {programId === 'biu_ee' && (
+                <>
+                  {'; '}
+                  <a
+                    href={institutionLink(BIU_ENGINEERING_URL, 'biu')}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
+                  >
+                    תנאי הקבלה בפקולטה להנדסה
+                  </a>
+                </>
+              )}
+            </p>
+          )}
         </>
       )}
       {routes && (

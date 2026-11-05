@@ -35,10 +35,10 @@ function ProgramCards({
         >
           <span className="block font-semibold">
             {institutionProgramName(program, institution)}
-          </span>
+          </span>{' '}
           {program.category !== program.name && (
             <span className="mt-1 block text-sm text-slate-500">{program.category}</span>
-          )}
+          )}{' '}
         </Link>
       ))}
     </div>
@@ -68,31 +68,30 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
             href={ROUTES.home}
             className="text-sm font-semibold text-slate-500 hover:text-slate-900"
           >
-            חזרה לדף הבית
+            חזרה לדף הבית{' '}
           </Link>
 
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <p className="text-sm font-semibold text-cyan-700">מוסד לימודים</p>
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl">{institution.name}</h1>
-
+            <p className="text-sm font-semibold text-cyan-700">מוסד לימודים</p>{' '}
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl">{institution.name}</h1>{' '}
             <div className="mt-6 flex flex-wrap gap-3">
               <Link
                 href={ROUTES.assessment}
                 className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
               >
-                שאלון התאמה
+                שאלון התאמה{' '}
               </Link>
               <Link
                 href={ROUTES.calculator}
                 className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
               >
-                מחשבון קבלה
+                מחשבון קבלה{' '}
               </Link>
             </div>
           </div>
 
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מסלולי לימוד</h2>
+            <h2 className="text-xl font-bold">מסלולי לימוד</h2>{' '}
             <ProgramCards
               programs={programs.slice(0, 12)}
               institution={institution}
@@ -103,8 +102,8 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
                 <summary className="cursor-pointer font-semibold text-cyan-700">
                   {programs.length === 13
                     ? 'הצגת מסלול נוסף'
-                    : `הצגת עוד ${programs.length - 12} מסלולים`}
-                </summary>
+                    : `הצגת עוד ${programs.length - 12} מסלולים`}{' '}
+                </summary>{' '}
                 <ProgramCards programs={programs.slice(12)} institution={institution} />
               </details>
             )}

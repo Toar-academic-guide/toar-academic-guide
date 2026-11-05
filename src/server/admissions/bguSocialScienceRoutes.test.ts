@@ -4,6 +4,12 @@ import { runBguAdmissionsProof } from '../ingestion/adapters/bguAdmissions';
 import { getBguProgramVerificationMetadata } from '@/data/admissions/bguProgramVerification';
 import { resolveBguSocialScienceAdmission } from './bguSocialSciencePolicy';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
+import {
+  bguSocialScienceSource,
+  normalizeBguSocialScienceRule,
+  fingerprintBguSocialScienceRule,
+} from '@/data/admissions/bguSocialScienceVerification';
+import communicationLive from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/communication.json';
 import { runBguSocialScienceProof } from '../ingestion/adapters/bguSocialScience';
 
 const common = {
@@ -224,3 +230,60 @@ it('blocks duplicate or changed programme conditions and ambiguous scores', asyn
     expect(proof.capability).toBe('blocked');
   }
 });
+
+// Official GetRdpData communication response captured2026-10-28; SHA-256 is
+// recorded beside the formatted evidence. Reuse its reviewed score replay.
+// No bgu_communication ID exists; the quantitative aliases are tested separately.
+it.each(['communication'])(
+  'E %s ignores a registration-status-only flip and retains exact official proof',
+  async (id) => {
+    const { source, officialProgramId } = bguSocialScienceSource(id);
+    const original = normalizeBguSocialScienceRule(id, source.payload)!;
+    const flipped = normalizeBguSocialScienceRule(id, {
+      ...source.payload,
+      items: source.payload.items.map((row) => ({ ...row, reg_status: 'סגורה' })),
+    })!;
+    expect
+      .soft(fingerprintBguSocialScienceRule(flipped))
+      .toBe(fingerprintBguSocialScienceRule(original));
+    const capture = source.calculatorCaptures.find(
+      (row) =>
+        row.pairId === `${id}__bgu` && row.expectedNumericRouteVerdict === 'eligible_to_apply',
+    )!;
+    const proof = await runBguSocialScienceProof({
+      program: {
+        id,
+        name: id,
+        pairId: `${id}__bgu`,
+        externalId: officialProgramId,
+        searchText: source.url,
+      },
+      applicant: {
+        psychometric: capture.input.psychometric,
+        bagrutAverage: capture.input.bguBagrutAverage,
+        extraInputs: {
+          ...common,
+          bguBagrutAverage: capture.input.bguBagrutAverage,
+          bguSocialScienceRoute: 'score',
+        },
+      },
+      fetcher: async (url) =>
+        String(url).includes('GetRdpData')
+          ? Response.json(communicationLive)
+          : new Response(capture.rawResponse),
+    });
+    expect.soft(proof).toMatchObject({
+      proofLevel: 'exact_official',
+      capability: 'decision_capable',
+      status: 'succeeded',
+    });
+    expect.soft(proof.normalizedPayload.acceptanceThreshold).toBe(520);
+    const changed = normalizeBguSocialScienceRule(id, {
+      ...source.payload,
+      items: source.payload.items.map((row) => ({ ...row, psycho_sekem: row.psycho_sekem + 1 })),
+    })!;
+    expect(fingerprintBguSocialScienceRule(changed)).not.toBe(
+      fingerprintBguSocialScienceRule(original),
+    );
+  },
+);

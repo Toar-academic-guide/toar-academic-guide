@@ -1,6 +1,7 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { CatalogueProgram } from '@/types/catalogue';
 import { UNIVERSITIES } from '@/data/degreesData';
-import reviewedManifest from '@/data/admissions/reviewedManifest.json';
+import reviewedManifest from '@/server/admissions/__fixtures__/reviewedManifest-2026-10-25.json';
 import technionWinterManifest from '@/server/admissions/__fixtures__/technionWinterManifest.json';
 import staleTechnionCatalogue from '@/test/fixtures/technionStaleCatalogue.json';
 import {
@@ -23,7 +24,7 @@ import {
 
 const hoistedMocks = vi.hoisted(() => ({
   getDb: vi.fn(),
-  getStaticCataloguePrograms: vi.fn(() => [
+  getStaticCataloguePrograms: vi.fn<() => Partial<CatalogueProgram>[]>(() => [
     {
       id: 'static_program',
       name: 'תוכנית סטטית',
@@ -312,9 +313,12 @@ describe('catalogue queries', () => {
       const source = (await getPublicProgramRequirementSources(published)).technion;
       expect(source.sourceProgramId).toBe(programId);
       expect(source.program.thresholds?.technion).toBe(change.after);
+      // Approved test update, Jorje 2026-10-28
       expect(source.requirements).toEqual([
         `בחורף תשפ"ז: סכם ${change.after}`,
-        ...captured.institutionDetails[0].specificAdmissionNotes,
+        'מתמטיקה: 5 יחידות בציון 70 לפחות; בעלי 4 יחידות או ציון נמוך מ־70 ב־5 יחידות נדרשים לבחינת סיווג במתמטיקה בציון 70 לפחות.',
+        'פטור מבחינת הסיווג במתמטיקה: קורס חדו״א א׳ (20406) באוניברסיטה הפתוחה בציון 65 לפחות.',
+        '5 יח"ל פיזיקה — חובה',
       ]);
       expect(
         selectRequirementTiles({
@@ -471,9 +475,178 @@ describe('catalogue queries', () => {
     await listCataloguePrograms();
     vi.setSystemTime(new Date('2026-06-23T00:01:01Z'));
     const secondResult = await listCataloguePrograms();
+    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('hit');
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(1);
 
-    expect(secondResult.meta.catalogueSnapshotCacheStatus).toBe('miss');
+    let release!: () => void;
+    const gate = new Promise<void>((resolve) => {
+      release = resolve;
+    });
+    const refreshedDataset = createDatabaseBackedDataset();
+    refreshedDataset.programs[0].name = 'Refreshed programme';
+    const refreshedDb = createMockDb(refreshedDataset).db;
+    const from = refreshedDb.select().from;
+    let firstTable = true;
+    hoistedMocks.getDb.mockReturnValue({
+      select: () => ({
+        from: (table: object) => {
+          const rows = from(table);
+          if (!firstTable) return rows;
+          firstTable = false;
+          return gate.then(() => rows.where());
+        },
+      }),
+    });
+    vi.setSystemTime(new Date('2026-06-23T00:05:01Z'));
+    const [stale, concurrent] = await Promise.all([
+      listCataloguePrograms(),
+      listCataloguePrograms(),
+    ]);
+    expect(stale.meta.catalogueSnapshotCacheStatus).toBe('stale');
+    expect(concurrent.data).toEqual(secondResult.data);
+    expect(stale.data).toEqual(secondResult.data);
     expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
+
+    // Complete the single refresh with the new snapshot, then read it as a hit.
+    release();
+    await vi.advanceTimersByTimeAsync(0);
+    const refreshed = await listCataloguePrograms();
+    expect(refreshed.data[0].name).toBe('Refreshed programme');
+    expect(refreshed.meta.catalogueSnapshotCacheStatus).toBe('hit');
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(2);
+  });
+});
+
+describe('Batch C catalogue query opt-in', () => {
+  const defaultStaticImplementation =
+    hoistedMocks.getStaticCataloguePrograms.getMockImplementation()!;
+  let codePrograms: CatalogueProgram[];
+
+  beforeEach(async () => {
+    mockEnv = { mode: 'database', hasDatabaseUrl: true, isProduction: true };
+    resetDatabaseCatalogueSnapshotCache();
+    hoistedMocks.getDb.mockReset();
+    const actual =
+      await vi.importActual<typeof import('@/lib/catalogueStatic')>('@/lib/catalogueStatic');
+    codePrograms = actual.getStaticCataloguePrograms();
+    hoistedMocks.getStaticCataloguePrograms.mockReset().mockReturnValue(codePrograms);
+  });
+
+  afterEach(() => {
+    hoistedMocks.getStaticCataloguePrograms
+      .mockReset()
+      .mockImplementation(defaultStaticImplementation);
+  });
+
+  it('appends missing haifa_engineering from the code catalogue exactly once after DB rows when opted in', async () => {
+    hoistedMocks.getDb.mockReturnValue(createMockDb(createDatabaseBackedDataset()).db);
+    const before = await listCataloguePrograms();
+
+    const result = await listCataloguePrograms({ includeBatchCCodeFallback: true });
+
+    expect(result.data.slice(0, before.data.length)).toEqual(before.data);
+    expect(result.data.filter((program) => program.id === 'haifa_engineering')).toEqual([
+      codePrograms.find((program) => program.id === 'haifa_engineering'),
+    ]);
+    expect(
+      result.data.findIndex((program) => program.id === 'haifa_engineering'),
+    ).toBeGreaterThanOrEqual(before.data.length);
+    expect(result.meta).toMatchObject({
+      catalogueSource: 'database',
+      catalogueSnapshotCacheStatus: 'hit',
+    });
+    expect((await listCataloguePrograms()).data).toEqual(before.data);
+    expect(hoistedMocks.getDb).toHaveBeenCalledTimes(1);
+  });
+
+  it('preserves an existing haifa_engineering DB row and its position without adding a duplicate', async () => {
+    const dataset = createDatabaseBackedDataset();
+    dataset.institutions.push({
+      ...dataset.institutions[0],
+      id: 'haifa',
+      name: 'אוניברסיטת חיפה',
+      universityId: 'haifa',
+    });
+    dataset.programs.push({
+      ...dataset.programs[0],
+      id: 'haifa_engineering',
+      name: 'DB engineering',
+      institutionName: 'אוניברסיטת חיפה',
+      institutionId: 'haifa',
+    });
+    dataset.programInstitutions.push({ programId: 'haifa_engineering', institutionId: 'haifa' });
+    const snapshotContent = JSON.stringify(dataset);
+    hoistedMocks.getDb.mockReturnValue(createMockDb(dataset).db);
+    const before = await listCataloguePrograms();
+
+    const result = await listCataloguePrograms({ includeBatchCCodeFallback: true });
+
+    expect(result.data.slice(0, before.data.length)).toEqual(before.data);
+    expect(result.data.filter((program) => program.id === 'haifa_engineering')).toEqual([
+      before.data[1],
+    ]);
+    expect(result.data[1].name).toBe('DB engineering');
+    expect(JSON.stringify(dataset)).toBe(snapshotContent);
+  });
+
+  it('does not add non-Batch C code-catalogue programmes when opted in', async () => {
+    hoistedMocks.getDb.mockReturnValue(createMockDb(createDatabaseBackedDataset()).db);
+    expect(codePrograms.some((program) => program.id === 'tau_datascience')).toBe(true);
+
+    const result = await listCataloguePrograms({ includeBatchCCodeFallback: true });
+
+    expect(result.data.some((program) => program.id === 'tau_datascience')).toBe(false);
+    expect(result.data.some((program) => program.id === 'not_a_real_programme_xyz')).toBe(false);
+  });
+
+  it('returns only the unchanged DB catalogue without options and never reads code programmes', async () => {
+    const dataset = createDatabaseBackedDataset();
+    const snapshotContent = JSON.stringify(dataset);
+    hoistedMocks.getDb.mockReturnValue(createMockDb(dataset).db);
+
+    const result = await listCataloguePrograms();
+
+    expect(result.data.map((program) => ({ id: program.id, name: program.name }))).toEqual([
+      { id: 'computer_science', name: 'Computer Science' },
+    ]);
+    expect(result.meta).toEqual({
+      catalogueSourceMode: 'database',
+      catalogueSource: 'database',
+      catalogueSnapshotCacheStatus: 'miss',
+    });
+    expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+    expect(JSON.stringify(dataset)).toBe(snapshotContent);
+  });
+
+  it('leaves fallback disabled when the option is explicitly false', async () => {
+    hoistedMocks.getDb.mockReturnValue(createMockDb(createDatabaseBackedDataset()).db);
+    const before = await listCataloguePrograms();
+
+    const result = await listCataloguePrograms({ includeBatchCCodeFallback: false });
+
+    expect(JSON.stringify(result.data)).toBe(JSON.stringify(before.data));
+    expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
+  });
+
+  it('preserves the static catalogue content and order when opted in', async () => {
+    mockEnv = { mode: 'static', hasDatabaseUrl: false, isProduction: false };
+    const before = await listCataloguePrograms();
+
+    const result = await listCataloguePrograms({ includeBatchCCodeFallback: true });
+
+    expect(JSON.stringify(result)).toBe(JSON.stringify(before));
+    expect(result.data.filter((program) => program.id === 'haifa_engineering')).toHaveLength(1);
+    expect(hoistedMocks.getDb).not.toHaveBeenCalled();
+  });
+
+  it('fails closed on an unready DB snapshot before applying the requested fallback', async () => {
+    const dataset = { ...createDatabaseBackedDataset(), programs: [] };
+    hoistedMocks.getDb.mockReturnValue(createMockDb(dataset).db);
+
+    await expect(listCataloguePrograms({ includeBatchCCodeFallback: true })).rejects.toMatchObject({
+      code: 'CATALOGUE_DATABASE_NOT_READY',
+    });
+    expect(hoistedMocks.getStaticCataloguePrograms).not.toHaveBeenCalled();
   });
 });
 
