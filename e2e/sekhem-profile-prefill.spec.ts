@@ -130,6 +130,8 @@ for (const width of [390, 1280]) {
     await expect(overall).toHaveValue('700');
 
     await page.goto('/app/recommendations');
+    const accountingTab = page.getByRole('button', { name: 'חשבונאות', exact: true });
+    await accountingTab.click();
     await page
       .getByRole('button', { name: /חשבונאות.*לחץ לפרטים/ })
       .first()
@@ -145,8 +147,11 @@ for (const width of [390, 1280]) {
     await expect(overall).toHaveValue('650');
     await page.goBack();
     const programDetail = page.getByRole('button', { name: /חשבונאות.*לחץ לפרטים/ }).first();
-    await expect(recommendation.or(programDetail).first()).toBeVisible();
-    if (!(await recommendation.isVisible())) await programDetail.click();
+    await expect(recommendation.or(accountingTab).first()).toBeVisible();
+    if (!(await recommendation.isVisible())) {
+      await accountingTab.click();
+      await programDetail.click();
+    }
     await recommendation.click();
     await expect(overall).toHaveValue('700');
   });
