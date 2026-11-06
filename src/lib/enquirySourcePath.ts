@@ -14,6 +14,7 @@ const staticPages = new Set([
   '/enquiry',
   '/sekhem-calculator',
   '/psychometric-dates',
+  '/open-days',
   '/app',
   '/app/assessment',
   '/app/recommendations',
