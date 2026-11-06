@@ -89,6 +89,7 @@ describe('shared current navigation', () => {
       [
         ['תחומי לימוד', '/programs'],
         ['שאלון ״מה מתאים לי?״', '/app/assessment'],
+        ['ימים פתוחים', '/open-days'],
       ],
     ],
     ['איפה ללמוד?', [['מוסדות לימוד', '/institutions']]],

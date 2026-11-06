@@ -4,10 +4,21 @@ import { enquiryAttributionSchema } from '@/lib/leadAttribution';
 import { createHash } from 'node:crypto';
 import { ENQUIRY_CONSENT, type EnquiryRecord } from '@/lib/enquiries';
 import { enquiryScoreBands } from './scoreBands';
+import { enquiryFailureReason, MondayEnquiryError } from './failureReason';
+
+export { MondayEnquiryError, type EnquiryFailureReason } from './failureReason';
 
 export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<string> {
+  try {
+    return await writeEnquiryToMonday(enquiry);
+  } catch (error) {
+    throw new MondayEnquiryError(enquiryFailureReason(error));
+  }
+}
+
+async function writeEnquiryToMonday(enquiry: EnquiryRecord): Promise<string> {
   const token = process.env.MONDAY_API_TOKEN?.trim();
-  if (!token) throw new Error('Monday is not configured');
+  if (!token) throw new MondayEnquiryError('not_configured');
   const now = enquiry.createdAt.toISOString();
   const context = {
     ...enquiryAttributionSchema.parse(enquiry.attribution ?? {}),
@@ -46,9 +57,10 @@ export async function sendEnquiryToMonday(enquiry: EnquiryRecord): Promise<strin
       variables: { board: '18436300533', name: enquiry.name, columns: JSON.stringify(columns) },
     }),
   });
+  if (!response.ok) throw new MondayEnquiryError('http_error');
   const result = await response.json();
-  if (!response.ok || result.errors?.length || !result.data?.create_item?.id) {
-    throw new Error('Monday did not acknowledge the enquiry');
+  if (result?.errors?.length || !result?.data?.create_item?.id) {
+    throw new MondayEnquiryError('not_acknowledged');
   }
   return String(result.data.create_item.id);
 }
