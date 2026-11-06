@@ -48,11 +48,17 @@ export function verifyAdmissionAlertWebhook(
 ): VerifiedAlertEvent | null {
   const id = headers.get('svix-id') ?? '';
   if (id.length > 200) throw new Error('Invalid webhook.');
-  const verified: unknown = new Webhook(secret).verify(raw, {
+  new Webhook(secret).verify(raw, {
     'svix-id': id,
     'svix-timestamp': headers.get('svix-timestamp') ?? '',
     'svix-signature': headers.get('svix-signature') ?? '',
   });
+  let verified: unknown;
+  try {
+    verified = JSON.parse(raw);
+  } catch {
+    return null;
+  }
   const parsed = eventSchema.safeParse(verified);
   if (!parsed.success) return null;
   const { type, created_at, data } = parsed.data;
