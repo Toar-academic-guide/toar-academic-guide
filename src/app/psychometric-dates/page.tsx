@@ -122,7 +122,10 @@ export default async function Page() {
           </div>
         </section>
         <p className={styles.reformNote}>
-          <ReformNote />
+          <ReformNote />{' '}
+          <Link href="/psychometric-two-domain" prefetch={false}>
+            מה משתנה בפסיכומטרי הדו־תחומי?
+          </Link>
         </p>
         <details className={styles.extra}>
           <summary>שפות הבחינה, מחיר ומידע נוסף</summary>
