@@ -14,12 +14,20 @@ const academicScores = {
 };
 
 async function calculate(page: Page) {
-  const result = page.waitForResponse(
-    (r) => r.url().endsWith('/api/admissions/evaluate') && r.request().method() === 'POST',
-  );
-  await page.getByRole('button', { name: 'חשבו את הסכם שלי' }).click();
-  const response = await result;
-  expect(response.ok()).toBe(true);
+  const evaluate = async () => {
+    const result = page.waitForResponse(
+      (r) => r.url().endsWith('/api/admissions/evaluate') && r.request().method() === 'POST',
+    );
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי' }).click();
+    return result;
+  };
+  let response = await evaluate();
+  if (response.status() === 429) {
+    // Preview tests share one client IP and its 12 evaluations/minute limit.
+    await new Promise((resolve) => setTimeout(resolve, 60_000));
+    response = await evaluate();
+  }
+  expect(response.status()).toBe(200);
   const { data } = await response.json();
   const input = response.request().postDataJSON();
   return { input, results: data.reports[input.degreeIds[0]].results };
@@ -29,7 +37,7 @@ for (const width of [390, 1280]) {
   test(`results calculator keeps experiments separate from profile saves at ${width}px`, async ({
     page,
   }) => {
-    test.setTimeout(120_000);
+    test.setTimeout(150_000);
     await page.setViewportSize({ width, height: 900 });
     await page.addInitScript((scores) => {
       if (!localStorage.getItem('sag_user_profile_v1'))
