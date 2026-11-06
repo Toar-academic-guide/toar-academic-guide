@@ -22,6 +22,7 @@ const NAV_GROUPS = [
     links: [
       { label: 'תחומי לימוד', href: '/programs' },
       { label: 'שאלון ״מה מתאים לי?״', href: ROUTES.assessment },
+      { label: 'ימים פתוחים', href: '/open-days' },
     ],
   },
   {
