@@ -20,9 +20,18 @@ const dateFormat = new Intl.DateTimeFormat('he-IL', {
 });
 function dateLabel(start: string, end: string) {
   const first = new Date(start + 'T12:00:00Z');
-  return end
+  const label = end
     ? dateFormat.formatRange(first, new Date(end + 'T12:00:00Z'))
     : dateFormat.format(first);
+  return label.split(/(\d+[–-]\d+)/g).map((part, index) =>
+    index % 2 ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
 }
 
 const filters = [
