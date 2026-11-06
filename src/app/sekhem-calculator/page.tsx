@@ -129,6 +129,15 @@ export default async function Page({
             </div>
           ))}
         </section>
+        <p className="mt-6 leading-7">
+          <Link
+            className="inline-flex min-h-11 items-center underline underline-offset-4"
+            href="/psychometric-two-domain"
+            prefetch={false}
+          >
+            פסיכומטרי דו־תחומי: מה משתנה ומה קורה לציונים קודמים?
+          </Link>
+        </p>
         {!unavailable && (
           <section className="mt-12 space-y-3 leading-7" aria-labelledby="sekhem-example-title">
             <h2 id="sekhem-example-title" className="text-xl font-semibold">

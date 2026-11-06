@@ -1,0 +1,187 @@
+.shell.shell {
+  background: var(--way-page-background);
+}
+
+.shell [data-way-backdrop] {
+  display: none;
+}
+
+.main {
+  max-width: 800px;
+  margin-inline: auto;
+  padding: 40px 24px 80px;
+  color: var(--text-body);
+  text-align: right;
+  font-size: 17px;
+  line-height: 1.85;
+}
+
+.main h1,
+.main h2,
+.main h3 {
+  color: #12234a;
+  font-weight: 600;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.main h1 {
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+  font-weight: 700;
+}
+
+.main h2 {
+  font-size: 1.55rem;
+  scroll-margin-top: 140px;
+}
+
+.main h3 {
+  font-size: 1.1rem;
+  margin-top: 24px;
+}
+
+.main p {
+  margin-top: 14px;
+}
+
+.lead {
+  font-size: 1.1rem;
+}
+
+.main .stamp,
+.main .source {
+  font-size: 14px;
+  color: #56627b;
+}
+
+.main a {
+  color: #55449a;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.main a:hover {
+  color: #382772;
+}
+
+.main a:focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.main bdi {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.contents {
+  margin-top: 28px;
+  padding-block: 14px;
+  border-block: 1px solid var(--border);
+}
+
+.contents ul {
+  display: flex;
+  flex-wrap: wrap;
+  column-gap: 24px;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.contents a,
+.nextLink {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.contents a {
+  font-size: 15px;
+}
+
+.section {
+  padding-block: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section:last-child {
+  border-bottom: 0;
+  padding-bottom: 0;
+}
+
+.section ul,
+.section ol {
+  margin-top: 16px;
+  padding-inline-start: 24px;
+}
+
+.section ul {
+  list-style: disc;
+}
+
+.section ol {
+  list-style: decimal;
+}
+
+.section li + li {
+  margin-top: 12px;
+}
+
+.weights {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 24px;
+  font-size: 16px;
+}
+
+.weights caption {
+  text-align: right;
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+.weights th,
+.weights td {
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 10px;
+}
+
+.weights thead {
+  background: #eef0ff;
+}
+
+.weights th {
+  font-weight: 600;
+}
+
+.nextLink {
+  margin-top: 12px;
+}
+
+@media (max-width: 760px) {
+  .main {
+    padding: 24px 20px 48px;
+    font-size: 16px;
+  }
+
+  .lead {
+    font-size: 16px;
+  }
+
+  .main h2 {
+    font-size: 1.35rem;
+  }
+
+  .section {
+    padding-block: 26px;
+  }
+
+  .weights th,
+  .weights td {
+    padding: 10px 6px;
+  }
+}
