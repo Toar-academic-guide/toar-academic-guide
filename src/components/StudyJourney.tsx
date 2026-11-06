@@ -1,5 +1,7 @@
 'use client';
 
+import { savedAcademicRevision } from '@/lib/sekhemProfile';
+import { resultCalculatorHref } from '@/lib/resultCalculatorLink';
 import HomeHero from './hero/HomeHero';
 
 import AdmissionEstimate from './AdmissionEstimate';
@@ -152,6 +154,7 @@ let cachedCatalogue: JourneyCatalogue | null = null;
 const EMPTY_PROGRAMS: CatalogueProgram[] = [];
 
 interface Draft {
+  academicRevision?: string;
   fields: string[];
   fieldLabels?: Record<string, string>;
   locations: JourneyLocation[];
@@ -208,6 +211,7 @@ function readDraft(): Draft | null {
       gradeMode = 'quick';
     return {
       ...EMPTY,
+      academicRevision: typeof raw.academicRevision === 'string' ? raw.academicRevision : undefined,
       fields: raw.fields,
       fieldLabels: Object.fromEntries(
         Object.entries(
@@ -363,6 +367,14 @@ export default function StudyJourney({
     setUrlProgramId(
       initialStep === 'subjects' && queryPrograms.length === 1 ? queryPrograms[0] : undefined,
     );
+    const view = window.history.state?.journeyResultView;
+    if (view) {
+      setQuery(view.query);
+      setFiltersOpen(view.filtersOpen);
+      setGroupBy(view.groupBy);
+      setResultFilter(view.resultFilter);
+      setResultLimit(view.resultLimit);
+    }
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
     if (stored) {
@@ -386,6 +398,15 @@ export default function StudyJourney({
   const importedProfile = useRef<string | null>(null);
   const profileIdentity = auth.user?.id ?? 'guest';
   useEffect(() => {
+    function refreshRestoredPage(event: PageTransitionEvent) {
+      const revision = savedAcademicRevision(profileIdentity);
+      if (event.persisted && revision && revision !== draft.academicRevision)
+        window.location.reload();
+    }
+    window.addEventListener('pageshow', refreshRestoredPage);
+    return () => window.removeEventListener('pageshow', refreshRestoredPage);
+  }, [profileIdentity, draft.academicRevision]);
+  useEffect(() => {
     if (
       !ready ||
       !hydrated ||
@@ -394,7 +415,9 @@ export default function StudyJourney({
     )
       return;
     importedProfile.current = profileIdentity;
-    if (auth.user || !hadStoredDraft.current) {
+    const revision = savedAcademicRevision(profileIdentity);
+    const calculatorSaved = !!revision && revision !== draft.academicRevision;
+    if (auth.user || !hadStoredDraft.current || calculatorSaved) {
       const scores = profile.academicScores ?? {};
       const profileGradeMode =
         scores.admissions?.activeBagrutPath ??
@@ -404,9 +427,14 @@ export default function StudyJourney({
             ? 'quick'
             : 'none');
       setDraft((current) => {
-        const keepBagrutInput = current.bagrutInputIdentity === profileIdentity;
+        const keepBagrutInput = !calculatorSaved && current.bagrutInputIdentity === profileIdentity;
         return {
           ...current,
+          ...(calculatorSaved && {
+            academicRevision: revision,
+            quickInProgress: undefined,
+            exactInProgress: undefined,
+          }),
           scores: keepBagrutInput
             ? { ...scores, bagrut: bagrutScoresForMode(current.scores, current.gradeMode).bagrut }
             : scores,
@@ -420,7 +448,15 @@ export default function StudyJourney({
         };
       });
     }
-  }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
+  }, [
+    ready,
+    hydrated,
+    initialProfileStatus,
+    profile.academicScores,
+    profileIdentity,
+    auth.user,
+    draft.academicRevision,
+  ]);
   useIsomorphicLayoutEffect(() => {
     if (!ready) return;
     try {
@@ -443,7 +479,7 @@ export default function StudyJourney({
     setCatalogueError('');
     try {
       const [nextPrograms, nextInstitutions] = await Promise.all([
-        fetchCataloguePrograms(),
+        fetchCataloguePrograms({ includeCalculatorLinks: true }),
         fetchCatalogueInstitutions(),
       ]);
       cachedCatalogue = { programs: nextPrograms, institutions: nextInstitutions };
@@ -803,9 +839,9 @@ export default function StudyJourney({
   const save = async (programId: string) => {
     await toggleSavedProgram(programId);
   };
-  const startResults = () => {
+  const startResults = async () => {
     setSimulation(undefined);
-    void saveScores();
+    await saveScores();
     go('results');
   };
   const afterGrades = () => go('psy-mode');
@@ -903,6 +939,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const calculatorId = row.program.calculatorProgramIds?.[row.institution.id];
     const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
@@ -920,6 +957,23 @@ export default function StudyJourney({
             >
               {status.label}
             </span>
+          )}
+          {calculatorId && (step === 'results' || step === 'plan') && (
+            <a
+              className="journey-text-button"
+              href={resultCalculatorHref(calculatorId)}
+              onClick={() =>
+                window.history.replaceState(
+                  {
+                    ...window.history.state,
+                    journeyResultView: { query, filtersOpen, groupBy, resultFilter, resultLimit },
+                  },
+                  '',
+                )
+              }
+            >
+              חשבו סכם לתוכנית הזו
+            </a>
           )}
           {sourceLinks && (
             <>

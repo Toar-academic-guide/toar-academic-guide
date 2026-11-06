@@ -13,22 +13,15 @@ import BagrutSubjectRows, {
 import { defaultUnitsFor } from './bagrutUnitOptions';
 import {
   buildBagrutSubjectRecord,
+  sectorLabelForRecord,
   bagrutSubjectLabelForId,
   subjectIdForWizardLabel,
   resolveBagrutWizardSubject,
 } from '@/utils/bagrutSubjectRecord';
-import type { BagrutCertificateType, BagrutSector, BagrutSubjectRecord } from '@/types';
+import type { BagrutCertificateType, BagrutSubjectRecord } from '@/types';
 
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 
-const SECTOR_LABELS: Record<BagrutSector, string> = {
-  jewish: 'יהודי',
-  arab: 'ערבי',
-  druze: 'דרוזי',
-  circassian: 'צרקסי',
-  bedouin: 'בדואי',
-  samaritan: 'שומרוני',
-};
 const starterRows = new Set(
   Object.entries(SECTORS).flatMap(([sector, items]) =>
     items.map((item) => `${item.n}|${defaultUnitsFor(item.n, sector)}`),
@@ -60,7 +53,8 @@ export default function JourneyExactGrades({
   onComplete: (record: BagrutSubjectRecord) => void;
 }) {
   const [sector, setSector] = useState(
-    initialProgress?.sector ?? (initialRecord ? SECTOR_LABELS[initialRecord.sector] : 'יהודי'),
+    initialProgress?.sector ??
+      (initialRecord ? sectorLabelForRecord(initialRecord.sector) : 'יהודי'),
   );
   const [certificate, setCertificate] = useState<BagrutCertificateType | ''>(
     initialProgress?.certificate ??

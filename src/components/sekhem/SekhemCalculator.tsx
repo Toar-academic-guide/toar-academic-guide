@@ -12,6 +12,7 @@ import EnquiryForm from '@/components/EnquiryForm';
 import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import { institutionShortName, type ResultInputTarget } from '@/lib/sekhemResultPresentation';
 import { readSekhemSession, writeSekhemSession } from '@/lib/sekhemCalculatorSession';
+import { profileInputsChanged } from '@/lib/sekhemProfile';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
@@ -19,7 +20,11 @@ import {
   HAIFA_PROFILE_KEYS,
   HAIFA_NUMERIC_QUALIFICATION_KEYS,
 } from '@/lib/haifaAdmissionsInputs';
-import { buildSekhemInput, type CalculatorOffering } from '@/lib/sekhemCalculator';
+import {
+  buildSekhemInput,
+  type CalculatorOffering,
+  type CalculatorProfile,
+} from '@/lib/sekhemCalculator';
 import type { BagrutCertificateType } from '@/types';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import type { HaifaQualificationValues } from '@/components/HaifaQualificationFields';
@@ -86,10 +91,21 @@ function numericRowErrors(rows: BagrutSubjectRow[]): BagrutFieldErrors {
 export default function SekhemCalculator({
   offerings,
   initialProgramId,
+  profileEntry,
 }: {
   offerings: CalculatorOffering[];
   initialProgramId?: string;
+  profileEntry?: {
+    id: string;
+    saved: CalculatorProfile;
+    save: (form: CalculatorProfile) => Promise<void>;
+  };
 }) {
+  const [entry] = useState(
+    () => profileEntry && { id: profileEntry.id, initial: profileEntry.saved },
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
   const [rows, setRows] = useState(() => emptyRows());
   const [psychometric, setPsychometric] = useState('');
   const [verbal, setVerbal] = useState('');
@@ -171,20 +187,27 @@ export default function SekhemCalculator({
   ];
 
   useEffect(() => {
-    const saved = readSekhemSession(offerings);
+    const saved = readSekhemSession(offerings, entry?.id);
     const explicit = offerings.some((row) => row.programId === initialProgramId)
       ? initialProgramId
       : undefined;
+    const inputs = saved ?? entry?.initial;
+    if (inputs) {
+      setRows(
+        inputs.rows.length || saved
+          ? inputs.rows
+          : [{ label: '', units: '', grade: '', assessmentKind: 'exam' }],
+      );
+      setPsychometric(inputs.psychometric);
+      setVerbal(inputs.verbal);
+      setQuantitative(inputs.quantitative);
+      setEnglish(inputs.english);
+      setSector(inputs.sector);
+      setCertificate(inputs.certificate);
+    }
     if (saved) {
-      setRows(saved.rows);
-      setPsychometric(saved.psychometric);
-      setVerbal(saved.verbal);
-      setQuantitative(saved.quantitative);
-      setEnglish(saved.english);
-      setSector(saved.sector);
-      setCertificate(saved.certificate);
-      const compatible = !explicit || explicit === saved.programId;
-      setProgramId(explicit ?? saved.programId);
+      const compatible = !!entry || !explicit || explicit === saved.programId;
+      setProgramId(entry ? saved.programId : (explicit ?? saved.programId));
       setReports(compatible ? saved.reports : []);
       setRequiredKeys(compatible ? saved.requiredKeys : []);
       setHaifaValues(compatible ? saved.haifaValues : {});
@@ -205,7 +228,7 @@ export default function SekhemCalculator({
     setError('');
     setEnquiry(null);
     setRestoredFor({ offerings, initialProgramId });
-  }, [offerings, initialProgramId]);
+  }, [offerings, initialProgramId, entry]);
 
   useEffect(() => {
     if (restoredFor?.offerings !== offerings || restoredFor.initialProgramId !== initialProgramId)
@@ -226,11 +249,12 @@ export default function SekhemCalculator({
       medicineRequired,
       failedIds,
     };
-    const save = () => writeSekhemSession(snapshot);
+    const save = () => writeSekhemSession(snapshot, entry?.id);
     save();
     window.addEventListener('pagehide', save);
     return () => window.removeEventListener('pagehide', save);
   }, [
+    entry,
     restoredFor,
     offerings,
     initialProgramId,
@@ -251,6 +275,7 @@ export default function SekhemCalculator({
   ]);
 
   function invalidate(dependencies: (keyof typeof haifaAnswerDependencies)[] = []) {
+    setSaveMessage('');
     generation.current++;
     setReports([]);
     if (dependencies.length) {
@@ -375,6 +400,29 @@ export default function SekhemCalculator({
       }
     } finally {
       if (generation.current === version) setBusy(false);
+    }
+  }
+
+  const formInputs = {
+    rows: subjectRowValues(rows),
+    sector,
+    certificate,
+    psychometric,
+    verbal,
+    quantitative,
+    english,
+  };
+  async function saveProfile() {
+    if (!profileEntry || saving) return;
+    setSaving(true);
+    setSaveMessage('');
+    try {
+      await profileEntry.save(formInputs);
+      setSaveMessage('הציונים נשמרו בפרופיל.');
+    } catch (error) {
+      setSaveMessage(error instanceof Error ? error.message : 'שמירת הציונים נכשלה. נסו שוב.');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -614,6 +662,19 @@ export default function SekhemCalculator({
         >
           {busy ? 'מחשבים…' : 'חשבו את הסכם שלי'}
         </button>
+        {profileEntry &&
+          restoredFor &&
+          (saving || profileInputsChanged(formInputs, profileEntry.saved)) && (
+            <button
+              type="button"
+              disabled={saving}
+              className="journey-text-button mt-2"
+              onClick={saveProfile}
+            >
+              עדכון הפרופיל
+            </button>
+          )}
+        {saveMessage && <p role="status">{saveMessage}</p>}
         {busy && (
           <p role="status" className="sr-only">
             החישוב מתבצע

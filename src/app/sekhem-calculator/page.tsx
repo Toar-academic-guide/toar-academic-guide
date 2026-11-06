@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
+import ProfileSekhemCalculator from '@/components/sekhem/ProfileSekhemCalculator';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
 import { HAIFA_CALCULATOR_URL, HAIFA_PROGRAM_URLS } from '@/data/admissions/haifaOfficialUrls';
 import JsonLd from '@/components/seo/JsonLd';
@@ -56,7 +57,7 @@ export const metadata: Metadata = {
 export default async function Page({
   searchParams,
 }: {
-  searchParams: Promise<{ program?: string }>;
+  searchParams: Promise<{ program?: string; from?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
   const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
@@ -115,6 +116,8 @@ export default async function Page({
               לחישוב תוכנית אחרת
             </Link>
           </section>
+        ) : params.from === 'results' && initialProgramId ? (
+          <ProfileSekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}

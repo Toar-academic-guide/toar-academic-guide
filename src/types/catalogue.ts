@@ -26,6 +26,8 @@ export interface CatalogueInstitution extends Pick<
 }
 
 export interface CatalogueProgram extends Program {
+  /** Supported calculator destination by institution, when requested by the results screen. */
+  calculatorProgramIds?: Record<string, string>;
   updatedAt?: string;
   linkedInstitutionIds: string[];
 }

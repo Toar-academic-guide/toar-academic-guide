@@ -120,11 +120,16 @@ const snapshotSchema = z.object({
 
 export function readSekhemSession(
   offerings: CalculatorOffering[],
+  entryId?: string,
 ): SekhemCalculatorSnapshot | null {
   try {
-    const raw = window.sessionStorage.getItem(SEKHEM_SESSION_KEY);
+    const raw = window.sessionStorage.getItem(
+      entryId ? SEKHEM_SESSION_KEY + ':results' : SEKHEM_SESSION_KEY,
+    );
     if (!raw) return null;
-    const parsed = snapshotSchema.safeParse(JSON.parse(raw));
+    const stored = JSON.parse(raw);
+    if (entryId && stored?.entryId !== entryId) return null;
+    const parsed = snapshotSchema.safeParse(stored);
     if (!parsed.success) return null;
     const { version: _version, ...snapshot } = parsed.data;
     const offered = (id: string) => offerings.some((row) => row.programId === id);
@@ -152,11 +157,14 @@ export function readSekhemSession(
   }
 }
 
-export function writeSekhemSession(snapshot: SekhemCalculatorSnapshot): void {
+export function writeSekhemSession(snapshot: SekhemCalculatorSnapshot, entryId?: string): void {
   try {
     const parsed = snapshotSchema.safeParse({ ...snapshot, version: 1 });
     if (parsed.success)
-      window.sessionStorage.setItem(SEKHEM_SESSION_KEY, JSON.stringify(parsed.data));
+      window.sessionStorage.setItem(
+        entryId ? SEKHEM_SESSION_KEY + ':results' : SEKHEM_SESSION_KEY,
+        JSON.stringify({ ...parsed.data, entryId }),
+      );
   } catch {
     // Privacy settings and storage limits must never prevent calculation.
   }

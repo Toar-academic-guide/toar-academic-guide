@@ -8,14 +8,35 @@ import type { ApiEnvelope, CatalogueProgram } from '@/types/catalogue';
 
 export const dynamic = 'force-dynamic';
 
-export async function GET() {
+export async function GET(request: Request) {
   const startedAtMs = Date.now();
 
   try {
     const { data, meta } = await listCataloguePrograms({ includeBatchCCodeFallback: true });
+    let programs = data;
+    if (new URL(request.url).searchParams.get('include') === 'calculatorLinks') {
+      const { loadResultCalculatorPrograms } = await import('@/lib/sekhemCalculatorSupport');
+      const destinations = new Map<string, Record<string, string>>();
+      for (const {
+        programId,
+        institutionId,
+        sourceProgramIds,
+      } of await loadResultCalculatorPrograms()) {
+        for (const id of sourceProgramIds ?? [programId]) {
+          const links = destinations.get(id) ?? {};
+          links[institutionId] = programId;
+          destinations.set(id, links);
+        }
+      }
+      programs = data.map((program) =>
+        destinations.has(program.id)
+          ? { ...program, calculatorProgramIds: destinations.get(program.id) }
+          : program,
+      );
+    }
     const { envelope, summary } = buildCatalogueSuccessResponse(
       'programs',
-      data,
+      programs,
       meta,
       startedAtMs,
     );
