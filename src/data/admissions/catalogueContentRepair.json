@@ -1044,6 +1044,7 @@
     },
     {
       "programId": "minshar_graphic_design",
+      "identity": { "name": "תקשורת חזותית", "type": "certificate", "category": "עיצוב" },
       "institutionId": "minshar",
       "sourceUrl": "https://www.minshar.org.il/visual-communication/acceptance-tasks/",
       "sourceSha256": "4a0e36a9e934cb0b71641c04669802721786efb2e43c5e40d513ad152b42e609",
@@ -1057,6 +1058,7 @@
     },
     {
       "programId": "mon_12341101957_graphic_design",
+      "identity": { "name": "עיצוב פנים", "type": "certificate", "category": "עיצוב" },
       "institutionId": "mon_12341101957",
       "sourceUrl": "https://www.arti-studio.co.il/עיצוב-פנים-1/",
       "sourceSha256": "d33a8fc7e4df225f8d3ed6634505a4da92159dd84e0ad17b0ab71979bfda5c43",
@@ -1078,6 +1080,7 @@
     },
     {
       "programId": "mon_12341092879_graphic_design",
+      "identity": { "name": "עיצוב גרפי ו־UX/UI", "type": "certificate", "category": "עיצוב" },
       "institutionId": "mon_12341092879",
       "sourceUrl": "https://www.6bstudio.co.il/graphicuxui2026/",
       "sourceSha256": "107df51e49d1a827238969fd99c011f0b49c25098accb46b7df804e2d55535d6",
@@ -1280,6 +1283,7 @@
     },
     {
       "programId": "johnbryce_cs",
+      "identity": { "name": "DevOps", "type": "certificate", "category": "טכנולוגיה ופיתוח" },
       "institutionId": "johnbryce",
       "sourceUrl": "https://www.johnbryce.co.il/catalog/hi-tech-courses/קורס-devops/",
       "sourceSha256": "d20399d9fb4567571f4d6dc43c13326a9de9ee6b013378541d3e35dbe2d59857",
@@ -1330,6 +1334,7 @@
     },
     {
       "programId": "mon_12341138289_cs",
+      "identity": { "name": "בדיקות תוכנה", "type": "certificate", "category": "טכנולוגיה ופיתוח" },
       "institutionId": "mon_12341138289",
       "sourceUrl": "https://lp.smart-college.co.il/qa/",
       "sourceSha256": "d4e584094b87d44254fb98e8907bea6851ad2aac6dacc6d49fab2050828a2d7f",

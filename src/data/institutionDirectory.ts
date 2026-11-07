@@ -1,3 +1,4 @@
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { mondayAdmissionEvidenceRecords } from '@/data/admissions/mondayEvidence.generated';
 import { INSTITUTION_BY_ID, type InstitutionRecord } from '@/data/institutions';
 import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
@@ -37,6 +38,33 @@ export interface InstitutionDirectoryItem {
   launchPriority: string | null;
 }
 
+export interface DirectoryProgramme {
+  id: string;
+  name: string;
+  href: string;
+  subjectKey: string;
+  fieldKey: string;
+}
+
+export interface DirectoryInstitution extends Pick<
+  InstitutionDirectoryItem,
+  | 'id'
+  | 'name'
+  | 'type'
+  | 'funding'
+  | 'location'
+  | 'diplomaType'
+  | 'sourceUrl'
+  | 'domain'
+  | 'logoUrl'
+  | 'areas'
+  | 'categories'
+  | 'credentials'
+> {
+  programmes: DirectoryProgramme[];
+  fieldSources: Record<string, string>;
+}
+
 const POPULAR_INSTITUTION_IDS = new Set([
   'tau',
   'huji',
@@ -51,8 +79,12 @@ const POPULAR_INSTITUTION_IDS = new Set([
 
 const EXCLUDED_MONDAY_ITEM_IDS = new Set(['12242591498']);
 
-// These are separate institutions; the legacy name matcher collapsed both to "tiltan".
+// Institution identity overrides for rows that the legacy name matcher collapsed.
 const VERIFIED_DIRECTORY_IDENTITIES: Record<string, { id: string; name: string }> = {
+  '12341101391': { id: 'mon_12341101391', name: 'המכללה הטכנולוגית כנרת' },
+  '12341118864': { id: 'mon_12341118864', name: 'המכללה הטכנולוגית רופין' },
+  '12341168193': { id: 'mon_12341118864', name: 'המכללה הטכנולוגית רופין' },
+  '12341098142': { id: 'mon_12341098142', name: 'המכללה הטכנולוגית תל חי' },
   '12341137918': {
     id: 'mon_12341137918',
     name: 'מכללת תילתן לרפואה משלימה',
@@ -383,4 +415,19 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
           (evidence?.catalogueVisibility === 'catalogue_mapped' ? 'Product Ready' : null),
       };
     });
+}
+
+// Monday item IDs also exist as catalogue provider IDs. Use the directory's
+// explicit identity mapping to group the same provider across both sources.
+const directoryIdByLegacyProvider = new Map(
+  getInstitutionDirectoryItems().map((item) => [
+    `mon_${item.itemId}`,
+    canonicalInstitutionId(item.id),
+  ]),
+);
+
+export function publicDirectoryInstitutionId(id: string): string | null {
+  if (id === 'kiryat_shmona') return 'telhai';
+  if (id.startsWith('mon_') && EXCLUDED_MONDAY_ITEM_IDS.has(id.slice(4))) return null;
+  return directoryIdByLegacyProvider.get(id) ?? canonicalInstitutionId(id);
 }

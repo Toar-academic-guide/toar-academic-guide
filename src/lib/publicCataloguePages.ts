@@ -1,5 +1,17 @@
 import 'server-only';
 import { cache } from 'react';
+import {
+  getInstitutionDirectoryItems,
+  publicDirectoryInstitutionId,
+} from '@/data/institutionDirectory';
+import {
+  officialInstitutionProgrammes,
+  type OfficialProgramme,
+} from '@/data/degrees/reviewedInstitutionProgrammes';
+import { isInstitutionCategory } from '@/data/degrees/institutionProgrammeIdentity';
+import { catalogueSubjectName } from '@/data/institutionSubjects';
+import { institutionProgramName } from '@/lib/institutionProgramName';
+import { BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS } from '@/lib/admissionsEvaluationProgram';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
 
@@ -149,6 +161,8 @@ interface PublicProgramRequirementSource {
 export interface PublicInstitutionPageData {
   institution: CatalogueInstitution;
   programs: CatalogueProgram[];
+  officialProgrammes?: OfficialProgramme[];
+  categoryPages?: CatalogueProgram[];
 }
 
 export async function getPublicProgramPageData(
@@ -267,31 +281,109 @@ export async function getPublicProgramRequirementSources({
   return institutionRequirementSources;
 }
 
+const linkedEngineeringGroups = new Set<string>(BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS);
+
+export function directoryProviderRecord(row: {
+  id: string;
+  name: string;
+  domain?: string | null;
+  sourceUrl?: string | null;
+}): CatalogueInstitution {
+  return {
+    id: row.id as CatalogueInstitution['id'],
+    name: row.name,
+    region: 'any',
+    domain: row.domain ?? undefined,
+    programUrl: row.sourceUrl ?? undefined,
+  };
+}
+
 export async function getPublicInstitutionPageData(
   institutionId: string,
 ): Promise<PublicInstitutionPageData | null> {
   const catalogue = await loadPublicCatalogue();
-  const institution = catalogue.institutions.find(
-    (candidate) => candidate.id === canonicalInstitutionId(institutionId),
-  );
+  const canonicalId = canonicalInstitutionId(institutionId);
+  let institution =
+    catalogue.institutions.find((candidate) => candidate.id === canonicalId) ??
+    catalogue.institutions.find(
+      (candidate) => publicDirectoryInstitutionId(candidate.id) === canonicalId,
+    );
 
   if (!institution) {
-    return null;
+    const row = getInstitutionDirectoryItems().find((row) => row.id === canonicalId);
+    if (!row) return null;
+    institution = directoryProviderRecord(row);
   }
+  const programs = publicInstitutionPrograms(catalogue, institution);
+  const officialProgrammes = additionalPublicInstitutionProgrammes(institution, programs);
+  const categoryPages = catalogue.programs.filter(
+    (p) =>
+      p.isListed !== false &&
+      p.institutionId === institution.id &&
+      isInstitutionCategory(p) &&
+      (p.id === 'danon_culinary' || linkedEngineeringGroups.has(p.id)),
+  );
+  return {
+    institution,
+    programs,
+    ...(officialProgrammes.length && { officialProgrammes }),
+    ...(categoryPages.length && { categoryPages }),
+  };
+}
 
+export function additionalPublicInstitutionProgrammes(
+  institution: CatalogueInstitution,
+  programs: CatalogueProgram[],
+) {
+  const provider = publicDirectoryInstitutionId(institution.id);
+  if (!provider) return [];
+  const localUrls = new Set(
+    programs.flatMap((p) => (p.institutionDetails ?? []).map((detail) => detail.programUrl)),
+  );
+  return officialInstitutionProgrammes(provider, new Set(programs.map((p) => p.id))).filter(
+    (p) => !localUrls.has(p.url),
+  );
+}
+
+/** Shared by institution detail pages and the directory; providers resolve identically. */
+export function publicInstitutionPrograms(
+  catalogue: Awaited<ReturnType<typeof loadPublicCatalogue>>,
+  institution: CatalogueInstitution,
+): CatalogueProgram[] {
+  const providerId = publicDirectoryInstitutionId(institution.id);
+  if (!providerId) return [];
+  const matchesProvider = (id: string) => publicDirectoryInstitutionId(id) === providerId;
   const listedPrograms = catalogue.programs.filter(
     (program) =>
       program.isListed !== false &&
+      program.id !== 'kinneret_sound_eng' &&
+      !isInstitutionCategory(program) &&
       canonicalProgramId(program.id) === program.id &&
-      (program.institutionId === institution.id ||
-        (!program.institutionId && program.linkedInstitutionIds.includes(institution.id))),
+      (program.institutionId
+        ? matchesProvider(program.institutionId)
+        : program.linkedInstitutionIds.some(matchesProvider)),
   );
+  // The database and static CLB business records describe the same degree.
+  // Keep the version with the programme-specific admissions page when both exist.
+  const hasReviewedClbBusiness = listedPrograms.some((p) => p.id === 'mon_12341126565_business');
+  // The verified DevOps record has a course-specific source. The older Cloud &
+  // DevOps import points only at the same school's home page.
   const ownPrograms = listedPrograms.filter(
     (program) =>
-      !catalogue.generalProgramIds.has(program.id) && program.institutionId === institution.id,
+      !catalogue.generalProgramIds.has(program.id) &&
+      !!program.institutionId &&
+      !(hasReviewedClbBusiness && program.id === 'ramat_gan_business') &&
+      program.id !== 'johnbryce_cloud_devops',
   );
   const names = new Set(ownPrograms.map((program) => program.name));
+  const specificSubjects = new Set(
+    ownPrograms.map(
+      (p) => `${p.type}:${catalogueSubjectName(p.id, institutionProgramName(p, institution))}`,
+    ),
+  );
   const generalPrograms = listedPrograms.filter((program) => {
+    if (specificSubjects.has(`${program.type}:${catalogueSubjectName(program.id, program.name)}`))
+      return false;
     if (program.institutionId || names.has(program.name)) return false;
     if (
       ownPrograms.some(
@@ -304,8 +396,5 @@ export async function getPublicInstitutionPageData(
     names.add(program.name);
     return true;
   });
-  return {
-    institution,
-    programs: [...ownPrograms, ...generalPrograms],
-  };
+  return [...ownPrograms, ...generalPrograms];
 }

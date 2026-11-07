@@ -2,20 +2,22 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { ArrowUpLeft, ExternalLink, MapPin, Search, SlidersHorizontal } from 'lucide-react';
-
+import { ExternalLink } from 'lucide-react';
 import InstitutionLogo from '@/components/InstitutionLogo';
 import WayPageShell from '@/components/WayPageShell';
-import { institutionLink } from '@/lib/institutionLinks';
 import type {
   InstitutionAreaFilter,
   InstitutionCategoryFilter,
   InstitutionCredentialFilter,
-  InstitutionDirectoryItem,
+  DirectoryInstitution,
+  DirectoryProgramme,
 } from '@/data/institutionDirectory';
+import type { DirectoryOption, DirectorySubject } from '@/data/institutionSubjects';
 
 interface InstitutionsDirectoryProps {
-  institutions: InstitutionDirectoryItem[];
+  institutions: DirectoryInstitution[];
+  fields: DirectoryOption[];
+  subjects: DirectorySubject[];
 }
 
 const AREA_FILTERS: Array<{ id: InstitutionAreaFilter; label: string }> = [
@@ -46,325 +48,349 @@ const CREDENTIAL_FILTERS: Array<{ id: InstitutionCredentialFilter; label: string
   { id: 'unsubsidized', label: 'לא מסובסד' },
 ];
 
-function countByArea(institutions: InstitutionDirectoryItem[], area: InstitutionAreaFilter) {
-  if (area === 'all') {
-    return institutions.length;
-  }
+const collator = new Intl.Collator('he');
+const inputClass =
+  'min-h-11 w-full rounded-xl border border-[#d9e3f3] bg-white px-3 text-right text-sm text-[#445274] outline-none focus:border-[#7784e8] focus:ring-2 focus:ring-[#8fd8ff]';
+const focusClass =
+  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#5868c7] focus-visible:ring-offset-2';
 
-  return institutions.filter((institution) => institution.areas.includes(area)).length;
-}
-
-function countByCategory(
-  institutions: InstitutionDirectoryItem[],
-  category: InstitutionCategoryFilter,
-) {
-  if (category === 'all') {
-    return institutions.length;
-  }
-
-  return institutions.filter((institution) => institution.categories.includes(category)).length;
-}
-
-function countByCredential(
-  institutions: InstitutionDirectoryItem[],
-  credential: InstitutionCredentialFilter,
-) {
-  if (credential === 'all') {
-    return institutions.length;
-  }
-
-  return institutions.filter((institution) => institution.credentials.includes(credential)).length;
-}
-
-function FilterButton({
-  active,
-  count,
+function PillGroup({
   label,
-  onClick,
+  options,
+  selected,
+  onSelect,
 }: {
-  active: boolean;
-  count: number;
   label: string;
-  onClick: () => void;
+  options: DirectoryOption[];
+  selected: string;
+  onSelect: (key: string) => void;
 }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={active}
-      onClick={onClick}
-      className={[
-        'inline-flex min-h-11 shrink-0 items-center gap-2 rounded-full border px-4 text-sm font-bold transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[#8fd8ff]',
-        active
-          ? 'border-[#5868c7] bg-[#5868c7] text-white shadow-[0_14px_30px_rgba(119,132,232,0.24)]'
-          : 'border-[#d9e3f3] bg-white/80 text-[#647091] hover:border-[#b8c4ff] hover:bg-white hover:text-[#5262d9]',
-      ].join(' ')}
-    >
-      <span>{label}</span>
-      <span
-        className={[
-          'rounded-full px-1.5 py-0.5 text-[11px]',
-          active ? 'text-white' : 'bg-[#f0f4fa] text-[#596582]',
-        ].join(' ')}
+  const [search, setSearch] = useState('');
+  const [expanded, setExpanded] = useState(false);
+  const query = search.trim().toLocaleLowerCase('he-IL');
+  const visible = options.filter(
+    (option) => option.key === selected || option.label.toLocaleLowerCase('he-IL').includes(query),
+  );
+  if (options.length === 0) {
+    return (
+      <fieldset>
+        <legend className="text-sm font-bold text-[#445274]">{label}</legend>
+        <p className="mt-2 text-sm text-[#647091]">אין עדיין פירוט תכניות בתחום הזה בקטלוג.</p>
+      </fieldset>
+    );
+  }
+  function pill(option: DirectoryOption, index: number) {
+    const active = selected === option.key;
+    const display =
+      expanded || query || active || index < 4
+        ? 'inline-flex'
+        : index < 8
+          ? 'hidden sm:inline-flex'
+          : 'hidden';
+    return (
+      <button
+        key={option.key}
+        type="button"
+        aria-pressed={active}
+        onClick={() => onSelect(active ? '' : option.key)}
+        className={`${display} min-h-11 max-w-full items-center rounded-full border px-4 py-2 text-right text-sm font-semibold transition ${focusClass} ${active ? 'border-[#5868c7] bg-[#5868c7] text-white' : 'border-[#d9e3f3] bg-white text-[#596582] hover:border-[#7784e8]'}`}
       >
-        {count}
-      </span>
-    </button>
+        {option.label}
+      </button>
+    );
+  }
+  return (
+    <fieldset className="min-w-0">
+      <legend className="mb-3 text-sm font-bold text-[#445274]">{label}</legend>
+      <input
+        type="search"
+        aria-label={`חיפוש ${label}`}
+        placeholder={`חיפוש ${label}`}
+        value={search}
+        onChange={(event) => setSearch(event.target.value)}
+        className={`${inputClass} mb-3 sm:max-w-xs`}
+      />
+      <div className="flex flex-wrap gap-2">
+        {pill({ key: '', label: 'הכל' }, -1)}
+        {visible.map(pill)}
+      </div>
+      {visible.length === 0 && <p className="mt-3 text-sm text-[#647091]">לא נמצאו אפשרויות.</p>}
+      {!query && options.length > 4 && (
+        <button
+          type="button"
+          aria-expanded={expanded}
+          onClick={() => setExpanded(!expanded)}
+          className={`mt-2 min-h-11 rounded-lg text-sm font-semibold text-[#5262d9] ${focusClass} ${options.length <= 8 ? 'sm:hidden' : ''}`}
+        >
+          {expanded ? 'הצגת פחות' : 'הצגת הכל'}
+        </button>
+      )}
+    </fieldset>
   );
 }
 
-function getEmptyStateText(searchTerm: string) {
-  return searchTerm.trim()
-    ? 'לא נמצאו מוסדות שמתאימים לחיפוש ולמסננים שבחרת.'
-    : 'לא נמצאו מוסדות שמתאימים למסננים שבחרת.';
+function ProgrammeLinks({ programmes }: { programmes: DirectoryProgramme[] }) {
+  const links = (items: DirectoryProgramme[]) =>
+    items.map((programme) => (
+      <Link
+        key={programme.id}
+        href={programme.href}
+        className={`w-fit rounded text-sm text-[#5262d9] underline decoration-[#bbc3ed] underline-offset-4 hover:decoration-current ${focusClass}`}
+      >
+        {programme.name}
+        {programme.href.startsWith('https://') && (
+          <ExternalLink aria-hidden="true" size={12} className="ms-1 inline" />
+        )}
+      </Link>
+    ));
+  return (
+    <div className="flex flex-col gap-2">
+      {links(programmes.slice(0, 3))}
+      {programmes.length > 3 && (
+        <details className="group">
+          <summary
+            className={`min-h-11 w-fit cursor-pointer rounded py-2 text-sm font-semibold text-[#5262d9] ${focusClass}`}
+          >
+            <span className="group-open:hidden">הצגת הכל</span>
+            <span className="hidden group-open:inline">הצגת פחות</span>
+          </summary>
+          <div className="flex flex-col gap-2">{links(programmes.slice(3))}</div>
+        </details>
+      )}
+    </div>
+  );
 }
 
-export default function InstitutionsDirectory({ institutions }: InstitutionsDirectoryProps) {
+export default function InstitutionsDirectory({
+  institutions,
+  fields,
+  subjects,
+}: InstitutionsDirectoryProps) {
+  const [field, setField] = useState('');
+  const [subject, setSubject] = useState('');
   const [area, setArea] = useState<InstitutionAreaFilter>('all');
   const [category, setCategory] = useState<InstitutionCategoryFilter>('all');
   const [credential, setCredential] = useState<InstitutionCredentialFilter>('all');
-  const [searchTerm, setSearchTerm] = useState('');
-
-  const filteredInstitutions = useMemo(() => {
-    const normalizedSearch = searchTerm.trim().toLocaleLowerCase('he-IL');
-
-    return institutions.filter((institution) => {
-      const matchesArea = area === 'all' || institution.areas.includes(area);
-      const matchesCategory = category === 'all' || institution.categories.includes(category);
-      const matchesCredential =
-        credential === 'all' || institution.credentials.includes(credential);
-      const searchable = [
-        institution.name,
-        institution.type,
-        institution.funding,
-        institution.location,
-        institution.diplomaType,
-        institution.domain,
-      ]
-        .filter(Boolean)
-        .join(' ')
-        .toLocaleLowerCase('he-IL');
-
-      return (
-        matchesArea &&
-        matchesCategory &&
-        matchesCredential &&
-        (!normalizedSearch || searchable.includes(normalizedSearch))
-      );
-    });
-  }, [area, category, credential, institutions, searchTerm]);
-
-  const featuredInstitutions = useMemo(
-    () =>
-      institutions.filter((institution) => institution.categories.includes('popular')).slice(0, 6),
-    [institutions],
+  const [search, setSearch] = useState('');
+  const [descending, setDescending] = useState(false);
+  const availableSubjects = useMemo(
+    () => subjects.filter((option) => !field || option.field.key === field),
+    [subjects, field],
   );
+  const results = useMemo(() => {
+    const query = search.trim().toLocaleLowerCase('he-IL');
+    return institutions
+      .map((institution) => ({
+        ...institution,
+        matching: institution.programmes.filter(
+          (programme) =>
+            (!field || programme.fieldKey === field) &&
+            (!subject || programme.subjectKey === subject),
+        ),
+      }))
+      .filter(
+        (institution) =>
+          (!(field || subject) ||
+            institution.matching.length > 0 ||
+            (!subject && !!institution.fieldSources[field])) &&
+          (area === 'all' || institution.areas.includes(area)) &&
+          (category === 'all' || institution.categories.includes(category)) &&
+          (credential === 'all' || institution.credentials.includes(credential)) &&
+          (!query ||
+            [institution.name, institution.location, institution.type, institution.domain]
+              .filter(Boolean)
+              .join(' ')
+              .toLocaleLowerCase('he-IL')
+              .includes(query)),
+      )
+      .sort((a, b) => collator.compare(a.name, b.name) * (descending ? -1 : 1));
+  }, [institutions, field, subject, area, category, credential, search, descending]);
 
   return (
-    <WayPageShell contentClassName="">
-      <main>
-        <section className="relative z-10">
-          <div className="mx-auto grid max-w-6xl gap-10 px-5 pb-8 pt-8 sm:px-8 lg:grid-cols-[1.05fr_0.95fr] lg:items-end lg:pb-12 lg:pt-12">
-            <div>
-              <p className="text-sm font-bold text-[#7784e8]">מוסדות לימוד בישראל</p>
-              <h1 className="mt-3 max-w-3xl text-3xl font-semibold leading-tight text-[#445274] sm:text-4xl">
-                למצוא מוסד לפי מקום, סוג ותעודה
-              </h1>
-            </div>
-
-            <div className="grid grid-cols-3 gap-3">
-              {[
-                [`${institutions.length}`, 'מוסדות'],
-                [`${countByCategory(institutions, 'universities')}`, 'אוניברסיטאות'],
-                [`${countByCredential(institutions, 'professional_certificate')}`, 'תעודות'],
-              ].map(([value, label]) => (
-                <div
-                  key={label}
-                  className="min-h-28 rounded-[1.4rem] border border-white bg-white/72 p-4 shadow-[0_20px_60px_rgba(105,133,190,0.14)] backdrop-blur"
-                >
-                  <span className="block text-3xl font-black text-[#445274]">{value}</span>
-                  <span className="mt-2 block text-sm font-semibold text-[#6f7a99]">{label}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="relative z-10 mx-auto flex max-w-6xl flex-col gap-6 px-5 pb-16 pt-2 sm:px-8">
-          <div className="rounded-[1.6rem] border border-white bg-white/76 p-4 shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur sm:p-5">
-            <label className="relative block">
-              <Search
-                aria-hidden="true"
-                className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[#7b8aa4]"
-                size={18}
-              />
-              <input
-                type="search"
-                value={searchTerm}
-                onChange={(event) => setSearchTerm(event.target.value)}
-                placeholder="חיפוש מוסד, עיר או סוג לימודים"
-                className="h-12 w-full rounded-2xl border border-[#e2e9f4] bg-[#f8fbff] pr-11 pl-4 text-sm font-semibold text-[#445274] outline-none transition placeholder:text-[#8a98ad] focus:border-[#7784e8] focus:bg-white focus:ring-2 focus:ring-[#8fd8ff]/30"
-              />
-            </label>
-
-            <div className="mt-5 flex items-center gap-2 text-sm font-bold text-[#445274]">
-              <MapPin size={16} />
+    <WayPageShell>
+      <main dir="rtl" className="mx-auto max-w-6xl px-5 pb-16 pt-8 text-right sm:px-8 sm:pt-12">
+        <h1 className="mb-8 text-3xl font-semibold text-[#445274] sm:text-4xl">
+          מוסדות לימוד בישראל
+        </h1>
+        <div className="space-y-6 rounded-3xl border border-white bg-white/80 p-5 sm:p-6">
+          <PillGroup
+            label="תחום לימודים"
+            options={fields}
+            selected={field}
+            onSelect={(value) => {
+              setField(value);
+              setSubject('');
+            }}
+          />
+          <PillGroup
+            key={field}
+            label="תכנית לימודים"
+            options={availableSubjects}
+            selected={subject}
+            onSelect={setSubject}
+          />
+          <div className="grid grid-cols-2 gap-3 border-t border-[#e2e9f4] pt-5 sm:grid-cols-3">
+            <label className="space-y-2 text-sm font-semibold text-[#445274]">
               <span>אזור</span>
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {AREA_FILTERS.map((filter) => (
-                <FilterButton
-                  key={filter.id}
-                  active={area === filter.id}
-                  count={countByArea(institutions, filter.id)}
-                  label={filter.label}
-                  onClick={() => setArea(filter.id)}
-                />
-              ))}
-            </div>
-
-            <div className="mt-5 flex items-center gap-2 text-sm font-bold text-[#445274]">
-              <SlidersHorizontal size={16} />
-              <span>סינון נוסף</span>
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {CATEGORY_FILTERS.map((filter) => (
-                <FilterButton
-                  key={filter.id}
-                  active={category === filter.id}
-                  count={countByCategory(institutions, filter.id)}
-                  label={filter.label}
-                  onClick={() => setCategory(filter.id)}
-                />
-              ))}
-            </div>
-            <div className="mt-3 flex gap-2 overflow-x-auto pb-1">
-              {CREDENTIAL_FILTERS.map((filter) => (
-                <FilterButton
-                  key={filter.id}
-                  active={credential === filter.id}
-                  count={countByCredential(institutions, filter.id)}
-                  label={filter.label}
-                  onClick={() => setCredential(filter.id)}
-                />
-              ))}
-            </div>
+              <select
+                value={area}
+                onChange={(e) => setArea(e.target.value as InstitutionAreaFilter)}
+                className={inputClass}
+              >
+                {AREA_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="space-y-2 text-sm font-semibold text-[#445274]">
+              <span>סוג מוסד</span>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value as InstitutionCategoryFilter)}
+                className={inputClass}
+              >
+                {CATEGORY_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="col-span-2 space-y-2 text-sm font-semibold text-[#445274] sm:col-span-1">
+              <span>תעודה ומימון</span>
+              <select
+                value={credential}
+                onChange={(e) => setCredential(e.target.value as InstitutionCredentialFilter)}
+                className={inputClass}
+              >
+                {CREDENTIAL_FILTERS.map((option) => (
+                  <option key={option.id} value={option.id}>
+                    {option.label}
+                  </option>
+                ))}
+              </select>
+            </label>
           </div>
-
-          {featuredInstitutions.length > 0 && (
-            <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {featuredInstitutions.map((institution) => (
-                <Link
+          <label className="block space-y-2 text-sm font-semibold text-[#445274]">
+            <span>חיפוש מוסד</span>
+            <input
+              type="search"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="שם המוסד או העיר"
+              className={inputClass}
+            />
+          </label>
+        </div>
+        <div className="mb-4 mt-8 flex flex-wrap items-center justify-between gap-3">
+          <h2 aria-live="polite" className="text-xl font-semibold text-[#445274]">
+            {results.length === 1 ? 'מוסד אחד' : `${results.length} מוסדות`}
+          </h2>
+          <label className="flex items-center gap-2 text-sm text-[#596582]">
+            מיון
+            <select
+              value={descending ? 'desc' : 'asc'}
+              onChange={(e) => setDescending(e.target.value === 'desc')}
+              className={`${inputClass} w-auto`}
+            >
+              <option value="asc">שם המוסד: א–ת</option>
+              <option value="desc">שם המוסד: ת–א</option>
+            </select>
+          </label>
+        </div>
+        {results.length ? (
+          <table className="block w-full text-right md:table md:table-fixed">
+            <caption className="sr-only">מוסדות ותכניות לימודים</caption>
+            <thead className="hidden text-sm text-[#647091] md:table-header-group">
+              <tr className="border-b border-[#d9e3f3]">
+                <th scope="col" className="w-[30%] px-4 py-3">
+                  מוסד
+                </th>
+                <th scope="col" className="w-[15%] px-4 py-3">
+                  מיקום
+                </th>
+                <th scope="col" className="w-[18%] px-4 py-3">
+                  סוג מוסד
+                </th>
+                <th scope="col" className="px-4 py-3">
+                  תכניות בקטלוג
+                </th>
+              </tr>
+            </thead>
+            <tbody className="block space-y-3 md:table-row-group md:space-y-0">
+              {results.map((institution) => (
+                <tr
                   key={institution.id}
-                  href={`/institutions/${institution.id}`}
-                  className="group flex min-h-24 items-center justify-between rounded-[1.4rem] border border-white bg-white/78 p-4 shadow-[0_18px_50px_rgba(105,133,190,0.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_22px_56px_rgba(105,133,190,0.17)]"
+                  className="grid grid-cols-2 gap-3 rounded-2xl border border-[#e2e9f4] bg-white/85 p-5 md:table-row md:rounded-none md:border-x-0 md:border-t-0 md:p-0"
                 >
-                  <span className="flex min-w-0 items-center gap-3">
-                    <InstitutionLogo
-                      institution={institution.name}
-                      domain={institution.domain}
-                      logoUrl={institution.logoUrl}
-                    />
-                    <span className="min-w-0">
-                      <span className="block truncate text-sm font-bold text-[#445274]">
-                        {institution.name}
-                      </span>
-                      <span className="mt-1 block truncate text-xs font-semibold text-[#75849d]">
-                        {institution.location ?? institution.type ?? 'מוסד לימודים'}
-                      </span>
-                    </span>
-                  </span>
-                  <ArrowUpLeft
-                    aria-hidden="true"
-                    size={18}
-                    className="shrink-0 text-[#8a98ad] transition group-hover:text-[#5262d9]"
-                  />
-                </Link>
-              ))}
-            </section>
-          )}
-
-          <div className="flex items-center justify-between gap-3">
-            <h2 className="text-xl font-semibold text-[#445274]">כל המוסדות</h2>
-            <span className="rounded-full border border-white bg-white/78 px-3 py-1 text-xs font-bold text-[#60708c] shadow-sm backdrop-blur">
-              {filteredInstitutions.length} תוצאות
-            </span>
-          </div>
-
-          {filteredInstitutions.length > 0 ? (
-            <section className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-              {filteredInstitutions.map((institution) => (
-                <article
-                  key={`${institution.itemId}-${institution.id}`}
-                  className="flex min-h-[220px] flex-col rounded-[1.4rem] border border-white bg-white/78 p-4 shadow-[0_18px_50px_rgba(105,133,190,0.12)] backdrop-blur transition hover:-translate-y-0.5 hover:shadow-[0_22px_56px_rgba(105,133,190,0.17)]"
-                >
-                  <div className="flex items-start gap-3">
-                    <InstitutionLogo
-                      institution={institution.name}
-                      domain={institution.domain}
-                      logoUrl={institution.logoUrl}
-                    />
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/institutions/${institution.id}`}
-                        className="line-clamp-2 min-h-10 text-base font-bold leading-5 text-[#445274] hover:text-[#5262d9]"
-                      >
-                        {institution.name}
-                      </Link>
-                      <p className="mt-1 line-clamp-1 text-sm font-semibold text-[#75849d]">
-                        {institution.location ?? 'מיקום לא עודכן'}
-                      </p>
+                  <th scope="row" className="col-span-2 text-right align-top md:px-4 md:py-5">
+                    <div className="flex items-start gap-3">
+                      <InstitutionLogo
+                        institution={institution.name}
+                        domain={institution.domain}
+                        logoUrl={institution.logoUrl}
+                      />
+                      <div className="min-w-0">
+                        <Link
+                          href={`/institutions/${encodeURIComponent(institution.id)}`}
+                          className={`rounded font-bold text-[#445274] hover:text-[#5262d9] ${focusClass}`}
+                        >
+                          {institution.name}
+                        </Link>
+                        {institution.sourceUrl && (
+                          <a
+                            href={institution.sourceUrl}
+                            target="_blank"
+                            rel="noreferrer"
+                            aria-label={`אתר ${institution.name}`}
+                            className={`mt-2 flex min-h-11 w-fit items-center gap-1 rounded text-xs font-normal text-[#647091] ${focusClass}`}
+                          >
+                            לאתר המוסד <ExternalLink size={12} aria-hidden="true" />
+                          </a>
+                        )}
+                      </div>
                     </div>
-                  </div>
-
-                  <div className="mt-5 flex flex-wrap gap-2 text-xs font-bold">
-                    {institution.type && (
-                      <span className="rounded-full bg-[#eef4ff] px-2.5 py-1 text-[#5262d9]">
-                        {institution.type}
-                      </span>
-                    )}
-                    {institution.diplomaType && (
-                      <span className="rounded-full bg-[#e9f8f2] px-2.5 py-1 text-[#087f5b]">
-                        {institution.diplomaType}
-                      </span>
-                    )}
-                    {institution.funding && (
-                      <span className="rounded-full bg-[#fff3df] px-2.5 py-1 text-[#916000]">
-                        {institution.funding}
-                      </span>
-                    )}
-                  </div>
-
-                  <div className="mt-auto flex items-center justify-between gap-3 pt-5">
-                    <Link
-                      href={`/institutions/${institution.id}`}
-                      className="inline-flex h-10 items-center justify-center rounded-2xl bg-[#5868c7] px-4 text-sm font-bold text-white shadow-[0_14px_30px_rgba(119,132,232,0.22)] transition hover:bg-[#4b59b2]"
-                    >
-                      לעמוד המוסד
-                    </Link>
-                    {institution.sourceUrl && (
-                      <a
-                        href={institutionLink(institution.sourceUrl)}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-flex h-10 w-10 items-center justify-center rounded-2xl border border-[#d9e3f3] bg-white/70 text-[#60708c] transition hover:bg-white hover:text-[#445274]"
-                        aria-label={`מקור רשמי עבור ${institution.name}`}
-                      >
-                        <ExternalLink size={16} />
-                      </a>
-                    )}
-                  </div>
-                </article>
+                  </th>
+                  <td className="text-sm text-[#647091] align-top md:px-4 md:py-5">
+                    {institution.location?.replace(/^\s*,\s*|\s*,\s*$/g, '') || '—'}
+                  </td>
+                  <td className="text-sm text-[#647091] align-top md:px-4 md:py-5">
+                    {institution.type ?? '—'}
+                  </td>
+                  <td className="col-span-2 border-t border-[#e2e9f4] pt-3 align-top md:border-t-0 md:px-4 md:py-5">
+                    <div className="mb-2 text-xs text-[#647091]">
+                      {institution.matching.length === 1
+                        ? 'תכנית אחת'
+                        : institution.matching.length
+                          ? `${institution.matching.length} תכניות`
+                          : '—'}
+                    </div>
+                    <ProgrammeLinks programmes={institution.matching} />
+                    {field &&
+                      !subject &&
+                      !institution.matching.length &&
+                      institution.fieldSources[field] && (
+                        <a
+                          href={institution.fieldSources[field]}
+                          target="_blank"
+                          rel="noreferrer"
+                          className={`inline-flex min-h-11 items-center text-sm text-[#5262d9] underline ${focusClass}`}
+                        >
+                          מסלולים באתר המוסד
+                        </a>
+                      )}
+                  </td>
+                </tr>
               ))}
-            </section>
-          ) : (
-            <section className="rounded-[1.6rem] border border-white bg-white/78 px-5 py-12 text-center shadow-[0_18px_50px_rgba(105,133,190,0.12)] backdrop-blur">
-              <h2 className="text-lg font-bold text-[#445274]">אין תוצאות</h2>
-              <p className="mt-2 text-sm font-semibold text-[#75849d]">
-                {getEmptyStateText(searchTerm)}
-              </p>
-            </section>
-          )}
-        </section>
+            </tbody>
+          </table>
+        ) : (
+          <p className="rounded-2xl border border-[#e2e9f4] bg-white p-8 text-center text-[#647091]">
+            לא נמצאו מוסדות שמתאימים לסינון.
+          </p>
+        )}
       </main>
     </WayPageShell>
   );

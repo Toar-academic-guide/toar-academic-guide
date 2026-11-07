@@ -94,7 +94,7 @@ describe('InstitutionPage', () => {
   });
 
   it.each(['haifa', 'huji', 'technion'])(
-    'shortens %s program card names without changing links or JSON-LD names',
+    'shortens %s category link labels without counting the group as a programme',
     async (institutionId) => {
       const program = getStaticCataloguePrograms().find(
         (entry) => entry.id === `${institutionId}_engineering`,
@@ -114,7 +114,7 @@ describe('InstitutionPage', () => {
       const institutionLd = jsonLd['@graph'].find(
         (item: { '@type': string }) => item['@type'] === 'CollegeOrUniversity',
       );
-      expect(institutionLd.hasOfferCatalog.itemListElement).toContainEqual(
+      expect(institutionLd.hasOfferCatalog.itemListElement).not.toContainEqual(
         expect.objectContaining({ name: program.name }),
       );
     },

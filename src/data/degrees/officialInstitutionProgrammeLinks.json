@@ -1,0 +1,500 @@
+{
+  "academic": [
+    {
+      "provider": "beit_berl",
+      "fieldKey": "education",
+      "name": "חינוך והוראה",
+      "url": "https://www.beitberl.ac.il/degree/beducation/"
+    },
+    {
+      "provider": "bezalel",
+      "fieldKey": "design",
+      "name": "עיצוב קרמי וזכוכית",
+      "url": "https://www.bezalel.ac.il/academics/bachelor_degree/ceramics"
+    },
+    {
+      "provider": "bezalel",
+      "fieldKey": "film",
+      "name": "אמנויות המסך",
+      "url": "https://www.bezalel.ac.il/academics/bachelor_degree/screen"
+    },
+    {
+      "provider": "israel_academic",
+      "fieldKey": "law",
+      "name": "משפטים",
+      "url": "https://iac.ac.il/חדש-תואר-ראשון-במשפטים-ll-b/"
+    },
+    {
+      "provider": "zefat",
+      "fieldKey": "law",
+      "name": "משפטים",
+      "url": "https://www.zefat.ac.il/בתי-ספר-ומכינות/בית-הספר-למשפטים/במשפטים-llb/"
+    },
+    {
+      "provider": "zefat",
+      "fieldKey": "computing",
+      "name": "מערכות מידע",
+      "url": "https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/מערכות-מידע-bsc/"
+    },
+    {
+      "provider": "zefat",
+      "fieldKey": "social",
+      "name": "עבודה סוציאלית",
+      "url": "https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/עבודה-סוציאלית-ba/"
+    }
+  ],
+  "courses": [
+    {
+      "provider": "aliya",
+      "fieldKey": "jewish",
+      "name": "כתיבת סת״ם",
+      "url": "https://www.aliya.org.il/writing-stam/"
+    },
+    {
+      "provider": "bdo_academy",
+      "fieldKey": "business",
+      "name": "מימון וסטטיסטיקה לבחינות רשות ניירות ערך",
+      "url": "https://www.bdo-academy.co.il/license_courses_list/finance/"
+    },
+    {
+      "provider": "hackeru",
+      "fieldKey": "computing",
+      "name": "DevOps",
+      "url": "https://www.hackeru.co.il/course/devops"
+    },
+    {
+      "provider": "high_q",
+      "fieldKey": "exam",
+      "name": "הכנה לפסיכומטרי",
+      "url": "https://www.high-q.co.il/פסיכומטרי/הקורס-שלנו/"
+    },
+    {
+      "provider": "johnbryce",
+      "fieldKey": "computing",
+      "name": "פיתוח Full Stack ב־Java",
+      "url": "https://www.johnbryce.co.il/catalog/hi-tech-courses/java-full-stack-dvelopment/"
+    },
+    {
+      "provider": "kidum",
+      "fieldKey": "exam",
+      "name": "הכנה לפסיכומטרי",
+      "url": "https://kidum.com/פסיכומטרי/קורס-פסיכומטרי/"
+    },
+    {
+      "provider": "mon_12220697934",
+      "fieldKey": "performing",
+      "name": "סאונד והפקה מוזיקלית",
+      "url": "https://www.bpm-music.com/course/bsp/"
+    },
+    {
+      "provider": "mon_12341076875",
+      "fieldKey": "safety",
+      "name": "עבודה בגובה",
+      "url": "https://www.cleo.co.il/עובד-גובה-משולב/?a=09/11/26"
+    },
+    {
+      "provider": "mon_12341091651",
+      "fieldKey": "property",
+      "name": "תיווך נדל״ן",
+      "url": "https://www.yesodot-nadlan.co.il/courses/brokerage"
+    },
+    {
+      "provider": "mon_12341092241",
+      "fieldKey": "business",
+      "name": "השקעות בשוק ההון",
+      "url": "https://psagot.org/the_route/stockmarketinvesting/"
+    },
+    {
+      "provider": "mon_12341092879",
+      "fieldKey": "design",
+      "name": "עיצוב פנים",
+      "url": "https://6bstudio.co.il/קורס-עיצוב-פנים/"
+    },
+    {
+      "provider": "mon_12341092879",
+      "fieldKey": "preparation",
+      "name": "מכינה לעיצוב ואדריכלות",
+      "url": "https://6bstudio.co.il/category/מכינה-ללימודי-עיצוב-אדריכלות-ואומנות/"
+    },
+    {
+      "provider": "mon_12341092889",
+      "fieldKey": "computing",
+      "name": "בינה מלאכותית",
+      "url": "https://successcollege.co.il/course/tech-ai/"
+    },
+    {
+      "provider": "mon_12341092889",
+      "fieldKey": "design",
+      "name": "עיצוב ממשק וחוויית משתמש",
+      "url": "https://successcollege.co.il/course/קורס-ui-ux/"
+    },
+    {
+      "provider": "mon_12341092889",
+      "fieldKey": "business",
+      "name": "ניהול פרויקטים",
+      "url": "https://successcollege.co.il/course/project-management/"
+    },
+    {
+      "provider": "mon_12341101957",
+      "fieldKey": "film",
+      "name": "צילום",
+      "url": "https://www.arti-studio.co.il/קורס-צילום-1/"
+    },
+    {
+      "provider": "mon_12341101957",
+      "fieldKey": "preparation",
+      "name": "מכינה לעיצוב ואדריכלות",
+      "url": "https://www.arti-studio.co.il/מכינה-לעיצוב-ואדריכלות/"
+    },
+    {
+      "provider": "mon_12341102883",
+      "fieldKey": "property",
+      "name": "מבוא לנדל״ן",
+      "url": "https://www.res-nadlan.co.il/res-mavo/"
+    },
+    {
+      "provider": "mon_12341107292",
+      "fieldKey": "coaching",
+      "name": "הכשרת מאמנים",
+      "url": "https://www.iccm.co.il/קורס-הכשרת-מאמנים/"
+    },
+    {
+      "provider": "mon_12341108755",
+      "fieldKey": "business",
+      "name": "תכנון פיננסי והשקעות בשוק ההון",
+      "url": "https://bmeniv.co.il/קורס-תכנון-פיננסי-השקעות-בשוק-ההון/"
+    },
+    {
+      "provider": "mon_12341113217",
+      "fieldKey": "coaching",
+      "name": "הנחיית קבוצות NLP",
+      "url": "https://www.nlppro.co.il/קורס-nlp-trainer-והנחיית-קבוצות/"
+    },
+    {
+      "provider": "mon_12341113458",
+      "fieldKey": "beauty",
+      "name": "קוסמטיקה",
+      "url": "https://hzschool.co.il/מסלול-קוסמטיקה-למתחילות/"
+    },
+    {
+      "provider": "mon_12341114237",
+      "fieldKey": "communication",
+      "name": "הפקת אירועים, דוברות ויחסי ציבור",
+      "url": "https://www.cbc.org.il/branch.aspx?id=3421"
+    },
+    {
+      "provider": "mon_12341114281",
+      "fieldKey": "safety",
+      "name": "הכשרת קציני ביטחון",
+      "url": "https://t-unit.co.il/קורס-קציני-ביטחון/"
+    },
+    {
+      "provider": "mon_12341122838",
+      "fieldKey": "business",
+      "name": "הנהלת חשבונות סוג 3",
+      "url": "https://mishlav.co.il/קורס-הנהלת-חשבונות-סוג-3-ראשי/"
+    },
+    {
+      "provider": "mon_12341126233",
+      "fieldKey": "property",
+      "name": "שמאות מקרקעין",
+      "url": "https://afikonline.co.il/cartflows_step/לימודי-שמאות-מקרקעין/"
+    },
+    {
+      "provider": "mon_12341128292",
+      "fieldKey": "complementary",
+      "name": "נטורופתיה",
+      "url": "https://medicin.org.il/לימודי-נטורופתיה/"
+    },
+    {
+      "provider": "mon_12341133521",
+      "fieldKey": "technical",
+      "name": "טכנאות מוצרי חשמל ביתיים",
+      "url": "https://minhaltech.co.il/קורס-טכנאי-מוצרי-חשמל-ביתיים/"
+    },
+    {
+      "provider": "mon_12341133521",
+      "fieldKey": "computing",
+      "name": "טכנאות מחשבים",
+      "url": "https://minhaltech.co.il/קורס-טכנאי-מחשבים-pc/"
+    },
+    {
+      "provider": "mon_12341133625",
+      "fieldKey": "coaching",
+      "name": "ייעוץ זוגי",
+      "url": "https://www.pitronot.net/studies/parity-consulting"
+    },
+    {
+      "provider": "mon_12341134000",
+      "fieldKey": "health",
+      "name": "סייעות לרופא שיניים",
+      "url": "https://www.orens.org.il/קורס-סייעות-רופא-שיניים/"
+    },
+    {
+      "provider": "mon_12341134000",
+      "fieldKey": "business",
+      "name": "מזכירות בכירה וניהול משרד",
+      "url": "https://www.orens.org.il/קורס-מנהלת-משרד-בכירה-כללית/"
+    },
+    {
+      "provider": "mon_12341134516",
+      "fieldKey": "exam",
+      "name": "הכנה לפסיכומטרי",
+      "url": "https://www.ezway.co.il/courses/"
+    },
+    {
+      "provider": "mon_12341134798",
+      "fieldKey": "personal",
+      "name": "נומרולוגיה",
+      "url": "https://www.chakra999.com/Introduction-course"
+    },
+    {
+      "provider": "mon_12341134798",
+      "fieldKey": "complementary",
+      "name": "פרחי באך",
+      "url": "https://www.chakra999.com/קורס-פרחי-באך"
+    },
+    {
+      "provider": "mon_12341137650",
+      "fieldKey": "business",
+      "name": "הנהלת חשבונות",
+      "url": "https://nextcollege.co.il/bookkeeping/"
+    },
+    {
+      "provider": "mon_12341138357",
+      "fieldKey": "exam",
+      "name": "הכנה לפסיכומטרי",
+      "url": "https://charshan.co.il/psychometry/"
+    },
+    {
+      "provider": "mon_12341138594",
+      "fieldKey": "computing",
+      "name": "בדיקות תוכנה ואוטומציה",
+      "url": "https://studycenter.co.il/courses/course-qa-automation/"
+    },
+    {
+      "provider": "mon_12341138594",
+      "fieldKey": "design",
+      "name": "עיצוב גרפי",
+      "url": "https://studycenter.co.il/courses/graphic-design-course/"
+    },
+    {
+      "provider": "mon_12341138641",
+      "fieldKey": "computing",
+      "name": "סייבר ואבטחת מידע",
+      "url": "https://ipc.co.il/course/cybersecurity-course/"
+    },
+    {
+      "provider": "mon_12341144650",
+      "fieldKey": "computing",
+      "name": "בניית אתרים",
+      "url": "https://kiv.co.il/קורס-בניית-אתרים/"
+    },
+    {
+      "provider": "mon_12341144849",
+      "fieldKey": "safety",
+      "name": "הכשרת ממוני בטיחות אש",
+      "url": "https://fire-center.co.il/קורסים/ממונה-בטיחות-אש-בפיקוח-הרשות-הארצית-בת/"
+    },
+    {
+      "provider": "mon_12341144937",
+      "fieldKey": "health",
+      "name": "הכשרת דולות ומדריכות הכנה ללידה",
+      "url": "https://tnufa4u.co.il/dula/"
+    },
+    {
+      "provider": "mon_12341144937",
+      "fieldKey": "computing",
+      "name": "אוטומציה ובינה מלאכותית",
+      "url": "https://tnufa4u.co.il/קורס-אוטומציה-ו-ai/"
+    },
+    {
+      "provider": "mon_12341148145",
+      "fieldKey": "property",
+      "name": "יזמות נדל״ן",
+      "url": "https://www.smartnadlan.co.il/nadlan"
+    },
+    {
+      "provider": "mon_12341149187",
+      "fieldKey": "design",
+      "name": "עיצוב פנים",
+      "url": "https://www.home-design.co.il/לימודי-עיצוב-פנים/"
+    },
+    {
+      "provider": "mon_12341149221",
+      "fieldKey": "design",
+      "name": "עיצוב גרפי",
+      "url": "https://www.tiltan.co.il/department/עיצוב-גרפי/"
+    },
+    {
+      "provider": "mon_12341149221",
+      "fieldKey": "computing",
+      "name": "עיצוב ופיתוח משחקים",
+      "url": "https://www.tiltan.co.il/department/עיצוב-ופיתוח-משחקים/"
+    },
+    {
+      "provider": "mon_12341150917",
+      "fieldKey": "languages",
+      "name": "אנגלית אונליין",
+      "url": "https://newschool.co.il/english-courses/קורס-אנגלית-אונליין/"
+    },
+    {
+      "provider": "mon_12341162526",
+      "fieldKey": "animals",
+      "name": "אילוף סוסים",
+      "url": "https://all4horses.co.il/קורס-אילוף-סוסים/"
+    },
+    {
+      "provider": "mon_12341162526",
+      "fieldKey": "sport",
+      "name": "הכשרת מדריכי רכיבה",
+      "url": "https://all4horses.co.il/קורס-מדריכי-רכיבה/"
+    },
+    {
+      "provider": "mon_12341165209",
+      "fieldKey": "beauty",
+      "name": "איפור מקצועי",
+      "url": "https://www.izikzuri.co.il/קורסים/קורס-איפור-מקצועי/"
+    },
+    {
+      "provider": "mon_12341166173",
+      "fieldKey": "sport",
+      "name": "הכשרת מדריכי שחייה",
+      "url": "https://waterworld-campus.co.il/swimming/"
+    },
+    {
+      "provider": "mon_12341167257",
+      "fieldKey": "coaching",
+      "name": "ייעוץ זוגי",
+      "url": "https://merkazmami.co.il/ממי-המרכז-למערכות-יחסים-קורס-יעוץ-זוגי/"
+    },
+    {
+      "provider": "mon_12341167283",
+      "fieldKey": "education",
+      "name": "הוראה מתקנת",
+      "url": "https://www.educenter.co.il/לימודי-הוראה-מתקנת/"
+    },
+    {
+      "provider": "mon_12341167899",
+      "fieldKey": "computing",
+      "name": "בדיקות תוכנה ואוטומציה",
+      "url": "https://svcollege.co.il/courses/qa-automation/"
+    },
+    {
+      "provider": "mon_12341168659",
+      "fieldKey": "performing",
+      "name": "הפקה מוזיקלית",
+      "url": "https://www.justmusic.co.il/module/smp/"
+    },
+    {
+      "provider": "mon_12341173466",
+      "fieldKey": "languages",
+      "name": "אנגלית פרונטלית",
+      "url": "https://www.burlingtonenglish.co.il/english-courses/face-to-face/"
+    },
+    {
+      "provider": "mon_12341175059",
+      "fieldKey": "design",
+      "name": "עיצוב גרפי",
+      "url": "https://tech-zone.co.il/קורס-עיצוב-גרפי/"
+    },
+    {
+      "provider": "mon_12341185806",
+      "fieldKey": "coaching",
+      "name": "הדרכת הורים",
+      "url": "https://michaldalyot.co.il/לימודי-הדרכת-הורים-בגישת-מיכל-דליות/"
+    },
+    {
+      "provider": "mon_12341189317",
+      "fieldKey": "technical",
+      "name": "ניהול עבודה בבניין",
+      "url": "https://alfacoral.com/קורס-מנהלי-עבודה-בבניין/"
+    },
+    {
+      "provider": "mon_12341189317",
+      "fieldKey": "safety",
+      "name": "הכשרת ממוני בטיחות",
+      "url": "https://alfacoral.com/קורס-ממונה-בטיחות/"
+    },
+    {
+      "provider": "tiltan",
+      "fieldKey": "complementary",
+      "name": "נטורופתיה",
+      "url": "https://www.tiltancollege.co.il/se/לימוד_לימודי_נטורופתיה_"
+    },
+    {
+      "provider": "lfa",
+      "fieldKey": "beauty",
+      "name": "עיצוב גבות וזקנים",
+      "url": "https://lfayou.com/course-page/care/1/114"
+    },
+    {
+      "provider": "mon_12341091518",
+      "fieldKey": "technical",
+      "name": "חשמלאי מוסמך",
+      "url": "https://c.ort.org.il/course/חשמלאי-מוסמך/"
+    },
+    {
+      "provider": "mon_12341141808",
+      "fieldKey": "property",
+      "name": "שמאות מקרקעין",
+      "url": "https://psagot.org/the_route/קורס-שמאות/"
+    }
+  ],
+  "vocational": [
+    {
+      "provider": "mon_12341107541",
+      "fieldKey": "technical",
+      "name": "הנדסאי חשמל",
+      "url": "https://c.ort.org.il/course/חשמל-הנדסאים/"
+    },
+    {
+      "provider": "mon_12341114114",
+      "fieldKey": "technical",
+      "name": "הנדסאי אלקטרוניקה",
+      "url": "https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/"
+    },
+    {
+      "provider": "mon_12341128848",
+      "fieldKey": "technical",
+      "name": "הנדסאי בניין",
+      "url": "https://www.cts.org.il/הנדסה-אזרחית/"
+    },
+    {
+      "provider": "mon_12341128848",
+      "fieldKey": "architecture",
+      "name": "הנדסאי אדריכלות ועיצוב פנים",
+      "url": "https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/"
+    },
+    {
+      "provider": "mon_12341118864",
+      "fieldKey": "technical",
+      "name": "הנדסאי בניין",
+      "url": "https://www.ruppin-tech.co.il/departments/civil-eng/"
+    },
+    {
+      "provider": "mon_12341118864",
+      "fieldKey": "architecture",
+      "name": "הנדסאי אדריכלות ועיצוב פנים",
+      "url": "https://www.ruppin-tech.co.il/departments/architecture-design/"
+    },
+    {
+      "provider": "tcb",
+      "fieldKey": "technical",
+      "name": "הנדסאי רכב חשמלי",
+      "url": "https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/"
+    },
+    {
+      "provider": "mon_12341098142",
+      "fieldKey": "technical",
+      "name": "הנדסאי בניין",
+      "url": "https://www.telhai.tech/engineering/building"
+    },
+    {
+      "provider": "mon_12341098142",
+      "fieldKey": "technical",
+      "name": "הנדסאי תוכנה",
+      "url": "https://www.telhai.tech/engineering/Program-engineer"
+    }
+  ]
+}
