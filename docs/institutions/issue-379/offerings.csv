@@ -92,7 +92,7 @@ tau,tau_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/pr
 tau,tau_occupational_therapy,ריפוי בעיסוק,academic:ריפוי בעיסוק,health,/programs/tau_occupational_therapy
 tau,tau_medicine,רפואה,academic:רפואה,health,/programs/tau_medicine
 tau,communication,תקשורת ועיתונאות,academic:תקשורת ועיתונאות,communication,/programs/communication
-mon_12341107541,https://c.ort.org.il/course/חשמל-הנדסאים/,הנדסאי חשמל,course:הנדסאי חשמל,technical,https://c.ort.org.il/course/חשמל-הנדסאים/
+mon_12341107541,https://c.ort.org.il/course/חשמל-הנדסאים/,הנדסאי חשמל,vocational:הנדסאי חשמל,technical,https://c.ort.org.il/course/חשמל-הנדסאים/
 mon_12341091518,https://c.ort.org.il/course/חשמלאי-מוסמך/,חשמלאי מוסמך,course:חשמלאי מוסמך,technical,https://c.ort.org.il/course/חשמלאי-מוסמך/
 mon_12220685573,mon_12220685573_culinary,קולינריה,certificate:קולינריה,culinary,/programs/mon_12220685573_culinary
 mon_12220685573,mon_12220685573_cs,קונדיטוריה,certificate:קונדיטוריה,culinary,/programs/mon_12220685573_cs
@@ -192,12 +192,12 @@ mta,tlvyaffo_business,כלכלה וניהול,academic:כלכלה וניהול,b
 mta,tlvyaffo_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/tlvyaffo_cs
 mta,tlvyaffo_nursing,סיעוד,academic:סיעוד,health,/programs/tlvyaffo_nursing
 mta,tlvyaffo_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/tlvyaffo_socialwork
-tcb,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/,הנדסאי רכב חשמלי,course:הנדסאי רכב חשמלי,technical,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/
+tcb,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/,הנדסאי רכב חשמלי,vocational:הנדסאי רכב חשמלי,technical,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/
 mon_12341101391,kinneret_sound_technician,הנדסת סאונד,vocational:הנדסת סאונד,technical,https://www.ktec.co.il/schools/הנדסת-קול/
-mon_12341118864,https://www.ruppin-tech.co.il/departments/architecture-design/,הנדסאי אדריכלות ועיצוב פנים,course:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.ruppin-tech.co.il/departments/architecture-design/
-mon_12341118864,https://www.ruppin-tech.co.il/departments/civil-eng/,הנדסאי בניין,course:הנדסאי בניין,technical,https://www.ruppin-tech.co.il/departments/civil-eng/
-mon_12341098142,https://www.telhai.tech/engineering/building,הנדסאי בניין,course:הנדסאי בניין,technical,https://www.telhai.tech/engineering/building
-mon_12341098142,https://www.telhai.tech/engineering/Program-engineer,הנדסאי תוכנה,course:הנדסאי תוכנה,technical,https://www.telhai.tech/engineering/Program-engineer
+mon_12341118864,https://www.ruppin-tech.co.il/departments/architecture-design/,הנדסאי אדריכלות ועיצוב פנים,vocational:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.ruppin-tech.co.il/departments/architecture-design/
+mon_12341118864,https://www.ruppin-tech.co.il/departments/civil-eng/,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.ruppin-tech.co.il/departments/civil-eng/
+mon_12341098142,https://www.telhai.tech/engineering/building,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.telhai.tech/engineering/building
+mon_12341098142,https://www.telhai.tech/engineering/Program-engineer,הנדסאי תוכנה,vocational:הנדסאי תוכנה,technical,https://www.telhai.tech/engineering/Program-engineer
 mon_12341114237,https://www.cbc.org.il/branch.aspx?id=3421,"הפקת אירועים, דוברות ויחסי ציבור","course:הפקת אירועים, דוברות ויחסי ציבור",communication,https://www.cbc.org.il/branch.aspx?id=3421
 mon_12341143672,mon_12341143672_business,מנהל עסקים וניהול כללי,certificate:מנהל עסקים וניהול כללי,business,/programs/mon_12341143672_business
 mon_12341134448,mon_12341134448_business,ניהול משאבי אנוש,certificate:ניהול משאבי אנוש,business,/programs/mon_12341134448_business
@@ -212,9 +212,9 @@ mon_12341138594,https://studycenter.co.il/courses/graphic-design-course/,עיצ�
 mon_12341144849,https://fire-center.co.il/קורסים/ממונה-בטיחות-אש-בפיקוח-הרשות-הארצית-בת/,הכשרת ממוני בטיחות אש,course:הכשרת ממוני בטיחות אש,safety,https://fire-center.co.il/קורסים/ממונה-בטיחות-אש-בפיקוח-הרשות-הארצית-בת/
 mon_12341179463,mon_12341179463_education,חינוך והוראה,certificate:חינוך והוראה,education,/programs/mon_12341179463_education
 mon_12341167283,https://www.educenter.co.il/לימודי-הוראה-מתקנת/,הוראה מתקנת,course:הוראה מתקנת,education,https://www.educenter.co.il/לימודי-הוראה-מתקנת/
-mon_12341114114,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/,הנדסאי אלקטרוניקה,course:הנדסאי אלקטרוניקה,technical,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/
-mon_12341128848,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/,הנדסאי אדריכלות ועיצוב פנים,course:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/
-mon_12341128848,https://www.cts.org.il/הנדסה-אזרחית/,הנדסאי בניין,course:הנדסאי בניין,technical,https://www.cts.org.il/הנדסה-אזרחית/
+mon_12341114114,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/,הנדסאי אלקטרוניקה,vocational:הנדסאי אלקטרוניקה,technical,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/
+mon_12341128848,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/,הנדסאי אדריכלות ועיצוב פנים,vocational:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/
+mon_12341128848,https://www.cts.org.il/הנדסה-אזרחית/,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.cts.org.il/הנדסה-אזרחית/
 mon_12341076875,https://www.cleo.co.il/עובד-גובה-משולב/?a=09/11/26,עבודה בגובה,course:עבודה בגובה,safety,https://www.cleo.co.il/עובד-גובה-משולב/?a=09/11/26
 mon_12220697940,mon_12220697940_graphic_design,משחק,certificate:משחק,performing,/programs/mon_12220697940_graphic_design
 mon_12341108218,mon_12341108218_cs,ברמנים,certificate:ברמנים,hospitality,/programs/mon_12341108218_cs
