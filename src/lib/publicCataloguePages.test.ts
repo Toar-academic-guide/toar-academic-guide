@@ -74,11 +74,11 @@ describe('public catalogue page data', () => {
       checked: undefined,
     });
     const institutionPage = (await getPublicInstitutionPageData('danon'))!;
+    expect(institutionPage.categoryPages?.map((p) => p.id)).toEqual(['danon_culinary']);
     expect(institutionPage.programs.map((program) => program.id)).toEqual([
       'danon_chef',
       'danon_pastry',
       'danon_culinary_arts',
-      'danon_culinary',
     ]);
     expect(new Set(institutionPage.programs.map((program) => program.name)).size).toBe(
       institutionPage.programs.length,
@@ -391,7 +391,12 @@ describe('public catalogue page data', () => {
     expect(Object.values(page.institutionProgramPaths)).not.toContain('/programs/nursing');
     const tau = (await getPublicInstitutionPageData('tau'))!;
     const ownIds = programs
-      .filter((program) => program.isListed !== false && program.institutionId === 'tau')
+      .filter(
+        (program) =>
+          program.isListed !== false &&
+          program.institutionId === 'tau' &&
+          program.id !== 'tau_engineering',
+      )
       .map((program) => program.id);
     expect(tau.programs.slice(0, ownIds.length).map((program) => program.id)).toEqual(ownIds);
     expect(new Set(tau.programs.map((program) => program.name)).size).toBe(tau.programs.length);
@@ -544,7 +549,11 @@ describe('public catalogue page data', () => {
         );
         if (hidden.length) extraHides[institution.id] = hidden.map((p) => p.id);
       }
-      expect(extraHides).toEqual({ haifa: ['communication'], ariel: ['communication'] });
+      expect(extraHides).toEqual({
+        haifa: ['communication'],
+        ariel: ['communication'],
+        biu: ['medicine'],
+      });
     },
   );
 

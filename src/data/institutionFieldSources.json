@@ -1,0 +1,480 @@
+{
+  "achva": {
+    "computing": "https://www.achva.ac.il/",
+    "life": "https://www.achva.ac.il/",
+    "education": "https://www.achva.ac.il/",
+    "social": "https://www.achva.ac.il/"
+  },
+  "afeka": {
+    "engineering": "https://www.afeka.ac.il/",
+    "computing": "https://www.afeka.ac.il/"
+  },
+  "al_qasemi": {
+    "education": "https://www.qsm.ac.il/"
+  },
+  "aliya": {
+    "jewish": "https://www.aliya.org.il/"
+  },
+  "arab_college_haifa": {
+    "education": "https://arabcol.ac.il/"
+  },
+  "ashkelon": {
+    "business": "https://www.aac.ac.il/",
+    "social": "https://www.aac.ac.il/",
+    "health": "https://www.aac.ac.il/"
+  },
+  "atid": {
+    "technical": "https://www.atid.org.il/",
+    "computing": "https://www.atid.org.il/"
+  },
+  "azrieli": {
+    "engineering": "https://www.jce.ac.il/",
+    "computing": "https://www.jce.ac.il/"
+  },
+  "bdo_academy": {
+    "business": "https://www.bdo-academy.co.il/"
+  },
+  "beit_berl": {
+    "education": "https://www.beitberl.ac.il/",
+    "design": "https://www.beitberl.ac.il/",
+    "social": "https://www.beitberl.ac.il/"
+  },
+  "beit_zvi": {
+    "preparation": "https://www.beit-zvi.com/"
+  },
+  "bezalel": {
+    "design": "https://www.bezalel.ac.il/",
+    "film": "https://www.bezalel.ac.il/"
+  },
+  "bgu": {
+    "engineering": "https://www.bgu.ac.il/u/faculties/engineering/pages/about/"
+  },
+  "braude": {
+    "engineering": "https://w3.braude.ac.il/"
+  },
+  "emek_yezreel": {
+    "computing": "https://www.yvc.ac.il/"
+  },
+  "emuna": {
+    "education": "https://emuna.emef.ac.il/"
+  },
+  "galil_maaravi": {
+    "education": "https://wgalil.ac.il/",
+    "computing": "https://wgalil.ac.il/"
+  },
+  "givat_washington": {
+    "education": "https://www.washington.ac.il/",
+    "sport": "https://www.washington.ac.il/"
+  },
+  "gordon_college": {
+    "education": "https://www.gordon.ac.il/"
+  },
+  "hackeru": {
+    "computing": "https://www.hackeru.co.il/"
+  },
+  "haifa": {
+    "health": "https://admissions.haifa.ac.il/"
+  },
+  "hamdat_darom": {
+    "education": "https://www.hemdat.ac.il/"
+  },
+  "herzog": {
+    "education": "https://www.herzog.ac.il/"
+  },
+  "high_q": {
+    "exam": "https://www.high-q.co.il/"
+  },
+  "israel_academic": {
+    "law": "https://iac.ac.il/",
+    "computing": "https://iac.ac.il/"
+  },
+  "jerusalem_college": {
+    "education": "https://www.michlala.edu/"
+  },
+  "johnbryce": {
+    "computing": "https://www.johnbryce.co.il/"
+  },
+  "kidum": {
+    "exam": "https://kidum.com/"
+  },
+  "kinneret": {
+    "engineering": "https://do.kinneret.ac.il/"
+  },
+  "lev": {
+    "engineering": "https://www.jct.ac.il/",
+    "computing": "https://www.jct.ac.il/"
+  },
+  "lfa": {
+    "beauty": "https://lfayou.com/course-page/care/1/114"
+  },
+  "mediteva": {
+    "complementary": "https://mediteva.com/"
+  },
+  "minshar": {
+    "film": "https://www.minshar.org.il/"
+  },
+  "mon_12220697934": {
+    "performing": "https://www.bpm-music.com/"
+  },
+  "mon_12220697942": {
+    "design": "https://musrara.co.il/"
+  },
+  "mon_12341064237": {
+    "beauty": "https://yarin-shahaf.co.il/"
+  },
+  "mon_12341076875": {
+    "safety": "https://www.cleo.co.il/"
+  },
+  "mon_12341091471": {
+    "languages": "https://digital.jpostlite.co.il/homepage.aspx"
+  },
+  "mon_12341091518": {
+    "technical": "https://c.ort.org.il/course/חשמלאי-מוסמך/"
+  },
+  "mon_12341091651": {
+    "property": "https://www.yesodot-nadlan.co.il/"
+  },
+  "mon_12341092241": {
+    "business": "https://psagot.org/"
+  },
+  "mon_12341092879": {
+    "design": "https://6bstudio.co.il/",
+    "preparation": "https://6bstudio.co.il/"
+  },
+  "mon_12341092889": {
+    "computing": "https://successcollege.co.il/",
+    "design": "https://successcollege.co.il/",
+    "business": "https://successcollege.co.il/"
+  },
+  "mon_12341098142": {
+    "technical": "https://www.telhai.tech/",
+    "computing": "https://www.telhai.tech/"
+  },
+  "mon_12341098736": {
+    "health": "https://laledetschool.co.il/"
+  },
+  "mon_12341101391": {
+    "architecture": "https://www.ktec.co.il/",
+    "technical": "https://www.ktec.co.il/"
+  },
+  "mon_12341101957": {
+    "design": "https://www.arti-studio.co.il/",
+    "film": "https://www.arti-studio.co.il/",
+    "preparation": "https://www.arti-studio.co.il/"
+  },
+  "mon_12341102793": {
+    "technical": "https://www.nitc.co.il/",
+    "architecture": "https://www.nitc.co.il/"
+  },
+  "mon_12341102883": {
+    "property": "https://www.res-nadlan.co.il/college/"
+  },
+  "mon_12341107292": {
+    "coaching": "https://www.iccm.co.il/"
+  },
+  "mon_12341107541": {
+    "technical": "https://c.ort.org.il/"
+  },
+  "mon_12341108218": {
+    "hospitality": "https://zmanamiti.co.il/"
+  },
+  "mon_12341108613": {
+    "performing": "https://hastudio.co.il/"
+  },
+  "mon_12341108755": {
+    "business": "https://bmeniv.co.il/"
+  },
+  "mon_12341113217": {
+    "coaching": "https://www.nlppro.co.il/"
+  },
+  "mon_12341113458": {
+    "beauty": "https://hzschool.co.il/"
+  },
+  "mon_12341114114": {
+    "technical": "https://handesaim.ariel.ac.il/"
+  },
+  "mon_12341114237": {
+    "computing": "https://www.cbc.org.il/",
+    "business": "https://www.cbc.org.il/",
+    "communication": "https://www.cbc.org.il/"
+  },
+  "mon_12341114281": {
+    "safety": "https://t-unit.co.il/"
+  },
+  "mon_12341114949": {
+    "coaching": "https://msccollege.co.il/"
+  },
+  "mon_12341118768": {
+    "health": "https://hbsc-college.co.il/"
+  },
+  "mon_12341118864": {
+    "technical": "https://www.ruppin-tech.co.il/",
+    "architecture": "https://www.ruppin-tech.co.il/"
+  },
+  "mon_12341122479": {
+    "computing": "https://inline.co.il/",
+    "business": "https://inline.co.il/"
+  },
+  "mon_12341122522": {
+    "business": "https://www.gishot.co.il/"
+  },
+  "mon_12341122838": {
+    "business": "https://mishlav.co.il/"
+  },
+  "mon_12341126233": {
+    "property": "https://afikonline.co.il/"
+  },
+  "mon_12341126575": {
+    "beauty": "https://www.ilmakiage.co.il/academy"
+  },
+  "mon_12341126780": {
+    "beauty": "https://ravit-asaf.co.il/course/קורס-איפור-מקצועי/"
+  },
+  "mon_12341128142": {
+    "beauty": "https://lee-amron.com/"
+  },
+  "mon_12341128292": {
+    "complementary": "https://medicin.org.il/"
+  },
+  "mon_12341128848": {
+    "technical": "https://www.cts.org.il/",
+    "architecture": "https://www.cts.org.il/"
+  },
+  "mon_12341129101": {
+    "languages": "https://sefaradit.com/"
+  },
+  "mon_12341133521": {
+    "technical": "https://minhaltech.co.il/",
+    "computing": "https://minhaltech.co.il/"
+  },
+  "mon_12341133625": {
+    "coaching": "https://www.pitronot.net/"
+  },
+  "mon_12341134000": {
+    "health": "https://www.orens.org.il/",
+    "business": "https://www.orens.org.il/"
+  },
+  "mon_12341134405": {
+    "film": "https://www.stage-center.org/",
+    "performing": "https://www.stage-center.org/"
+  },
+  "mon_12341134431": {
+    "personal": "https://sagie.org/"
+  },
+  "mon_12341134516": {
+    "exam": "https://www.ezway.co.il/"
+  },
+  "mon_12341134763": {
+    "technical": "https://etgar.org.il/"
+  },
+  "mon_12341134798": {
+    "personal": "https://www.chakra999.com/",
+    "complementary": "https://www.chakra999.com/"
+  },
+  "mon_12341137650": {
+    "business": "https://nextcollege.co.il/"
+  },
+  "mon_12341138357": {
+    "exam": "https://charshan.co.il/"
+  },
+  "mon_12341138527": {
+    "coaching": "https://www.henot.co.il/"
+  },
+  "mon_12341138594": {
+    "computing": "https://studycenter.co.il/",
+    "design": "https://studycenter.co.il/"
+  },
+  "mon_12341138641": {
+    "computing": "https://ipc.co.il/"
+  },
+  "mon_12341139122": {
+    "exam": "https://znk.co.il/"
+  },
+  "mon_12341141808": {
+    "property": "https://psagot.org/the_route/קורס-שמאות/"
+  },
+  "mon_12341142058": {
+    "business": "https://www.iplma.org.il/"
+  },
+  "mon_12341142727": {
+    "exam": "https://www.simplex.org.il/"
+  },
+  "mon_12341144078": {
+    "beauty": "https://www.natashadenona.co.il/pages/academy"
+  },
+  "mon_12341144341": {
+    "gemology": "https://www.igl-labs.com/he/igl-academy"
+  },
+  "mon_12341144650": {
+    "business": "https://kiv.co.il/",
+    "computing": "https://kiv.co.il/"
+  },
+  "mon_12341144849": {
+    "safety": "https://fire-center.co.il/"
+  },
+  "mon_12341144937": {
+    "health": "https://tnufa4u.co.il/",
+    "computing": "https://tnufa4u.co.il/"
+  },
+  "mon_12341144956": {
+    "business": "https://www.mishkit.co.il/",
+    "coaching": "https://www.mishkit.co.il/"
+  },
+  "mon_12341147363": {
+    "exam": "https://www.bagrut-erev.co.il/"
+  },
+  "mon_12341148145": {
+    "property": "https://www.smartnadlan.co.il/"
+  },
+  "mon_12341149187": {
+    "design": "https://www.home-design.co.il/"
+  },
+  "mon_12341149221": {
+    "design": "https://www.tiltan.co.il/",
+    "computing": "https://www.tiltan.co.il/"
+  },
+  "mon_12341150917": {
+    "languages": "https://newschool.co.il/"
+  },
+  "mon_12341155561": {
+    "health": "https://mc-college.co.il/"
+  },
+  "mon_12341162526": {
+    "animals": "https://all4horses.co.il/",
+    "sport": "https://all4horses.co.il/"
+  },
+  "mon_12341165209": {
+    "beauty": "https://www.izikzuri.co.il/"
+  },
+  "mon_12341165356": {
+    "communication": "https://www.copywise.co.il/study"
+  },
+  "mon_12341165867": {
+    "coaching": "https://galhadash.co.il/"
+  },
+  "mon_12341165912": {
+    "coaching": "https://cmtm.co.il/"
+  },
+  "mon_12341166173": {
+    "sport": "https://waterworld-campus.co.il/"
+  },
+  "mon_12341166462": {
+    "business": "https://alexgorbachov.com/"
+  },
+  "mon_12341166504": {
+    "beauty": "https://slim-skin.co.il/academy/"
+  },
+  "mon_12341166735": {
+    "animals": "https://ben-dog.co.il/"
+  },
+  "mon_12341167257": {
+    "coaching": "https://merkazmami.co.il/"
+  },
+  "mon_12341167283": {
+    "education": "https://www.educenter.co.il/"
+  },
+  "mon_12341167854": {
+    "business": "https://hasharon-college.co.il/"
+  },
+  "mon_12341167899": {
+    "computing": "https://svcollege.co.il/"
+  },
+  "mon_12341168601": {
+    "languages": "https://expressenglish.co.il/"
+  },
+  "mon_12341168658": {
+    "business": "https://www.circle-a.academy/"
+  },
+  "mon_12341168659": {
+    "performing": "https://www.justmusic.co.il/",
+    "education": "https://www.justmusic.co.il/"
+  },
+  "mon_12341173466": {
+    "languages": "https://www.burlingtonenglish.co.il/"
+  },
+  "mon_12341175059": {
+    "computing": "https://tech-zone.co.il/",
+    "design": "https://tech-zone.co.il/"
+  },
+  "mon_12341185806": {
+    "coaching": "https://michaldalyot.co.il/"
+  },
+  "mon_12341187468": {
+    "bodyart": "https://www.boutiquetattoo.co.il/"
+  },
+  "mon_12341187728": {
+    "design": "https://preciseclass.com/לימודי-תַּדְמָנּות-תדמיתנות-ותפירה-ע/"
+  },
+  "mon_12341189317": {
+    "technical": "https://alfacoral.com/",
+    "safety": "https://alfacoral.com/"
+  },
+  "mon_12341189515": {
+    "social": "https://ynrcollege.org.il/"
+  },
+  "ono": {
+    "business": "https://www.ono.ac.il/",
+    "computing": "https://www.ono.ac.il/"
+  },
+  "orin_shpalter": {
+    "business": "https://www.orin-shpalter.co.il/"
+  },
+  "orot": {
+    "education": "https://orot.ac.il/"
+  },
+  "sakhnin": {
+    "education": "https://sakhnin.ac.il/"
+  },
+  "sce": {
+    "engineering": "https://www.sce.ac.il/academic-units1/beersheva/engineering/software-engineering"
+  },
+  "schechter": {
+    "jewish": "https://schechter.ac.il/"
+  },
+  "seminar": {
+    "design": "https://www.smkb.ac.il/"
+  },
+  "shaanan": {
+    "education": "https://www.shaanan.ac.il/"
+  },
+  "shalem": {
+    "humanities": "https://shalem.ac.il/he/"
+  },
+  "shenkar": {
+    "engineering": "https://www.shenkar.ac.il/"
+  },
+  "talpiot": {
+    "education": "https://www.talpiot.ac.il/",
+    "design": "https://www.talpiot.ac.il/"
+  },
+  "tau": {
+    "computing": "https://go.tau.ac.il/he",
+    "life": "https://go.tau.ac.il/he"
+  },
+  "tcb": {
+    "technical": "https://tcb.ac.il/"
+  },
+  "tech_management": {
+    "technical": "https://college.org.il/",
+    "business": "https://college.org.il/"
+  },
+  "tiltan": {
+    "complementary": "https://www.tiltancollege.co.il/"
+  },
+  "weizmann": {
+    "sciences": "https://www.weizmann.ac.il/physics/study/study-at-weizmann",
+    "computing": "https://www.weizmann.ac.il/physics/study/study-at-weizmann",
+    "life": "https://www.weizmann.ac.il/physics/study/study-at-weizmann"
+  },
+  "wingate": {
+    "education": "https://www.l-w.ac.il/"
+  },
+  "wizo": {
+    "design": "https://design.haifa.ac.il/"
+  },
+  "zefat": {
+    "law": "https://www.zefat.ac.il/",
+    "computing": "https://www.zefat.ac.il/",
+    "social": "https://www.zefat.ac.il/"
+  }
+}
