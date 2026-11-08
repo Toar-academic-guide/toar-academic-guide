@@ -28,7 +28,7 @@ import InstitutionPage from './page';
 
 describe('InstitutionPage', () => {
   it('renders public institution content and links into app routes', async () => {
-    const institution = getStaticCatalogueInstitutions()[0];
+    const institution = getStaticCatalogueInstitutions().find((entry) => entry.id === 'haifa')!;
 
     render(await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }));
 
@@ -42,6 +42,14 @@ describe('InstitutionPage', () => {
         .getAttribute('href'),
     ).toBe('/app/calculator');
     expect(screen.queryByText('academicScores')).toBeNull();
+  });
+
+  it('does not promise a calculator for an institution with no supported programme', async () => {
+    render(await InstitutionPage({ params: Promise.resolve({ institutionId: 'danon' }) }));
+
+    expect(screen.getByRole('heading', { name: /דנון/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'מחשבון קבלה' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'שאלון התאמה' })).toBeTruthy();
   });
 
   it('calls notFound for unknown institution IDs', async () => {

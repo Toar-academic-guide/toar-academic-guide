@@ -4,6 +4,10 @@ import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import {
+  canLinkToSekhemCalculator,
+  loadSekhemCalculatorOfferings,
+} from '@/lib/sekhemCalculatorSupport';
 import { ROUTES } from '@/lib/routes';
 import { buildInstitutionMetadata } from '@/lib/seo/metadata';
 import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
@@ -58,6 +62,10 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
   }
 
   const { institution, programs, officialProgrammes = [], categoryPages = [] } = data;
+  const calculatorOfferings = await loadSekhemCalculatorOfferings();
+  const hasCalculator = programs.some((program) =>
+    canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
+  );
 
   return (
     <WayPageShell>
@@ -81,12 +89,14 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               >
                 שאלון התאמה{' '}
               </Link>
-              <Link
-                href={ROUTES.calculator}
-                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-              >
-                מחשבון קבלה{' '}
-              </Link>
+              {hasCalculator && (
+                <Link
+                  href={ROUTES.calculator}
+                  className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                >
+                  מחשבון קבלה{' '}
+                </Link>
+              )}
             </div>
           </div>
 

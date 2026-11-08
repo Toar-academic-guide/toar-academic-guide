@@ -156,9 +156,18 @@ describe('server-rendered crawl paths', () => {
     'hackeru_cs',
     'jerusalem_academy_dance',
     'reichman_infosystems',
-    'colmgmt_infosystems',
     'reidman_medicine',
   ];
+
+  it('links the verified Colman degree from the information-systems hub', async () => {
+    const informationSystems = await getPublicRelatedPrograms('colmgmt_infosystems');
+    expect(informationSystems.hub?.id).toBe('infosystems');
+    const informationSystemsPage = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: 'infosystems' }) }),
+    );
+    expect(paths(informationSystemsPage)).toContain('/programs/colmgmt_infosystems');
+    expect(paths(informationSystemsPage)).not.toContain('/programs/reichman_infosystems');
+  });
 
   it('links Minshar visual communication to the matching published hub', async () => {
     expect((await getPublicRelatedPrograms('minshar_graphic_design')).hub?.id).toBe('visual_comm');
