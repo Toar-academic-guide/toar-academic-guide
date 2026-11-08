@@ -1,0 +1,349 @@
+institution_id,programme_id_or_official_url,short_label,subject_key,field_key,programme_destination
+ariel,ariel_architecture,אדריכלות,academic:אדריכלות,architecture,/programs/ariel_architecture
+ariel,ariel_molecular_bio,ביולוגיה מולקולרית,academic:ביולוגיה מולקולרית,life,/programs/ariel_molecular_bio
+ariel,ariel_civil_eng,הנדסה אזרחית,academic:הנדסה אזרחית,engineering,/programs/ariel_civil_eng
+ariel,ariel_chemical_eng,הנדסה כימית,academic:הנדסה כימית,engineering,/programs/ariel_chemical_eng
+ariel,ariel_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/ariel_ee
+ariel,ariel_me,הנדסת מכונות,academic:הנדסת מכונות,engineering,/programs/ariel_me
+ariel,ariel_industrial_eng,הנדסת תעשייה וניהול,academic:הנדסת תעשייה וניהול,engineering,/programs/ariel_industrial_eng
+ariel,ariel_chemistry,כימיה,academic:כימיה,sciences,/programs/ariel_chemistry
+ariel,ariel_economics,כלכלה,academic:כלכלה,business,/programs/ariel_economics
+ariel,ariel_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/ariel_cs
+ariel,ariel_math,מתמטיקה,academic:מתמטיקה,sciences,/programs/ariel_math
+ariel,ariel_health_systems,ניהול מערכות בריאות,academic:ניהול מערכות בריאות,health,/programs/ariel_health_systems
+ariel,ariel_nursing,סיעוד,academic:סיעוד,health,/programs/ariel_nursing
+ariel,ariel_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/ariel_socialwork
+ariel,ariel_physics,פיזיקה,academic:פיזיקה,sciences,/programs/ariel_physics
+ariel,ariel_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/ariel_psychology
+ariel,ariel_criminology,קרימינולוגיה,academic:קרימינולוגיה,social,/programs/ariel_criminology
+ariel,ariel_nutrition,תזונה,academic:תזונה,health,/programs/ariel_nutrition
+ariel,nutrition,תזונה ודיאטטיקה,academic:תזונה ודיאטטיקה,health,/programs/nutrition
+ariel,ariel_communication,תקשורת,academic:תקשורת,communication,/programs/ariel_communication
+bgu,bgu_biology,ביולוגיה,academic:ביולוגיה,life,/programs/bgu_biology
+bgu,bgu_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/bgu_ee
+bgu,bgu_me,הנדסת מכונות,academic:הנדסת מכונות,engineering,/programs/bgu_me
+bgu,bgu_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://www.bgu.ac.il/welcome/ba/catalog/categories/software-engineering/
+bgu,bgu_industrial,הנדסת תעשייה וניהול,academic:הנדסת תעשייה וניהול,engineering,/programs/bgu_industrial
+bgu,education,חינוך והוראה,academic:חינוך והוראה,education,/programs/education
+bgu,bgu_accounting,חשבונאות,academic:חשבונאות,business,/programs/bgu_accounting
+bgu,bgu_economics,כלכלה,academic:כלכלה,business,/programs/bgu_economics
+bgu,political_science,מדע המדינה,academic:מדע המדינה,social,/programs/political_science
+bgu,bgu_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/bgu_cs
+bgu,bgu_datascience,מדעי הנתונים,academic:מדעי הנתונים,computing,/programs/bgu_datascience
+bgu,bgu_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/bgu_business
+bgu,bgu_nursing,סיעוד,academic:סיעוד,health,/programs/bgu_nursing
+bgu,bgu_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/bgu_socialwork
+bgu,physiotherapy,פיזיותרפיה,academic:פיזיותרפיה,health,/programs/physiotherapy
+bgu,bgu_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/bgu_psychology
+bgu,occupational_therapy,ריפוי בעיסוק,academic:ריפוי בעיסוק,health,/programs/occupational_therapy
+bgu,bgu_medicine,רפואה,academic:רפואה,health,/programs/bgu_medicine
+bgu,communication,תקשורת ועיתונאות,academic:תקשורת ועיתונאות,communication,/programs/communication
+biu,biu_optometry,אופטומטריה,academic:אופטומטריה,health,/programs/biu_optometry
+biu,biu_biotech,ביוטכנולוגיה,academic:ביוטכנולוגיה,life,/programs/biu_biotech
+biu,biu_computational_bio,ביולוגיה חישובית,academic:ביולוגיה חישובית,life,/programs/biu_computational_bio
+biu,biu_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/biu_ee
+biu,biu_lifesciences,מדעי החיים,academic:מדעי החיים,life,/programs/biu_lifesciences
+biu,biu_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/biu_cs
+biu,biu_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/biu_prep
+biu,biu_law,משפטים,academic:משפטים,law,/programs/biu_law
+biu,biu_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/biu_socialwork
+biu,biu_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/biu_psychology
+biu,biu_criminology,קרימינולוגיה,academic:קרימינולוגיה,social,/programs/biu_criminology
+biu,biu_medicine,רפואה (קמפוס צפת),academic:רפואה,health,/programs/biu_medicine
+haifa,haifa_biology,ביולוגיה,academic:ביולוגיה,life,/programs/haifa_biology
+haifa,haifa_accounting,חשבונאות,academic:חשבונאות,business,/programs/haifa_accounting
+haifa,haifa_economics,כלכלה,academic:כלכלה,business,/programs/haifa_economics
+haifa,haifa_politicalscience,מדע המדינה,academic:מדע המדינה,social,/programs/haifa_politicalscience
+haifa,haifa_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/haifa_cs
+haifa,haifa_infosystems,מערכות מידע,academic:מערכות מידע,computing,/programs/haifa_infosystems
+haifa,haifa_law,משפטים,academic:משפטים,law,/programs/haifa_law
+haifa,haifa_math,מתמטיקה,academic:מתמטיקה,sciences,/programs/haifa_math
+haifa,haifa_sociology,סוציולוגיה,academic:סוציולוגיה,social,/programs/haifa_sociology
+haifa,haifa_statistics,סטטיסטיקה,academic:סטטיסטיקה,sciences,/programs/haifa_statistics
+haifa,haifa_nursing,סיעוד,academic:סיעוד,health,/programs/haifa_nursing
+haifa,haifa_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/haifa_socialwork
+haifa,haifa_physiotherapy,פיזיותרפיה,academic:פיזיותרפיה,health,/programs/haifa_physiotherapy
+haifa,haifa_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/haifa_psychology
+haifa,occupational_therapy,ריפוי בעיסוק,academic:ריפוי בעיסוק,health,/programs/occupational_therapy
+haifa,haifa_communication,תקשורת,academic:תקשורת,communication,/programs/haifa_communication
+reichman,reichman_economics,כלכלה,academic:כלכלה,business,/programs/reichman_economics
+reichman,reichman_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/reichman_cs
+reichman,reichman_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/reichman_business
+reichman,reichman_law,משפטים,academic:משפטים,law,/programs/reichman_law
+reichman,reichman_infosystems,ניהול ומערכות מידע,academic:ניהול ומערכות מידע,business,/programs/reichman_infosystems
+reichman,reichman_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/reichman_psychology
+tau,architecture,אדריכלות,academic:אדריכלות,architecture,/programs/architecture
+tau,tau_biology,ביולוגיה,academic:ביולוגיה,life,/programs/tau_biology
+tau,tau_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/tau_ee
+tau,tau_me,הנדסת מכונות,academic:הנדסת מכונות,engineering,/programs/tau_me
+tau,tau_industrial,הנדסת תעשייה וניהול,academic:הנדסת תעשייה וניהול,engineering,/programs/tau_industrial
+tau,education,חינוך והוראה,academic:חינוך והוראה,education,/programs/education
+tau,tau_accounting,חשבונאות,academic:חשבונאות,business,/programs/tau_accounting
+tau,tau_economics,כלכלה,academic:כלכלה,business,/programs/tau_economics
+tau,political_science,מדע המדינה,academic:מדע המדינה,social,/programs/political_science
+tau,tau_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/tau_cs
+tau,tau_datascience,מדעי הנתונים,academic:מדעי הנתונים,computing,/programs/tau_datascience
+tau,tau_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/tau_business
+tau,tau_law,משפטים,academic:משפטים,law,/programs/tau_law
+tau,nursing,סיעוד,academic:סיעוד,health,/programs/nursing
+tau,tau_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/tau_socialwork
+tau,physiotherapy,פיזיותרפיה,academic:פיזיותרפיה,health,/programs/physiotherapy
+tau,tau_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/tau_psychology
+tau,tau_occupational_therapy,ריפוי בעיסוק,academic:ריפוי בעיסוק,health,/programs/tau_occupational_therapy
+tau,tau_medicine,רפואה,academic:רפואה,health,/programs/tau_medicine
+tau,communication,תקשורת ועיתונאות,academic:תקשורת ועיתונאות,communication,/programs/communication
+mon_12341107541,https://c.ort.org.il/course/חשמל-הנדסאים/,הנדסאי חשמל,vocational:הנדסאי חשמל,technical,https://c.ort.org.il/course/חשמל-הנדסאים/
+mon_12341091518,https://c.ort.org.il/course/חשמלאי-מוסמך/,חשמלאי מוסמך,course:חשמלאי מוסמך,technical,https://c.ort.org.il/course/חשמלאי-מוסמך/
+mon_12220685573,mon_12220685573_culinary,קולינריה,certificate:קולינריה,culinary,/programs/mon_12220685573_culinary
+mon_12220685573,mon_12220685573_cs,קונדיטוריה,certificate:קונדיטוריה,culinary,/programs/mon_12220685573_cs
+lfa,https://lfayou.com/course-page/care/1/114,עיצוב גבות וזקנים,course:עיצוב גבות וזקנים,beauty,https://lfayou.com/course-page/care/1/114
+bishulim,bishulim_restaurant_mgmt,ניהול מסעדות ואוכל,vocational:ניהול מסעדות ואוכל,culinary,/programs/bishulim_restaurant_mgmt
+bishulim,bishulim_pastry,פטיסרי ועוגות,vocational:פטיסרי ועוגות,culinary,/programs/bishulim_pastry
+bishulim,bishulim_cs,קולינריה,certificate:קולינריה,culinary,/programs/bishulim_cs
+bishulim,bishulim_chef,שף מקצועי,vocational:שף מקצועי,culinary,/programs/bishulim_chef
+mon_12341122982,mon_12341122982_graphic_design,הכשרת דולות,certificate:הכשרת דולות,health,/programs/mon_12341122982_graphic_design
+rubin,rubin_classical,תואר ראשון במוזיקה,academic:מוזיקה,performing,/programs/rubin_classical
+mon_12341092879,https://6bstudio.co.il/category/מכינה-ללימודי-עיצוב-אדריכלות-ואומנות/,מכינה לעיצוב ואדריכלות,course:מכינה לעיצוב ואדריכלות,preparation,https://6bstudio.co.il/category/מכינה-ללימודי-עיצוב-אדריכלות-ואומנות/
+mon_12341092879,mon_12341092879_graphic_design,עיצוב גרפי ו־UX/UI,certificate:עיצוב גרפי ו־UX/UI,design,/programs/mon_12341092879_graphic_design
+mon_12341092879,https://6bstudio.co.il/קורס-עיצוב-פנים/,עיצוב פנים,course:עיצוב פנים,design,https://6bstudio.co.il/קורס-עיצוב-פנים/
+mon_12341064485,mon_12341064485_graphic_design,משחק,certificate:משחק,performing,/programs/mon_12341064485_graphic_design
+nativ,nativ_graphic_design,משחק,certificate:משחק,performing,/programs/nativ_graphic_design
+mon_12341091651,https://www.yesodot-nadlan.co.il/courses/brokerage,תיווך נדל״ן,course:תיווך נדל״ן,property,https://www.yesodot-nadlan.co.il/courses/brokerage
+spieldocs,samspiegel_cinema,קולנוע,certificate:קולנוע,film,/programs/samspiegel_cinema
+spieldocs,samspiegel_screenwriting,תסריטאות,certificate:תסריטאות,film,/programs/samspiegel_screenwriting
+mon_12341148145,https://www.smartnadlan.co.il/nadlan,יזמות נדל״ן,course:יזמות נדל״ן,property,https://www.smartnadlan.co.il/nadlan
+beit_zvi,beit_zvi_directing,במאות,academic:במאות,performing,/programs/beit_zvi_directing
+beit_zvi,beit_zvi_cs,משחק,vocational:משחק,performing,/programs/beit_zvi_cs
+bezalel,https://www.bezalel.ac.il/academics/bachelor_degree/screen,אמנויות המסך,academic:אמנויות המסך,film,https://www.bezalel.ac.il/academics/bachelor_degree/screen
+bezalel,bezalel_fine_arts,אמנות,academic:אמנות,design,/programs/bezalel_fine_arts
+bezalel,bezalel_fashion,עיצוב אופנה,academic:עיצוב אופנה,design,/programs/bezalel_fashion
+bezalel,https://www.bezalel.ac.il/academics/bachelor_degree/ceramics,עיצוב קרמי וזכוכית,academic:עיצוב קרמי וזכוכית,design,https://www.bezalel.ac.il/academics/bachelor_degree/ceramics
+bezalel,bezalel_industrial_design,עיצוב תעשייתי,academic:עיצוב תעשייתי,design,/programs/bezalel_industrial_design
+bezalel,bezalel_photography,צילום,academic:צילום,film,/programs/bezalel_photography
+mon_12341173466,https://www.burlingtonenglish.co.il/english-courses/face-to-face/,אנגלית פרונטלית,course:אנגלית פרונטלית,languages,https://www.burlingtonenglish.co.il/english-courses/face-to-face/
+johnbryce,johnbryce_cyber,אבטחת סייבר – מסלול מקצועי,vocational:אבטחת סייבר – מסלול מקצועי,computing,/programs/johnbryce_cyber
+johnbryce,https://www.johnbryce.co.il/catalog/hi-tech-courses/java-full-stack-dvelopment/,פיתוח Full Stack ב־Java,course:פיתוח Full Stack ב־Java,computing,https://www.johnbryce.co.il/catalog/hi-tech-courses/java-full-stack-dvelopment/
+johnbryce,johnbryce_cs,DevOps,certificate:DevOps,computing,/programs/johnbryce_cs
+mon_12341203461,mon_12341203461_graphic_design,צילום,certificate:צילום,film,/programs/mon_12341203461_graphic_design
+huji,huji_biology,ביולוגיה,academic:ביולוגיה,life,/programs/huji_biology
+huji,huji_accounting,חשבונאות,academic:חשבונאות,business,/programs/huji_accounting
+huji,huji_economics,כלכלה,academic:כלכלה,business,/programs/huji_economics
+huji,huji_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/huji_cs
+huji,huji_datascience,מדעי הנתונים,academic:מדעי הנתונים,computing,/programs/huji_datascience
+huji,huji_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/huji_prep
+huji,huji_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/huji_business
+huji,huji_law,משפטים,academic:משפטים,law,/programs/huji_law
+huji,huji_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/huji_socialwork
+huji,huji_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/huji_psychology
+huji,pharmacy,פרמציה,academic:פרמציה,health,/programs/pharmacy
+huji,huji_occupational_therapy,ריפוי בעיסוק,academic:ריפוי בעיסוק,health,/programs/huji_occupational_therapy
+huji,huji_medicine,רפואה,academic:רפואה,health,/programs/huji_medicine
+huji,nutrition,תזונה ודיאטטיקה,academic:תזונה ודיאטטיקה,health,/programs/nutrition
+open_university,open_university_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/open_university_cs
+jerusalem_academy,jerusalem_academy_jazz,ג׳אז ומוזיקה עכשווית,academic:ג׳אז ומוזיקה עכשווית,performing,/programs/jerusalem_academy_jazz
+jerusalem_academy,jerusalem_academy_classical,מוזיקה קלאסית – ביצוע,academic:מוזיקה קלאסית – ביצוע,performing,/programs/jerusalem_academy_classical
+jerusalem_academy,jerusalem_academy_dance,תואר ראשון במחול,academic:מחול,performing,/programs/jerusalem_academy_dance
+mon_12220699120,mon_12220699120_graphic_design,מחול,certificate:מחול,performing,/programs/mon_12220699120_graphic_design
+technion,architecture,אדריכלות,academic:אדריכלות,architecture,/programs/architecture
+technion,technion_civil,הנדסה אזרחית וסביבתית,academic:הנדסה אזרחית וסביבתית,engineering,/programs/technion_civil
+technion,technion_biomedical,הנדסה ביורפואית,academic:הנדסה ביורפואית,engineering,/programs/technion_biomedical
+technion,technion_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/technion_ee
+technion,technion_me,הנדסת מכונות,academic:הנדסת מכונות,engineering,/programs/technion_me
+technion,technion_industrial,הנדסת תעשייה וניהול,academic:הנדסת תעשייה וניהול,engineering,/programs/technion_industrial
+technion,technion_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/technion_cs
+technion,datascience,מדעי הנתונים,academic:מדעי הנתונים,computing,/programs/datascience
+technion,technion_datascience,מדעי הנתונים וסטטיסטיקה,academic:מדעי הנתונים וסטטיסטיקה,computing,/programs/technion_datascience
+technion,technion_medicine,רפואה,academic:רפואה,health,/programs/technion_medicine
+mon_12341114281,https://t-unit.co.il/קורס-קציני-ביטחון/,הכשרת קציני ביטחון,course:הכשרת קציני ביטחון,safety,https://t-unit.co.il/קורס-קציני-ביטחון/
+mon_12341133521,https://minhaltech.co.il/קורס-טכנאי-מוצרי-חשמל-ביתיים/,טכנאות מוצרי חשמל ביתיים,course:טכנאות מוצרי חשמל ביתיים,technical,https://minhaltech.co.il/קורס-טכנאי-מוצרי-חשמל-ביתיים/
+mon_12341133521,https://minhaltech.co.il/קורס-טכנאי-מחשבים-pc/,טכנאות מחשבים,course:טכנאות מחשבים,computing,https://minhaltech.co.il/קורס-טכנאי-מחשבים-pc/
+hit,hit_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/hit_cs
+hit,hit_industrial_design,עיצוב תעשייתי,academic:עיצוב תעשייתי,design,/programs/hit_industrial_design
+hit,hit_visual_comm,תקשורת חזותית,academic:תקשורת חזותית,design,/programs/hit_visual_comm
+mon_12341098184,mon_12341098184_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/mon_12341098184_prep
+ono,ono_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/ono_cs
+ono,ono_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/ono_business
+ono,ono_law,משפטים,academic:משפטים,law,/programs/ono_law
+ono,ono_nursing,סיעוד,academic:סיעוד,health,/programs/ono_nursing
+ono,ono_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/ono_socialwork
+ono,ono_psychology,פסיכולוגיה,academic:פסיכולוגיה,social,/programs/ono_psychology
+ono_ce,ono_ce_psychotherapy,פסיכותרפיה אינטגרטיבית,certificate:פסיכותרפיה אינטגרטיבית,complementary,/programs/ono_ce_psychotherapy
+ono_ce,ono_ce_chinese_medicine,רפואה סינית מסורתית,certificate:רפואה סינית מסורתית,complementary,/programs/ono_ce_chinese_medicine
+israel_academic,mon_12341088622_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12341088622_cs
+israel_academic,https://iac.ac.il/חדש-תואר-ראשון-במשפטים-ll-b/,משפטים,academic:משפטים,law,https://iac.ac.il/חדש-תואר-ראשון-במשפטים-ll-b/
+kinneret,kinneret_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://do.kinneret.ac.il/studies/b-sc-in-software-engineering/
+braude,braude_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://w3.braude.ac.il/shnaton-26-27/applicant/
+braude,mon_12220708942_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12220708942_cs
+braude,braude_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/braude_prep
+sce,sce_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://www.sce.ac.il/academic-units1/beersheva/engineering/software-engineering
+sce,mon_12220708940_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12220708940_cs
+sce,sce_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/sce_prep
+azrieli,azrieli_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://www.jce.ac.il/degree-in-engineering/software-engineering
+azrieli,mon_12220708941_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12220708941_cs
+netanya,mon_12341101519_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12341101519_cs
+netanya,netanya_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/netanya_business
+netanya,netanya_law,משפטים,academic:משפטים,law,/programs/netanya_law
+sapir,mon_12220697668_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12220697668_cs
+sapir,sapir_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/sapir_prep
+sapir,sapir_law,משפטים,academic:משפטים,law,/programs/sapir_law
+emek_yezreel,mon_12220697671_cs,מערכות מידע,academic:מערכות מידע,computing,/programs/mon_12220697671_cs
+mta,tlvyaffo_economics,כלכלה,academic:כלכלה,business,/programs/tlvyaffo_economics
+mta,tlvyaffo_business,כלכלה וניהול,academic:כלכלה וניהול,business,/programs/tlvyaffo_business
+mta,tlvyaffo_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/tlvyaffo_cs
+mta,tlvyaffo_nursing,סיעוד,academic:סיעוד,health,/programs/tlvyaffo_nursing
+mta,tlvyaffo_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/tlvyaffo_socialwork
+tcb,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/,הנדסאי רכב חשמלי,vocational:הנדסאי רכב חשמלי,technical,https://tcb.ac.il/project/הנדסאי-רכב-חשמלי-בשיתוף-איגוד-המוסכים/
+mon_12341101391,kinneret_sound_technician,הנדסת סאונד,vocational:הנדסת סאונד,technical,https://www.ktec.co.il/schools/הנדסת-קול/
+mon_12341118864,https://www.ruppin-tech.co.il/departments/architecture-design/,הנדסאי אדריכלות ועיצוב פנים,vocational:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.ruppin-tech.co.il/departments/architecture-design/
+mon_12341118864,https://www.ruppin-tech.co.il/departments/civil-eng/,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.ruppin-tech.co.il/departments/civil-eng/
+mon_12341098142,https://www.telhai.tech/engineering/building,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.telhai.tech/engineering/building
+mon_12341098142,https://www.telhai.tech/engineering/Program-engineer,הנדסאי תוכנה,vocational:הנדסאי תוכנה,technical,https://www.telhai.tech/engineering/Program-engineer
+mon_12341114237,https://www.cbc.org.il/branch.aspx?id=3421,"הפקת אירועים, דוברות ויחסי ציבור","course:הפקת אירועים, דוברות ויחסי ציבור",communication,https://www.cbc.org.il/branch.aspx?id=3421
+mon_12341143672,mon_12341143672_business,מנהל עסקים וניהול כללי,certificate:מנהל עסקים וניהול כללי,business,/programs/mon_12341143672_business
+mon_12341134448,mon_12341134448_business,ניהול משאבי אנוש,certificate:ניהול משאבי אנוש,business,/programs/mon_12341134448_business
+hadassah,mon_12220685569_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/mon_12220685569_cs
+ramat_gan,mon_12341126565_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/mon_12341126565_business
+ramat_gan,ramat_gan_law,משפטים,academic:משפטים,law,/programs/ramat_gan_law
+ruppin,ruppin_marine_bio,מדעי הים והסביבה הימית,academic:מדעי הים והסביבה הימית,life,/programs/ruppin_marine_bio
+ruppin,ruppin_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/ruppin_cs
+ruppin,ruppin_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/ruppin_prep
+mon_12341138594,https://studycenter.co.il/courses/course-qa-automation/,בדיקות תוכנה ואוטומציה,course:בדיקות תוכנה ואוטומציה,computing,https://studycenter.co.il/courses/course-qa-automation/
+mon_12341138594,https://studycenter.co.il/courses/graphic-design-course/,עיצוב גרפי,course:עיצוב גרפי,design,https://studycenter.co.il/courses/graphic-design-course/
+mon_12341144849,https://fire-center.co.il/קורסים/ממונה-בטיחות-אש-בפיקוח-הרשות-הארצית-בת/,הכשרת ממוני בטיחות אש,course:הכשרת ממוני בטיחות אש,safety,https://fire-center.co.il/קורסים/ממונה-בטיחות-אש-בפיקוח-הרשות-הארצית-בת/
+mon_12341179463,mon_12341179463_education,חינוך והוראה,certificate:חינוך והוראה,education,/programs/mon_12341179463_education
+mon_12341167283,https://www.educenter.co.il/לימודי-הוראה-מתקנת/,הוראה מתקנת,course:הוראה מתקנת,education,https://www.educenter.co.il/לימודי-הוראה-מתקנת/
+mon_12341114114,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/,הנדסאי אלקטרוניקה,vocational:הנדסאי אלקטרוניקה,technical,https://handesaim.ariel.ac.il/department/מחלקות-הנדסה-וטכנולוגיה/הנדסאי-אלקטרוניקה/
+mon_12341128848,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/,הנדסאי אדריכלות ועיצוב פנים,vocational:הנדסאי אדריכלות ועיצוב פנים,architecture,https://www.cts.org.il/הנדסאי-אדריכלות-ועיצוב-פנים/
+mon_12341128848,https://www.cts.org.il/הנדסה-אזרחית/,הנדסאי בניין,vocational:הנדסאי בניין,technical,https://www.cts.org.il/הנדסה-אזרחית/
+mon_12341076875,https://www.cleo.co.il/עובד-גובה-משולב/?a=09/11/26,עבודה בגובה,course:עבודה בגובה,safety,https://www.cleo.co.il/עובד-גובה-משולב/?a=09/11/26
+mon_12220697940,mon_12220697940_graphic_design,משחק,certificate:משחק,performing,/programs/mon_12220697940_graphic_design
+mon_12341108218,mon_12341108218_cs,ברמנים,certificate:ברמנים,hospitality,/programs/mon_12341108218_cs
+mon_12341138357,https://charshan.co.il/psychometry/,הכנה לפסיכומטרי,course:הכנה לפסיכומטרי,exam,https://charshan.co.il/psychometry/
+mon_12341150395,mon_12341150395_graphic_design,משחק,certificate:משחק,performing,/programs/mon_12341150395_graphic_design
+mon_12341113458,https://hzschool.co.il/מסלול-קוסמטיקה-למתחילות/,קוסמטיקה,course:קוסמטיקה,beauty,https://hzschool.co.il/מסלול-קוסמטיקה-למתחילות/
+mon_12341142616,mon_12341142616_education,חינוך והוראה,academic:חינוך והוראה,education,/programs/mon_12341142616_education
+danon,danon_culinary_arts,אמנות קולינרית,vocational:אמנות קולינרית,culinary,/programs/danon_culinary_arts
+danon,danon_pastry,קונדיטוריה מקצועית,vocational:קונדיטוריה מקצועית,culinary,/programs/danon_pastry
+danon,danon_chef,שף מקצועי,vocational:שף מקצועי,culinary,/programs/danon_chef
+aliya,https://www.aliya.org.il/writing-stam/,כתיבת סת״ם,course:כתיבת סת״ם,jewish,https://www.aliya.org.il/writing-stam/
+mon_12341133625,https://www.pitronot.net/studies/parity-consulting,ייעוץ זוגי,course:ייעוץ זוגי,coaching,https://www.pitronot.net/studies/parity-consulting
+shaare_mishpat,shaare_mishpat_law,משפטים,academic:משפטים,law,/programs/shaare_mishpat_law
+mon_12341134000,https://www.orens.org.il/קורס-מנהלת-משרד-בכירה-כללית/,מזכירות בכירה וניהול משרד,course:מזכירות בכירה וניהול משרד,business,https://www.orens.org.il/קורס-מנהלת-משרד-בכירה-כללית/
+mon_12341134000,https://www.orens.org.il/קורס-סייעות-רופא-שיניים/,סייעות לרופא שיניים,course:סייעות לרופא שיניים,health,https://www.orens.org.il/קורס-סייעות-רופא-שיניים/
+oranim,oranim_education,חינוך והוראה,academic:חינוך והוראה,education,/programs/oranim_education
+oranim,mon_12341185928_cs,מתמטיקה ומדעי המחשב עם תעודת הוראה,academic:מתמטיקה ומדעי המחשב עם תעודת הוראה,computing,/programs/mon_12341185928_cs
+mon_12341189317,https://alfacoral.com/קורס-ממונה-בטיחות/,הכשרת ממוני בטיחות,course:הכשרת ממוני בטיחות,safety,https://alfacoral.com/קורס-ממונה-בטיחות/
+mon_12341189317,https://alfacoral.com/קורס-מנהלי-עבודה-בבניין/,ניהול עבודה בבניין,course:ניהול עבודה בבניין,technical,https://alfacoral.com/קורס-מנהלי-עבודה-בבניין/
+mon_12341126233,https://afikonline.co.il/cartflows_step/לימודי-שמאות-מקרקעין/,שמאות מקרקעין,course:שמאות מקרקעין,property,https://afikonline.co.il/cartflows_step/לימודי-שמאות-מקרקעין/
+afeka,afeka_biomedical,הנדסה ביורפואית,academic:הנדסה ביורפואית,engineering,/programs/afeka_biomedical
+afeka,afeka_ee,הנדסת חשמל,academic:הנדסת חשמל,engineering,/programs/afeka_ee
+afeka,afeka_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,/programs/afeka_softwareeng
+afeka,afeka_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/afeka_cs
+mon_12341101957,https://www.arti-studio.co.il/מכינה-לעיצוב-ואדריכלות/,מכינה לעיצוב ואדריכלות,course:מכינה לעיצוב ואדריכלות,preparation,https://www.arti-studio.co.il/מכינה-לעיצוב-ואדריכלות/
+mon_12341101957,mon_12341101957_graphic_design,עיצוב פנים,certificate:עיצוב פנים,design,/programs/mon_12341101957_graphic_design
+mon_12341101957,https://www.arti-studio.co.il/קורס-צילום-1/,צילום,course:צילום,film,https://www.arti-studio.co.il/קורס-צילום-1/
+beit_berl,mon_12220696298_graphic_design,אמנות והוראת אמנות,academic:אמנות והוראת אמנות,design,/programs/mon_12220696298_graphic_design
+beit_berl,https://www.beitberl.ac.il/degree/beducation/,חינוך והוראה,academic:חינוך והוראה,education,https://www.beitberl.ac.il/degree/beducation/
+broshim,broshim_homeopathy,הומאופתיה,certificate:הומאופתיה,complementary,/programs/broshim_homeopathy
+broshim,broshim_naturopathy,נטורופתיה,certificate:נטורופתיה,complementary,/programs/broshim_naturopathy
+broshim,broshim_psychotherapy,פסיכותרפיה אינטגרטיבית,certificate:פסיכותרפיה אינטגרטיבית,complementary,/programs/broshim_psychotherapy
+mon_12341168659,https://www.justmusic.co.il/module/smp/,הפקה מוזיקלית,course:הפקה מוזיקלית,performing,https://www.justmusic.co.il/module/smp/
+givat_washington,mon_12341128804_medicine,רפואה משלימה,certificate:רפואה משלימה,complementary,/programs/mon_12341128804_medicine
+david_yellin,david_yellin_education,חינוך והוראה,academic:חינוך והוראה,education,/programs/david_yellin_education
+mon_12341149187,https://www.home-design.co.il/לימודי-עיצוב-פנים/,עיצוב פנים,course:עיצוב פנים,design,https://www.home-design.co.il/לימודי-עיצוב-פנים/
+mon_12341175059,mon_12341175059_cs,סייבר ואבטחת מידע,certificate:סייבר ואבטחת מידע,computing,/programs/mon_12341175059_cs
+mon_12341175059,https://tech-zone.co.il/קורס-עיצוב-גרפי/,עיצוב גרפי,course:עיצוב גרפי,design,https://tech-zone.co.il/קורס-עיצוב-גרפי/
+mon_12341144650,https://kiv.co.il/קורס-בניית-אתרים/,בניית אתרים,course:בניית אתרים,computing,https://kiv.co.il/קורס-בניית-אתרים/
+wingate,wingate_coaching,אימון ספורטיבי,academic:אימון ספורטיבי,sport,/programs/wingate_coaching
+wingate,wingate_cs,חינוך גופני,academic:חינוך גופני,sport,/programs/wingate_cs
+wingate,sports_science,מדעי הספורט,academic:מדעי הספורט,sport,/programs/sports_science
+mon_12341128292,https://medicin.org.il/לימודי-נטורופתיה/,נטורופתיה,course:נטורופתיה,complementary,https://medicin.org.il/לימודי-נטורופתיה/
+mon_12341122838,https://mishlav.co.il/קורס-הנהלת-חשבונות-סוג-3-ראשי/,הנהלת חשבונות סוג 3,course:הנהלת חשבונות סוג 3,business,https://mishlav.co.il/קורס-הנהלת-חשבונות-סוג-3-ראשי/
+mon_12341167257,https://merkazmami.co.il/ממי-המרכז-למערכות-יחסים-קורס-יעוץ-זוגי/,ייעוץ זוגי,course:ייעוץ זוגי,coaching,https://merkazmami.co.il/ממי-המרכז-למערכות-יחסים-קורס-יעוץ-זוגי/
+colman,colmgmt_accounting,חשבונאות,academic:חשבונאות,business,/programs/colmgmt_accounting
+colman,colmgmt_economics,כלכלה,academic:כלכלה,business,/programs/colmgmt_economics
+colman,colmgmt_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/colmgmt_cs
+colman,colmgmt_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/colmgmt_business
+colman,colmgmt_law,משפטים,academic:משפטים,law,/programs/colmgmt_law
+colman,colmgmt_infosystems,ניהול ומערכות מידע,academic:ניהול ומערכות מידע,business,/programs/colmgmt_infosystems
+mon_12341137650,https://nextcollege.co.il/bookkeeping/,הנהלת חשבונות,course:הנהלת חשבונות,business,https://nextcollege.co.il/bookkeeping/
+mon_12341138289,mon_12341138289_cs,בדיקות תוכנה,certificate:בדיקות תוכנה,computing,/programs/mon_12341138289_cs
+idan_hahorut,idan_hahorut_education,חינוך והוראה,academic:חינוך והוראה,education,/programs/idan_hahorut_education
+mon_12341092241,https://psagot.org/the_route/stockmarketinvesting/,השקעות בשוק ההון,course:השקעות בשוק ההון,business,https://psagot.org/the_route/stockmarketinvesting/
+pardeshana,pardeshana_integrative,מיקולוגיה ורפואה אינטגרטיבית,certificate:מיקולוגיה ורפואה אינטגרטיבית,complementary,/programs/pardeshana_integrative
+zefat,https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/מערכות-מידע-bsc/,מערכות מידע,academic:מערכות מידע,computing,https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/מערכות-מידע-bsc/
+zefat,https://www.zefat.ac.il/בתי-ספר-ומכינות/בית-הספר-למשפטים/במשפטים-llb/,משפטים,academic:משפטים,law,https://www.zefat.ac.il/בתי-ספר-ומכינות/בית-הספר-למשפטים/במשפטים-llb/
+zefat,https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/עבודה-סוציאלית-ba/,עבודה סוציאלית,academic:עבודה סוציאלית,social,https://www.zefat.ac.il/בתי-ספר-ומכינות/מדעי-החברה/עבודה-סוציאלית-ba/
+kaye,kaye_education,חינוך והוראה,academic:חינוך והוראה,education,/programs/kaye_education
+reidman,reidman_homeopathy,הומאופתיה,certificate:הומאופתיה,complementary,/programs/reidman_homeopathy
+reidman,reidman_naturopathy,נטורופתיה,certificate:נטורופתיה,complementary,/programs/reidman_naturopathy
+reidman,reidman_medicine,רפואה משלימה,certificate:רפואה משלימה,complementary,/programs/reidman_medicine
+reidman,reidman_chinese_medicine,רפואה סינית מסורתית,certificate:רפואה סינית מסורתית,complementary,/programs/reidman_chinese_medicine
+reidman,reidman_reflexology,רפלקסולוגיה,certificate:רפלקסולוגיה,complementary,/programs/reidman_reflexology
+tiltan,https://www.tiltancollege.co.il/se/לימוד_לימודי_נטורופתיה_,נטורופתיה,course:נטורופתיה,complementary,https://www.tiltancollege.co.il/se/לימוד_לימודי_נטורופתיה_
+mon_12341137918,mon_12341137918_medicine,רפואה משלימה,certificate:רפואה משלימה,complementary,/programs/mon_12341137918_medicine
+telhai,telhai_biology,ביולוגיה,academic:ביולוגיה,life,/programs/telhai_biology
+telhai,telhai_cs,מדעי המחשב,academic:מדעי המחשב,computing,/programs/telhai_cs
+telhai,telhai_prep,מכינה קדם-אקדמית,academic:מכינה קדם-אקדמית,preparation,/programs/telhai_prep
+telhai,telhai_nursing,סיעוד,academic:סיעוד,health,/programs/telhai_nursing
+telhai,telhai_socialwork,עבודה סוציאלית,academic:עבודה סוציאלית,social,/programs/telhai_socialwork
+mon_12341144937,https://tnufa4u.co.il/קורס-אוטומציה-ו-ai/,אוטומציה ובינה מלאכותית,course:אוטומציה ובינה מלאכותית,computing,https://tnufa4u.co.il/קורס-אוטומציה-ו-ai/
+mon_12341144937,https://tnufa4u.co.il/dula/,הכשרת דולות ומדריכות הכנה ללידה,course:הכשרת דולות ומדריכות הכנה ללידה,health,https://tnufa4u.co.il/dula/
+mon_12220697934,mon_12220697934_cs,מוזיקה והפקה,certificate:מוזיקה והפקה,performing,/programs/mon_12220697934_cs
+mon_12220697934,https://www.bpm-music.com/course/bsp/,סאונד והפקה מוזיקלית,course:סאונד והפקה מוזיקלית,performing,https://www.bpm-music.com/course/bsp/
+mon_12341134798,https://www.chakra999.com/Introduction-course,נומרולוגיה,course:נומרולוגיה,personal,https://www.chakra999.com/Introduction-course
+mon_12341134798,https://www.chakra999.com/קורס-פרחי-באך,פרחי באך,course:פרחי באך,complementary,https://www.chakra999.com/קורס-פרחי-באך
+mon_12341107292,https://www.iccm.co.il/קורס-הכשרת-מאמנים/,הכשרת מאמנים,course:הכשרת מאמנים,coaching,https://www.iccm.co.il/קורס-הכשרת-מאמנים/
+mon_12341138641,https://ipc.co.il/course/cybersecurity-course/,סייבר ואבטחת מידע,course:סייבר ואבטחת מידע,computing,https://ipc.co.il/course/cybersecurity-course/
+mon_12341102883,https://www.res-nadlan.co.il/res-mavo/,מבוא לנדל״ן,course:מבוא לנדל״ן,property,https://www.res-nadlan.co.il/res-mavo/
+mon_12341137305,mon_12341137305_cs,בדיקות תוכנה,certificate:בדיקות תוכנה,computing,/programs/mon_12341137305_cs
+minshar,minshar_fine_arts,אמנות,certificate:אמנות,design,/programs/minshar_fine_arts
+minshar,minshar_animation,אנימציה ומדיה דיגיטלית,certificate:אנימציה ומדיה דיגיטלית,design,/programs/minshar_animation
+minshar,minshar_photography,צילום,certificate:צילום,film,/programs/minshar_photography
+minshar,minshar_dance,ריקוד עכשווי,certificate:ריקוד עכשווי,performing,/programs/minshar_dance
+minshar,minshar_graphic_design,תקשורת חזותית,certificate:תקשורת חזותית,design,/programs/minshar_graphic_design
+mon_12220697938,mon_12220697938_graphic_design,קולנוע,certificate:קולנוע,film,/programs/mon_12220697938_graphic_design
+peres,peres_business,מנהל עסקים,academic:מנהל עסקים,business,/programs/peres_business
+peres,peres_law,משפטים,academic:משפטים,law,/programs/peres_law
+mon_12341185806,https://michaldalyot.co.il/לימודי-הדרכת-הורים-בגישת-מיכל-דליות/,הדרכת הורים,course:הדרכת הורים,coaching,https://michaldalyot.co.il/לימודי-הדרכת-הורים-בגישת-מיכל-דליות/
+seminar,seminar_art_education,חינוך לאמנות,academic:חינוך לאמנות,education,/programs/seminar_art_education
+seminar,seminar_music_education,חינוך מוזיקלי,academic:חינוך מוזיקלי,education,/programs/seminar_music_education
+seminar,seminar_dance,ריקוד עכשווי,academic:ריקוד עכשווי,performing,/programs/seminar_dance
+mon_12341092889,https://successcollege.co.il/course/tech-ai/,בינה מלאכותית,course:בינה מלאכותית,computing,https://successcollege.co.il/course/tech-ai/
+mon_12341092889,https://successcollege.co.il/course/project-management/,ניהול פרויקטים,course:ניהול פרויקטים,business,https://successcollege.co.il/course/project-management/
+mon_12341092889,https://successcollege.co.il/course/קורס-ui-ux/,עיצוב ממשק וחוויית משתמש,course:עיצוב ממשק וחוויית משתמש,design,https://successcollege.co.il/course/קורס-ui-ux/
+mon_12341141808,https://psagot.org/the_route/קורס-שמאות/,שמאות מקרקעין,course:שמאות מקרקעין,property,https://psagot.org/the_route/קורס-שמאות/
+mon_12341113400,mon_12341113400_cs,פיתוח תוכנה,certificate:פיתוח תוכנה,computing,/programs/mon_12341113400_cs
+kidum,https://kidum.com/פסיכומטרי/קורס-פסיכומטרי/,הכנה לפסיכומטרי,course:הכנה לפסיכומטרי,exam,https://kidum.com/פסיכומטרי/קורס-פסיכומטרי/
+mon_12341126300,mon_12341126300_education,חינוך והוראה,certificate:חינוך והוראה,education,/programs/mon_12341126300_education
+mon_12341166173,https://waterworld-campus.co.il/swimming/,הכשרת מדריכי שחייה,course:הכשרת מדריכי שחייה,sport,https://waterworld-campus.co.il/swimming/
+mon_12341063909,mon_12341063909_graphic_design,צילום וקולנוע,certificate:צילום וקולנוע,film,/programs/mon_12341063909_graphic_design
+mon_12220685575,mon_12220685575_graphic_design,מוזיקה,certificate:מוזיקה,performing,/programs/mon_12220685575_graphic_design
+shenkar,shenkar_animation,אנימציה,academic:אנימציה,design,/programs/shenkar_animation
+shenkar,shenkar_softwareeng,הנדסת תוכנה,academic:הנדסת תוכנה,engineering,https://www.shenkar.ac.il/engineering/bachelors/software_engineering/admission/
+shenkar,shenkar_fashion,עיצוב אופנה,academic:עיצוב אופנה,design,/programs/shenkar_fashion
+shenkar,shenkar_graphic_design,עיצוב גרפי ותקשורת חזותית,academic:עיצוב גרפי ותקשורת חזותית,design,/programs/shenkar_graphic_design
+shenkar,shenkar_industrial_design,עיצוב תעשייתי,academic:עיצוב תעשייתי,design,/programs/shenkar_industrial_design
+mon_12341149221,https://www.tiltan.co.il/department/עיצוב-גרפי/,עיצוב גרפי,course:עיצוב גרפי,design,https://www.tiltan.co.il/department/עיצוב-גרפי/
+mon_12341149221,https://www.tiltan.co.il/department/עיצוב-ופיתוח-משחקים/,עיצוב ופיתוח משחקים,course:עיצוב ופיתוח משחקים,computing,https://www.tiltan.co.il/department/עיצוב-ופיתוח-משחקים/
+mon_12341098628,mon_12341098628_business,מנהל עסקים מעשי,certificate:מנהל עסקים מעשי,business,/programs/mon_12341098628_business
+mon_12341162526,https://all4horses.co.il/קורס-אילוף-סוסים/,אילוף סוסים,course:אילוף סוסים,animals,https://all4horses.co.il/קורס-אילוף-סוסים/
+mon_12341162526,https://all4horses.co.il/קורס-מדריכי-רכיבה/,הכשרת מדריכי רכיבה,course:הכשרת מדריכי רכיבה,sport,https://all4horses.co.il/קורס-מדריכי-רכיבה/
+bdo_academy,https://www.bdo-academy.co.il/license_courses_list/finance/,מימון וסטטיסטיקה לבחינות רשות ניירות ערך,course:מימון וסטטיסטיקה לבחינות רשות ניירות ערך,business,https://www.bdo-academy.co.il/license_courses_list/finance/
+bdo_academy,bdo_retirement_planning,תכנון פרישה,certificate:תכנון פרישה,business,https://www.bdo-academy.co.il/retirement/prisha/
+mon_12341108755,https://bmeniv.co.il/קורס-תכנון-פיננסי-השקעות-בשוק-ההון/,תכנון פיננסי והשקעות בשוק ההון,course:תכנון פיננסי והשקעות בשוק ההון,business,https://bmeniv.co.il/קורס-תכנון-פיננסי-השקעות-בשוק-ההון/
+mon_12341134516,https://www.ezway.co.il/courses/,הכנה לפסיכומטרי,course:הכנה לפסיכומטרי,exam,https://www.ezway.co.il/courses/
+elevation,elevation_cyber,סייבר הגנתי ומתקפי,vocational:סייבר הגנתי ומתקפי,computing,/programs/elevation_cyber
+elevation,elevation_fullstack,פיתוח Full-Stack,vocational:פיתוח Full-Stack,computing,/programs/elevation_fullstack
+hackeru,hackeru_cyber,אבטחת מידע וסייבר,vocational:אבטחת מידע וסייבר,computing,/programs/hackeru_cyber
+hackeru,hackeru_data,אנליזת נתונים ו-BI,vocational:אנליזת נתונים ו-BI,computing,/programs/hackeru_data
+hackeru,hackeru_fullstack,פיתוח Full-Stack,vocational:פיתוח Full-Stack,computing,/programs/hackeru_fullstack
+hackeru,https://www.hackeru.co.il/course/devops,DevOps,course:DevOps,computing,https://www.hackeru.co.il/course/devops
+high_q,https://www.high-q.co.il/פסיכומטרי/הקורס-שלנו/,הכנה לפסיכומטרי,course:הכנה לפסיכומטרי,exam,https://www.high-q.co.il/פסיכומטרי/הקורס-שלנו/
+mon_12341101353,mon_12341101353_cs,סייבר ואבטחת מידע,certificate:סייבר ואבטחת מידע,computing,/programs/mon_12341101353_cs
+itc,itc_data_science,מדעי הנתונים,vocational:מדעי הנתונים,computing,/programs/itc_data_science
+mon_12341165209,https://www.izikzuri.co.il/קורסים/קורס-איפור-מקצועי/,איפור מקצועי,course:איפור מקצועי,beauty,https://www.izikzuri.co.il/קורסים/קורס-איפור-מקצועי/
+mon_12341147475,mon_12341147475_cs,סייבר ואבטחת מידע,certificate:סייבר ואבטחת מידע,computing,/programs/mon_12341147475_cs
+mon_12341150917,https://newschool.co.il/english-courses/קורס-אנגלית-אונליין/,אנגלית אונליין,course:אנגלית אונליין,languages,https://newschool.co.il/english-courses/קורס-אנגלית-אונליין/
+mon_12341113217,https://www.nlppro.co.il/קורס-nlp-trainer-והנחיית-קבוצות/,הנחיית קבוצות NLP,course:הנחיית קבוצות NLP,coaching,https://www.nlppro.co.il/קורס-nlp-trainer-והנחיית-קבוצות/
+mon_12341167899,https://svcollege.co.il/courses/qa-automation/,בדיקות תוכנה ואוטומציה,course:בדיקות תוכנה ואוטומציה,computing,https://svcollege.co.il/courses/qa-automation/

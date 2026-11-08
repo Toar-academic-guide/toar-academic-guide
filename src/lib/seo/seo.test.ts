@@ -30,7 +30,7 @@ import {
   isIndexableProgram,
 } from './indexability';
 import { buildInstitutionMetadata, buildProgramMetadata } from './metadata';
-import { canonicalProgramId } from './programAliases';
+import { canonicalProgramId, PROGRAM_RETIREMENT_REDIRECTS } from './programAliases';
 import {
   breadcrumbLd,
   institutionDirectoryLd,
@@ -144,7 +144,9 @@ describe('crawl policy', () => {
     for (const institution of institutions) {
       expect(await isIndexableInstitution(institution.id)).toBe(
         !institution.id.startsWith('mon_') &&
-          (await getPublicInstitutionPageData(institution.id))!.programs.length > 0,
+          programs.some(
+            (p) => p.isListed !== false && p.linkedInstitutionIds.includes(institution.id),
+          ),
       );
     }
     // PM rule (#271): a general subject page that links to no programme page
@@ -167,7 +169,8 @@ describe('crawl policy', () => {
     ]);
     for (const program of programs) {
       expect(await isIndexableProgram(program.id)).toBe(
-        canonicalProgramId(program.id) === program.id &&
+        !Object.hasOwn(PROGRAM_RETIREMENT_REDIRECTS, program.id) &&
+          canonicalProgramId(program.id) === program.id &&
           !program.id.startsWith('mon_') &&
           program.isListed !== false &&
           (await getPublicProgramPageData(program.id))!.institutions.length > 0 &&
@@ -192,6 +195,7 @@ describe('crawl policy', () => {
       programs
         .filter(
           (p) =>
+            !Object.hasOwn(PROGRAM_RETIREMENT_REDIRECTS, p.id) &&
             canonicalProgramId(p.id) === p.id &&
             !p.id.startsWith('mon_') &&
             p.isListed !== false &&
@@ -202,7 +206,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 405 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 404 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -248,7 +252,8 @@ describe('crawl policy', () => {
     // its sole subject hub (official sources checked 24.10.2026).
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
-    expect(urls).toHaveLength(406);
+    expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
+    expect(urls).toHaveLength(405);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -319,7 +324,9 @@ describe('metadata', () => {
     const meta = await buildInstitutionMetadata('tau');
     expect(meta.title).toBe(`${data.institution.name}: תנאי קבלה וסיכויי קבלה`);
     expect(meta.description).toContain(data.institution.name);
-    expect(meta.description).toContain(`${data.programs.length} מסלולי לימוד`);
+    expect(meta.description).toContain(
+      `${data.programs.length + (data.officialProgrammes?.length ?? 0)} מסלולי לימוד`,
+    );
     expect(meta.alternates).toEqual({ canonical: '/institutions/tau' });
     expect(meta.openGraph).toMatchObject({
       title: meta.title,
@@ -490,19 +497,25 @@ describe('metadata', () => {
         general.some((program) => own.some((specific) => specific.name === program.name)),
       ).toBe(false);
       const metadata = await buildInstitutionMetadata(institution.id);
-      expect(metadata.description).toContain(`${page.programs.length} מסלולי לימוד`);
+      const count = page.programs.length + (page.officialProgrammes?.length ?? 0);
+      expect(metadata.description).toContain(
+        count === 1 ? 'מסלול לימוד אחד' : count ? `${count} מסלולי לימוד` : 'מידע על מסלולי הלימוד',
+      );
       const markup = renderToStaticMarkup(
         await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }),
       );
-      expect(markup.match(/href="\/programs\//g) ?? []).toHaveLength(page.programs.length);
+      expect(markup.match(/href="\/programs\//g) ?? []).toHaveLength(
+        page.programs.length + (page.categoryPages?.length ?? 0),
+      );
       const ld = institutionLd(page).hasOfferCatalog;
-      expect(ld.numberOfItems).toBe(page.programs.length);
+      expect(ld.numberOfItems).toBe(page.programs.length + (page.officialProgrammes?.length ?? 0));
       expect(ld.itemListElement.map((item) => item.name)).toEqual(
-        page.programs.map((program) => program.name),
+        [...page.programs, ...(page.officialProgrammes ?? [])].map((program) => program.name),
       );
-      expect(ld.itemListElement.map((item) => item.url)).toEqual(
-        page.programs.map((program) => `${SITE_URL}/programs/${program.id}`),
-      );
+      expect(ld.itemListElement.map((item) => item.url)).toEqual([
+        ...page.programs.map((program) => `${SITE_URL}/programs/${program.id}`),
+        ...(page.officialProgrammes ?? []).map((p) => p.url),
+      ]);
       if (page.programs.length > 12) {
         expect(markup).toContain(
           page.programs.length === 13
@@ -540,7 +553,9 @@ describe('metadata', () => {
   it('leads with real relation facts and keeps descriptions unique across indexable detail pages', async () => {
     const institution = (await getPublicInstitutionPageData('tau'))!;
     expect((await buildInstitutionMetadata('tau')).description).toMatch(
-      new RegExp(`^${institution.programs.length} מסלולי לימוד`),
+      new RegExp(
+        `^${institution.programs.length + (institution.officialProgrammes?.length ?? 0)} מסלולי לימוד`,
+      ),
     );
     expect((await buildProgramMetadata('tau_cs')).description).toMatch(
       /^מדעי המחשב באוניברסיטת תל אביב:/,
