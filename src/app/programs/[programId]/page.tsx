@@ -71,8 +71,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
-  const calculatorOfferings = await loadSekhemCalculatorOfferings();
-  const hasCalculator = institutions.some((institution) =>
+  const possibleCalculatorInstitutions = institutions.filter((institution) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const calculatorOfferings = possibleCalculatorInstitutions.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
 

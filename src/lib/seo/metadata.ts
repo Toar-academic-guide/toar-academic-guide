@@ -207,8 +207,11 @@ export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
   if (!data) return {};
   const { institution, programs, officialProgrammes = [] } = data;
   const count = programs.length + officialProgrammes.length;
-  const offerings = await loadSekhemCalculatorOfferings();
-  const hasCalculator = programs.some((program) =>
+  const possibleCalculatorPrograms = programs.filter((program) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const offerings = possibleCalculatorPrograms.length ? await loadSekhemCalculatorOfferings() : [];
+  const hasCalculator = possibleCalculatorPrograms.some((program) =>
     canLinkToSekhemCalculator(program, institution.id, offerings),
   );
   const scope =
@@ -267,8 +270,13 @@ export async function buildProgramMetadata(id: string): Promise<Metadata> {
       program.institutionId === data.program.institutionId &&
       program.category !== data.program.category,
   );
-  const offerings = await loadSekhemCalculatorOfferings();
-  const hasCalculator = data.institutions.some((institution) =>
+  const possibleCalculatorInstitutions = data.institutions.filter((institution) =>
+    canLinkToSekhemCalculator(data.program, institution.id),
+  );
+  const offerings = possibleCalculatorInstitutions.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(data.program, institution.id, offerings),
   );
   return pageMetadata(

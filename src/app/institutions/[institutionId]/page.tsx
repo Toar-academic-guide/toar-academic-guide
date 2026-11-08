@@ -62,8 +62,13 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
   }
 
   const { institution, programs, officialProgrammes = [], categoryPages = [] } = data;
-  const calculatorOfferings = await loadSekhemCalculatorOfferings();
-  const hasCalculator = programs.some((program) =>
+  const possibleCalculatorPrograms = programs.filter((program) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const calculatorOfferings = possibleCalculatorPrograms.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorPrograms.some((program) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
 

@@ -128,18 +128,21 @@ describe('admission search templates', () => {
     assertLimits(metadata, '/institutions/tau');
   });
 
-  it('uses both search phrases on general programs and generated hubs', async () => {
+  it('mentions admission chances for supported general programs but not generated hubs', async () => {
     const catalogue = await loadPublicCatalogue();
     const generated = buildSubjectHubs(catalogue).publishedHubs.find(
       (hub) => !catalogue.programs.some((program) => program.id === hub.id) && hub.name.length < 20,
     )!;
     expect(generated).toBeDefined();
-    for (const id of ['cs', generated.id]) {
-      const metadata = await generateMetadata({ params: Promise.resolve({ programId: id }) });
-      expect(metadata.title).toContain('תנאי קבלה');
-      expect(metadata.title).toContain('סיכויי קבלה');
-      assertLimits(metadata, `/programs/${encodeURIComponent(id)}`);
-    }
+    const supported = await generateMetadata({ params: Promise.resolve({ programId: 'cs' }) });
+    expect(supported.title).toContain('תנאי קבלה');
+    expect(supported.title).toContain('סיכויי קבלה');
+    assertLimits(supported, '/programs/cs');
+
+    const hub = await generateMetadata({ params: Promise.resolve({ programId: generated.id }) });
+    expect(hub.title).toContain('תנאי קבלה');
+    expect(hub.title).not.toContain('סיכויי קבלה');
+    assertLimits(hub, `/programs/${encodeURIComponent(generated.id)}`);
   });
 
   it('shortens a long provider while retaining a unique program title', async () => {
