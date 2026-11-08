@@ -1413,7 +1413,7 @@ export default function StudyJourney({
             )}
             {step === 'psy-score' && (
               <a
-                className="journey-pill journey-grade-link"
+                className="journey-pill journey-grade-link journey-psy-score-link"
                 href="https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/"
                 target="_blank"
                 rel="noopener noreferrer"
