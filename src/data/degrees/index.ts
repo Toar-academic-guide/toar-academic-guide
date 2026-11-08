@@ -1027,15 +1027,15 @@ for (const record of mondayAdmissionsEvidence) {
           specificAdmissionNotes: record.limitations.length
             ? ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.']
             : [],
-          officialCalculatorUrl:
-            isHadassahRecord ? HADASSAH_CALCULATOR_URL : primarySourceUrl || '',
+          officialCalculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : primarySourceUrl || '',
           programUrl: primarySourceUrl,
-          calculatorUrl:
-            isHadassahRecord
-              ? HADASSAH_CALCULATOR_URL
-              : record.officialUrls.find(
-                  (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
-                ),
+          calculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : record.officialUrls.find(
+                (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
+              ),
           ...(sourceCandidates.length > 0
             ? {
                 admissionsSourceCandidates: sourceCandidates,
