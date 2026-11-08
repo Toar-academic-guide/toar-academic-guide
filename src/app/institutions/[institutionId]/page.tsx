@@ -20,6 +20,82 @@ interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
 }
 
+const openUniversityTransferTracks = [
+  {
+    label: 'אוניברסיטת תל אביב',
+    href: 'https://www.openu.ac.il/transfertrack/tel-aviv/Pages/default.aspx',
+  },
+  {
+    label: 'האוניברסיטה העברית בירושלים',
+    href: 'https://www.openu.ac.il/transfertrack/hebrew/Pages/default.aspx',
+  },
+  {
+    label: 'הטכניון',
+    href: 'https://www.openu.ac.il/transfertrack/technion/Pages/default.aspx',
+  },
+  {
+    label: 'אפיק מעבר למשפטים באוניברסיטת בר-אילן',
+    href: 'https://www.openu.ac.il/transfertrack/bar-ilan/pages/default.aspx',
+  },
+  {
+    label: 'אוניברסיטת חיפה',
+    href: 'https://www.openu.ac.il/transfertrack/haifa/Pages/default.aspx',
+  },
+  {
+    label: 'אוניברסיטת בן-גוריון בנגב',
+    href: 'https://www.openu.ac.il/transfertrack/ben-gurion/Pages/default.aspx',
+  },
+] as const;
+
+function OpenUniversityTransferSection() {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <h2 className="text-xl font-bold">אפיקי מעבר מהאוניברסיטה הפתוחה</h2>{' '}
+      <p className="mt-3 leading-7 text-slate-700">
+        האוניברסיטה הפתוחה מפרסמת אפיקי מעבר למסלולי לימוד באוניברסיטאות אחרות. בכל אפיק מפורטים
+        הקורסים, דרישות הציונים ותנאים נוספים של המסלול. התחילו בבחירת מוסד ומסלול בעמוד אפיקי המעבר
+        הרשמי, ופתחו את תיאור האפיק ואת העדכונים לפני תכנון הקורסים.
+      </p>{' '}
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+        {openUniversityTransferTracks.map((track) => (
+          <li key={track.href}>
+            <a
+              href={track.href}
+              className="block rounded-xl border border-slate-200 px-4 py-3 font-semibold text-cyan-800 transition hover:border-slate-900 hover:text-slate-900"
+            >
+              {track.label}
+            </a>
+          </li>
+        ))}
+      </ul>{' '}
+      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
+        <a
+          href="https://www.openu.ac.il/transfertrack/pages/faq.aspx"
+          className="text-cyan-800 underline underline-offset-4 hover:text-slate-900"
+        >
+          שאלות נפוצות על אפיקי מעבר
+        </a>{' '}
+        <a
+          href="https://www.openu.ac.il/transfertrack/pages/updates.aspx"
+          className="text-cyan-800 underline underline-offset-4 hover:text-slate-900"
+        >
+          עדכונים על אפיקי מעבר
+        </a>{' '}
+      </div>{' '}
+      <p className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
+        עוד לא התחלתם לימודים אקדמיים?{' '}
+        <Link
+          href="/sekhem-calculator"
+          className="font-semibold text-cyan-800 underline underline-offset-4 hover:text-slate-900"
+        >
+          למחשבון הסכם
+        </Link>
+      </p>{' '}
+      <p className="mt-3 text-xs text-slate-500">בדיקת הקישורים: 8 בנובמבר 2026</p>
+    </section>
+  );
+}
+
 function ProgramCards({
   programs,
   institution,
@@ -138,6 +214,7 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               <ProgramCards institution={institution} programs={categoryPages} className="mt-4" />
             </section>
           )}
+          {institution.id === 'open_university' && <OpenUniversityTransferSection />}
         </section>
       </main>
     </WayPageShell>

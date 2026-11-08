@@ -52,6 +52,69 @@ describe('InstitutionPage', () => {
     expect(screen.getByRole('link', { name: 'שאלון התאמה' })).toBeTruthy();
   });
 
+  it('renders official OpenU transfer tracks only on the OpenU institution page', async () => {
+    const { container } = render(
+      await InstitutionPage({ params: Promise.resolve({ institutionId: 'open_university' }) }),
+    );
+
+    const section = screen
+      .getByRole('heading', { name: 'אפיקי מעבר מהאוניברסיטה הפתוחה' })
+      .closest('section')!;
+    expect(section.textContent).toContain('8 בנובמבר 2026');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/tel-aviv/Pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('אוניברסיטת תל אביב');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/hebrew/Pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('האוניברסיטה העברית');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/technion/Pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('הטכניון');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/bar-ilan/pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('משפטים');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/haifa/Pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('אוניברסיטת חיפה');
+    expect(
+      section.querySelector(
+        'a[href="https://www.openu.ac.il/transfertrack/ben-gurion/Pages/default.aspx"]',
+      )?.textContent,
+    ).toContain('בן-גוריון');
+    expect(section.textContent).not.toContain('סיעוד');
+    expect(
+      section.querySelector('a[href="https://www.openu.ac.il/transfertrack/pages/faq.aspx"]'),
+    ).not.toBeNull();
+    expect(
+      section.querySelector('a[href="https://www.openu.ac.il/transfertrack/pages/updates.aspx"]'),
+    ).not.toBeNull();
+    expect(section.querySelector('a[href="/sekhem-calculator"]')?.textContent).toContain(
+      'למחשבון הסכם',
+    );
+    expect(container.querySelector('main a[href="/app/assessment"]')?.textContent).toContain(
+      'שאלון התאמה',
+    );
+
+    const otherInstitution = render(
+      await InstitutionPage({ params: Promise.resolve({ institutionId: 'tau' }) }),
+    );
+    expect(
+      within(otherInstitution.container).queryByRole('heading', {
+        name: 'אפיקי מעבר מהאוניברסיטה הפתוחה',
+      }),
+    ).toBeNull();
+  });
+
   it('calls notFound for unknown institution IDs', async () => {
     await expect(
       InstitutionPage({ params: Promise.resolve({ institutionId: 'missing-institution' }) }),
