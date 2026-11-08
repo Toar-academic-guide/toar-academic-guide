@@ -1563,7 +1563,9 @@ export default function StudyJourney({
                 <summary>
                   <span>
                     {group.name}
-                    <small>{group.rows.length} אפשרויות</small>
+                    <small>
+                      {group.rows.length === 1 ? 'אפשרות אחת' : `${group.rows.length} אפשרויות`}
+                    </small>
                   </span>
                   <ChevronDown size={20} />
                 </summary>
