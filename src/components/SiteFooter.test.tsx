@@ -44,7 +44,7 @@ describe('SiteFooter', () => {
         })),
       ).toEqual(links);
     }
-    expect(container.querySelectorAll('a')).toHaveLength(10);
+    expect(container.querySelectorAll('a')).toHaveLength(12);
     expect(container.querySelector('h1')).toBeNull();
   });
 

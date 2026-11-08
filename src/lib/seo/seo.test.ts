@@ -85,12 +85,18 @@ describe('crawl policy', () => {
   it('directs llms.txt readers to public pages and preserves the business-model disclosure', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
     expect(llms).not.toContain('/app/');
+    expect(llms).toContain(
+      '- [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.',
+    );
+    expect(llms).toContain(
+      '- [ימים פתוחים](https://findmyway.co.il/open-days): תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, עם קישורים למוסדות.',
+    );
     expect(llms).toContain('https://findmyway.co.il/institutions');
     expect(llms).toContain('https://findmyway.co.il/programs/<id>');
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-06');
+    expect(llms).toContain('Last updated: 2026-11-08');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -206,7 +212,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 404 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 405 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -223,6 +229,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/open-days`,
+      `${SITE_URL}/transfer`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -252,7 +259,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(404);
+    expect(urls).toHaveLength(405);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -1082,7 +1089,7 @@ describe('llms.txt calculator link', () => {
 
   it('ends with the approved update date inside the Business model section', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-06';
+    const updated = 'Last updated: 2026-11-08';
     expect(llms).toContain(updated);
     expect(
       llms

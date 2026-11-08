@@ -60,6 +60,15 @@ const institutions: DirectoryInstitution[] = [
 function open() {
   render(<InstitutionsDirectory institutions={institutions} subjects={subjects} fields={fields} />);
 }
+it('links to the transfer guide below the institution results', () => {
+  open();
+  expect(
+    screen.getByRole('link', { name: 'המדריך למעבר בין מוסדות לימוד' }).getAttribute('href'),
+  ).toBe('/transfer');
+  expect(screen.getByRole('link', { name: 'מוסד א׳' }).getAttribute('href')).toBe(
+    '/institutions/a',
+  );
+});
 const fieldGroup = () => screen.getByRole('group', { name: 'תחום לימודים' });
 const subjectGroup = () => screen.getByRole('group', { name: 'תכנית לימודים' });
 describe('institution subject pills', () => {

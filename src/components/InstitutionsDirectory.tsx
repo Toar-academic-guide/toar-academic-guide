@@ -396,6 +396,15 @@ export default function InstitutionsDirectory({
             לא נמצאו מוסדות שמתאימים לסינון.
           </p>
         )}
+        <p className="mt-6 text-sm leading-7 text-[#60708c]">
+          כבר לומדים במוסד אחר ושוקלים לעבור?{' '}
+          <Link
+            className={`font-semibold text-[#55449a] underline underline-offset-4 ${focusClass}`}
+            href="/transfer"
+          >
+            המדריך למעבר בין מוסדות לימוד
+          </Link>
+        </p>
       </main>
     </WayPageShell>
   );

@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import LegalPageShell from '@/components/LegalPageShell';
+import SocialFollowLinks from '@/components/SocialFollowLinks';
 
 export const metadata: Metadata = {
   title: 'יצירת קשר',
@@ -15,6 +16,7 @@ export default function ContactPage() {
           <bdi dir="ltr">info@findmyway.co.il</bdi>
         </a>
       </p>
+      <SocialFollowLinks />
     </LegalPageShell>
   );
 }
