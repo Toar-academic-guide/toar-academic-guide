@@ -708,7 +708,7 @@ const D: Record<string, InstitutionDetail[]> = {
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -724,8 +724,8 @@ const D: Record<string, InstitutionDetail[]> = {
   reichman_psychology: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 4,
-      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      durationYears: 3,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -740,8 +740,8 @@ const D: Record<string, InstitutionDetail[]> = {
   reichman_law: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      durationYears: 4,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -756,7 +756,7 @@ const D: Record<string, InstitutionDetail[]> = {
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -766,13 +766,15 @@ const D: Record<string, InstitutionDetail[]> = {
         'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/business/undergraduate/ba/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_economics: [
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-160 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -781,20 +783,20 @@ const D: Record<string, InstitutionDetail[]> = {
         'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/economics/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_infosystems: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-140 סטודנטים',
+      durationYears: null,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
-      ],
+      specificAdmissionNotes: [],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
   ],
 
@@ -3322,7 +3324,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: ['ראיון קבלה / ועדת קבלה', 'בדקו את תנאי המסלול באתר רייכמן'],
+    admissionRequirements: ['בדקו את תנאי המסלול באתר רייכמן'],
     institutionDetails: D['reichman_infosystems'],
   },
   {
