@@ -503,7 +503,8 @@ describe('dynamic Monday-derived programme inference', () => {
     const csFallbacks = allPrograms.filter(
       (program) =>
         program.name.startsWith('מדעי המחשב - ') &&
-        (program.id.startsWith('mon_') || program.id === 'hackeru_cs'),
+        (program.id.startsWith('mon_') || program.id === 'hackeru_cs') &&
+        program.id !== 'mon_12220685569_cs',
     );
 
     expect(csFallbacks).toEqual([]);

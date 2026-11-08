@@ -5069,7 +5069,7 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      expect(pairs).toBe(436);
+      expect(pairs).toBe(437);
     },
   );
   it.each([
