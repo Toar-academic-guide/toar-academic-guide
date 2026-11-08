@@ -55,6 +55,69 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   expect(main.textContent).toContain('מחיר הרשמה רגילה המוצג באתר מאל״ו: 495 ₪.');
 });
 
+it('publishes a date list of individual NITE exam dates as Event structured data', async () => {
+  const { container } = render(await Page());
+  const script = container.querySelector('script[type="application/ld+json"]');
+  expect(script).not.toBeNull();
+  const graph = JSON.parse(script!.textContent!) as {
+    '@graph': Array<{
+      '@type': string;
+      name?: string;
+      itemListElement?: Array<{ item: Record<string, unknown> }>;
+    }>;
+  };
+  const dates = graph['@graph'].find((item) => item['@type'] === 'ItemList');
+  expect(dates?.name).toBe('מועדי הבחינה הפסיכומטרית');
+  expect(dates?.itemListElement?.map(({ item }) => [item.name, item.startDate, item.url])).toEqual([
+    [
+      'הבחינה הפסיכומטרית — 4.12.2026',
+      '2026-12-04',
+      'https://www.nite.org.il/test-dates-and-prices/',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 6.12.2026',
+      '2026-12-06',
+      'https://www.nite.org.il/test-dates-and-prices/',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 18.4.2027',
+      '2027-04-18',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 19.4.2027',
+      '2027-04-19',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 1.7.2027',
+      '2027-07-01',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 6.9.2027',
+      '2027-09-06',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 7.9.2027',
+      '2027-09-07',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 24.12.2027',
+      '2027-12-24',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+    [
+      'הבחינה הפסיכומטרית — 26.12.2027',
+      '2027-12-26',
+      'https://www.nite.org.il/wp-content/uploads/2026/05/test-schedule-2027-he.pdf',
+    ],
+  ]);
+  expect(dates?.itemListElement?.every(({ item }) => item['@type'] === 'Event')).toBe(true);
+});
+
 it('omits an answer when no verified registration is open and hides past rows', async () => {
   vi.useFakeTimers();
   vi.setSystemTime('2027-10-26T12:00:00Z');
