@@ -400,10 +400,15 @@ async function evaluateCapabilityEntries(args: {
       const { calculateHaifaBagrutAverage } =
         await import('@/data/admissions/haifaAdmissionFormula');
       const average = calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
+      if (average === undefined) {
+        results[index] = requiredInputsResult(publicInstitutionShape(institution), [
+          'haifa_bagrut_average',
+        ]);
+        continue;
+      }
       if (
-        average === undefined ||
-        (program.id === 'haifa_infosystems' &&
-          input.extraInputs?.haifaInformationSystemsTrack === 'single_major')
+        program.id === 'haifa_infosystems' &&
+        input.extraInputs?.haifaInformationSystemsTrack === 'single_major'
       ) {
         const missingRule = haifaMissingRuleResult(
           program.id,
@@ -3412,6 +3417,11 @@ function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
     return {
       explanation: 'במסלול דו־חוגי נדרשת עמידה גם בתנאי הקבלה של החוג השני.',
       nextAction: 'בדקו את תנאי החוג השני וענו על השאלה שמעל התוצאות.',
+    };
+  if (requiredInputs.length === 1 && requiredInputs[0] === 'haifa_bagrut_average')
+    return {
+      explanation: 'כדי לחשב סיכויי קבלה בחיפה צריך להזין מקצועות בגרות.',
+      nextAction: 'השלימו את מקצועות הבגרות כדי להמשיך.',
     };
   if (requiredInputs.some((input) => input.startsWith('haifa_')))
     return {
