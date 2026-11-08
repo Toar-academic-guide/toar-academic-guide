@@ -314,6 +314,28 @@ describe('website enquiries → Monday', () => {
     },
   );
 
+  it.each([
+    ['givat_washington_medicine', 'givat_washington', 'mon_12341128804'],
+    ['tiltan_medicine', 'tiltan', 'mon_12341137918'],
+  ])(
+    'submits old %s / %s enquiry links to the corrected school',
+    async (programId, institutionId, schoolId) => {
+      listCataloguePrograms.mockResolvedValue({
+        data: getStaticCataloguePrograms().filter((program) =>
+          ['mon_12341128804_medicine', 'mon_12341137918_medicine'].includes(program.id),
+        ),
+      });
+      listCatalogueInstitutions.mockResolvedValue({ data: getStaticCatalogueInstitutions() });
+      expect((await POST(request({ programId, institutionId }))).status).toBe(201);
+      const body = JSON.parse(vi.mocked(fetch).mock.calls[0][1]?.body as string);
+      const columns = JSON.parse(body.variables.columns);
+      expect(columns.text_mm8ag00n).toBe(programId);
+      expect(columns.text_mm8a4c4w).toBe(
+        getStaticCatalogueInstitutions().find((entry) => entry.id === schoolId)!.name,
+      );
+    },
+  );
+
   it('does not submit a lead when the database catalogue cannot be read', async () => {
     listCataloguePrograms.mockRejectedValue(new Error('database unavailable'));
     expect((await POST(request())).status).toBe(502);

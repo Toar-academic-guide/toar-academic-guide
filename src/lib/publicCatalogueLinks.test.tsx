@@ -160,8 +160,16 @@ describe('server-rendered crawl paths', () => {
     'hackeru_cs',
     'jerusalem_academy_dance',
     'reichman_infosystems',
-    'reidman_medicine',
   ];
+
+  it('links Reidman to the complementary-medicine hub and its new school siblings', async () => {
+    const related = await getPublicRelatedPrograms('reidman_medicine');
+    expect(related.hub?.id).toBe('complementary_medicine');
+    expect(related.programs.map((program) => program.id)).toEqual([
+      'mon_12341128804_medicine',
+      'mon_12341137918_medicine',
+    ]);
+  });
 
   it('links the verified Colman degree from the information-systems hub', async () => {
     const informationSystems = await getPublicRelatedPrograms('colmgmt_infosystems');

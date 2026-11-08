@@ -5069,7 +5069,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      expect(pairs).toBe(437);
+      // Two sourced complementary-medicine certificates and Hadassah add three distinct pairs.
+      expect(pairs).toBe(439);
     },
   );
   it.each([

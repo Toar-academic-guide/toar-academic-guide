@@ -1395,9 +1395,9 @@
     {
       "programId": "mon_12341128804_medicine",
       "institutionId": "mon_12341128804",
-      "sourceUrl": "https://washington.ac.il/",
-      "sourceSha256": "60fa2fd8655d182730a586a94b2d100972d45d91d354955833bb4ce869924612",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.washington.ac.il/teuda/adama/",
+      "sourceSha256": "ae9ce1ad1a166765dd30e9d7f148979e25f1501ba64c1ade8f57b1a1bfd3cfb7",
+      "checkedAt": "2026-11-08",
       "notes": [
         "דרישות הקבלה למסלולי הרפואה המשלימה אינן מפורטות באתר הקריה. יש לבחור מסלול ולברר את תנאיו עם בית הספר אדמה."
       ],

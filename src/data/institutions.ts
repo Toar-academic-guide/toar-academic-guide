@@ -55,6 +55,8 @@ export type InstitutionId =
   | 'atid'
   | 'aliya'
   | 'tiltan'
+  | 'mon_12341137918'
+  | 'mon_12341128804'
   | 'lfa'
   | 'idan_hahorut'
   | 'mediteva'
@@ -954,23 +956,43 @@ export function resolveUrl(name: string, urls: readonly string[]): string | unde
 const existingIds = new Set(INSTITUTIONS.map((inst) => inst.id));
 const existingNames = new Set(INSTITUTIONS.map((inst) => inst.name));
 
+const COMPLEMENTARY_SCHOOLS: Readonly<
+  Record<string, { id: InstitutionId; name: string; url: string }>
+> = {
+  '12341128804': {
+    id: 'mon_12341128804',
+    name: 'אדמה – בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון',
+    url: 'https://www.washington.ac.il/teuda/adama/',
+  },
+  '12341137918': {
+    id: 'mon_12341137918',
+    name: 'מכללת תילתן לרפואה משלימה',
+    url: 'https://www.tiltan-college.co.il/about',
+  },
+};
+
 for (const record of mondayAdmissionEvidenceRecords) {
+  const complementarySchool = COMPLEMENTARY_SCHOOLS[record.itemId];
   if (
+    !complementarySchool &&
     record.catalogueInstitutionId &&
     existingIds.has(record.catalogueInstitutionId as InstitutionId)
   ) {
     continue;
   }
-  if (existingNames.has(record.displayName)) {
+  if (!complementarySchool && existingNames.has(record.displayName)) {
     continue;
   }
 
-  const instId = (record.catalogueInstitutionId || `mon_${record.itemId}`) as InstitutionId;
+  const instId = (complementarySchool?.id ??
+    record.catalogueInstitutionId ??
+    `mon_${record.itemId}`) as InstitutionId;
   if (existingIds.has(instId)) {
     continue;
   }
 
-  const programUrl = resolveUrl(record.displayName, record.officialUrls);
+  const programUrl =
+    complementarySchool?.url ?? resolveUrl(record.displayName, record.officialUrls);
   let domain: string | undefined = undefined;
   if (programUrl) {
     try {
@@ -982,7 +1004,7 @@ for (const record of mondayAdmissionEvidenceRecords) {
 
   INSTITUTIONS.push({
     id: instId,
-    name: record.displayName,
+    name: complementarySchool?.name ?? record.displayName,
     region: 'center',
     domain,
     programUrl,

@@ -212,7 +212,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 405 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps all 404 canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -242,7 +242,7 @@ describe('crawl policy', () => {
       ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
     expect(generatedHubIds).toContain('engineering');
-    expect(generatedHubIds).toHaveLength(56);
+    expect(generatedHubIds).toHaveLength(57);
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
@@ -259,7 +259,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(405);
+    expect(urls).toHaveLength(404);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',

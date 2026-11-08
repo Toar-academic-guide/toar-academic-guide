@@ -197,7 +197,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["elevation_fullstack","elevation_fullstack","elevation","manual_gate",null,null,null,null,null,null,[],[]]
 ["emek_yezreel_general_academic","emek_yezreel_general_academic","emek_yezreel","manual_gate",null,null,null,null,null,null,[],[]]
 ["givat_washington_certificate","givat_washington_certificate","givat_washington","manual_gate",null,null,null,null,null,null,[],[]]
-["givat_washington_medicine","givat_washington_medicine","givat_washington","manual_gate",null,null,null,null,null,null,[],[]]
+["givat_washington_medicine","givat_washington_medicine","mon_12341128804","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_cs","hackeru_cs","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_cyber","hackeru_cyber","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_data","hackeru_data","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
@@ -322,6 +322,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["mon_12341127690_certificate","mon_12341127690_certificate","mon_12341127690","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128142_beauty","mon_12341128142_beauty","mon_12341128142","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128292_medicine","mon_12341128292_medicine","mon_12341128292","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12341128804_medicine","mon_12341128804_medicine","mon_12341128804","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128848_engineering","mon_12341128848_engineering","mon_12341128848","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341129101_certificate","mon_12341129101_certificate","mon_12341129101","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341133521_certificate","mon_12341133521_certificate","mon_12341133521","manual_gate",null,null,null,null,null,null,[],[]]
@@ -335,6 +336,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["mon_12341134798_general_academic","mon_12341134798_general_academic","mon_12341134798","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341137305_general_academic","mon_12341137305_general_academic","mon_12341137305","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341137650_certificate","mon_12341137650_certificate","mon_12341137650","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12341137918_medicine","mon_12341137918_medicine","mon_12341137918","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138289_certificate","mon_12341138289_certificate","mon_12341138289","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138306_certificate","mon_12341138306_certificate","mon_12341138306","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138357_certificate","mon_12341138357_certificate","mon_12341138357","manual_gate",null,null,null,null,null,null,[],[]]
@@ -498,7 +500,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["telhai_socialwork","telhai_socialwork","telhai","manual_gate",null,null,null,null,null,null,[],[]]
 ["tiltan_certificate","tiltan_certificate","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
 ["tiltan_graphic_design","tiltan_graphic_design","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
-["tiltan_medicine","tiltan_medicine","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
+["tiltan_medicine","tiltan_medicine","mon_12341137918","manual_gate",null,null,null,null,null,null,[],[]]
 ["tlvyaffo_business","tlvyaffo_business","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
 ["tlvyaffo_cs","tlvyaffo_cs","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
 ["tlvyaffo_economics","tlvyaffo_economics","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
@@ -523,7 +525,7 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
   const staticPrograms = getStaticCataloguePrograms();
   expect(
     staticPrograms.reduce((count, program) => count + program.linkedInstitutionIds.length, 0),
-  ).toBe(437);
+  ).toBe(439);
   const medicine = staticPrograms.find((program) => program.id === 'medicine')!;
   expect(medicine.linkedInstitutionIds).not.toContain('bgu');
   const programs = staticPrograms.map((program) =>
@@ -554,8 +556,8 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
   }
   expect(capture.getDb).not.toHaveBeenCalled();
   expect(unexpectedFetch).not.toHaveBeenCalled();
-  expect(capture.rows).toHaveLength(438);
-  expect(BASELINE_ROWS).toHaveLength(438);
+  expect(capture.rows).toHaveLength(440);
+  expect(BASELINE_ROWS).toHaveLength(440);
   capture.rows.sort(comparePairs);
 
   // The exception must use exactly the existing named medicine target, including
