@@ -1,4 +1,5 @@
 import type { MetadataRoute } from 'next';
+import { bagrutDatesCheckedOn } from '@/data/bagrutDates';
 import { psychometricDatesCheckedOn } from '@/data/psychometricDates';
 import { indexableInstitutionIds, indexableProgramIds } from '@/lib/seo/indexability';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
@@ -55,6 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   dates.set('/psychometric-two-domain', '2026-11-06');
   dates.set('/open-days', '2026-11-05');
+  dates.set('/bagrut-dates', bagrutDatesCheckedOn);
   dates.set('/transfer', '2026-11-08');
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
@@ -68,6 +70,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/psychometric-dates',
     '/psychometric-two-domain',
     '/open-days',
+    '/bagrut-dates',
     '/transfer',
     '/institutions',
     '/programs',

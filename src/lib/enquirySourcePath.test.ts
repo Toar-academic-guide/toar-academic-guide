@@ -15,6 +15,7 @@ describe('enquiry source route guard', () => {
     ['/institutions/tau', '/institutions/tau'],
     ['/transfer?from=calculator', '/transfer'],
     ['/app/calculator#inquiry', '/app/calculator'],
+    ['/bagrut-dates?ref=prep', '/bagrut-dates'],
     ['/#inquiry', '/'],
   ])('normalizes %s to %s', (input, expected) => {
     expect(enquirySourcePath(input)).toBe(expected);
