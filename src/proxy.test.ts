@@ -17,6 +17,9 @@ vi.mock('@/lib/supabase/env', () => ({
 
 import { proxy } from './proxy';
 
+const RETAKE_DESTINATION =
+  'https://findmyway.co.il/app/calculator?utm_source=x&utm_medium=reply&utm_campaign=higher_ed&utm_content=before_retake_20261107';
+
 describe('calculator request middleware', () => {
   beforeEach(() => {
     mocks.getUser.mockReset();
@@ -82,6 +85,43 @@ describe('production Vercel alias', () => {
 });
 
 describe('social short-link redirects', () => {
+  it('redirects the configured retake slug temporarily without caching or using request host/query', async () => {
+    mocks.getUser.mockClear();
+    const response = await proxy(
+      new NextRequest(
+        'https://attacker.example/go/retake-x?url=https%3A%2F%2Fevil.example&utm_source=override&utm_content=changed',
+        { headers: { host: 'attacker.example', 'x-forwarded-host': 'evil.example' } },
+      ),
+    );
+
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe(RETAKE_DESTINATION);
+    expect(response.headers.get('cache-control')).toBe('no-store, max-age=0');
+    expect(response.headers.get('vercel-cdn-cache-control')).toBe('no-store');
+    expect(mocks.getUser).not.toHaveBeenCalled();
+  });
+
+  it.each([
+    '/go',
+    '/go/',
+    '/go/missing',
+    '/go/retake-x/extra',
+    '/go/%252e%252e/retake-x',
+    '/go/%2f%2fevil.example',
+  ])('returns a non-cacheable 404 for unsupported path %s', async (path) => {
+    const response = await proxy(new NextRequest(`https://findmyway.co.il${path}`));
+
+    expect(response.status).toBe(404);
+    expect(response.headers.get('location')).toBeNull();
+    expect(response.headers.get('cache-control')).toBe('no-store, max-age=0');
+  });
+
+  it('does not redirect a traversal path normalized by the request URL parser', async () => {
+    const response = await proxy(new NextRequest('https://findmyway.co.il/go/%2e%2e/retake-x'));
+
+    expect(response.headers.get('location')).toBeNull();
+  });
+
   it.each([
     ['/tt/', 'tiktok'],
     ['/ig/', 'instagram'],
