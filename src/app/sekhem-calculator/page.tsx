@@ -141,6 +141,12 @@ export default async function Page({
             פסיכומטרי דו־תחומי: מה משתנה ומה קורה לציונים קודמים?
           </Link>
         </p>
+        <p className="mt-4 leading-7">
+          כבר לומדים במוסד אחר?{' '}
+          <Link className="underline underline-offset-4" href="/transfer">
+            כך מתכננים מעבר בין מוסדות לימוד
+          </Link>
+        </p>
         {!unavailable && (
           <section className="mt-12 space-y-3 leading-7" aria-labelledby="sekhem-example-title">
             <h2 id="sekhem-example-title" className="text-xl font-semibold">

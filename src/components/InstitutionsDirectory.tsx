@@ -364,6 +364,15 @@ export default function InstitutionsDirectory({ institutions }: InstitutionsDire
               </p>
             </section>
           )}
+          <p className="text-sm leading-7 text-[#60708c]">
+            כבר לומדים במוסד אחר ושוקלים לעבור?{' '}
+            <Link
+              className="font-semibold text-[#55449a] underline underline-offset-4"
+              href="/transfer"
+            >
+              המדריך למעבר בין מוסדות לימוד
+            </Link>
+          </p>
         </section>
       </main>
     </WayPageShell>
