@@ -5069,7 +5069,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      expect(pairs).toBe(436);
+      // Two sourced complementary-medicine certificates are now distinct catalogue records.
+      expect(pairs).toBe(438);
     },
   );
   it.each([

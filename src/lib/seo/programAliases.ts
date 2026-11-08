@@ -10,6 +10,8 @@ export const PROGRAM_CANONICAL_ALIASES: Readonly<Record<string, string>> = {
   nativ_acting: 'nativ_graphic_design',
   jerusalem_academy_graphic_design: 'jerusalem_academy_dance',
   rubin_graphic_design: 'rubin_classical',
+  givat_washington_medicine: 'mon_12341128804_medicine',
+  tiltan_medicine: 'mon_12341137918_medicine',
 };
 
 /** Retired public URLs require HTTP redirects, including institution-only targets. */
@@ -20,6 +22,8 @@ export const PROGRAM_RETIREMENT_REDIRECTS: Readonly<Record<string, string>> = {
   samspiegel_documentary: '/institutions/spieldocs',
   documentary: '/programs/cinema',
   kinneret_sound_eng: '/institutions/mon_12341101391',
+  givat_washington_medicine: '/programs/mon_12341128804_medicine',
+  tiltan_medicine: '/programs/mon_12341137918_medicine',
 };
 
 const INSTITUTION_PROGRAM_CANONICAL_ALIASES: Readonly<Record<string, string>> = {

@@ -354,13 +354,17 @@ describe('dynamic Monday-derived programme inference', () => {
 
     expect(givatWashingtonMedicine).toMatchObject({
       id: 'givat_washington_medicine',
-      institutionId: 'givat_washington',
+      institutionId: 'mon_12341128804',
       type: 'certificate',
-      category: 'רפואה',
+      category: 'רפואה משלימה',
+      isListed: false,
     });
-    expect(
-      givatWashingtonMedicine?.institutionDetails?.map((detail) => detail.institutionName),
-    ).toEqual(expect.arrayContaining(["'אדמה'\\- בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון"]));
+    expect(allPrograms.find((program) => program.id === 'mon_12341128804_medicine')).toMatchObject({
+      name: 'רפואה משלימה',
+      institutionId: 'mon_12341128804',
+      type: 'certificate',
+      category: 'רפואה משלימה',
+    });
 
     const orinShpalterCertificate = allPrograms.find(
       (program) => program.id === 'orin_shpalter_certificate',
@@ -407,13 +411,20 @@ describe('dynamic Monday-derived programme inference', () => {
 
     expect(tiltanMedicine).toMatchObject({
       id: 'tiltan_medicine',
-      institutionId: 'tiltan',
+      institutionId: 'mon_12341137918',
       type: 'certificate',
-      category: 'רפואה',
+      category: 'רפואה משלימה',
+      isListed: false,
     });
-    expect(tiltanMedicine?.institutionDetails?.map((detail) => detail.institutionName)).toEqual(
-      expect.arrayContaining(['מכללת תילתן המכללה לרפואה משלימה']),
-    );
+    expect(allPrograms.find((program) => program.id === 'mon_12341137918_medicine')).toMatchObject({
+      name: 'רפואה משלימה',
+      institutionId: 'mon_12341137918',
+      type: 'certificate',
+      category: 'רפואה משלימה',
+      institutionDetails: [
+        expect.objectContaining({ programUrl: 'https://www.tiltan-college.co.il/about' }),
+      ],
+    });
 
     const tiltanGraphicDesign = allPrograms.find(
       (program) => program.id === 'tiltan_graphic_design',
