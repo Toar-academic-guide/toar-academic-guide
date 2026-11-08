@@ -1658,6 +1658,34 @@
   ],
   "excludedPrograms": [
     {
+      "programId": "achva_general_academic",
+      "institutionId": "achva",
+      "reason": "Broad imported placeholder replaced by the eight current, source-backed first-degree routes.",
+      "sourceUrl": "https://www.achva.ac.il/תואר-ראשון/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_general_academic",
+      "institutionId": "beit_berl",
+      "reason": "Broad imported placeholder replaced by current, specific first-degree routes.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_graphic_design",
+      "institutionId": "beit_berl",
+      "reason": "Broad design category does not identify a specific qualification; current art and film B.Ed.F.A. routes have their own records.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "david_yellin_education",
+      "institutionId": "david_yellin",
+      "reason": "Broad imported education placeholder replaced by current B.Ed. study routes.",
+      "sourceUrl": "https://dyellin.ac.il/bed",
+      "checkedAt": "2026-11-08"
+    },
+    {
       "programId": "bgu_law",
       "institutionId": "bgu",
       "reason": "No law programme established in the official 2027 admissions catalogue; legacy generated placeholder.",

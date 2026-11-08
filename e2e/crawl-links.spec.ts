@@ -73,9 +73,12 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
   expect(api.status()).toBe(200);
   const rows: { id: string; institutionId?: string }[] = (await api.json()).data;
   const institutionProgramIds = new Set(
-    rows.filter((row) => row.institutionId).map((row) => row.id),
+    rows
+      .filter((row) => row.institutionId && row.id.startsWith(`${row.institutionId}_`))
+      .map((row) => row.id),
   );
-  // No hub slug may be built from one institution programme's id.
+  expect(institutionProgramIds.size).toBeGreaterThan(0);
+  // No hub slug may be built from an institution-prefixed programme id.
   for (const id of index)
     expect(
       [...institutionProgramIds].filter((programId) => id.startsWith(`${programId}_`)),

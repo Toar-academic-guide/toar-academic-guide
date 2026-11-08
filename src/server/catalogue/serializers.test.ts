@@ -3,7 +3,17 @@ import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringM
 import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
+vi.mock('@/db/client', () => ({
+  getDb: () => {
+    throw new Error('College serialization test must not access a database');
+  },
+}));
 import type {
   AdmissionAlternativePathRow,
   AdmissionFactRow,
@@ -916,4 +926,62 @@ it('D already serves the canonical name for the shortened legacy Braude institut
     name: 'המכללה האקדמית להנדסה אורט בראודה',
   });
   expect(row.name).toBe('המכללה האקדמית להנדסה בראודה');
+});
+
+it('keeps all 25 college routes unknown after database row serialization', async () => {
+  const seed = buildCatalogueSeed();
+  const institutionsById = new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow]));
+  const institutions = ['achva', 'beit_berl', 'david_yellin'].map((id) =>
+    serializeInstitutionRow(institutionsById.get(id)!),
+  );
+  const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected fetch'));
+
+  expect(collegeProgrammes).toHaveLength(25);
+  for (const source of collegeProgrammes) {
+    const id = source.id;
+    const program = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: seed.admissionRequirements.filter(
+        (row) => row.programId === id,
+      ) as AdmissionRequirementRow[],
+      thresholds: [],
+      sourceUrls: seed.sourceUrls.filter((row) => row.programId === id) as SourceUrlRow[],
+      admissionsSourceCandidates: seed.admissionsSourceCandidates.filter(
+        (row) => row.programId === id,
+      ) as AdmissionsSourceCandidateRow[],
+      admissionFacts: [],
+      admissionAlternativePaths: [],
+      institutionsById,
+    });
+    expect(program.admissionType, id).toBe('requirements');
+    expect(program.institutionDetails?.[0].specificAdmissionNotes, id).toEqual(
+      source.institutionDetails?.[0].specificAdmissionNotes,
+    );
+    const result = await evaluateAdmissionsForProgram({
+      input: { degreeId: id, bagrut: 110, psychometric: 700 },
+      program,
+      institutions,
+      freshnessStatesBySourceId: new Map(),
+      fetcher,
+    });
+    expect(result.results, id).toHaveLength(1);
+    expect(result.results[0], id).toMatchObject({
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'low',
+    });
+    for (const falseClaim of [
+      'אין צורך בבגרות',
+      'אין צורך בפסיכומטרי',
+      'ראיון קבלה חובה',
+      'הגשת תיק עבודות חובה',
+    ]) {
+      expect(result.results[0].explanation, id).not.toContain(falseClaim);
+    }
+  }
+  expect(fetcher).not.toHaveBeenCalled();
 });

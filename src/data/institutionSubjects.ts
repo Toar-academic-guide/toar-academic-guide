@@ -115,6 +115,8 @@ const VERIFIED_SUBJECT_NAMES: Readonly<Record<string, string>> = {
   biu_medicine: 'רפואה',
   rubin_classical: 'מוזיקה',
   jerusalem_academy_dance: 'מחול',
+  achva_education: 'חינוך והוראה',
+  beit_berl_criminology: 'קרימינולוגיה',
 };
 
 export function catalogueSubjectName(id: string, name: string) {

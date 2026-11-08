@@ -168,7 +168,6 @@ describe('crawl policy', () => {
     }
     expect([...thinSubjects].sort()).toEqual([
       'communication',
-      'education',
       'nutrition',
       'pharmacy',
       'sports_science',
@@ -212,7 +211,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 404 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -242,16 +241,16 @@ describe('crawl policy', () => {
       ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
     expect(generatedHubIds).toContain('engineering');
-    expect(generatedHubIds).toHaveLength(57);
+    expect(generatedHubIds).toHaveLength(74);
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
-    // PM rule (#271): the 5 general subjects with no programme links (noindex,follow)
-    // leave the sitemap: 410 before this rule - 5 = 405.
-    for (const id of ['communication', 'education', 'nutrition', 'pharmacy', 'sports_science'])
+    // PM rule (#271): general subjects with no programme links stay out of the sitemap.
+    // Education now links to Achva's source-backed B.Ed. route.
+    for (const id of ['communication', 'nutrition', 'pharmacy', 'sports_science'])
       expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
     // JAMD is a one-for-one replacement; TAU and Sam Spiegel each lose a
     // duplicate programme. Retiring the unsupported documentary row also removes
@@ -259,7 +258,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(404);
+    expect(urls).toHaveLength(443);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',

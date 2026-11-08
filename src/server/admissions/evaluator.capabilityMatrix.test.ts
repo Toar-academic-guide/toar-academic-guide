@@ -1,5 +1,6 @@
 import { expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import type {
   AdmissionsCapabilityEntry,
   buildAdmissionsCapabilityMatrix,
@@ -520,9 +521,15 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
   return a[0].localeCompare(b[0]) || a[2].localeCompare(b[2]);
 }
 
-it('preserves the capability matrix except approved medicine and duplicate-ID corrections', async () => {
+it('preserves the pre-college capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
-  const staticPrograms = getStaticCataloguePrograms();
+  // This frozen matrix predates the 25 new college routes. Their no-formula
+  // behavior is checked route by route below.
+  const newCollegeIds = new Set(collegeProgrammes.map((program) => program.id));
+  expect(newCollegeIds.size).toBe(25);
+  const staticPrograms = getStaticCataloguePrograms().filter(
+    (program) => !newCollegeIds.has(program.id),
+  );
   expect(
     staticPrograms.reduce((count, program) => count + program.linkedInstitutionIds.length, 0),
   ).toBe(439);
@@ -674,4 +681,78 @@ it('requires the top-level NITE total for Haifa communication', async () => {
   const { result } = await gapEvaluate(program, 'haifa', applicant);
   // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
   expect(result).toMatchObject({ kind: 'needs_input', requiredInputs: ['psychometric_overall'] });
+});
+
+it('keeps each sourced college route at requirements-only with no admissions decision', async () => {
+  // Route-specific notes are sourced, but no complete evaluator formula was verified.
+  // These expected outcomes are fixed separately from the evaluator under test.
+  const expectedRouteResults = {
+    achva_psychology: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_digital_behavior: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_cs_information_systems: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_information_systems: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_communication_disorders: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_life_sciences: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_education: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_social_humanities: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_primary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_secondary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_special_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_special_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_english_teaching: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_non_formal_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_youth_advancement: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_art_teaching: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_film_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_criminology: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_ai_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_primary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_secondary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_special_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_non_formal_education: ['manual_gate', 'requirements_only', 'unknown'],
+  } as const;
+  const expectedRouteIds = Object.keys(expectedRouteResults);
+  expect(collegeProgrammes.map((program) => program.id)).toEqual(expectedRouteIds);
+  capture.rows.length = 0;
+  const institutions = getStaticCatalogueInstitutions();
+  for (const program of getStaticCataloguePrograms().filter((row) =>
+    expectedRouteIds.includes(row.id),
+  )) {
+    capture.programmeId = program.id;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: { degreeId: program.id, bagrut: 100, psychometric: 650 },
+      now: new Date('2026-11-08T12:00:00Z'),
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Offline college route')),
+    });
+    expect(report.results, program.id).toHaveLength(1);
+    const [, capability, decision] =
+      expectedRouteResults[program.id as keyof typeof expectedRouteResults];
+    expect(report.results[0], program.id).toMatchObject({ capability, decision });
+    for (const inheritedClaim of [
+      'אין צורך בבגרות',
+      'אין צורך בפסיכומטרי',
+      'ראיון קבלה חובה',
+      'הגשת תיק עבודות חובה',
+    ]) {
+      expect(report.results[0].explanation, program.id).not.toContain(inheritedClaim);
+    }
+    if (program.id === 'beit_berl_ai_education') {
+      expect(report.results[0].explanation).toContain('תנאי הקבלה למסלול אינם מפורטים');
+    }
+    if (program.id === 'david_yellin_non_formal_education') {
+      expect(report.results[0].explanation).toContain('תנאים ייחודיים לחוג אינם מפורטים');
+    }
+  }
+  expect(capture.rows).toHaveLength(25);
+  for (const row of capture.rows) {
+    expect(row[3], row[0]).toBe(
+      expectedRouteResults[row[0] as keyof typeof expectedRouteResults][0],
+    );
+    expect(row[6], row[0]).toBeNull();
+  }
 });

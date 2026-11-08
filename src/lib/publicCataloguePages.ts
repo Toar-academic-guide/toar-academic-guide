@@ -88,10 +88,21 @@ export const loadPublicCatalogue = cache(async () => {
       generalProgramIds.has(program.id)
     )
       continue;
-    const providers = institutionProgramsByName.get(program.name) ?? new Map();
-    // Preserve the first listed match, as the page links did before indexing.
-    if (!providers.has(program.institutionId)) providers.set(program.institutionId, program);
-    institutionProgramsByName.set(program.name, providers);
+    // A qualification in a specific programme title should not hide that
+    // provider from an existing subject page with the same subject name.
+    const names = [
+      program.name,
+      catalogueSubjectName(
+        program.id,
+        program.name.replace(/ \((?:B\.A\.|B\.Sc\.|B\.Ed\.|B\.Ed\.F\.A\.)\)$/, ''),
+      ),
+    ];
+    for (const name of new Set(names)) {
+      const providers = institutionProgramsByName.get(name) ?? new Map();
+      // Preserve the first listed match, as the page links did before indexing.
+      if (!providers.has(program.institutionId)) providers.set(program.institutionId, program);
+      institutionProgramsByName.set(name, providers);
+    }
   }
   const resolvedPrograms = allPrograms.map((program) => {
     if (!generalProgramIds.has(program.id)) return program;

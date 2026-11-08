@@ -1,4 +1,5 @@
 import { allPrograms } from '@/data/degrees';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import {
   buildFormulaBackedPairInventory,
   reconcileFormulaBackedSeedPairs,
@@ -284,6 +285,54 @@ describe('catalogueSeed', () => {
     expect(targetProgram?.institutionDetails?.length).toBeGreaterThan(0);
     expect(payload.admissionRequirements.some((row) => row.programId === 'tau_cs')).toBe(true);
     expect(payload.sourceUrls.some((row) => row.programId === 'tau_cs')).toBe(true);
+  });
+
+  it('keeps college-wide admissions sources distinct from route-specific sources', () => {
+    const payload = buildCatalogueSeed();
+    const ids = new Set(collegeProgrammes.map((program) => program.id));
+    const sources = payload.admissionsSourceCandidates.filter((row) => ids.has(row.programId));
+    const centralBeitIds = [
+      'beit_berl_early_childhood',
+      'beit_berl_primary_education',
+      'beit_berl_secondary_education',
+      'beit_berl_special_education',
+      'beit_berl_special_early_childhood',
+      'beit_berl_english_teaching',
+      'beit_berl_non_formal_education',
+      'beit_berl_youth_advancement',
+    ];
+    const centralYellinIds = [
+      'david_yellin_special_education',
+      'david_yellin_non_formal_education',
+    ];
+    expect(sources).toHaveLength(13);
+    for (const id of centralBeitIds) {
+      expect(sources.find((row) => row.programId === id)).toMatchObject({
+        specificity: 'institution_admissions',
+        confidence: 'high',
+        url: 'https://www.beitberl.ac.il/admission/b-ed/',
+      });
+    }
+    for (const id of centralYellinIds) {
+      expect(sources.find((row) => row.programId === id)).toMatchObject({
+        specificity: 'institution_admissions',
+        confidence: 'high',
+        url: 'https://dyellin.ac.il/prerequisites',
+      });
+    }
+    for (const id of [
+      'beit_berl_art_teaching',
+      'beit_berl_film_education',
+      'beit_berl_criminology',
+    ]) {
+      expect(sources.find((row) => row.programId === id)).toMatchObject({
+        specificity: 'program_admissions',
+        confidence: 'high',
+      });
+    }
+    expect(payload.admissionThresholds.filter((row) => ids.has(row.programId))).toEqual([]);
+    expect(payload.admissionFacts.filter((row) => ids.has(row.programId))).toEqual([]);
+    expect(payload.admissionAlternativePaths.filter((row) => ids.has(row.programId))).toEqual([]);
   });
 
   it('seeds representative admissions facts with source provenance', () => {

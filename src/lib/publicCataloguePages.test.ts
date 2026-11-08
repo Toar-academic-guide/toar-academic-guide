@@ -51,11 +51,21 @@ describe('public catalogue page data', () => {
       const { publishedHubs } = buildSubjectHubs(catalogue);
       const medicine = publishedHubs.find((hub) => hub.id === 'medicine')!;
       const complementary = publishedHubs.find((hub) => hub.id === 'complementary_medicine')!;
+      const communication = publishedHubs.find((hub) => hub.id === 'communication_disorders')!;
       const ids = ['mon_12341128804_medicine', 'mon_12341137918_medicine'];
 
       for (const id of ids) {
         expect(medicine.programs.map((program) => program.id)).not.toContain(id);
       }
+      expect(communication.programs.map((program) => program.id)).toContain(
+        'achva_communication_disorders',
+      );
+      expect(medicine.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
+      expect(complementary.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
       expect(complementary.name).toBe('רפואה משלימה');
       expect(complementary.programs.map((program) => program.id).sort()).toEqual(
         [...ids, 'reidman_medicine'].sort(),
@@ -601,6 +611,8 @@ describe('public catalogue page data', () => {
         haifa: ['communication'],
         ariel: ['communication'],
         biu: ['medicine'],
+        achva: ['education'],
+        beit_berl: ['criminology'],
       });
     },
   );
