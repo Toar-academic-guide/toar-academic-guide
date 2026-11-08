@@ -151,7 +151,6 @@ describe('server-rendered crawl paths', () => {
   const UNPUBLISHED_SUBJECT_PROGRAMS = [
     'bezalel_graphic_design',
     'beit_berl_graphic_design',
-    'minshar_graphic_design',
     'tiltan_graphic_design',
     'danon_culinary',
     'hackeru_cs',
@@ -160,6 +159,10 @@ describe('server-rendered crawl paths', () => {
     'colmgmt_infosystems',
     'reidman_medicine',
   ];
+
+  it('links Minshar visual communication to the matching published hub', async () => {
+    expect((await getPublicRelatedPrograms('minshar_graphic_design')).hub?.id).toBe('visual_comm');
+  });
 
   it('gives no hub or related block to programmes whose subject slug is taken', async () => {
     for (const id of UNPUBLISHED_SUBJECT_PROGRAMS) {

@@ -189,12 +189,19 @@ function pageMetadata(
 export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
   const data = await getPublicInstitutionPageData(id);
   if (!data) return {};
-  const { institution, programs } = data;
+  const { institution, programs, officialProgrammes = [] } = data;
+  const count = programs.length + officialProgrammes.length;
+  const scope =
+    count === 0
+      ? 'מידע על מסלולי הלימוד'
+      : count === 1
+        ? 'מסלול לימוד אחד'
+        : `${count} מסלולי לימוד`;
   const title =
     (await buildUniqueTitles()).get(`institution:${id}`) ?? titleCandidates(institution.name)[0];
   return pageMetadata(
     title,
-    descriptionFor(`${programs.length} מסלולי לימוד של ${institution.name}`),
+    descriptionFor(`${scope} של ${institution.name}`),
     `/institutions/${encodeURIComponent(id)}`,
     await isIndexableInstitution(id),
   );
