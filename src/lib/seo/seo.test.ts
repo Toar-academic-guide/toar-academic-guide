@@ -219,6 +219,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/open-days`,
+      `${SITE_URL}/bagrut-dates`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -239,7 +240,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
     // PM rule (#271): the 5 general subjects with no programme links (noindex,follow)
-    // leave the sitemap: 410 before this rule - 5 = 405.
+    // leave the sitemap: 410 before this rule - 5 = 405, plus authored pages.
     for (const id of ['communication', 'education', 'nutrition', 'pharmacy', 'sports_science'])
       expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
     // JAMD is a one-for-one replacement; TAU and Sam Spiegel each lose a
@@ -247,10 +248,15 @@ describe('crawl policy', () => {
     // its sole subject hub (official sources checked 24.10.2026).
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
-    expect(urls).toHaveLength(405);
+    expect(urls).toHaveLength(406);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
+      changeFrequency: 'weekly',
+    });
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/bagrut-dates`)).toMatchObject({
+      url: `${SITE_URL}/bagrut-dates`,
+      lastModified: '2026-11-08',
       changeFrequency: 'weekly',
     });
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;

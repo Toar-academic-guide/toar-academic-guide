@@ -1,0 +1,193 @@
+.shell.shell {
+  background: transparent;
+}
+
+.shell [data-way-backdrop] {
+  display: none;
+}
+
+.main {
+  max-width: 920px;
+  margin-inline: auto;
+  padding: 40px 24px 72px;
+  color: var(--text-heading);
+  text-align: right;
+  font-family: var(--font-sans);
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.header p {
+  margin-top: 12px;
+  color: var(--text-body);
+  font-size: 0.9rem;
+}
+
+.main a {
+  color: #49388b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.main a:focus-visible,
+.main summary:focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 3px;
+}
+
+.calendars {
+  display: grid;
+  gap: 20px;
+}
+
+.calendar,
+.more {
+  border: 1px solid #dce2ef;
+  border-radius: 16px;
+  background: #fff;
+  padding: 22px 24px;
+  box-shadow: var(--way-shadow);
+}
+
+.calendarHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+
+.calendar h2 {
+  font-size: 1.35rem;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.status {
+  color: #56627b;
+  font-size: 0.9rem;
+}
+
+.source {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  margin-top: 6px;
+}
+
+.months {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+  gap: 16px;
+  margin-top: 16px;
+}
+
+.month h3 {
+  margin-bottom: 8px;
+  color: #56627b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dates {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dates li {
+  display: grid;
+  min-width: 40px;
+  min-height: 40px;
+  place-items: center;
+  border: 1px solid #dce2ef;
+  border-radius: 10px;
+  background: #f7f8fc;
+  font-variant-numeric: tabular-nums;
+}
+
+.more {
+  margin-top: 20px;
+}
+
+.more summary {
+  cursor: pointer;
+  font-size: 1.05rem;
+  font-weight: 600;
+}
+
+.more table {
+  width: 100%;
+  margin-top: 12px;
+  border-collapse: collapse;
+  font: inherit;
+}
+
+.more th,
+.more td {
+  padding: 11px 10px;
+  border-bottom: 1px solid #e5e9f2;
+  text-align: right;
+  vertical-align: top;
+}
+
+.more th {
+  font-weight: 600;
+}
+
+.more thead th {
+  color: #56627b;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.more .dateCell {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.srOnly {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  clip-path: inset(50%);
+}
+
+.prepLink {
+  margin-top: 24px;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 28px 16px 48px;
+  }
+
+  .calendar,
+  .more {
+    padding: 18px 16px;
+  }
+
+  .months {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .more th,
+  .more td {
+    padding-inline: 4px;
+  }
+}

@@ -138,6 +138,14 @@ export const PREP_PAGE_CONTENT: PrepContentSection[] = [
       {
         type: 'paragraph',
         text: [
+          'ניגשים לבגרות? בדקו את ',
+          { text: 'מועדי בחינות הבגרות', href: '/bagrut-dates' },
+          '.',
+        ],
+      },
+      {
+        type: 'paragraph',
+        text: [
           'רוצים לראות מה הציון שלכם פותח? הזינו בגרות ופסיכומטרי ב',
           {
             text: 'מחשבון הסכם',
