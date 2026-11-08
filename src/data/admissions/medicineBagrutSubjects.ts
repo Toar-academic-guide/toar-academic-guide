@@ -53,3 +53,12 @@ export const UNRESOLVED_MEDICINE_SUBJECT_IDS = new Set(
     'מערכות תעופה ואביזראות מטוסים',
   ].map(subjectIdForWizardLabel),
 );
+
+// BGU's current calculator offers the aviation subject as code 343. The other
+// picker labels have only differently named options, so their bonus treatment
+// cannot be replayed from that form without a confirmed subject-code mapping.
+export const UNRESOLVED_BGU_MEDICINE_SUBJECT_IDS = new Set(
+  ['מערכות תקשורת', 'יהדות ממ"ד', 'ידיעת העם והמדינה', 'מחשוב ובקרה בהתיישבות'].map(
+    subjectIdForWizardLabel,
+  ),
+);
