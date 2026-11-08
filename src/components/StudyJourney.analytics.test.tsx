@@ -126,6 +126,33 @@ describe('journey funnel analytics', () => {
     await waitFor(() => expect(events('journey_results_viewed')).toHaveLength(2));
   });
 
+  it.each([
+    [0, undefined],
+    [1, 'אפשרות אחת'],
+    [3, '3 אפשרויות'],
+  ] as const)('labels %i visible results with Hebrew number agreement', async (count, label) => {
+    const base = getStaticCataloguePrograms()[0];
+    state.fetchPrograms.mockResolvedValue(
+      ['tau_cs', 'huji_cs', 'bgu_cs'].slice(0, count).map((id) => ({
+        ...base,
+        id,
+        name: 'מדעי המחשב',
+        type: 'academic',
+        linkedInstitutionIds: ['tau'],
+      })),
+    );
+
+    render(<StudyJourney initialStep="results" />);
+
+    if (count === 0) {
+      await screen.findByRole('heading', { name: 'לא נמצאו מסלולים בבחירה הזו' });
+      expect(document.querySelector('.journey-result-group small')).toBeNull();
+      return;
+    }
+
+    await waitFor(() => expect(screen.getByText(label!)).toBeTruthy());
+  });
+
   it.each(['row', 'detail', 'compare', 'offer'] as const)(
     'attributes the %s contact entry point without sending scores',
     async (surface) => {
