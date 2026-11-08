@@ -4,6 +4,7 @@ import { metadata as rootMetadata } from '@/app/layout';
 import ProgramPage from '@/app/programs/[programId]/page';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -142,6 +143,19 @@ describe('enquiry link integrity', () => {
     for (const href of failedLinks) {
       await expect(form(href), href).resolves.toContain('<form');
     }
+  });
+
+  it('keeps old medicine enquiry pairs pointed at their schools without changing design Tiltan', async () => {
+    expect(
+      (await getEnquiryTarget('givat_washington_medicine', 'givat_washington'))?.institution.id,
+    ).toBe('mon_12341128804');
+    expect((await getEnquiryTarget('tiltan_medicine', 'tiltan'))?.institution.id).toBe(
+      'mon_12341137918',
+    );
+    expect((await getEnquiryTarget('tiltan_graphic_design', 'tiltan'))?.institution.id).toBe(
+      'tiltan',
+    );
+    expect(await form('/enquiry?program=tiltan_medicine&institution=tiltan')).toContain('<form');
   });
 
   it.each(['static', 'database'] as const)(

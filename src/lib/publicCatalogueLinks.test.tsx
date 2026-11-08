@@ -157,8 +157,16 @@ describe('server-rendered crawl paths', () => {
     'jerusalem_academy_dance',
     'reichman_infosystems',
     'colmgmt_infosystems',
-    'reidman_medicine',
   ];
+
+  it('links Reidman to the complementary-medicine hub and its new school siblings', async () => {
+    const related = await getPublicRelatedPrograms('reidman_medicine');
+    expect(related.hub?.id).toBe('complementary_medicine');
+    expect(related.programs.map((program) => program.id)).toEqual([
+      'mon_12341128804_medicine',
+      'mon_12341137918_medicine',
+    ]);
+  });
 
   it('links Minshar visual communication to the matching published hub', async () => {
     expect((await getPublicRelatedPrograms('minshar_graphic_design')).hub?.id).toBe('visual_comm');

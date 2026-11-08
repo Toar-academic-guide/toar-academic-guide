@@ -109,6 +109,8 @@ describe('canonical programme aliases', () => {
       ...Object.fromEntries(aliases),
       jerusalem_academy_graphic_design: 'jerusalem_academy_dance',
       rubin_graphic_design: 'rubin_classical',
+      givat_washington_medicine: 'mon_12341128804_medicine',
+      tiltan_medicine: 'mon_12341137918_medicine',
     });
   });
 
