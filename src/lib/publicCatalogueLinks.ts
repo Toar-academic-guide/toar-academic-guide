@@ -27,6 +27,10 @@ const complementaryMedicineIds = new Set([
   'reidman_medicine',
 ]);
 
+const SUBJECT_HUB_NAMES: Readonly<Record<string, string>> = {
+  colmgmt_infosystems: 'מערכות מידע',
+};
+
 /**
  * The one source of subject hubs: the /programs index, the hub route and the
  * sitemap all read this, so they always agree.
@@ -62,7 +66,9 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   for (const program of programs) {
     if (catalogue.generalProgramIds.has(program.id)) continue;
     const institution = catalogue.institutions.find((i) => i.id === program.institutionId);
-    const name = institution ? institutionProgramName(program, institution) : program.name;
+    const name =
+      SUBJECT_HUB_NAMES[program.id] ??
+      (institution ? institutionProgramName(program, institution) : program.name);
     const descriptiveId =
       Object.entries(PROGRAM_CANONICAL_ALIASES).find(
         ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],

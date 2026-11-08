@@ -16,9 +16,8 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Metadata captured from main (a4d84ae). #379 updates nested provider offer lists. JSON-LD hashes include provider
-// catalogues, with duplicate aliases removed from MTA and Colman, and the
-// intentional slashed homepage breadcrumb identity from the indexing brief.
+// Metadata identities and JSON-LD hashes are preserved from main (a4d84ae).
+// Unsupported calculator descriptions now state the available admissions information.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
@@ -99,7 +98,7 @@ const unchangedPrograms = [
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה',
     description:
-      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'mta',
@@ -114,7 +113,7 @@ const unchangedPrograms = [
     name: 'מנהל עסקים',
     title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -129,7 +128,7 @@ const unchangedPrograms = [
     name: 'משפטים',
     title: 'משפטים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -203,7 +202,7 @@ describe('program institution attribution', () => {
     async ({ id, institution, location, token }) => {
       const page = (await getPublicProgramPageData(id))!;
       const title = `הנדסה וטכנולוגיה – ${institution}${id === 'haifa_engineering' ? ': תנאי קבלה' : ''}`;
-      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.`;
+      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.`;
       const metadata = await buildProgramMetadata(id);
       expect(metadata).toMatchObject({
         title,

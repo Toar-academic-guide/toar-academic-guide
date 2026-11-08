@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import Link from 'next/link';
 import { FOOTER_LEGAL_LINKS, FOOTER_NAV_LINKS } from '@/lib/footerLinks';
+import SocialFollowLinks from '@/components/SocialFollowLinks';
 
 const linkClassName =
   'inline-flex min-h-11 min-w-11 items-center rounded-sm text-[#dbe4ff] underline-offset-4 hover:text-white hover:underline focus-visible:outline-solid focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-[#a9b8ff]';
@@ -34,6 +35,7 @@ export default function SiteFooter() {
             >
               <bdi dir="ltr">info@findmyway.co.il</bdi>
             </a>
+            <SocialFollowLinks tone="dark" />
           </div>
           <nav aria-label="ניווט בכותרת התחתונה" className="min-w-0">
             <h2 className="font-semibold leading-[22px] text-[#f8fbff]">ניווט</h2>{' '}

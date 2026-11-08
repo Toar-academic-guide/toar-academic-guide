@@ -81,6 +81,7 @@ import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import TechnionMedicineComparison from './TechnionMedicineComparison';
+import SocialFollowLinks from './SocialFollowLinks';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -1590,6 +1591,12 @@ export default function StudyJourney({
                     עזרה בהכנה לפסיכומטרי
                   </button>
                 )}
+              </div>
+            )}
+            {step === 'results' && !catalogueLoading && !catalogueError && (
+              <div dir="rtl" className="mt-10 border-t border-slate-200 pt-4 text-right">
+                <p className="text-sm text-slate-500">עקבו אחרינו</p>
+                <SocialFollowLinks />
               </div>
             )}
           </section>

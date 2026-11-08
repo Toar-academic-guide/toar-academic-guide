@@ -412,6 +412,22 @@ describe('metadata', () => {
     );
   });
 
+  it('keeps calculator claims out of unsupported institution and programme metadata', async () => {
+    for (const metadata of [
+      await buildInstitutionMetadata('danon'),
+      await buildProgramMetadata('danon_culinary'),
+      await buildProgramMetadata('infosystems'),
+    ]) {
+      expect(metadata.title).not.toContain('סיכויי קבלה');
+      expect(metadata.description).not.toContain('סיכויי קבלה');
+      expect(metadata.description).toContain('תנאי קבלה');
+    }
+
+    const supported = await buildProgramMetadata('haifa_cs');
+    expect(supported.title).toContain('סיכויי קבלה');
+    expect(supported.description).toContain('בדיקת סיכויי קבלה');
+  });
+
   it('uses the general title even when the only subject signal is one institution', async () => {
     const program = {
       ...programs.find((program) => program.id === 'biology')!,

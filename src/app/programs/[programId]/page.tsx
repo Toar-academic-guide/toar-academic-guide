@@ -1,6 +1,9 @@
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
-import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
+import {
+  canLinkToSekhemCalculator,
+  loadSekhemCalculatorOfferings,
+} from '@/lib/sekhemCalculatorSupport';
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
@@ -68,7 +71,15 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
-  const calculatorOfferings = await loadSekhemCalculatorOfferings();
+  const possibleCalculatorInstitutions = institutions.filter((institution) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const calculatorOfferings = possibleCalculatorInstitutions.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
+    canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
+  );
 
   return (
     <WayPageShell>
@@ -90,15 +101,17 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             <p className="text-sm font-semibold text-cyan-700">{program.category}</p>{' '}
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>{' '}
             <div className="mt-6 flex flex-wrap gap-3">
-              <ProgramTrackedLink
-                event="program_calculator_cta_clicked"
-                programId={program.id}
-                institutionId={institutions.length === 1 ? institutions[0].id : ''}
-                href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
-                className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
-              >
-                בדקו אם אתם מתקבלים{' '}
-              </ProgramTrackedLink>
+              {hasCalculator && (
+                <ProgramTrackedLink
+                  event="program_calculator_cta_clicked"
+                  programId={program.id}
+                  institutionId={institutions.length === 1 ? institutions[0].id : ''}
+                  href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
+                  className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
+                >
+                  בדקו אם אתם מתקבלים{' '}
+                </ProgramTrackedLink>
+              )}
               <Link
                 href={ROUTES.assessment}
                 className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"

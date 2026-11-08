@@ -66,6 +66,8 @@ describe('server-rendered crawl paths', () => {
     expect(hrefs).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
       '/about',
@@ -85,6 +87,8 @@ describe('server-rendered crawl paths', () => {
     expect(paths(renderToStaticMarkup(<SiteFooter />))).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
       '/about',
@@ -156,7 +160,6 @@ describe('server-rendered crawl paths', () => {
     'hackeru_cs',
     'jerusalem_academy_dance',
     'reichman_infosystems',
-    'colmgmt_infosystems',
   ];
 
   it('links Reidman to the complementary-medicine hub and its new school siblings', async () => {
@@ -166,6 +169,16 @@ describe('server-rendered crawl paths', () => {
       'mon_12341128804_medicine',
       'mon_12341137918_medicine',
     ]);
+  });
+
+  it('links the verified Colman degree from the information-systems hub', async () => {
+    const informationSystems = await getPublicRelatedPrograms('colmgmt_infosystems');
+    expect(informationSystems.hub?.id).toBe('infosystems');
+    const informationSystemsPage = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: 'infosystems' }) }),
+    );
+    expect(paths(informationSystemsPage)).toContain('/programs/colmgmt_infosystems');
+    expect(paths(informationSystemsPage)).not.toContain('/programs/reichman_infosystems');
   });
 
   it('links Minshar visual communication to the matching published hub', async () => {
