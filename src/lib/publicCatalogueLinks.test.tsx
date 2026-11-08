@@ -66,6 +66,8 @@ describe('server-rendered crawl paths', () => {
     expect(hrefs).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
       '/about',
@@ -85,6 +87,8 @@ describe('server-rendered crawl paths', () => {
     expect(paths(renderToStaticMarkup(<SiteFooter />))).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
       '/about',
