@@ -3,6 +3,7 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { prerender } from 'react-dom/static';
 import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import Home from '@/app/page';
 import SubjectIndexPage, { metadata as subjectIndexMetadata } from '@/app/programs/page';
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
@@ -10,7 +11,12 @@ import { institutionProgramName } from '@/lib/institutionProgramName';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
 import SiteFooter from '@/components/SiteFooter';
-import { getPublicBrowseLinks, getPublicRelatedPrograms } from './publicCatalogueLinks';
+import {
+  getPublicBrowseLinks,
+  getPublicRelatedPrograms,
+  getPublicSubjectHub,
+} from './publicCatalogueLinks';
+import { getPublicInstitutionPageData, getPublicProgramPageData } from './publicCataloguePages';
 
 vi.mock('server-only', () => ({}));
 vi.mock('@/components/WayPageShell', () => ({
@@ -49,6 +55,64 @@ function paths(markup: string): string[] {
 }
 
 describe('server-rendered crawl paths', () => {
+  it.each([
+    ['achva', 'achva_psychology', 'psychology'],
+    ['beit_berl', 'beit_berl_early_childhood', 'early_childhood'],
+    ['david_yellin', 'david_yellin_early_childhood', 'early_childhood'],
+  ])(
+    'connects %s to a specific programme and its subject hub',
+    async (institutionId, programId, hubId) => {
+      const institution = await getPublicInstitutionPageData(institutionId);
+      expect(institution?.programs.map((program) => program.id)).toContain(programId);
+      const related = await getPublicRelatedPrograms(programId);
+      expect(related.hub?.id).toBe(hubId);
+      expect(related.hub?.programs.map((program) => program.id)).toContain(programId);
+    },
+  );
+
+  it('lists Achva psychology on the existing psychology subject page', async () => {
+    const subject = await getPublicProgramPageData('psychology');
+    expect(subject?.institutionProgramPaths.achva).toBe('/programs/achva_psychology');
+  });
+
+  it('connects every new college programme to a published subject page', async () => {
+    for (const program of collegeProgrammes) {
+      const { hub } = await getPublicRelatedPrograms(program.id);
+      expect(
+        hub?.programs.map((entry) => entry.id),
+        program.id,
+      ).toContain(program.id);
+      const general = hub && (await getPublicProgramPageData(hub.id));
+      if (general?.isGeneral) {
+        expect(general.institutionProgramPaths[program.institutionId!], program.id).toBe(
+          `/programs/${program.id}`,
+        );
+      } else {
+        expect(
+          (await getPublicSubjectHub(hub!.id))?.hub.programs.map((entry) => entry.id),
+          program.id,
+        ).toContain(program.id);
+      }
+    }
+  });
+
+  it.each([
+    ['achva', 'achva_general_academic'],
+    ['beit_berl', 'beit_berl_general_academic'],
+    ['beit_berl', 'beit_berl_graphic_design'],
+    ['david_yellin', 'david_yellin_education'],
+  ])(
+    'keeps the replaced %s placeholder URL but unlists %s',
+    async (institutionId, placeholderId) => {
+      expect(
+        getStaticCataloguePrograms().find((program) => program.id === placeholderId)?.isListed,
+      ).toBe(false);
+      expect(
+        (await getPublicInstitutionPageData(institutionId))?.programs.map((program) => program.id),
+      ).not.toContain(placeholderId);
+    },
+  );
+
   // Approved test update, Jorje 2026-10-31: replaces deleted test "keeps subject hubs in collapsed homepage and browse HTML without institution links".
   it('homepage has no browse section or study-field links', async () => {
     const home = await ssr(<Home />);

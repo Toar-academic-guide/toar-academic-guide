@@ -7,6 +7,7 @@ import {
   PROGRAM_RETIREMENT_REDIRECTS,
 } from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { catalogueSubjectName } from '@/data/institutionSubjects';
 import type { CatalogueProgram } from '@/types/catalogue';
 
 export interface SubjectHub {
@@ -56,7 +57,10 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   for (const program of programs) {
     if (catalogue.generalProgramIds.has(program.id)) continue;
     const institution = catalogue.institutions.find((i) => i.id === program.institutionId);
-    const name = institution ? institutionProgramName(program, institution) : program.name;
+    const name = catalogueSubjectName(
+      program.id,
+      institution ? institutionProgramName(program, institution) : program.name,
+    );
     const descriptiveId =
       Object.entries(PROGRAM_CANONICAL_ALIASES).find(
         ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],

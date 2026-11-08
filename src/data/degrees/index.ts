@@ -5,6 +5,7 @@ export { vocationalPrograms } from './vocationalPrograms';
 
 import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
+import { collegeProgrammes } from './collegeProgrammes';
 import { vocationalPrograms } from './vocationalPrograms';
 import {
   DANON_BEGINNER_REQUIREMENT,
@@ -1106,7 +1107,10 @@ export const programsWithLegacyAdmissionFacts = [
 });
 
 // Verified display copy is deliberately separate from inferred legacy calculation facts.
-export const allPrograms = programsWithLegacyAdmissionFacts.map((program) => {
-  const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
-  return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
-});
+export const allPrograms = [
+  ...programsWithLegacyAdmissionFacts.map((program) => {
+    const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+    return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
+  }),
+  ...collegeProgrammes,
+];
