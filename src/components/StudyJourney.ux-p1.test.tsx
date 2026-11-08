@@ -42,6 +42,15 @@ describe('UX P1 subject selection', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
+  it('links to the official NITE score guidance from score entry', async () => {
+    render(<StudyJourney initialStep="psy-score" />);
+    const link = await screen.findByRole('link', { name: 'איך לצפות בציונים באתר מאל״ו' });
+    expect(link.getAttribute('href')).toBe(
+      'https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/',
+    );
+    expect(link.getAttribute('target')).toBe('_blank');
+  });
+
   it.each(['home', 'subjects'] as const)(
     'does not focus the journey heading on initial mount at %s',
     async (initialStep) => {

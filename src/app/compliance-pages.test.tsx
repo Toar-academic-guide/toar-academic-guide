@@ -89,13 +89,27 @@ describe('compliance pages', () => {
       for (const email of emails) expect(email.textContent).toBe('info@findmyway.co.il');
       expect(container.textContent).not.toMatch(/\d{9}/);
       expect(container.textContent).toContain(
-        path === '/accessibility' ? 'עמית מליחי' : 'עמית מליחי (עוסק פטור)',
+        path === '/contact'
+          ? 'MyWay'
+          : path === '/accessibility'
+            ? 'עמית מליחי'
+            : 'עמית מליחי (עוסק פטור)',
       );
       expect(metadata.title).toBeTruthy();
       expect(metadata.alternates?.canonical).toBe(path);
       expect(container.querySelector('form')).toBeNull();
     });
   }
+
+  it('presents MyWay as the contact identity while keeping the exact email link', () => {
+    const container = markup(<ContactPage />);
+    const main = container.querySelector('main')!;
+    expect(main.querySelector('p')?.textContent).toBe('MyWay');
+    expect(main.textContent).not.toContain('עוסק פטור');
+    expect(
+      main.querySelector('a[href="mailto:info@findmyway.co.il"] bdi[dir="ltr"]')?.textContent,
+    ).toBe('info@findmyway.co.il');
+  });
 
   for (const { Page, path } of pages.filter(({ path }) => path !== '/contact')) {
     it(`${path} preserves the entire approved copy`, () => {
@@ -199,7 +213,7 @@ describe('compliance pages', () => {
 
   it('contact contains only its approved body strings', () => {
     const contact = markup(<ContactPage />);
-    expect(pageText(contact)).toBe('יצירת קשר עמית מליחי (עוסק פטור) info@findmyway.co.il');
+    expect(pageText(contact)).toBe('יצירת קשר MyWay info@findmyway.co.il');
     expect(contact.querySelector('a bdi')?.getAttribute('dir')).toBe('ltr');
   });
 

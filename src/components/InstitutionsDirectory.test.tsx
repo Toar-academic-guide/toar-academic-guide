@@ -63,6 +63,27 @@ function open() {
 const fieldGroup = () => screen.getByRole('group', { name: 'תחום לימודים' });
 const subjectGroup = () => screen.getByRole('group', { name: 'תכנית לימודים' });
 describe('institution subject pills', () => {
+  it('identifies the official operator when ITC links to the Jewish Agency', () => {
+    render(
+      <InstitutionsDirectory
+        institutions={[
+          {
+            ...base,
+            id: 'itc',
+            name: 'Israel Tech Challenge (ITC)',
+            sourceUrl: 'https://www.jewishagency.org/israel-tech-challenge/',
+          },
+        ]}
+        subjects={subjects}
+        fields={fields}
+      />,
+    );
+    const link = screen.getByRole('link', {
+      name: 'מידע על Israel Tech Challenge (ITC) באתר הסוכנות היהודית',
+    });
+    expect(link.getAttribute('href')).toBe('https://www.jewishagency.org/israel-tech-challenge/');
+    expect(link.textContent).toContain('מידע באתר הסוכנות היהודית');
+  });
   it('starts with every institution and filters directly by a programme, then clears it', () => {
     open();
     expect(screen.getByRole('link', { name: 'מוסד ג׳' })).toBeTruthy();

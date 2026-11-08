@@ -1411,6 +1411,16 @@ export default function StudyJourney({
                 ))}
               </div>
             )}
+            {step === 'psy-score' && (
+              <a
+                className="journey-pill journey-grade-link"
+                href="https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                איך לצפות בציונים באתר מאל״ו
+              </a>
+            )}
             {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">
               <Primary>{step === 'improve' ? 'לבדוק את האפשרויות' : 'המשיכו'}</Primary>
