@@ -239,7 +239,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           עודכן לאחרונה: {source.checked.date}
                           {source.checked.sourceUrl && (
                             <>
-                              {' · מקור: '}
+                              {program.id === 'haifa_cs' && institution.id === 'haifa'
+                                ? ' · '
+                                : ' · מקור: '}
                               <a
                                 href={source.checked.sourceUrl}
                                 target="_blank"
