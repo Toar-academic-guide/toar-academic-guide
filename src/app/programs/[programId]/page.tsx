@@ -28,7 +28,17 @@ interface ProgramPageProps {
 
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
-  return buildProgramMetadata(programId);
+  const metadata = await buildProgramMetadata(programId);
+  if (programId !== 'datascience') return metadata;
+  const title = 'מדעי הנתונים: השוואת מסלולים ותנאי קבלה';
+  const description =
+    'השוו מסלולי לימוד במדעי הנתונים, הבינו את ההבדל ממדעי המחשב ובדקו את תנאי הקבלה של התוכניות שמעניינות אתכם.';
+  return {
+    ...metadata,
+    title,
+    description,
+    openGraph: { ...metadata.openGraph, title, description },
+  };
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
@@ -107,6 +117,129 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </Link>
             </div>
           </div>
+          {isGeneral && program.id === 'datascience' && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold">מדעי הנתונים או מדעי המחשב — מה מתאים לכם?</h2>
+              <p className="mt-3 leading-7 text-slate-700">
+                רוצים לבנות תוכנות ומערכות, או להפיק תובנות מנתונים? מדעי המחשב מתמקדים בתכנות,
+                באלגוריתמים ובמערכות מחשב. מדעי הנתונים משלבים תכנות עם סטטיסטיקה ולמידת מכונה כדי
+                לנתח מידע ולבנות מודלים. השוו את תוכנית הלימודים ואת תנאי הקבלה של כל מסלול לפני
+                שבוחרים.
+              </p>
+              <table className="mt-5 w-full table-fixed border-collapse text-right text-[13px] leading-5 sm:text-sm sm:leading-6">
+                <thead className="bg-slate-50">
+                  <tr>
+                    <th
+                      scope="col"
+                      className="w-[28%] border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      מה משווים?
+                    </th>
+                    <th
+                      scope="col"
+                      className="w-[36%] border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      מדעי המחשב
+                    </th>
+                    <th
+                      scope="col"
+                      className="w-[36%] border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      מדעי הנתונים
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <th
+                      scope="row"
+                      className="border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      הדגש בלימודים
+                    </th>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      פיתוח תוכנה, אלגוריתמים ומערכות
+                    </td>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      ניתוח נתונים, סטטיסטיקה ולמידת מכונה
+                    </td>
+                  </tr>
+                  <tr>
+                    <th
+                      scope="row"
+                      className="border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      נושאים שכדאי לחפש בתוכנית
+                    </th>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      מבני נתונים, מערכות הפעלה ורשתות
+                    </td>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      הסתברות, הסקה סטטיסטית ומודלים של למידת מכונה
+                    </td>
+                  </tr>
+                  <tr>
+                    <th
+                      scope="row"
+                      className="border border-slate-200 p-2 align-top font-semibold sm:p-3"
+                    >
+                      הצעד הבא
+                    </th>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      <Link
+                        href="/programs/cs"
+                        className="font-semibold text-[#6554b8] underline underline-offset-2"
+                      >
+                        השוו תוכניות במדעי המחשב
+                      </Link>
+                    </td>
+                    <td className="border border-slate-200 p-2 align-top sm:p-3">
+                      השוו את התוכניות במדעי הנתונים בהמשך העמוד
+                    </td>
+                  </tr>
+                </tbody>
+              </table>
+              <Link
+                href="/sekhem-calculator"
+                className="mt-5 inline-block font-semibold text-[#6554b8] underline underline-offset-2"
+              >
+                בדקו את הציונים שלכם במחשבון הסכם
+              </Link>
+              <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">
+                <a
+                  href="https://wgalil.ac.il/blog/computer-science-vs-data-science/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  על ההבדל בין התחומים — האקדמית גליל מערבי
+                </a>
+                <a
+                  href="https://www.colman.ac.il/academics/ba/data-science/"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="underline underline-offset-2"
+                >
+                  מדע הנתונים — המסלול האקדמי המכללה למינהל
+                </a>
+              </div>
+            </section>
+          )}
+          {isGeneral && program.id === 'cs' && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold">מתלבטים בין מדעי המחשב למדעי הנתונים?</h2>
+              <p className="mt-3 leading-7 text-slate-700">
+                מדעי המחשב מתמקדים בפיתוח תוכנה, אלגוריתמים ומערכות. במדעי הנתונים הדגש הוא על ניתוח
+                מידע, סטטיסטיקה ולמידת מכונה. השוו את תוכני הלימוד ואת תנאי הקבלה בשני התחומים.
+              </p>
+              <Link
+                href="/programs/datascience"
+                className="mt-4 inline-block font-semibold text-[#6554b8] underline underline-offset-2"
+              >
+                להשוואה עם מדעי הנתונים
+              </Link>
+            </section>
+          )}
           <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <h2 className="text-xl font-bold">מוסדות לימוד</h2>{' '}
             <div className="mt-4 grid gap-3 sm:grid-cols-2">
