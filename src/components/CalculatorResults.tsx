@@ -15,6 +15,7 @@ import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
 import { institutionLink } from '@/lib/institutionLinks';
 import AdmissionRequirements from './AdmissionRequirements';
+import SocialFollowLinks from './SocialFollowLinks';
 
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
@@ -984,6 +985,12 @@ export default function CalculatorResults({
                 ? 'לא נמצאו מוסדות עם הסינון הנוכחי'
                 : 'לא נמצאו תוצאות מוסדיות למסלול שנבחר'}
             </p>
+          </div>
+        ) : null}
+        {!loading && !error ? (
+          <div className="mt-8 border-t border-slate-200 pt-4 text-slate-500">
+            <p className="text-sm">עקבו אחרינו</p>
+            <SocialFollowLinks />
           </div>
         ) : null}
       </div>

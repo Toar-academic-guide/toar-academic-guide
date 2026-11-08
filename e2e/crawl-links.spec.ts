@@ -28,6 +28,8 @@ test('homepage keeps the hero CTA and footer links in raw HTML', async ({ reques
   expect(footer).toEqual([
     '/',
     'mailto:info@findmyway.co.il',
+    'https://www.instagram.com/findmyway_il/',
+    'https://www.tiktok.com/@myway_study',
     '/programs',
     '/institutions',
     '/about',

@@ -90,6 +90,8 @@ describe('ProgramPage', () => {
       DANON_BEGINNER_REQUIREMENT,
     ]);
     expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+    expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'מה מתאים לי?' })).toBeTruthy();
   });
 
   it('omits the removed Ono note rather than rendering an empty list item', async () => {
@@ -574,8 +576,6 @@ describe('ProgramPage', () => {
 it('tracks program page CTAs and official outbound links with only canonical IDs', async () => {
   render(await ProgramPage({ params: Promise.resolve({ programId: 'colmgmt_cs' }) }));
   const actions = [
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
-    ['בדקו אם אתם מתקבלים', 'program_calculator_cta_clicked'],
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
     ['קבלו שיחה מהמוסד', 'program_contact_cta_clicked'],
     ['לאתר המוסד', 'institution_site_clicked'],
@@ -590,5 +590,5 @@ it('tracks program page CTAs and official outbound links with only canonical IDs
       institution_id: 'colman',
     });
   }
-  expect(hoisted.capture.mock.calls).toHaveLength(4);
+  expect(hoisted.capture.mock.calls).toHaveLength(3);
 });
