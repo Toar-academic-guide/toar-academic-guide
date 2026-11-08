@@ -187,8 +187,8 @@ describe('CalculatorResults', () => {
       />,
     );
     const resultExplanation = await screen.findByText(result.explanation, { exact: true });
-    const instagram = screen.getByRole('link', { name: 'MyWay באינסטגרם' });
-    const tiktok = screen.getByRole('link', { name: 'MyWay בטיקטוק' });
+    const instagram = screen.getByRole('link', { name: 'אינסטגרם של MyWay' });
+    const tiktok = screen.getByRole('link', { name: 'טיקטוק של MyWay' });
     expect(instagram.getAttribute('href')).toBe('https://www.instagram.com/findmyway_il/');
     expect(tiktok.getAttribute('href')).toBe('https://www.tiktok.com/@myway_study');
     expect(

@@ -1,7 +1,7 @@
 const profiles = [
   {
     name: 'אינסטגרם',
-    label: 'MyWay באינסטגרם',
+    label: 'אינסטגרם של MyWay',
     href: 'https://www.instagram.com/findmyway_il/',
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="none" className="h-5 w-5">
@@ -13,7 +13,7 @@ const profiles = [
   },
   {
     name: 'טיקטוק',
-    label: 'MyWay בטיקטוק',
+    label: 'טיקטוק של MyWay',
     href: 'https://www.tiktok.com/@myway_study',
     icon: (
       <svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor" className="h-5 w-5">

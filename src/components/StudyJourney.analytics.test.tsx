@@ -105,7 +105,7 @@ describe('journey funnel analytics', () => {
         },
       ],
     ]);
-    const follow = screen.getByRole('link', { name: 'MyWay באינסטגרם' });
+    const follow = screen.getByRole('link', { name: 'אינסטגרם של MyWay' });
     expect(follow.getAttribute('href')).toBe('https://www.instagram.com/findmyway_il/');
     expect(
       screen.getByRole('button', { name: 'לרשימה שלי' }).compareDocumentPosition(follow) &

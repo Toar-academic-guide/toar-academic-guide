@@ -209,8 +209,8 @@ describe('compliance pages', () => {
   ])('%s links to the approved social profiles', (_, Component) => {
     const content = markup(<Component />);
     for (const [name, href] of [
-      ['MyWay באינסטגרם', 'https://www.instagram.com/findmyway_il/'],
-      ['MyWay בטיקטוק', 'https://www.tiktok.com/@myway_study'],
+      ['אינסטגרם של MyWay', 'https://www.instagram.com/findmyway_il/'],
+      ['טיקטוק של MyWay', 'https://www.tiktok.com/@myway_study'],
     ]) {
       const link = content.querySelector(`a[aria-label="${name}"]`);
       expect(link?.getAttribute('href')).toBe(href);
