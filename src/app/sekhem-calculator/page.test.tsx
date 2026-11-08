@@ -100,6 +100,9 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
 it('renders an indexable public calculator with absolute title and canonical metadata', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('מחשבון סכם');
+  expect(screen.getByRole('link', { name: 'מועדי הפסיכומטרי' }).getAttribute('href')).toBe(
+    '/psychometric-dates',
+  );
   expect(metadata.title).toEqual({ absolute: 'מחשבון סכם לפי מוסד ותוכנית | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(

@@ -85,12 +85,18 @@ describe('crawl policy', () => {
   it('directs llms.txt readers to public pages and preserves the business-model disclosure', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
     expect(llms).not.toContain('/app/');
+    expect(llms).toContain(
+      '- [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.',
+    );
+    expect(llms).toContain(
+      '- [ימים פתוחים](https://findmyway.co.il/open-days): תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, עם קישורים למוסדות.',
+    );
     expect(llms).toContain('https://findmyway.co.il/institutions');
     expect(llms).toContain('https://findmyway.co.il/programs/<id>');
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-06');
+    expect(llms).toContain('Last updated: 2026-11-08');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -1067,7 +1073,7 @@ describe('llms.txt calculator link', () => {
 
   it('ends with the approved update date inside the Business model section', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-06';
+    const updated = 'Last updated: 2026-11-08';
     expect(llms).toContain(updated);
     expect(
       llms
