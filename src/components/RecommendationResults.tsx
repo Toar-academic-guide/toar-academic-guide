@@ -567,7 +567,9 @@ function ProgramDetailView({
                             {detail.durationYears !== null && (
                               <span>{detail.durationYears} שנות לימוד</span>
                             )}
-                            <span>{detail.estimatedStudentsPerYear}</span>
+                            {detail.estimatedStudentsPerYear && (
+                              <span>{detail.estimatedStudentsPerYear}</span>
+                            )}
                           </div>
                         )}
                         <button
@@ -725,7 +727,9 @@ function ProgramDetailView({
                             {detail.durationYears !== null && (
                               <span>{detail.durationYears} שנות לימוד</span>
                             )}
-                            <span>{detail.estimatedStudentsPerYear}</span>
+                            {detail.estimatedStudentsPerYear && (
+                              <span>{detail.estimatedStudentsPerYear}</span>
+                            )}
                           </div>
                         )}
                         <button

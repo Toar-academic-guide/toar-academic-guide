@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function ContactPage() {
   return (
     <LegalPageShell title="יצירת קשר">
-      <p>עמית מליחי (עוסק פטור)</p>
+      <p>MyWay</p>
       <p>
         <a href="mailto:info@findmyway.co.il">
           <bdi dir="ltr">info@findmyway.co.il</bdi>

@@ -6,6 +6,7 @@ import {
   isSupabaseConfigured,
   SUPABASE_AUTH_COOKIE_NAME,
 } from '@/lib/supabase/env';
+import { getSocialShortLinkDestination } from '@/lib/socialShortLinks';
 
 const socialShortLinks: Record<string, string> = {
   '/tt': 'tiktok',
@@ -20,6 +21,25 @@ export async function proxy(request: NextRequest) {
       `https://findmyway.co.il${request.nextUrl.pathname}${request.nextUrl.search}`,
       308,
     );
+  }
+
+  if (request.nextUrl.pathname === '/go' || request.nextUrl.pathname.startsWith('/go/')) {
+    const slug = request.nextUrl.pathname.slice('/go/'.length);
+    const destination = getSocialShortLinkDestination(slug);
+    if (!destination) {
+      return new NextResponse(null, {
+        status: 404,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Vercel-CDN-Cache-Control': 'no-store',
+        },
+      });
+    }
+
+    const response = NextResponse.redirect(destination, 307);
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    response.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+    return response;
   }
 
   const source = socialShortLinks[request.nextUrl.pathname.replace(/\/$/, '')];

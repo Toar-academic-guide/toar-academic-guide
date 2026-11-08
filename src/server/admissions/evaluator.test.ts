@@ -5069,8 +5069,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      // Two sourced complementary-medicine certificates are now distinct catalogue records.
-      expect(pairs).toBe(438);
+      // Two sourced complementary-medicine certificates and Hadassah add three distinct pairs.
+      expect(pairs).toBe(439);
     },
   );
   it.each([
