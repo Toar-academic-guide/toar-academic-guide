@@ -9,6 +9,34 @@ import { allPrograms, programsWithLegacyAdmissionFacts } from './index';
 type CatalogueProgramLike = (typeof allPrograms)[number];
 type InstitutionDetailLike = NonNullable<CatalogueProgramLike['institutionDetails']>[number];
 
+it('shows sourced Reichman durations without unsupported cohort sizes or information-systems gates', () => {
+  const reichman = Object.fromEntries(
+    allPrograms
+      .filter((program) => program.institutionId === 'reichman')
+      .map((program) => [program.id, program]),
+  );
+
+  expect(reichman.reichman_psychology.institutionDetails?.[0].durationYears).toBe(3);
+  expect(reichman.reichman_law.institutionDetails?.[0].durationYears).toBe(4);
+  expect(reichman.reichman_infosystems.institutionDetails?.[0].durationYears).toBeNull();
+  for (const id of ['reichman_cs', 'reichman_psychology', 'reichman_law', 'reichman_business', 'reichman_economics', 'reichman_infosystems']) {
+    const program = reichman[id];
+    expect(program.institutionDetails?.[0].estimatedStudentsPerYear).toBe('');
+  }
+  expect(reichman.reichman_infosystems.institutionDetails?.[0].specificAdmissionNotes).toEqual([]);
+  expect(reichman.reichman_infosystems.admissionRequirements).toEqual([
+    'בדקו את תנאי המסלול באתר רייכמן',
+  ]);
+});
+
+it('renders the technology college programme name without Monday escaping', () => {
+  const program = allPrograms.find((row) => row.id === 'tech_management_engineering')!;
+  expect(program.name).toContain('המכללה למינהל - רשת מכללות הנדסאים');
+  expect(program.name).not.toContain('\\');
+  expect(program.institution).not.toContain('\\');
+  expect(program.institutionDetails?.[0].institutionName).not.toContain('\\');
+});
+
 describe('curated Hadassah programme name', () => {
   const program = allPrograms.find((row) => row.id === 'hadassah_general_academic')!;
 
