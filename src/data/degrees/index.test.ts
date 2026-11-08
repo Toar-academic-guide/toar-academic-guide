@@ -19,7 +19,14 @@ it('shows sourced Reichman durations without unsupported cohort sizes or informa
   expect(reichman.reichman_psychology.institutionDetails?.[0].durationYears).toBe(3);
   expect(reichman.reichman_law.institutionDetails?.[0].durationYears).toBe(4);
   expect(reichman.reichman_infosystems.institutionDetails?.[0].durationYears).toBeNull();
-  for (const id of ['reichman_cs', 'reichman_psychology', 'reichman_law', 'reichman_business', 'reichman_economics', 'reichman_infosystems']) {
+  for (const id of [
+    'reichman_cs',
+    'reichman_psychology',
+    'reichman_law',
+    'reichman_business',
+    'reichman_economics',
+    'reichman_infosystems',
+  ]) {
     const program = reichman[id];
     expect(program.institutionDetails?.[0].estimatedStudentsPerYear).toBe('');
   }
