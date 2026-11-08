@@ -100,6 +100,9 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
 it('renders an indexable public calculator with absolute title and canonical metadata', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('מחשבון סכם');
+  expect(screen.getByRole('link', { name: 'מועדי הפסיכומטרי' }).getAttribute('href')).toBe(
+    '/psychometric-dates',
+  );
   expect(metadata.title).toEqual({ absolute: 'מחשבון סכם לפי מוסד ותוכנית | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
@@ -127,6 +130,12 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
 });
 it('sets the Open Graph URL to the calculator canonical URL', () => {
   expect(metadata.openGraph?.url).toBe('https://findmyway.co.il/sekhem-calculator');
+});
+it('keeps the transfer guide as a secondary link after the calculator FAQ', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(
+    screen.getByRole('link', { name: 'כך מתכננים מעבר בין מוסדות לימוד' }).getAttribute('href'),
+  ).toBe('/transfer');
 });
 it('supplies an existing canonical public programme page for every offered result', async () => {
   const { loadSekhemCalculatorOfferings } = await import('@/lib/sekhemCalculatorSupport');

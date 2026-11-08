@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
+import JsonLd from '@/components/seo/JsonLd';
 import {
   psychometricDates,
   psychometricDatesCheckedOn,
@@ -50,9 +51,28 @@ export default async function Page() {
   const next = statuses.find(({ isNextOpen }) => isNextOpen)?.sitting;
   const checkedDate = formatPsychometricDate(psychometricDatesCheckedOn);
   const years = `${psychometricDates[0].testDays[0].slice(0, 4)}–${psychometricDates.at(-1)!.testDays[0].slice(0, 4)}`;
+  const examDates = statuses.flatMap(({ sitting }) =>
+    sitting.testDays.map((startDate) => ({
+      '@type': 'ListItem',
+      item: {
+        '@type': 'Event',
+        name: `הבחינה הפסיכומטרית — ${formatPsychometricDate(startDate)}`,
+        startDate,
+        url: sitting.sourceUrl,
+      },
+    })),
+  );
   return (
     <WayPageShell className={styles.shell}>
       <main id="main-content" dir="rtl" className={styles.main}>
+        <JsonLd
+          data={{
+            '@type': 'ItemList',
+            '@id': `${canonical}#exam-dates`,
+            name: 'מועדי הבחינה הפסיכומטרית',
+            itemListElement: examDates.map((item, index) => ({ ...item, position: index + 1 })),
+          }}
+        />
         <div className={styles.intro}>
           <h1>
             מועדי פסיכומטרי <bdi dir="ltr">{years}</bdi>

@@ -57,6 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/psychometric-two-domain', '2026-11-06');
   dates.set('/open-days', '2026-11-05');
   dates.set('/bagrut-dates', bagrutDatesCheckedOn);
+  dates.set('/transfer', '2026-11-08');
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',
@@ -70,6 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/psychometric-two-domain',
     '/open-days',
     '/bagrut-dates',
+    '/transfer',
     '/institutions',
     '/programs',
     ...(await indexableInstitutionIds(catalogue)).map(
