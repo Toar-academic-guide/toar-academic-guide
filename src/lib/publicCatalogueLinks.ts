@@ -22,6 +22,12 @@ export interface SubjectHub {
 
 type PublicCatalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
 
+const complementaryMedicineIds = new Set([
+  'mon_12341128804_medicine',
+  'mon_12341137918_medicine',
+  'reidman_medicine',
+]);
+
 const SUBJECT_HUB_NAMES: Readonly<Record<string, string>> = {
   colmgmt_infosystems: 'מערכות מידע',
 };
@@ -34,7 +40,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   const programs = catalogue.programs.filter(
     (program) =>
       program.isListed !== false &&
-      !program.id.startsWith('mon_') &&
+      (!program.id.startsWith('mon_') || complementaryMedicineIds.has(program.id)) &&
       canonicalProgramId(program.id) === program.id &&
       catalogue.institutions.some((institution) =>
         program.linkedInstitutionIds.includes(institution.id),
@@ -71,9 +77,11 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
         ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],
       )?.[0] ?? program.id;
     const prefix = `${program.institutionId}_`;
-    const subjectId = descriptiveId.startsWith(prefix)
-      ? descriptiveId.slice(prefix.length)
-      : descriptiveId.slice(descriptiveId.indexOf('_') + 1);
+    const subjectId = complementaryMedicineIds.has(program.id)
+      ? 'complementary_medicine'
+      : descriptiveId.startsWith(prefix)
+        ? descriptiveId.slice(prefix.length)
+        : descriptiveId.slice(descriptiveId.indexOf('_') + 1);
     if (unpublishedNames.has(name)) continue;
     let hub =
       hubByName.get(name) ??

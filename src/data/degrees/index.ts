@@ -1066,6 +1066,45 @@ for (const record of mondayAdmissionsEvidence) {
   }
 }
 
+// The Monday import identified these schools as broad medicine groups. Keep the
+// old IDs for saved references, while the sourced certificate records are listed.
+const complementaryLegacyIds: Readonly<Record<string, string>> = {
+  givat_washington_medicine: 'mon_12341128804_medicine',
+  tiltan_medicine: 'mon_12341137918_medicine',
+};
+for (const [legacyId, programId] of Object.entries(complementaryLegacyIds)) {
+  const legacyIndex = dynamicPrograms.findIndex((program) => program.id === legacyId);
+  if (legacyIndex < 0) continue;
+  const original = dynamicPrograms[legacyIndex];
+  const institutionId = programId.slice(0, -'_medicine'.length) as InstitutionId;
+  const institution = INSTITUTION_BY_ID[institutionId];
+  const sourceUrl = institution.programUrl!;
+  const corrected: Program = {
+    ...original,
+    id: programId,
+    name: 'רפואה משלימה',
+    institution: institution.name,
+    institutionId,
+    type: 'certificate',
+    category: 'רפואה משלימה',
+    admissionRequirements: [],
+    thresholds: {},
+    institutionDetails: (original.institutionDetails ?? []).map((detail) => ({
+      ...detail,
+      institutionName: institution.name,
+      durationYears: null,
+      specificAdmissionNotes: [],
+      programUrl: sourceUrl,
+      officialCalculatorUrl: sourceUrl,
+      admissionsSourceCandidates: [],
+      admissionFacts: [],
+      admissionAlternativePaths: [],
+    })),
+  };
+  dynamicPrograms[legacyIndex] = { ...corrected, id: legacyId, isListed: false };
+  dynamicPrograms.push(corrected);
+}
+
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
 export const programsWithLegacyAdmissionFacts = [

@@ -387,7 +387,7 @@ describe('approved journey', () => {
         { ...template, id: canonical },
         { ...template, id: alias },
       ];
-      const rows = journeyRows(studyFields(programmes), getStaticCatalogueInstitutions());
+      const rows = journeyRows(studyFields(programmes, true), getStaticCatalogueInstitutions());
       expect(rows.map((row) => row.program.id)).toContain(alias);
       expect(distinctRecommendations(rows).map((row) => row.program.id)).toEqual([canonical]);
       expect(distinctRecommendations(rows.filter((row) => row.program.id === alias))).toHaveLength(

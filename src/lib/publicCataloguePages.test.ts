@@ -15,6 +15,7 @@ import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { getEnquiryTarget } from '@/lib/enquiryTarget';
+import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { indexableInstitutionIds, isIndexableProgram } from '@/lib/seo/indexability';
 import { institutionLink } from '@/lib/institutionLinks';
@@ -28,6 +29,63 @@ import {
 } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
+  it.each(['static', 'database'] as const)(
+    'shows one sourced complementary-medicine card per school in %s mode',
+    async (source) => {
+      const programs = getStaticCataloguePrograms();
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data:
+          source === 'database'
+            ? programs.filter(
+                (program) => !['tiltan_medicine', 'givat_washington_medicine'].includes(program.id),
+              )
+            : programs,
+        meta: { catalogueSource: source },
+      });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+        data: getStaticCatalogueInstitutions(),
+        meta: { catalogueSource: source },
+      });
+
+      const catalogue = await loadPublicCatalogue();
+      const { publishedHubs } = buildSubjectHubs(catalogue);
+      const medicine = publishedHubs.find((hub) => hub.id === 'medicine')!;
+      const complementary = publishedHubs.find((hub) => hub.id === 'complementary_medicine')!;
+      const communication = publishedHubs.find((hub) => hub.id === 'communication_disorders')!;
+      const ids = ['mon_12341128804_medicine', 'mon_12341137918_medicine'];
+
+      for (const id of ids) {
+        expect(medicine.programs.map((program) => program.id)).not.toContain(id);
+      }
+      expect(communication.programs.map((program) => program.id)).toContain(
+        'achva_communication_disorders',
+      );
+      expect(medicine.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
+      expect(complementary.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
+      expect(complementary.name).toBe('רפואה משלימה');
+      expect(complementary.programs.map((program) => program.id).sort()).toEqual(
+        [...ids, 'reidman_medicine'].sort(),
+      );
+      expect(complementary.programLinks).toBe(3);
+
+      for (const id of ids) {
+        const page = (await getPublicProgramPageData(id))!;
+        expect(page.institutions.map((institution) => institution.id)).toEqual([
+          id.slice(0, -'_medicine'.length),
+        ]);
+        expect(page.program.category).toBe('רפואה משלימה');
+      }
+      const tiltan = (await getPublicProgramPageData('mon_12341137918_medicine'))!;
+      expect(
+        (await getPublicProgramRequirementSources(tiltan)).mon_12341137918.officialUrl,
+      ).toContain('tiltan-college.co.il/about');
+    },
+  );
+
   it.each([
     ['technion_ee', 94, 91.5],
     ['technion_me', 92, 87],
