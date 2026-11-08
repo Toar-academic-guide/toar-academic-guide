@@ -232,4 +232,168 @@ describe('journey funnel analytics', () => {
       ['institution_site_clicked', { program_id: 'tau_cs', institution_id: 'tau' }],
     ]);
   });
+
+  it('keeps restored results as views, then completes one deliberate simulation through retry and back visits', async () => {
+    state.evaluate.mockResolvedValue({
+      reports: { ...report.reports, bgu_cs: report.reports.tau_cs },
+      failedDegreeIds: [],
+    });
+    render(
+      <StrictMode>
+        <StudyJourney initialStep="results" />
+      </StrictMode>,
+    );
+    await waitFor(() => expect(events('journey_results_viewed')).toHaveLength(1));
+    expect(events('calculator_completed')).toHaveLength(0);
+    let finish!: (value: typeof report) => void;
+    state.evaluate.mockImplementationOnce(
+      () => new Promise<typeof report>((resolve) => (finish = resolve)),
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'מה אם אשפר ציון?' }));
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון יעד' }), {
+      target: { value: '750' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'לבדוק את האפשרויות' }));
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(2));
+    expect(events('calculator_completed')).toHaveLength(0);
+    await act(async () => finish(report));
+    expect(events('calculator_completed')).toHaveLength(0);
+    expect(events('calculator_outcome')).toHaveLength(1);
+    state.evaluate.mockResolvedValueOnce({
+      reports: { bgu_cs: report.reports.tau_cs },
+      failedDegreeIds: [],
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+    await waitFor(() => expect(events('calculator_completed')).toHaveLength(1));
+    expect(events('calculator_completed')[0]).toEqual([
+      'calculator_completed',
+      {
+        calculator_surface: 'journey_calculator',
+        source: 'simulation',
+        result_status: 'computed',
+        result_count: '2_5',
+      },
+    ]);
+    fireEvent.click(screen.getByRole('button', { name: 'לפי מוסד' }));
+    fireEvent.click(screen.getAllByRole('button', { name: 'קבלו שיחה מהמוסד' })[0]);
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    await waitFor(() => expect(events('journey_results_viewed').length).toBeGreaterThan(1));
+    expect(events('calculator_completed')).toHaveLength(1);
+    expect(JSON.stringify(events('calculator_completed'))).not.toMatch(
+      /750|650|95|signature|private/,
+    );
+  });
+
+  it('counts a deliberate review submission but not search emptiness', async () => {
+    window.history.replaceState(null, '', '/#review');
+    state.evaluate.mockResolvedValue({
+      reports: { ...report.reports, bgu_cs: report.reports.tau_cs },
+      failedDegreeIds: [],
+    });
+    render(<StudyJourney initialStep="review" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(events('calculator_completed')).toHaveLength(1));
+    fireEvent.click(screen.getByRole('button', { name: 'סינון' }));
+    fireEvent.change(screen.getByRole('textbox', { name: 'חיפוש אפשרויות' }), {
+      target: { value: 'no match private' },
+    });
+    expect(screen.getByText('לא נמצאו מסלולים בבחירה הזו')).toBeTruthy();
+    expect(events('calculator_completed')).toHaveLength(1);
+  });
+
+  it('does not turn a cancelled run into completion on a passive back visit', async () => {
+    let finish!: (value: typeof report) => void;
+    state.evaluate.mockImplementationOnce(
+      () => new Promise<typeof report>((resolve) => (finish = resolve)),
+    );
+    render(<StudyJourney initialStep="review" />);
+    fireEvent.click(await screen.findByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(1));
+    fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
+    const completed = {
+      reports: { ...report.reports, bgu_cs: report.reports.tau_cs },
+      failedDegreeIds: [],
+    };
+    await act(async () => finish(completed));
+    await act(async () => {
+      window.history.replaceState(null, '', '/#results');
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    });
+    await waitFor(() => expect(events('journey_results_viewed')).toHaveLength(1));
+    expect(events('calculator_completed')).toHaveLength(0);
+  });
+
+  it('counts a valid deliberate empty selection once, without evaluating absent programmes', async () => {
+    window.sessionStorage.setItem(
+      'myway_study_journey_v2',
+      JSON.stringify({ fields: ['cs'], locations: ['north'], types: ['all'], scores: {} }),
+    );
+    render(
+      <StrictMode>
+        <StudyJourney initialStep="review" />
+      </StrictMode>,
+    );
+    fireEvent.click(await screen.findByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await screen.findByText('לא נמצאו מסלולים בבחירה הזו');
+    await waitFor(() => expect(events('calculator_completed')).toHaveLength(1));
+    expect(events('calculator_completed')[0][1]).toEqual({
+      calculator_surface: 'journey_calculator',
+      source: 'evaluation',
+      result_status: 'empty',
+      result_count: '0',
+    });
+    expect(state.evaluate).not.toHaveBeenCalled();
+  });
+
+  it.each(['needs_input', 'manual_gate', 'authority_unavailable', 'unsupported'] as const)(
+    'does not complete a deliberate %s result',
+    async (kind) => {
+      state.evaluate.mockResolvedValue({
+        reports: Object.fromEntries(
+          ['tau_cs', 'huji_cs', 'bgu_cs'].map((id) => [
+            id,
+            {
+              results: [{ linkedInstitutionId: 'tau', kind, decision: 'unknown', explanation: '' }],
+            },
+          ]),
+        ),
+        failedDegreeIds: [],
+      });
+      render(<StudyJourney initialStep="review" />);
+      fireEvent.click(await screen.findByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+      await waitFor(() => expect(events('calculator_outcome')).toHaveLength(1));
+      expect(events('calculator_completed')).toHaveLength(0);
+    },
+  );
+
+  it('ignores API failure and a stale earlier simulation, allowing a new deliberate evaluation', async () => {
+    render(<StudyJourney initialStep="review" />);
+    state.evaluate.mockRejectedValueOnce(new Error('private API failure 650'));
+    fireEvent.click(await screen.findByRole('button', { name: 'לגלות את האפשרויות שלי' }));
+    await waitFor(() => expect(events('calculator_outcome')).toHaveLength(1));
+    expect(events('calculator_completed')).toHaveLength(0);
+    let finish!: (value: typeof report) => void;
+    state.evaluate.mockImplementationOnce(
+      () => new Promise<typeof report>((resolve) => (finish = resolve)),
+    );
+    const simulate = async (value: string) => {
+      fireEvent.click(screen.getByRole('button', { name: 'מה אם אשפר ציון?' }));
+      fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון יעד' }), { target: { value } });
+      fireEvent.click(screen.getByRole('button', { name: 'לבדוק את האפשרויות' }));
+    };
+    await simulate('740');
+    await waitFor(() => expect(state.evaluate).toHaveBeenCalledTimes(2));
+    state.evaluate.mockResolvedValue({
+      reports: { ...report.reports, bgu_cs: report.reports.tau_cs },
+      failedDegreeIds: [],
+    });
+    await simulate('750');
+    await waitFor(() => expect(events('calculator_completed')).toHaveLength(1));
+    await act(async () => finish(report));
+    expect(events('calculator_completed')).toHaveLength(1);
+    await simulate('760');
+    await waitFor(() => expect(events('calculator_completed')).toHaveLength(2));
+    expect(JSON.stringify(events('calculator_outcome'))).not.toMatch(/private|650|740|750|760/);
+  });
 });
