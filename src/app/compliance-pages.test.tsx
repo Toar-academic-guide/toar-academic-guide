@@ -197,10 +197,26 @@ describe('compliance pages', () => {
     expect(governmentLink?.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
-  it('contact contains only its approved body strings', () => {
+  it('contact preserves its approved identity and email copy', () => {
     const contact = markup(<ContactPage />);
     expect(pageText(contact)).toBe('יצירת קשר עמית מליחי (עוסק פטור) info@findmyway.co.il');
     expect(contact.querySelector('a bdi')?.getAttribute('dir')).toBe('ltr');
+  });
+
+  it.each([
+    ['contact', ContactPage],
+    ['footer', SiteFooter],
+  ])('%s links to the approved social profiles', (_, Component) => {
+    const content = markup(<Component />);
+    for (const [name, href] of [
+      ['MyWay באינסטגרם', 'https://www.instagram.com/findmyway_il/'],
+      ['MyWay בטיקטוק', 'https://www.tiktok.com/@myway_study'],
+    ]) {
+      const link = content.querySelector(`a[aria-label="${name}"]`);
+      expect(link?.getAttribute('href')).toBe(href);
+      expect(link?.getAttribute('target')).toBe('_blank');
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+    }
   });
 
   it('accessibility renders the approved statement with a list and email contact', () => {
