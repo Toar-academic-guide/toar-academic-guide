@@ -12,6 +12,10 @@ import { SITE_NAME } from '@/lib/site';
 import { withBet } from '@/lib/hebrew';
 import { canonicalProgramId, canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import {
+  canLinkToSekhemCalculator,
+  loadSekhemCalculatorOfferings,
+} from '@/lib/sekhemCalculatorSupport';
 
 const TITLE_BUDGET = 62 - ` | ${SITE_NAME}`.length;
 const SEARCH_PHRASES = 'תנאי קבלה וסיכויי קבלה';
@@ -151,13 +155,25 @@ const buildUniqueTitles = cache(async () => {
   return titles;
 });
 
-function descriptionFor(offering: string): string {
+function titleForCalculatorSupport(title: string, hasCalculator: boolean): string {
+  return hasCalculator
+    ? title
+    : title.replace('תנאי קבלה וסיכויי קבלה', 'תנאי קבלה').replace('סיכויי קבלה', 'תנאי קבלה');
+}
+
+function descriptionFor(offering: string, hasCalculator = true): string {
   const name = cleanName(offering);
-  const endings = [
-    ': תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
-    ': תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay.',
-    ': תנאי קבלה וסיכויי קבלה.',
-  ];
+  const endings = hasCalculator
+    ? [
+        ': תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+        ': תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay.',
+        ': תנאי קבלה וסיכויי קבלה.',
+      ]
+    : [
+        ': תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
+        ': תנאי קבלה ופרטים על הלימודים ב-MyWay.',
+        ': תנאי קבלה ופרטים על הלימודים.',
+      ];
   return (
     endings.map((ending) => `${name}${ending}`).find((description) => description.length <= 160) ??
     `${wholeWords(name, 160 - endings[2].length)}${endings[2]}`
@@ -191,6 +207,13 @@ export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
   if (!data) return {};
   const { institution, programs, officialProgrammes = [] } = data;
   const count = programs.length + officialProgrammes.length;
+  const possibleCalculatorPrograms = programs.filter((program) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const offerings = possibleCalculatorPrograms.length ? await loadSekhemCalculatorOfferings() : [];
+  const hasCalculator = possibleCalculatorPrograms.some((program) =>
+    canLinkToSekhemCalculator(program, institution.id, offerings),
+  );
   const scope =
     count === 0
       ? 'מידע על מסלולי הלימוד'
@@ -200,8 +223,8 @@ export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
   const title =
     (await buildUniqueTitles()).get(`institution:${id}`) ?? titleCandidates(institution.name)[0];
   return pageMetadata(
-    title,
-    descriptionFor(`${scope} של ${institution.name}`),
+    titleForCalculatorSupport(title, hasCalculator),
+    descriptionFor(`${scope} של ${institution.name}`, hasCalculator),
     `/institutions/${encodeURIComponent(id)}`,
     await isIndexableInstitution(id),
   );
@@ -216,8 +239,11 @@ export async function buildProgramMetadata(id: string): Promise<Metadata> {
       (await buildUniqueTitles()).get(`program:${id}`) ??
       titleCandidates(`לימודי ${subject.hub.name}`)[0];
     return pageMetadata(
-      title,
-      descriptionFor(`לימודי ${subject.hub.name} ב-${subject.hub.programLinks} מסלולי לימוד`),
+      titleForCalculatorSupport(title, false),
+      descriptionFor(
+        `לימודי ${subject.hub.name} ב-${subject.hub.programLinks} מסלולי לימוד`,
+        false,
+      ),
       `/programs/${encodeURIComponent(subject.hub.id)}`,
       subject.hub.programLinks > 0,
     );
@@ -244,9 +270,21 @@ export async function buildProgramMetadata(id: string): Promise<Metadata> {
       program.institutionId === data.program.institutionId &&
       program.category !== data.program.category,
   );
+  const possibleCalculatorInstitutions = data.institutions.filter((institution) =>
+    canLinkToSekhemCalculator(data.program, institution.id),
+  );
+  const offerings = possibleCalculatorInstitutions.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
+    canLinkToSekhemCalculator(data.program, institution.id, offerings),
+  );
   return pageMetadata(
-    title,
-    descriptionFor(`${offering}${hasCollision ? `, מסלול ${withBet(data.program.category)}` : ''}`),
+    titleForCalculatorSupport(title, hasCalculator),
+    descriptionFor(
+      `${offering}${hasCollision ? `, מסלול ${withBet(data.program.category)}` : ''}`,
+      hasCalculator,
+    ),
     canonicalProgramPath(id),
     await isIndexableProgram(canonicalProgramId(id)),
   );
