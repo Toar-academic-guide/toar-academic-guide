@@ -232,10 +232,8 @@ describe('ProgramPage', () => {
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
     const sourceFooter = screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/);
-    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 30.10.2026 · אתר אוניברסיטת חיפה');
-    expect(
-      within(sourceFooter).getByRole('link', { name: 'אתר אוניברסיטת חיפה' }).getAttribute('href'),
-    ).toContain('/computer-information-science/program/3210/');
+    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 30.10.2026');
+    expect(within(sourceFooter).queryByRole('link')).toBeNull();
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
