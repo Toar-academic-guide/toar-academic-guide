@@ -366,6 +366,35 @@ describe('catalogue serializers', () => {
     expect(result.linkedInstitutionIds).toEqual(['haifa']);
   });
 
+  it('serializes the reviewed Reichman information-systems next action without old gates', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'reichman_infosystems';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [requirement] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: seed.sourceUrls.filter(
+        (row) => row.admissionRequirementId === requirement.id,
+      ) as SourceUrlRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+
+    expect(result.admissionRequirements).toEqual(['בדקו את תנאי המסלול באתר רייכמן']);
+    expect(result.institutionDetails?.[0]).toMatchObject({
+      durationYears: null,
+      estimatedStudentsPerYear: '',
+      specificAdmissionNotes: [],
+      programUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      calculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    });
+  });
+
   it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
     const seed = buildCatalogueSeed();
     const id = 'haifa_psychology';

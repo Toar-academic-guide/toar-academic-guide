@@ -32,16 +32,79 @@ Psychology has duration_years = 4, law has 3, and information systems has
 /programs/reichman_psychology page displayed those generic notes on the
 check date; the local static page displayed the reviewed psychology route.
 
-For later authorized publication, review the six rows against the merged
-source values in src/data/degrees/academicPrograms.ts. Apply only these six
-programme/institution pairs with an exact-before guard and a transaction:
-correct psychology/law durations, clear all six cohort estimates, publish the
-already reviewed programme-specific notes for CS/psychology/law/business/
-economics, and remove the unsupported information-systems notes while
-providing its “בדקו את תנאי המסלול באתר רייכמן” next action. Preserve other
-programmes, formula coefficients, numeric evaluator rules, programme IDs,
-institution links, and review statuses. If a before value changed, stop
-and re-review the row.
+The fresh read-only production snapshot at **2026-11-08 16:39:57 UTC** found
+exactly these six `program_id:institution_id` keys and 18 linked source URLs:
+
+| Key | Before duration | Before cohort | After duration | After cohort |
+| --- | ---: | --- | ---: | --- |
+| `reichman_cs:reichman` | 3 | כ-150 סטודנטים | 3 | empty |
+| `reichman_psychology:reichman` | 4 | כ-120 סטודנטים | 3 | empty |
+| `reichman_law:reichman` | 3 | כ-180 סטודנטים | 4 | empty |
+| `reichman_business:reichman` | 3 | כ-200 סטודנטים | 3 | empty |
+| `reichman_economics:reichman` | 3 | כ-160 סטודנטים | 3 | empty |
+| `reichman_infosystems:reichman` | 3 | כ-140 סטודנטים | NULL | empty |
+
+All six had `updated_at=2026-07-04 12:19:02.656611+00`,
+`review_status=seeded`, empty `admission_requirements`, identical two-note
+`specific_admission_notes`, and null quantitative, English, and programme
+description fields. Each had exactly three `source_urls`: `program` and
+`institution` pointed to `https://www.runi.ac.il`; `calculator` pointed to
+`https://www.runi.ac.il/admissions/undergraduate/`. The one-shot
+[publication SQL packet](2026-11-08-issue-370-publication.sql) encodes these
+exact before values, all after text arrays, pair IDs and URLs. It locks and
+compares all six rows, requires all 18 URL rows and exact kinds/links, aborts
+on drift or unexpected update counts, and verifies the after state before
+commit. No production execution occurred.
+
+The five identifiable programmes get their official school pages as the
+`kind=program` URL, with `utm_source=myway&utm_medium=referral`. CS,
+psychology and law match the local curated links; business and economics
+school links were added to the local source. Because the exact
+`reichman_infosystems` identity is unresolved, its programme link points
+only to Reichman's [general undergraduate admissions page](https://www.runi.ac.il/admissions/undergraduate/),
+which can guide the student without inventing a school route. All six target
+URLs returned HTTP 200 on 2026-11-08. The packet leaves all six existing
+`kind=calculator` URLs and all six `kind=institution` URLs unchanged. The
+static CS/psychology/law calculator links differ from the currently
+published DB links; publication deliberately does not rewrite those DB links.
+
+A separate read-only query found no
+`public.programs.id='tech_management_engineering'` row. The public catalogue
+loader appends code-defined public programmes absent from a successful DB
+read, so this programme's escaped display name comes from the generated
+source and is corrected by deploying the code. The six-row SQL packet does
+not touch `public.programs` or the existing `tech_management` institution
+row. Hosted verification after deploy must still confirm the visible name.
+
+The generic `reichman_law` ID is the catalogue's Reichman “משפטים” umbrella,
+not an invented standalone route. Reichman's [undergraduate admissions
+listing](https://www.runi.ac.il/admissions/undergraduate/) lists the law
+double-degree and direct-master routes; the [2026 brochure, law section
+pp. 34–35](https://www.runi.ac.il/media/pijdru43/ba-brochure-2026_web.pdf)
+says all law students take an additional degree and gives four years for
+those routes and the international-emphasis LL.B. The special route for
+holders of a prior degree is listed separately without a duration claim;
+the generic card does not assert a duration for that special route.
+
+In a **disposable local Postgres 16 container only**, a fixture matching the
+six-row snapshot and 18 URLs proved three paths: a changed law cohort caused
+the packet to abort with 5/6 before rows matched and all six content/URL
+rows stayed unchanged; the unchanged fixture committed six content and six
+programme-URL updates with all six calculator links preserved, including
+`infosystems.duration_years IS NULL` and the one-line next action; and an
+injected exception after the content UPDATE rolled back all six content
+updates and left all 18 URL rows unchanged. A second application aborted
+with 0/6 before rows matched. The proof fixture and injected-failure copy
+are outside the repository under `evidence-370/`. This does not establish
+production readiness or production publication.
+
+For later authorized publication, reconfirm the six-row before snapshot
+against the merged source values in `src/data/degrees/academicPrograms.ts`.
+The packet applies only the six exact pairs in the table, and only after
+the code deploy is READY and the reviewed source links still resolve.
+If any before value changed, stop and re-review. Preserve other programmes,
+formula coefficients, numeric evaluator rules, programme IDs, calculator
+links, institution links, and review statuses.
 
 Read-only verification query for that operation:
 

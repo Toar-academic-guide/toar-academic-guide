@@ -766,6 +766,8 @@ const D: Record<string, InstitutionDetail[]> = {
         'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/business/undergraduate/ba/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_economics: [
@@ -781,6 +783,8 @@ const D: Record<string, InstitutionDetail[]> = {
         'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/economics/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_infosystems: [
@@ -792,6 +796,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: [],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
   ],
 

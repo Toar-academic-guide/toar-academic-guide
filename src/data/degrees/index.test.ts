@@ -34,6 +34,15 @@ it('shows sourced Reichman durations without unsupported cohort sizes or informa
   expect(reichman.reichman_infosystems.admissionRequirements).toEqual([
     'בדקו את תנאי המסלול באתר רייכמן',
   ]);
+  expect(reichman.reichman_business.institutionDetails?.[0].programUrl).toBe(
+    'https://www.runi.ac.il/schools/business/undergraduate/ba/?utm_source=myway&utm_medium=referral',
+  );
+  expect(reichman.reichman_economics.institutionDetails?.[0].programUrl).toBe(
+    'https://www.runi.ac.il/schools/economics/undergraduate/?utm_source=myway&utm_medium=referral',
+  );
+  expect(reichman.reichman_infosystems.institutionDetails?.[0].programUrl).toBe(
+    'https://www.runi.ac.il/admissions/undergraduate/',
+  );
 });
 
 it('renders the technology college programme name without Monday escaping', () => {
