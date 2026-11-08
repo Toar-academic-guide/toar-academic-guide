@@ -52,6 +52,7 @@ type ProfileCase = {
   expected: Pick<AdmissionsEvaluationResult, 'kind' | 'decision'> & {
     score: number | undefined;
     threshold: number | undefined;
+    requiredInputs?: AdmissionsEvaluationResult['requiredInputs'];
   };
 };
 
