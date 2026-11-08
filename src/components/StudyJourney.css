@@ -416,6 +416,9 @@
   font-size: 13px;
   margin-top: 25px;
 }
+.journey-psy-score-link {
+  min-height: 44px;
+}
 .journey-number-label {
   display: grid;
   gap: 8px;

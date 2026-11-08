@@ -116,6 +116,7 @@ const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
   colman_law: 'https://www.colman.ac.il/academics/ba/law/',
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };
+const HADASSAH_CALCULATOR_URL = 'https://www.jmc.ac.il/ללמוד-אצלנו/הרשמה-ללימודים/מחשבון-מתאם/';
 const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
   tlvyaffo_cs: 'https://www.mta.ac.il/program/bsc_computer_science',
   colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
@@ -828,6 +829,7 @@ for (const record of mondayAdmissionsEvidence) {
     continue;
   }
 
+  const isHadassahRecord = record.itemId === '12220685569';
   const programInstitutionKey = (record.catalogueInstitutionId ||
     `mon_${record.itemId}`) as InstitutionId;
   const instId = (record.catalogueInstitutionId ??
@@ -843,9 +845,16 @@ for (const record of mondayAdmissionsEvidence) {
     const fallback = fallbackDynamicProgram(record);
     matches = [{ keywords: [], ...fallback }];
   }
+  if (isHadassahRecord) {
+    matches.push({ keywords: [], id: 'cs', name: 'מדעי המחשב', category: 'מדעי המחשב' });
+  }
 
   for (const prog of matches) {
-    const progId = `${programInstitutionKey}_${prog.id}`;
+    // The existing computer science route predates the institution rename.
+    const progId =
+      isHadassahRecord && prog.id === 'cs'
+        ? 'mon_12220685569_cs'
+        : `${programInstitutionKey}_${prog.id}`;
     // Verified dance/music rows replace these mixed imports; Sam Spiegel's
     // combined import duplicates its existing cinema and screenwriting rows.
     if (RETIRED_PROGRAM_IDS.includes(progId)) continue;
@@ -872,6 +881,7 @@ for (const record of mondayAdmissionsEvidence) {
 
     const type = isCertificateType ? 'certificate' : 'academic';
 
+    const isReviewedHadassahCs = progId === 'mon_12220685569_cs';
     const detailId = `${progId}:${instId}`;
     const publicInstitutionName =
       instId === 'braude' || instId === 'hadassah'
@@ -879,7 +889,8 @@ for (const record of mondayAdmissionsEvidence) {
         : record.displayName;
     const primarySourceUrl =
       MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
-    const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
+    const sourceCandidateId =
+      primarySourceUrl && !isReviewedHadassahCs ? `${detailId}:source:monday-evidence` : undefined;
     const sourceCandidates: AdmissionsSourceCandidate[] =
       sourceCandidateId && primarySourceUrl
         ? [
@@ -1017,18 +1028,22 @@ for (const record of mondayAdmissionsEvidence) {
           specificAdmissionNotes: record.limitations.length
             ? ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.']
             : [],
-          officialCalculatorUrl: primarySourceUrl || '',
+          officialCalculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : primarySourceUrl || '',
           programUrl: primarySourceUrl,
-          calculatorUrl: record.officialUrls.find(
-            (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
-          ),
+          calculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : record.officialUrls.find(
+                (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
+              ),
           ...(sourceCandidates.length > 0
             ? {
                 admissionsSourceCandidates: sourceCandidates,
               }
             : {}),
-          admissionFacts,
-          ...(admissionAlternativePaths.length > 0
+          admissionFacts: isReviewedHadassahCs ? [] : admissionFacts,
+          ...(!isReviewedHadassahCs && admissionAlternativePaths.length > 0
             ? {
                 admissionAlternativePaths,
               }
