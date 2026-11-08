@@ -59,9 +59,18 @@ function officialHttpsUrl(value: string | undefined): string | undefined {
   }
 }
 
-export function institutionLd({ institution, programs }: PublicInstitutionPageData) {
+export function institutionLd({
+  institution,
+  programs,
+  officialProgrammes = [],
+}: PublicInstitutionPageData) {
+  const offerings = [
+    ...programs.map((p) => ({ name: p.name, url: absoluteUrl(canonicalProgramPath(p.id)) })),
+    ...officialProgrammes.map((p) => ({ name: p.name, url: p.url })),
+  ];
   const academic =
-    Boolean(institution.universityId) || programs.some((program) => program.type === 'academic');
+    Boolean(institution.universityId) ||
+    [...programs, ...officialProgrammes].some((program) => program.type === 'academic');
   const sameAs = officialHttpsUrl(institution.programUrl) ?? officialHttpsUrl(institution.domain);
   return {
     '@type': academic ? 'CollegeOrUniversity' : 'EducationalOrganization',
@@ -71,12 +80,12 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'מסלולי לימוד',
-      numberOfItems: programs.length,
-      itemListElement: programs.map((program, index) => ({
+      numberOfItems: offerings.length,
+      itemListElement: offerings.map((program, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: program.name,
-        url: absoluteUrl(canonicalProgramPath(program.id)),
+        url: program.url,
       })),
     },
     ...(sameAs ? { sameAs } : {}),
@@ -178,7 +187,9 @@ export function sekhemCalculatorLd() {
   };
 }
 
-export function institutionDirectoryLd(institutions: InstitutionDirectoryItem[]) {
+export function institutionDirectoryLd(
+  institutions: Pick<InstitutionDirectoryItem, 'id' | 'name'>[],
+) {
   const url = absoluteUrl('/institutions');
   const listId = `${url}#institutions`;
   const breadcrumb = breadcrumbLd([
