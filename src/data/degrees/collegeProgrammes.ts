@@ -387,3 +387,9 @@ export const collegeProgrammes: Program[] = specs.map((spec) => {
     ],
   };
 });
+
+const collegeProgrammeIds = new Set(collegeProgrammes.map((program) => program.id));
+
+export function isSourcedCollegeProgrammeId(programId: string): boolean {
+  return collegeProgrammeIds.has(programId);
+}

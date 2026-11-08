@@ -28,6 +28,7 @@ import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateReichmanPublishedRoutes } from './reichmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
@@ -2215,8 +2216,11 @@ function evaluateNonExactResult(args: {
       officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
     };
 
-  const evidenceRecord =
-    entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
+  // These route-specific records must not inherit broad institution claims about
+  // grade gates or interviews when building the student-facing requirements copy.
+  const evidenceRecord = isSourcedCollegeProgrammeId(program.id)
+    ? undefined
+    : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
 
   if (entry.capability === 'needs_input') {

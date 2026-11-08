@@ -730,7 +730,14 @@ it('keeps each sourced college route at requirements-only with no admissions dec
     const [, capability, decision] =
       expectedRouteResults[program.id as keyof typeof expectedRouteResults];
     expect(report.results[0], program.id).toMatchObject({ capability, decision });
-    expect(report.results[0].explanation, program.id).not.toContain('אין דרישה לבגרות');
+    for (const inheritedClaim of [
+      'אין צורך בבגרות',
+      'אין צורך בפסיכומטרי',
+      'ראיון קבלה חובה',
+      'הגשת תיק עבודות חובה',
+    ]) {
+      expect(report.results[0].explanation, program.id).not.toContain(inheritedClaim);
+    }
     if (program.id === 'beit_berl_ai_education') {
       expect(report.results[0].explanation).toContain('תנאי הקבלה למסלול אינם מפורטים');
     }

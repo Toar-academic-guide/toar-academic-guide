@@ -32,7 +32,7 @@ import {
 } from '@/server/ingestion/admissionsSourceRegistry';
 import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
-import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
+import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import {
@@ -62,10 +62,6 @@ const WITHHELD_FORMULA_PAIR_CAPABILITIES: Record<
   physiotherapy__huji: 'requirements_only',
   nutrition__bgu: 'requirements_only',
 };
-
-// The old Monday records describe each institution as a whole. Their grade-gate
-// flags must not override admissions conditions on these newly sourced routes.
-const ROUTE_SPECIFIC_COLLEGE_IDS = new Set(collegeProgrammes.map((program) => program.id));
 
 export interface ExactCapabilityTarget {
   targetId: string;
@@ -777,7 +773,7 @@ export function buildAdmissionsCapabilityMatrix(args: {
       : EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
-    const evidence = ROUTE_SPECIFIC_COLLEGE_IDS.has(program.id)
+    const evidence = isSourcedCollegeProgrammeId(program.id)
       ? undefined
       : selectBestEvidence(institutionId);
     const freshnessState = exactTarget
