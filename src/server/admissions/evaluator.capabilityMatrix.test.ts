@@ -271,6 +271,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["minshar_fine_arts","minshar_fine_arts","minshar","manual_gate",null,null,null,null,null,null,[],[]]
 ["minshar_graphic_design","minshar_graphic_design","minshar","manual_gate",null,null,null,null,null,null,[],[]]
 ["minshar_photography","minshar_photography","minshar","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12220685569_cs","mon_12220685569_cs","hadassah","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220685573_culinary","mon_12220685573_culinary","mon_12220685573","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220685575_graphic_design","mon_12220685575_graphic_design","mon_12220685575","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220696299_certificate","mon_12220696299_certificate","mon_12220696299","manual_gate",null,null,null,null,null,null,[],[]]
@@ -522,7 +523,7 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
   const staticPrograms = getStaticCataloguePrograms();
   expect(
     staticPrograms.reduce((count, program) => count + program.linkedInstitutionIds.length, 0),
-  ).toBe(436);
+  ).toBe(437);
   const medicine = staticPrograms.find((program) => program.id === 'medicine')!;
   expect(medicine.linkedInstitutionIds).not.toContain('bgu');
   const programs = staticPrograms.map((program) =>
@@ -553,8 +554,8 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
   }
   expect(capture.getDb).not.toHaveBeenCalled();
   expect(unexpectedFetch).not.toHaveBeenCalled();
-  expect(capture.rows).toHaveLength(437);
-  expect(BASELINE_ROWS).toHaveLength(437);
+  expect(capture.rows).toHaveLength(438);
+  expect(BASELINE_ROWS).toHaveLength(438);
   capture.rows.sort(comparePairs);
 
   // The exception must use exactly the existing named medicine target, including
