@@ -233,7 +233,9 @@ describe('ProgramPage', () => {
       /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
-    expect(screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/)).toBeTruthy();
+    const sourceFooter = screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/);
+    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 30.10.2026');
+    expect(within(sourceFooter).queryByRole('link')).toBeNull();
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
