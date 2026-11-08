@@ -18,6 +18,11 @@ const davidYellinGeneralChecks = [
   'ללומדים במסלול בעברית עם בגרות שאינה בעברית נדרש יע״ל 110 לפחות עד סוף שנה א׳. לבעלי בגרות מחו״ל תנאים נפרדים.',
 ];
 
+const institutionAdmissionsSourceUrls = new Set([
+  'https://www.beitberl.ac.il/admission/b-ed/',
+  'https://dyellin.ac.il/prerequisites',
+]);
+
 // Individual current programme and admissions pages checked on 2026-11-08.
 // Exact claim-to-source records are in docs/admissions-verification/2026-11-08-four-colleges.md.
 const specs: CollegeProgrammeSpec[] = [
@@ -376,7 +381,9 @@ export const collegeProgrammes: Program[] = specs.map((spec) => {
                 {
                   id: `${spec.id}:${spec.institutionId}:source:admissions`,
                   origin: 'manual',
-                  specificity: 'program_admissions',
+                  specificity: institutionAdmissionsSourceUrls.has(spec.admissionsUrl)
+                    ? 'institution_admissions'
+                    : 'program_admissions',
                   confidence: 'high',
                   url: spec.admissionsUrl,
                 },
