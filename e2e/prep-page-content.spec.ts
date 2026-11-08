@@ -116,9 +116,11 @@ for (const viewport of [
     });
     expect(blocks).toEqual(expectedCopy);
     const links = reading.locator('a');
+    await expect(links).toHaveCount(5);
     await expect(links.nth(0)).toHaveAttribute('href', '/psychometric-dates');
-    await expect(links.nth(1)).toHaveAttribute('href', '/sekhem-calculator');
-    for (const link of [links.nth(2), links.nth(3)]) {
+    await expect(links.nth(1)).toHaveAttribute('href', '/bagrut-dates');
+    await expect(links.nth(2)).toHaveAttribute('href', '/sekhem-calculator');
+    for (const link of [links.nth(3), links.nth(4)]) {
       await expect(link).toHaveAttribute('target', '_blank');
       await expect(link).toHaveAttribute('rel', 'noopener noreferrer');
       await expect(link).toHaveAccessibleName(/נפתח בכרטיסייה חדשה/);
