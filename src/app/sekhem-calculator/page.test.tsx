@@ -131,6 +131,12 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
 it('sets the Open Graph URL to the calculator canonical URL', () => {
   expect(metadata.openGraph?.url).toBe('https://findmyway.co.il/sekhem-calculator');
 });
+it('keeps the transfer guide as a secondary link after the calculator FAQ', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  expect(
+    screen.getByRole('link', { name: 'כך מתכננים מעבר בין מוסדות לימוד' }).getAttribute('href'),
+  ).toBe('/transfer');
+});
 it('supplies an existing canonical public programme page for every offered result', async () => {
   const { loadSekhemCalculatorOfferings } = await import('@/lib/sekhemCalculatorSupport');
   const { getPublicProgramPageData } = await import('@/lib/publicCataloguePages');
