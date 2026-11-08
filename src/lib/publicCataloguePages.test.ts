@@ -553,6 +553,8 @@ describe('public catalogue page data', () => {
         haifa: ['communication'],
         ariel: ['communication'],
         biu: ['medicine'],
+        achva: ['education'],
+        beit_berl: ['criminology'],
       });
     },
   );
