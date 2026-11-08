@@ -19,6 +19,7 @@ export const PROGRAM_RETIREMENT_REDIRECTS: Readonly<Record<string, string>> = {
   spieldocs_graphic_design: '/institutions/spieldocs',
   samspiegel_documentary: '/institutions/spieldocs',
   documentary: '/programs/cinema',
+  kinneret_sound_eng: '/institutions/mon_12341101391',
 };
 
 const INSTITUTION_PROGRAM_CANONICAL_ALIASES: Readonly<Record<string, string>> = {

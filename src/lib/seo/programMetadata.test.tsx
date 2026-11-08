@@ -16,13 +16,13 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Metadata captured from main (a4d84ae). JSON-LD hashes include provider
+// Metadata captured from main (a4d84ae). #379 updates nested provider offer lists. JSON-LD hashes include provider
 // catalogues, with duplicate aliases removed from MTA and Colman, and the
 // intentional slashed homepage breadcrumb identity from the indexing brief.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
-    structuredDataSha256: '2aabea44e74869b576a140ec5fac1e2714435596aa38f936bbc52a7350f73099',
+    structuredDataSha256: '8da45c4094e25d7c3965d957c7d9c187084cf16921806ed05f2c63728972546c',
     name: 'פסיכולוגיה',
     title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב: תנאי קבלה',
     description:
@@ -37,7 +37,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tau_cs',
-    structuredDataSha256: '8158c55cfa799653bed1d042df8d973be1a1b48de29937f194b455239cda3449',
+    structuredDataSha256: 'e40fc11a2728422de1c86b3e6b737e05990cd6c113ed0757bc740ff07f74e4d1',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה',
     description:
@@ -52,7 +52,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '2649cc67211782576c40ebdabfe960a98f7cdef762255bcc6290662a3006bbcd',
+    structuredDataSha256: '69e9019a8c7590756785eacb95a3bd58b54887942707e36db5f093c472ec79b8',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:

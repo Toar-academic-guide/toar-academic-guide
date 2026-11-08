@@ -1,5 +1,5 @@
 import { loadPublicCatalogue, subjectProgramPages } from '@/lib/publicCataloguePages';
-import { canonicalProgramId } from './programAliases';
+import { canonicalProgramId, PROGRAM_RETIREMENT_REDIRECTS } from './programAliases';
 
 type Catalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
 
@@ -19,6 +19,7 @@ export async function isIndexableProgram(id: string, catalogue?: Catalogue): Pro
   const { institutions, programs, generalProgramIds } = catalogue;
   const program = programs.find((program) => program.id === id);
   return (
+    !Object.hasOwn(PROGRAM_RETIREMENT_REDIRECTS, id) &&
     canonicalProgramId(id) === id &&
     !id.startsWith('mon_') &&
     !!program &&

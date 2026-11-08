@@ -133,7 +133,7 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
     notFound();
   }
 
-  const { institution, programs } = data;
+  const { institution, programs, officialProgrammes = [], categoryPages = [] } = data;
 
   return (
     <WayPageShell>
@@ -173,6 +173,15 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               institution={institution}
               className="mt-4"
             />
+            {officialProgrammes.map((programme) => (
+              <a
+                key={programme.id}
+                href={programme.url}
+                className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 font-semibold hover:border-slate-900"
+              >
+                {programme.name} <span className="text-sm font-normal">באתר המוסד</span>
+              </a>
+            ))}
             {programs.length > 12 && (
               <details className="mt-4 open:mt-3 [&[open]>summary]:hidden">
                 <summary className="cursor-pointer font-semibold text-cyan-700">
@@ -184,6 +193,12 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               </details>
             )}
           </section>
+          {categoryPages.length > 0 && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 sm:p-8">
+              <h2 className="text-xl font-bold">תחומי לימוד</h2>{' '}
+              <ProgramCards institution={institution} programs={categoryPages} className="mt-4" />
+            </section>
+          )}
           {institution.id === 'open_university' && <OpenUniversityTransferSection />}
         </section>
       </main>
