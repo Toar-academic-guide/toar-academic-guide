@@ -1,4 +1,6 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
 
 import {
   buildAdmissionsReviewRun,
@@ -7,7 +9,12 @@ import {
 } from './weeklyReviewRun';
 import { FORMULA_BACKED_VERIFICATION_LEDGER } from '@/data/admissions/formulaBackedVerificationLedger';
 import technionWinterManifest from './__fixtures__/technionWinterManifest.json';
+import historicalUnsafeCutoffs from './__fixtures__/historicalUnsafeCutoffs.json';
+import accountingSource from '../../../docs/admissions-verification/evidence/2026-10-28-bgu-attestation/accounting.json';
+import psychologySource from '../../../docs/admissions-verification/2026-09-27-bgu-psychology-official.json';
 import type { ReviewedAdmissionsManifest } from './reviewedManifest';
+import { parseReviewedAdmissionsManifest } from './reviewedManifest';
+import type { AdmissionsSourceProof } from '@/server/ingestion/admissionsSourceAdapters';
 
 const baseline: PublishedAdmissionRule[] = [
   {
@@ -44,6 +51,193 @@ describe('weekly admissions review run', () => {
   const exactTauLedger = FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
     entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
   );
+
+  it.each(historicalUnsafeCutoffs)(
+    'excludes the actual $week rejected proposals from report replay',
+    (week) => {
+      const proofs = week.cases.map((item) => ({
+        ...decisionProof(),
+        id: item.sourceProofId,
+        institutionId: item.sourceProofId.startsWith('bgu-') ? 'bgu' : 'technion',
+        officialUrl: item.sourceUrl,
+        normalizedPayload: {
+          pairId: `${item.programId}__${item.sourceProofId.startsWith('bgu-') ? 'bgu' : 'technion'}`,
+          programId: item.programId,
+          acceptanceThreshold: item.after,
+        },
+      }));
+      const run = buildAdmissionsReviewRun({
+        runKey: week.week,
+        checkedAt: new Date('2026-11-08T00:00:00.000Z'),
+        cycle: '2027',
+        baseline: week.cases.map((item) => ({
+          target: {
+            institutionId: item.sourceProofId.startsWith('bgu-') ? 'bgu' : 'technion',
+            programId: item.programId,
+            cycle: '2027',
+          },
+          ruleKind: 'admission_cutoff' as const,
+          value: item.before,
+        })),
+        proofs,
+        verificationLedger: FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+          week.cases.some(
+            (item) =>
+              entry.pairId ===
+              `${item.programId}__${item.sourceProofId.startsWith('bgu-') ? 'bgu' : 'technion'}`,
+          )
+            ? { ...entry, state: 'exact' as const }
+            : entry,
+        ),
+      });
+      expect(run.candidates).toEqual([]);
+      expect(run.manifest.changes).toEqual([]);
+      expect(run.excluded).toHaveLength(week.cases.length);
+      expect(run.excluded.every((item) => item.reason === 'route_evidence_missing')).toBe(true);
+      expect(run.markdown).not.toContain('Official bgu-');
+    },
+  );
+
+  it('keeps the dated BGU main and alternative routes distinct', () => {
+    const accounting = accountingSource.items[0];
+    expect(accounting.psycho_value).toBe(620);
+    expect(accounting.comments).toContain('סכם כמותי 620');
+    expect(accounting.comments).toContain('סכם כמותי 660 ופסיכומטרי 580');
+    const psychology = psychologySource.officialRule;
+    expect([psychology.psycho_sekem, psychology.psycho_value]).toEqual([650, 650]);
+    expect(psychology.psycho_and_or).toContain('ובנוסף');
+    expect(psychology.comments).toContain('סכם או פסיכומטרי 680');
+  });
+
+  it('accepts a synthetic decision-capable main-route change while ignoring the applicant alternative threshold', () => {
+    const url = accountingSource.links[0].href;
+    const proof = {
+      ...decisionProof(),
+      id: 'bgu-accounting-live',
+      institutionId: 'bgu',
+      officialUrl: url,
+      rawResponseMetadata: [{ endpoint: url, status: 200 }],
+      normalizedPayload: {
+        pairId: 'accounting__bgu',
+        programId: 'accounting',
+        acceptanceThreshold: 660,
+      },
+      publicationCutoff: {
+        value: 615,
+        metric: 'quantitative_sekhem' as const,
+        route: 'main' as const,
+        cycle: '2027',
+        programPath: 'dep142-pat1-spe6',
+        registrationStatus: 'סגורה',
+        prerequisites: 'psychometric minimum 615; mathematics and language conditions',
+        sourceUrl: url,
+        sourceStatus: 200,
+        sourceExcerpt: 'סכם כמותי 615',
+      },
+    };
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W46',
+      checkedAt: new Date('2026-11-08T00:00:00.000Z'),
+      cycle: '2027',
+      baseline: [
+        {
+          target: { institutionId: 'bgu', programId: 'accounting', cycle: '2027' },
+          ruleKind: 'admission_cutoff',
+          value: 620,
+        },
+      ],
+      proofs: [proof],
+      verificationLedger: FORMULA_BACKED_VERIFICATION_LEDGER.map((entry) =>
+        entry.pairId === 'accounting__bgu' ? { ...entry, state: 'exact' as const } : entry,
+      ),
+    });
+    expect(run.candidates).toMatchObject([{ before: 620, after: 615 }]);
+    expect(parseReviewedAdmissionsManifest(run.manifest).changes).toHaveLength(1);
+  });
+
+  it.each([
+    ['metric', { metric: 'sekhem' as const }, 'cutoff_metric_incompatible'],
+    ['cycle', { cycle: '2026' }, 'cycle_evidence_mismatch'],
+    ['prerequisites', { prerequisites: '' }, 'route_evidence_missing'],
+    ['registration status', { registrationStatus: '' }, 'route_evidence_missing'],
+    ['failed cached source', { sourceStatus: 404 }, 'proof_source_invalid'],
+    [
+      'calculator URL',
+      { sourceUrl: 'https://admissions.technion.ac.il/calculator/' },
+      'proof_source_invalid',
+    ],
+  ])('excludes a BGU proof with invalid %s evidence', (_case, override, reason) => {
+    const url = accountingSource.links[0].href;
+    const proof: AdmissionsSourceProof = {
+      ...decisionProof(),
+      institutionId: 'bgu',
+      officialUrl: url,
+      rawResponseMetadata: [{ endpoint: url, status: 200 }],
+      normalizedPayload: {
+        pairId: 'accounting__bgu',
+        programId: 'accounting',
+        acceptanceThreshold: 660,
+      },
+      publicationCutoff: {
+        value: 620,
+        metric: 'quantitative_sekhem',
+        route: 'main',
+        cycle: '2027',
+        programPath: 'dep142-pat1-spe6',
+        registrationStatus: 'סגורה',
+        prerequisites: 'psychometric minimum 620; mathematics and language conditions',
+        sourceUrl: url,
+        sourceStatus: 200,
+        sourceExcerpt: 'סכם כמותי 620',
+        ...override,
+      },
+    };
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W46',
+      checkedAt: new Date('2026-11-08T00:00:00.000Z'),
+      cycle: '2027',
+      baseline: [],
+      proofs: [proof],
+    });
+    expect(run.candidates).toEqual([]);
+    expect(run.excluded[0].reason).toBe(reason);
+  });
+
+  it('does not reuse cached cutoff context after the official source fails', () => {
+    const url = accountingSource.links[0].href;
+    const proof: AdmissionsSourceProof = {
+      ...decisionProof(),
+      institutionId: 'bgu',
+      officialUrl: url,
+      rawResponseMetadata: [{ endpoint: url, status: 404 }],
+      normalizedPayload: {
+        pairId: 'accounting__bgu',
+        programId: 'accounting',
+        acceptanceThreshold: 660,
+      },
+      publicationCutoff: {
+        value: 620,
+        metric: 'quantitative_sekhem',
+        route: 'main',
+        cycle: '2027',
+        programPath: 'dep142-pat1-spe6',
+        registrationStatus: 'סגורה',
+        prerequisites: 'psychometric minimum 620; mathematics and language conditions',
+        sourceUrl: url,
+        sourceStatus: 200,
+        sourceExcerpt: 'סכם כמותי 620',
+      },
+    };
+    const run = buildAdmissionsReviewRun({
+      runKey: '2026-W46',
+      checkedAt: new Date('2026-11-08T00:00:00.000Z'),
+      cycle: '2027',
+      baseline: [],
+      proofs: [proof],
+    });
+    expect(run.excluded[0].reason).toBe('proof_source_invalid');
+    expect(run.manifest.changes).toEqual([]);
+  });
 
   it('carries forward every reviewed winter change and alias when adding a new change', () => {
     const reviewedManifest = structuredClone(technionWinterManifest) as ReviewedAdmissionsManifest;

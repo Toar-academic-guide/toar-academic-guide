@@ -6,6 +6,8 @@ import {
   canonicalizeReviewedAdmissionsManifest,
   parseReviewedAdmissionsManifest,
 } from './reviewedManifest';
+import { bguQuantitativeProgramme } from './bguQuantitativeRoutesPolicy';
+import currentManifest from '@/data/admissions/reviewedManifest.json';
 
 const change = {
   target: { institutionId: 'tau', programId: 'tau_cs', cycle: '2027' },
@@ -25,6 +27,9 @@ const change = {
 };
 
 describe('reviewed admissions manifest', () => {
+  it('keeps the committed current manifest eligible', () => {
+    expect(() => parseReviewedAdmissionsManifest(currentManifest)).not.toThrow();
+  });
   it('canonicalizes a source-backed canonical change byte-stably', () => {
     const manifest = parseReviewedAdmissionsManifest({
       version: 2,
@@ -127,5 +132,76 @@ describe('reviewed admissions manifest', () => {
         changes: [proof],
       }),
     ).toThrow();
+  });
+
+  it('rejects generated BGU and Technion cutoff text without decision evidence', () => {
+    for (const [institutionId, programId, before, after] of [
+      ['bgu', 'accounting', 620, 660],
+      ['bgu', 'bgu_psychology', 650, 680],
+      ['bgu', 'psychology', 650, 680],
+      ['technion', 'technion_civil', 88, 87],
+    ] as const) {
+      expect(() =>
+        parseReviewedAdmissionsManifest({
+          version: 2,
+          releaseKind: 'canonical_change',
+          changes: [
+            {
+              ...change,
+              target: { institutionId, programId, cycle: '2027' },
+              before,
+              after,
+              sourceProofs: [
+                { ...change.sourceProofs[0], excerpt: `Official admission cutoff: ${after}.` },
+              ],
+            },
+          ],
+        }),
+      ).toThrow('Canonical cutoff needs matching main-route');
+    }
+  });
+
+  it('rejects mismatched metric, cycle, source, and failed HTTP evidence', () => {
+    const source = {
+      ...change.sourceProofs[0],
+      url: bguQuantitativeProgramme('accounting').sourceUrl,
+    };
+    const evidence = {
+      value: 615,
+      metric: 'quantitative_sekhem',
+      route: 'main',
+      cycle: '2027',
+      programPath: 'dep142-pat1-spe6',
+      registrationStatus: 'סגורה',
+      prerequisites: 'psychometric minimum 615; mathematics and language conditions',
+      sourceUrl: source.url,
+      sourceStatus: 200,
+      sourceExcerpt: 'סכם כמותי 615',
+    };
+    const valid = {
+      version: 2,
+      releaseKind: 'canonical_change',
+      changes: [
+        {
+          ...change,
+          target: { institutionId: 'bgu', programId: 'accounting', cycle: '2027' },
+          before: 620,
+          after: 615,
+          sourceProofs: [{ ...source, cutoffEvidence: evidence }],
+        },
+      ],
+    };
+    expect(() => parseReviewedAdmissionsManifest(valid)).not.toThrow();
+    for (const invalid of [
+      { metric: 'psychometric' },
+      { cycle: '2026' },
+      { sourceUrl: 'https://example.com/calculator/' },
+      { sourceStatus: 404 },
+      { prerequisites: '' },
+    ]) {
+      const candidate = structuredClone(valid);
+      Object.assign(candidate.changes[0].sourceProofs[0].cutoffEvidence, invalid);
+      expect(() => parseReviewedAdmissionsManifest(candidate)).toThrow();
+    }
   });
 });
