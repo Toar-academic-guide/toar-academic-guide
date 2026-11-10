@@ -90,12 +90,36 @@ export function cutoffEvidenceMatchesTarget(input: {
     evidence.sourceExcerpt.includes(String(value)) &&
     (institutionId !== 'bgu' ||
       (evidence.programPath === expectedBguPath &&
-        evidence.sourceUrl === expectedBguUrl &&
+        !!expectedBguUrl &&
+        bguSourceMatchesProgramme(evidence.sourceUrl, expectedBguUrl) &&
         !!evidence.registrationStatus)) &&
     (institutionId !== 'technion' ||
       (evidence.sourceUrl.includes('/sechem-for-admission/') &&
         evidence.sourceExcerpt.includes(evidence.programPath) &&
         (programId !== 'technion_civil' || evidence.programPath === 'הנדסה אזרחית')))
+  );
+}
+
+function bguSourceMatchesProgramme(actual: string, expected: string): boolean {
+  const actualUrl = new URL(actual);
+  const expectedUrl = new URL(expected);
+  if (actualUrl.origin !== expectedUrl.origin || actualUrl.pathname !== expectedUrl.pathname)
+    return false;
+  const archivedExtras = new Map([
+    ['p_institution', '0'],
+    ['p_degree_level', '1'],
+  ]);
+  return (
+    [...expectedUrl.searchParams].every(
+      ([key, value]) =>
+        actualUrl.searchParams.getAll(key).length === 1 &&
+        actualUrl.searchParams.get(key) === value,
+    ) &&
+    [...actualUrl.searchParams].every(
+      ([key, value]) =>
+        expectedUrl.searchParams.has(key) ||
+        (archivedExtras.get(key) === value && actualUrl.searchParams.getAll(key).length === 1),
+    )
   );
 }
 
