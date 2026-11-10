@@ -227,6 +227,13 @@ export default function Page() {
               . ודאו שההנחיות מתייחסות לתוכנית ולשנת ההרשמה שלכם; אם המדיניות עדיין אינה מפורסמת,
               פנו למדור הרישום.
             </p>
+            <p>
+              לפני שבוחרים מועד לבחינה, בדקו{' '}
+              <Link href="/psychometric-dates#semester-validity" prefetch={false}>
+                איזה מועד נחשב לאיזה סמסטר
+              </Link>
+              .
+            </p>
             <Link className={styles.nextLink} href="/institutions" prefetch={false}>
               למציאת מוסדות ותוכניות לימודים
             </Link>

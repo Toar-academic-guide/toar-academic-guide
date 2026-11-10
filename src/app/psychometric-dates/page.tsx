@@ -10,10 +10,11 @@ import {
 import { formatPsychometricDate, getSittingStatuses } from '@/lib/psychometricDates';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
+import SemesterValidity from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, עם תאריך בדיקה וקישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם תאריך בדיקה וקישור למקור הרשמי.';
 const canonical = absoluteUrl('/psychometric-dates');
 
 export const dynamic = 'force-dynamic';
@@ -123,24 +124,25 @@ export default async function Page() {
               ))}
             </tbody>
           </table>
-          <div className={styles.ctaArea}>
-            <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>
-              יש לכם ציון? בדקו לאן אתם מתקבלים
-              <svg
-                data-icon="iconoir-arrow-left"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
-              </svg>
-            </Link>
-          </div>
         </section>
+        <SemesterValidity />
+        <div className={styles.ctaArea}>
+          <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>
+            יש לכם ציון? בדקו לאן אתם מתקבלים
+            <svg
+              data-icon="iconoir-arrow-left"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
+            </svg>
+          </Link>
+        </div>
         <p className={styles.reformNote}>
           <ReformNote />{' '}
           <Link href="/psychometric-two-domain" prefetch={false}>
