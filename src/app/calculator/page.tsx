@@ -148,7 +148,7 @@ export default function CalculatorLandingPage() {
           ]}
         />
         <nav aria-label="פירורי לחם" className="text-sm text-[#52607f]">
-          <Link href="/" className="underline underline-offset-4">
+          <Link href="/" className="inline-flex min-h-11 items-center underline underline-offset-4">
             דף הבית
           </Link>
           <span aria-hidden="true" className="mx-2">
@@ -279,7 +279,7 @@ export default function CalculatorLandingPage() {
             מקור:{' '}
             <a
               href="https://admissions.haifa.ac.il/computer-information-science/program/3210/"
-              className="underline underline-offset-4"
+              className="inline-flex min-h-11 items-center align-middle underline underline-offset-4"
             >
               אוניברסיטת חיפה, מדעי המחשב
             </a>{' '}
@@ -293,8 +293,8 @@ export default function CalculatorLandingPage() {
           </h2>
           <div className="mt-6 divide-y divide-[#dce4f7] rounded-2xl border border-[#dce4f7] bg-white/85 px-5 sm:px-7">
             {faq.map(({ question, answer }) => (
-              <details key={question} className="group py-5">
-                <summary className="cursor-pointer list-none text-lg font-semibold marker:hidden">
+              <details key={question} className="group">
+                <summary className="cursor-pointer list-none py-5 text-lg font-semibold marker:hidden">
                   {question}
                   <span
                     aria-hidden="true"
@@ -306,7 +306,11 @@ export default function CalculatorLandingPage() {
                 <p className="mt-3 max-w-3xl leading-8 text-[#435072]">
                   {answer.map(({ text, href }, index) =>
                     href ? (
-                      <Link key={index} href={href} className="underline underline-offset-4">
+                      <Link
+                        key={index}
+                        href={href}
+                        className="inline-flex min-h-11 items-center align-middle underline underline-offset-4"
+                      >
                         {text}
                       </Link>
                     ) : (
