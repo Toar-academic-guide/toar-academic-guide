@@ -225,6 +225,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/sekhem-calculator`,
+      `${SITE_URL}/calculator`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/open-days`,
@@ -258,7 +259,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(443);
+    expect(urls).toHaveLength(444);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',

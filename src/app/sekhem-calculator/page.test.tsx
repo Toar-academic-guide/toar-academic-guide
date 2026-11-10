@@ -282,7 +282,7 @@ it('omits lists and institution names from the answer section with mocked offeri
       name: 'באילו תוכניות אפשר לבדוק את הסכם?',
     });
     expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-      'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
+      'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק. רוצים לראות לאן מתקבלים בתוכניות שבחרתם? למחשבון סיכויי הקבלה',
     );
     for (const name of ['אפקה', 'תל אביב']) {
       expect(section.textContent).not.toContain(name);
@@ -307,7 +307,7 @@ it('omits lists and every real catalogue institution name from the answer sectio
     name: 'באילו תוכניות אפשר לבדוק את הסכם?',
   });
   expect(heading.nextElementSibling?.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
+    'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק. רוצים לראות לאן מתקבלים בתוכניות שבחרתם? למחשבון סיכויי הקבלה',
   );
   for (const name of institutionNames) {
     expect(section.textContent).not.toContain(name);
