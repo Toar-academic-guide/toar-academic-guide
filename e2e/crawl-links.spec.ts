@@ -32,6 +32,7 @@ test('homepage keeps the hero CTA and footer links in raw HTML', async ({ reques
     'https://www.tiktok.com/@myway_study',
     '/programs',
     '/institutions',
+    '/calculator',
     '/about',
     '/app/saved-programs',
     '/privacy',
