@@ -18,7 +18,18 @@
           "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
           "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
           "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
+          "proofType": "exact_official",
+          "cutoffEvidence": {
+            "value": 91.5,
+            "metric": "sekhem",
+            "route": "main",
+            "cycle": "2027",
+            "prerequisites": "Initial winter table; programme-specific manual gates remain separate.",
+            "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "sourceStatus": 200,
+            "sourceExcerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+            "programPath": "הנדסת חשמל"
+          }
         }
       ]
     },
@@ -38,7 +49,18 @@
           "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
           "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
           "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
+          "proofType": "exact_official",
+          "cutoffEvidence": {
+            "value": 87,
+            "metric": "sekhem",
+            "route": "main",
+            "cycle": "2027",
+            "prerequisites": "Initial winter table; programme-specific manual gates remain separate.",
+            "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "sourceStatus": 200,
+            "sourceExcerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+            "programPath": "הנדסת מכונות"
+          }
         }
       ]
     },
@@ -58,7 +80,18 @@
           "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
           "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
           "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
+          "proofType": "exact_official",
+          "cutoffEvidence": {
+            "value": 91.5,
+            "metric": "sekhem",
+            "route": "main",
+            "cycle": "2027",
+            "prerequisites": "Initial winter table; programme-specific manual gates remain separate.",
+            "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "sourceStatus": 200,
+            "sourceExcerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת חשמל 91.5.",
+            "programPath": "הנדסת חשמל"
+          }
         }
       ]
     },
@@ -78,7 +111,18 @@
           "digest": "sha256:8dd512d269f64e33325e0342c8bcd1c7ff1b70c9a6cfce5773e2eac9a89cb400",
           "excerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
           "url": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
-          "proofType": "exact_official"
+          "proofType": "exact_official",
+          "cutoffEvidence": {
+            "value": 87,
+            "metric": "sekhem",
+            "route": "main",
+            "cycle": "2027",
+            "prerequisites": "Initial winter table; programme-specific manual gates remain separate.",
+            "sourceUrl": "https://admissions.technion.ac.il/sechem-for-admission/%D7%9E%D7%A1%D7%9C%D7%95%D7%9C%D7%99-%D7%94%D7%9C%D7%99%D7%9E%D7%95%D7%93-%D7%9C%D7%A4%D7%99-%D7%90%D7%A4%D7%99%D7%A7%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94/",
+            "sourceStatus": 200,
+            "sourceExcerpt": "Winter תשפ\"ז initial table (tablepress-485): הנדסת מכונות 87.",
+            "programPath": "הנדסת מכונות"
+          }
         }
       ]
     }
