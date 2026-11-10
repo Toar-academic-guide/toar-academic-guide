@@ -22,6 +22,7 @@ it('renders the indexable calculator explanation and sends guests to the existin
   ).toBe(true);
   expect(within(main).getAllByRole('listitem')).toHaveLength(4);
   expect(within(main).getByRole('table').textContent).toContain('680–699');
+  expect(within(main).getByText('680–699').getAttribute('dir')).toBe('ltr');
   expect(within(main).getByRole('table').textContent).toContain('105 ומעלה');
   expect(within(main).queryByRole('link', { name: 'לימודים ללא פסיכומטרי' })).toBeNull();
   expect(main.textContent).not.toMatch(/מתואם|כל התארים|%/);

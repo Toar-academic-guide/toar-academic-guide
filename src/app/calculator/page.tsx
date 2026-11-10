@@ -237,8 +237,8 @@ export default function CalculatorLandingPage() {
                     קבלה לפי סכם
                   </th>
                   <td className="block pt-2 sm:table-cell sm:p-4">
-                    סכם 700 ומעלה; טווח המתנה 680–699, שמועבר לדיון בוועדת הקבלה החוגית. בגרות
-                    במתמטיקה: 90 ומעלה ב־4 יח״ל או 75 ומעלה ב־5 יח״ל.
+                    סכם 700 ומעלה; טווח המתנה <bdi dir="ltr">680–699</bdi>, שמועבר לדיון בוועדת
+                    הקבלה החוגית. בגרות במתמטיקה: 90 ומעלה ב־4 יח״ל או 75 ומעלה ב־5 יח״ל.
                   </td>
                 </tr>
                 <tr className="block p-4 sm:table-row sm:p-0">
