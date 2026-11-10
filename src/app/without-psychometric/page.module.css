@@ -83,6 +83,11 @@
   gap: 4px 18px;
   margin-top: 12px;
 }
+.links a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
 .main a {
   color: #55449a;
   text-decoration: underline;
@@ -145,7 +150,6 @@
     display: block;
   }
   .links a {
-    display: block;
     margin-top: 5px;
   }
 }
