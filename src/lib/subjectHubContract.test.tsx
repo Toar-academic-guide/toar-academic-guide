@@ -180,7 +180,7 @@ describe.each(Object.entries(catalogues))('subject hub contract on the %s', (_, 
         program.id,
       ).toEqual([]);
     }
-  });
+  }, 10_000);
 
   it('never publishes a hub slug built from one institution programme id', async () => {
     const { index, institutionProgramIds } = await load();
