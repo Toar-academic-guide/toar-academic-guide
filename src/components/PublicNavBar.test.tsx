@@ -25,7 +25,7 @@ describe('shared current navigation', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
-    ).toEqual(['/sekhem-calculator', '/app/saved-programs', '/login?next=%2Finstitutions']);
+    ).toEqual(['/calculator', '/app/saved-programs', '/login?next=%2Finstitutions']);
     expect(within(nav).queryByRole('link', { name: 'מי אנחנו' })).toBeNull();
     const group = within(nav).getByRole('link', { name: 'מה הסיכויים שלי?' }).parentElement!;
     expect(
@@ -81,7 +81,7 @@ describe('shared current navigation', () => {
       'מחשבונים',
       [
         ['מחשבון סכם', '/sekhem-calculator'],
-        ['בדיקת סיכויי קבלה', '/sekhem-calculator'],
+        ['בדיקת סיכויי קבלה', '/calculator'],
       ],
     ],
     [
@@ -222,8 +222,8 @@ describe('shared current navigation', () => {
     ).toBeNull();
   });
 
-  it('marks the top and menu calculator links as current on /sekhem-calculator', () => {
-    state.pathname = '/sekhem-calculator';
+  it('marks the top and menu chances links as current on /calculator', () => {
+    state.pathname = '/calculator';
     render(<PublicNavBar />);
     expect(
       screen.getByRole('link', { name: 'מה הסיכויים שלי?' }).getAttribute('aria-current'),

@@ -1,6 +1,7 @@
 export const FOOTER_NAV_LINKS = [
   { label: 'תחומי לימוד', href: '/programs' },
   { label: 'מוסדות לימוד', href: '/institutions' },
+  { label: 'מחשבון סיכויי קבלה', href: '/calculator' },
   { label: 'מי אנחנו', href: '/about' },
   { label: 'הרשימה שלי', href: '/app/saved-programs' },
 ] as const;
