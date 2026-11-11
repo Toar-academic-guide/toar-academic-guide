@@ -7,6 +7,12 @@ import type { InstitutionAreaFilter } from './institutionDirectory';
 const CAMPUS_AREAS: Readonly<Record<string, readonly InstitutionAreaFilter[]>> = {
   ariel: [],
   ono: ['center', 'jerusalem', 'haifa', 'north'],
+  // https://www.openu.ac.il/about/departments/marom/Pages/default.aspx
+  open_university: ['center', 'tel_aviv', 'jerusalem', 'haifa', 'north', 'south', 'online'],
+  // https://www.reidman.co.il/דרכי-הגעה-לקמפוסים
+  reidman: ['center', 'tel_aviv', 'jerusalem', 'haifa', 'north', 'south'],
+  // https://www.johnbryce.co.il/wp-content/uploads/2026/05/תקנון-מרכז-הדרכה-גון-ברייס-14.1.26.pdf
+  johnbryce: ['center', 'tel_aviv', 'jerusalem', 'haifa', 'north'],
 };
 
 export function directoryCampusAreas(

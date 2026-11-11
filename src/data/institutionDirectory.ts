@@ -344,6 +344,9 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
       // Imported directory links are retained only for the existing local logo cache.
       const yoramLogoUrl = yoramLogoFromSourceUrl(importedSourceUrl);
       const location = override?.location ?? row.location;
+      // Reidman's official FAQ explicitly excludes academic degrees.
+      // https://www.reidman.co.il/index.php?cat=1&dir=site&page=faq
+      const diplomaType = id === 'reidman' ? 'תעודה מקצועית' : row.diplomaType;
 
       return {
         id,
@@ -352,7 +355,7 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         type: row.institutionType,
         funding: row.funding,
         location,
-        diplomaType: row.diplomaType,
+        diplomaType,
         sourceUrl,
         domain,
         logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
@@ -361,10 +364,10 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
           id,
           name,
           type: row.institutionType,
-          diplomaType: row.diplomaType,
+          diplomaType,
         }),
         credentials: inferCredentials({
-          diplomaType: row.diplomaType,
+          diplomaType,
           funding: row.funding,
         }),
         coverageLevel: row.coverageLevel ?? evidence?.publicBucket ?? null,

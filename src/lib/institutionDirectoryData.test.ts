@@ -62,6 +62,23 @@ describe('public institution directory', () => {
     ]);
   });
 
+  it('includes verified nationwide providers in each campus region', async () => {
+    const { institutions } = await getPublicInstitutionDirectoryData();
+    for (const id of ['open_university', 'reidman', 'johnbryce']) {
+      expect(institutions.find((item) => item.id === id)?.areas, id).toEqual(
+        expect.arrayContaining(['center', 'tel_aviv', 'jerusalem', 'haifa', 'north']),
+      );
+    }
+    for (const id of ['open_university', 'reidman']) {
+      expect(institutions.find((item) => item.id === id)?.areas, id).toContain('south');
+    }
+    expect(institutions.find((item) => item.id === 'johnbryce')?.areas).not.toContain('south');
+    const reidman = institutions.find((item) => item.id === 'reidman')!;
+    expect(reidman.diplomaType).toBe('תעודה מקצועית');
+    expect(reidman.credentials).toContain('professional_certificate');
+    expect(reidman.credentials).not.toContain('academic_degree');
+  });
+
   it('offers every mapped subject and distinguishes qualification types in ambiguous labels', async () => {
     const data = await getPublicInstitutionDirectoryData();
     for (const institution of data.institutions) {
