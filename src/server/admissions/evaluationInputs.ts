@@ -10,21 +10,34 @@ import {
   calculateTauBagrutAverage,
   calculateHujiBagrutAverage,
 } from './bagrutPolicies';
-import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
-import { medicineBagrutSubjects } from '@/data/admissions/medicineBagrutSubjects';
+import { isMedicineAcademicPair } from '@/lib/medicineAcademicInputs';
+import {
+  medicineBagrutSubjects,
+  COMBINED_MEDICINE_SUBJECT_IDS,
+  UNRESOLVED_MEDICINE_SUBJECT_IDS,
+} from '@/data/admissions/medicineBagrutSubjects';
+import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 
 /** Derivations are local to evaluation; callers' scores and exam history stay intact. */
 export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
   const extraInputs: AdmissionsExtraInputs = { ...input.extraInputs };
   let record = extraInputs.bagrutSubjectRecord;
-  const academicMedicine =
-    usesMedicineAcademicStage(extraInputs) &&
-    ['tau', 'huji', 'bgu'].some((id) => isMedicineAcademicPair(input.degreeId, id));
-  if (academicMedicine) {
+  const medicine = ['tau', 'huji', 'bgu'].some((id) => isMedicineAcademicPair(input.degreeId, id));
+  if (medicine) {
+    extraInputs.medicineStage = 'academic';
     if (record) record = medicineBagrutSubjects(record, extraInputs.medicineCertificateLanguage);
     for (const key of ['tauBagrutAverage', 'bguBagrutAverage', 'hujiBagrutAverage'] as const)
       delete extraInputs[key];
-    if (record) {
+    if (
+      record &&
+      !record.subjects.some(
+        (subject) =>
+          subject.subjectId === subjectIdForWizardLabel('עבודת גמר') ||
+          COMBINED_MEDICINE_SUBJECT_IDS.has(subject.subjectId) ||
+          UNRESOLVED_MEDICINE_SUBJECT_IDS.has(subject.subjectId) ||
+          ('assessmentKind' in subject && subject.assessmentKind === 'combined'),
+      )
+    ) {
       const average = calculateHujiBagrutAverage(record);
       if (average.state === 'calculated') extraInputs.hujiBagrutAverage = average.average;
     }
@@ -55,10 +68,7 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
     if (record) {
       const result = calculator?.(record);
       if (result?.state === 'calculated') extraInputs[key] = result.average;
-    } else if (
-      bagrut !== undefined &&
-      !(academicMedicine && ['tau', 'bgu'].includes(institution))
-    ) {
+    } else if (bagrut !== undefined && !(medicine && ['tau', 'bgu'].includes(institution))) {
       extraInputs[key] = bagrut;
       proxyInstitutions.add(institution);
       if (institution === 'bgu') extraInputs.bguBagrutAverageEstimated = true;

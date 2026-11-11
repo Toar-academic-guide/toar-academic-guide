@@ -1807,7 +1807,7 @@ describe('evaluateAdmissionsForProgram', () => {
     expectBguExact(report, 'below');
   });
 
-  it('returns an exact BGU medicine invitation verdict', async () => {
+  it('requires BGU medicine subject rows before calculating a score', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -1819,10 +1819,14 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: bguMockFetcher(735, 875),
     });
 
-    expectBguExact(report, 'eligible_to_apply');
+    expect(report.results[0]).toMatchObject({
+      stage: 'academic',
+      kind: 'needs_input',
+      requiredInputs: ['bagrut_subject_record'],
+    });
   });
 
-  it('returns a below BGU medicine invitation verdict', async () => {
+  it('does not use a BGU average-only profile for a below verdict', async () => {
     const report = await evaluateAdmissionsForProgram({
       input: {
         degreeId: 'bgu_medicine',
@@ -1834,7 +1838,11 @@ describe('evaluateAdmissionsForProgram', () => {
       fetcher: bguMockFetcher(735, 451),
     });
 
-    expectBguExact(report, 'below');
+    expect(report.results[0]).toMatchObject({
+      stage: 'academic',
+      kind: 'needs_input',
+      requiredInputs: ['bagrut_subject_record'],
+    });
   });
 
   it('calculates Reichman published routes instead of treating them as requirements only', async () => {
@@ -3738,26 +3746,37 @@ describe('current HUJI Medicine staged evaluation', () => {
       );
     },
   );
-  it.each(['medicine', 'huji_medicine'])('evaluates %s without generic Bagrut', async (id) => {
-    const report = await evaluateAdmissionsForProgram({
-      program: { ...medicine, id },
-      institutions: hujiInstitutions,
-      input: { degreeId: id, psychometric: 800, extraInputs: HUJI_MEDICINE_ELIGIBLE_INPUTS },
-      fetcher: vi
-        .fn<typeof fetch>()
-        .mockResolvedValue(new Response(medicineOfficial.calculatorHtml)),
-    });
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        capability: 'exact',
-        kind: 'manual_gate',
-        decision: 'eligible_to_apply',
-        score: 26.612,
-        threshold: 25.708,
-        scoreLabel: 'ציון התאמה סופי לרפואה',
-      }),
-    );
-  });
+  it.each(['medicine', 'huji_medicine'])(
+    'evaluates %s final stage from an official cognitive score',
+    async (id) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: { ...medicine, id },
+        institutions: hujiInstitutions,
+        input: {
+          degreeId: id,
+          psychometric: 800,
+          extraInputs: {
+            ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+            hujiMedicineRoute: 'official_cognitive',
+            hujiMedicineCognitiveScore: 27.921,
+          },
+        },
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockResolvedValue(new Response(medicineOfficial.calculatorHtml)),
+      });
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          capability: 'exact',
+          kind: 'manual_gate',
+          decision: 'eligible_to_apply',
+          score: 26.612,
+          threshold: 25.708,
+          scoreLabel: 'ציון התאמה סופי לרפואה',
+        }),
+      );
+    },
+  );
   it('shows passing screening as incomplete when assessment is missing', async () => {
     const report = await evaluateAdmissionsForProgram({
       program: medicine,
@@ -3765,7 +3784,12 @@ describe('current HUJI Medicine staged evaluation', () => {
       input: {
         degreeId: 'medicine',
         psychometric: 800,
-        extraInputs: { ...HUJI_MEDICINE_ELIGIBLE_INPUTS, hujiMedicineAssessmentScore: undefined },
+        extraInputs: {
+          ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+          hujiMedicineRoute: 'official_cognitive',
+          hujiMedicineCognitiveScore: 27.921,
+          hujiMedicineAssessmentScore: undefined,
+        },
       },
     });
     expect(report.results).toContainEqual(
@@ -3784,7 +3808,11 @@ describe('current HUJI Medicine staged evaluation', () => {
       input: {
         degreeId: 'medicine',
         psychometric: 800,
-        extraInputs: HUJI_MEDICINE_ELIGIBLE_INPUTS,
+        extraInputs: {
+          ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+          hujiMedicineRoute: 'official_cognitive',
+          hujiMedicineCognitiveScore: 27.921,
+        },
       },
       fetcher: vi
         .fn<typeof fetch>()
@@ -4005,7 +4033,11 @@ describe('catalogue eligibility safety', () => {
       expect(result).toBeDefined();
       expect(result.decision).toBe(decision);
       if (decision === 'unknown') {
-        expect(result.kind).toBe(degreeId === 'mta_cs' ? 'needs_input' : 'requirements_only');
+        expect(result.kind).toBe(
+          degreeId === 'mta_cs' || degreeId.includes('medicine')
+            ? 'needs_input'
+            : 'requirements_only',
+        );
         expect(resultLabel(result).group).toBe('explore');
         if (degreeId === 'mta_cs')
           expect(result.requiredInputs).toEqual([
@@ -4373,7 +4405,7 @@ describe('results average normalization regressions', () => {
   it.each([
     ['tau_cs', 'needs_input'],
     ['tau_engineering', 'unsupported'],
-    ['tau_medicine', 'requirements_only'],
+    ['tau_medicine', 'needs_input'],
   ] as const)(
     '07:24 average-only %s has no estimate metadata without a calculation',
     async (degreeId, kind) => {
@@ -5357,7 +5389,7 @@ describe('sweep38 wiring', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 
-  it('resolves generic medicine at BGU through the canonical medicine target', async () => {
+  it('requires raw subject rows for the generic BGU medicine target', async () => {
     const program = {
       ...bguMedicine,
       id: 'medicine',
@@ -5377,9 +5409,10 @@ describe('sweep38 wiring', () => {
       fetcher: bguMockFetcher(735, 735),
     });
     expect(report.results.find((row) => row.linkedInstitutionId === 'bgu')).toMatchObject({
-      kind: 'manual_gate',
-      decision: 'eligible_to_apply',
-      threshold: 735,
+      stage: 'academic',
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['bagrut_subject_record'],
     });
     expect(report.program.id).toBe('medicine');
   });

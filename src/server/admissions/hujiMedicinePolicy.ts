@@ -142,7 +142,7 @@ export function resolveHujiMedicineAdmission(
   if (extra.hujiMedicineAffirmativeAction === undefined) missing('hujiMedicineAffirmativeAction');
   const route = extra.hujiMedicineRoute ?? 'bagrut';
   if (route === 'bagrut') {
-    if (extra.hujiBagrutAverage === undefined) missing('hujiBagrutAverage');
+    if (extra.hujiBagrutAverage === undefined) result.missing.push('bagrut_subject_record');
     else
       result.cognitiveScore = hujiMedicineCognitiveScore(
         extra.hujiBagrutAverage,

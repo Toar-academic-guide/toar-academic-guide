@@ -814,9 +814,7 @@ it('retains Medicine inputs when reopened, edited and saved', async () => {
       initialScores={{ admissions }}
     />,
   );
-  expect(
-    (screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)') as HTMLInputElement).value,
-  ).toBe('120.25');
+  expect(screen.queryByLabelText('ממוצע בגרות רשמי של העברית (60–127)')).toBeNull();
   // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
   expect(screen.queryByLabelText('זכאות לבגרות או תעודה חלופית מוכרת לרפואה בעברית?')).toBeNull();
   fireEvent.change(screen.getByLabelText('תאריך הפסיכומטרי לרפואה בעברית'), {
@@ -834,6 +832,7 @@ it('retains Medicine inputs when reopened, edited and saved', async () => {
     expect(onComplete).toHaveBeenCalledWith({
       admissions: {
         ...admissions,
+        hujiBagrutAverage: undefined,
         hujiMedicineAssessmentScore: 201.5,
         hujiMedicinePsychometricDate: '2026-04-02',
         hujiMedicinePriorStudyStatus: 'documents_and_committee_approved',
@@ -870,7 +869,7 @@ it('retains an external preparatory conversion confirmation when the profile is 
   ).toHaveProperty('value', '110.25');
 });
 
-it('clears a Medicine field without replacing unknown information with a value', async () => {
+it('does not save a stored HUJI medicine average', async () => {
   const onComplete = vi.fn();
   render(
     <AcademicProfileForm
@@ -880,9 +879,7 @@ it('clears a Medicine field without replacing unknown information with a value',
       initialScores={{ admissions: { hujiBagrutAverage: 120 } }}
     />,
   );
-  fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)'), {
-    target: { value: '' },
-  });
+  expect(screen.queryByLabelText('ממוצע בגרות רשמי של העברית (60–127)')).toBeNull();
   fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({}));
 });

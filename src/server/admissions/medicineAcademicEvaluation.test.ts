@@ -174,6 +174,22 @@ it('does not invent a bonus for an unresolved legacy subject name', async () => 
   expect(result.score).toBeUndefined();
 });
 
+it('withholds a BGU score when a selectable subject lacks an official code mapping', async () => {
+  const { subjectIdForWizardLabel } = await import('@/utils/bagrutSubjectRecord');
+  const record = structuredClone(references.bgu.record);
+  record.subjects.push({
+    subjectId: subjectIdForWizardLabel('יהדות ממ"ד'),
+    units: 5,
+    grade: 100,
+    assessmentKind: 'exam',
+  });
+  const fetcher = vi.fn<typeof fetch>();
+  const result = await evaluate('bgu', 750, { bagrutSubjectRecord: record }, fetcher);
+  expect(result.kind).toBe('authority_unavailable');
+  expect(result.score).toBeUndefined();
+  expect(fetcher).not.toHaveBeenCalled();
+});
+
 it('requests a specific required subject and calculates after it is restored', async () => {
   const record = structuredClone(references.huji.record);
   record.subjects = record.subjects.filter((subject) => subject.subjectId !== 'civics');
