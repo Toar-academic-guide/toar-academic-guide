@@ -7,9 +7,74 @@ import Page, { dynamic, metadata } from './page';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, עם תאריך בדיקה וקישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם תאריך בדיקה וקישור למקור הרשמי.';
 const canonical = 'https://findmyway.co.il/psychometric-dates';
 afterEach(() => vi.useRealTimers());
+
+it('renders sourced semester dates without filling unpublished deadlines', async () => {
+  render(await Page());
+  const section = screen.getByRole('region', { name: 'איזה מועד פסיכומטרי נחשב לאיזה סמסטר' });
+  expect(within(section).getByRole('heading', { level: 2 }).id).toBe('semester-validity');
+  const spring = within(section).getByRole('table', { name: 'סמסטר ב\' תשפ"ז (מרץ 2027)' });
+  const rows = within(spring).getAllByRole('row').slice(1);
+  expect(rows.map((row) => within(row).getByRole('rowheader').textContent)).toEqual([
+    'הטכניון',
+    'אוניברסיטת חיפה',
+    'האוניברסיטה העברית',
+  ]);
+  expect(
+    within(rows[0])
+      .getAllByRole('cell')
+      .slice(0, 4)
+      .map((cell) => cell.textContent),
+  ).toEqual([
+    '1.11.2026בשעה 10:00',
+    '28.1.2027הרשמה מאוחרת מ־31.1.2027, על בסיס מקום פנוי',
+    'דצמבר 2026',
+    '24.3.2027',
+  ]);
+  expect(within(rows[1]).getAllByRole('cell')[0].textContent).toBe('29.11.2026');
+  expect(within(rows[2]).getAllByRole('cell')[0].textContent).toBe('03.01.2027');
+  for (const row of rows.slice(1)) {
+    expect(
+      within(row)
+        .getAllByRole('cell')
+        .slice(1, 4)
+        .map((cell) => cell.textContent),
+    ).toEqual(['', '', '']);
+  }
+  const autumn = within(section).getByRole('table', { name: 'סמסטר א\' תשפ"ח (אוקטובר 2027)' });
+  const autumnRows = within(autumn).getAllByRole('row').slice(1);
+  expect(autumnRows).toHaveLength(3);
+  expect(autumnRows[0].textContent).toContain('כלל תוקף כפי שמפורסם באתר הטכניון');
+  expect(
+    within(autumnRows[0])
+      .getAllByRole('listitem')
+      .map((item) => item.textContent),
+  ).toEqual([
+    "אפריל תקף לסמסטר א' — המועד האחרון לרפואה ולמסלולי רפואה.",
+    "יולי: הדיון לסמסטר א' על בסיס מקום פנוי.",
+    "ספטמבר אינו תקף לסמסטר א'.",
+  ]);
+  expect(autumnRows[1].textContent).toContain(
+    'פתיחת הרשמה: 31.1.2027. שנת הלימודים מתחילה באוקטובר 2027.',
+  );
+  expect(autumnRows[2].textContent).toContain('פתיחת הרשמה לשנת תשפ"ח: 01.11.2026.');
+  expect(
+    within(section)
+      .getAllByRole('link')
+      .map((link) => link.getAttribute('href')),
+  ).toEqual([
+    'https://admissions.technion.ac.il/registeration-dates/',
+    'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
+    'https://info.huji.ac.il/registration-process/calendar',
+    'https://admissions.technion.ac.il/technion_psychometri/',
+    'https://www.bgu.ac.il/events/registrastion-2027-2028/',
+    'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
+  ]);
+  expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(6);
+  expect(section.textContent).not.toContain('תל אביב');
+});
 
 it('renders the approved dates, derived answer, closed badge, next label and single CTA', async () => {
   vi.useFakeTimers();
@@ -24,7 +89,8 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   expect(main.textContent).toContain(
     'המועד הפתוח הקרוב להרשמה: 18–19.4.2027. ההרשמה נסגרת ב־10.2.2027.',
   );
-  const rows = within(main).getAllByRole('row').slice(1);
+  const examTable = within(main).getByRole('table', { name: /מועדי פסיכומטרי מ־/ });
+  const rows = within(examTable).getAllByRole('row').slice(1);
   expect(rows).toHaveLength(5);
   expect(
     rows.map((row) => within(row).getByRole('rowheader').querySelector('bdi')?.textContent),
@@ -36,12 +102,14 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   const ctas = within(main).getAllByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
-  const stamp = within(main).getByText(/נבדק בתאריך/);
+  const stamp = within(main)
+    .getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })
+    .closest('p')!;
   expect(stamp.textContent).toContain('29.10.2026');
   expect(
     within(stamp).getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' }).getAttribute('href'),
   ).toBe('https://www.nite.org.il/test-dates-and-prices/');
-  expect(within(main).getByRole('table').querySelector('caption')?.textContent).toBe(
+  expect(examTable.querySelector('caption')?.textContent).toBe(
     'מועדי פסיכומטרי מ־29.10.2026 ואילך',
   );
   expect(main.textContent).not.toMatch(/סכם/);
@@ -123,7 +191,9 @@ it('omits an answer when no verified registration is open and hides past rows', 
   vi.setSystemTime('2027-10-26T12:00:00Z');
   render(await Page());
   expect(screen.getByRole('main').textContent).not.toContain('המועד הפתוח הקרוב להרשמה:');
-  expect(screen.getAllByRole('row')).toHaveLength(2);
+  expect(
+    within(screen.getByRole('table', { name: /מועדי פסיכומטרי מ־/ })).getAllByRole('row'),
+  ).toHaveLength(2);
   expect(screen.queryByText('המועד הקרוב')).toBeNull();
 });
 
