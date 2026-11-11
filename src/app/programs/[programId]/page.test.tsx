@@ -142,6 +142,85 @@ describe('ProgramPage', () => {
     expect(screen.queryByText('savedProgramIds')).toBeNull();
   });
 
+  it('renders the approved data science comparison before institution cards with its metadata', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'datascience' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי הנתונים' })).toBeTruthy();
+    const comparison = screen
+      .getByRole('heading', {
+        name: 'מדעי הנתונים או מדעי המחשב — מה מתאים לכם?',
+      })
+      .closest('section')!;
+    expect(comparison.textContent).toContain(
+      'רוצים לבנות תוכנות ומערכות, או להפיק תובנות מנתונים?',
+    );
+    const table = within(comparison).getByRole('table');
+    expect(within(table).getAllByRole('row')).toHaveLength(4);
+    expect(
+      within(table).getByRole('rowheader', { name: 'נושאים שכדאי לחפש בתוכנית' }),
+    ).toBeTruthy();
+    expect(
+      within(comparison)
+        .getByRole('link', { name: 'השוו תוכניות במדעי המחשב' })
+        .getAttribute('href'),
+    ).toBe('/programs/cs');
+    expect(
+      within(comparison)
+        .getByRole('link', { name: 'בדקו את הציונים שלכם במחשבון הסכם' })
+        .getAttribute('href'),
+    ).toBe('/sekhem-calculator');
+    expect(
+      within(comparison)
+        .getByRole('link', { name: 'על ההבדל בין התחומים — האקדמית גליל מערבי' })
+        .getAttribute('href'),
+    ).toBe('https://wgalil.ac.il/blog/computer-science-vs-data-science/');
+    expect(
+      within(comparison)
+        .getByRole('link', { name: 'מדע הנתונים — המסלול האקדמי המכללה למינהל' })
+        .getAttribute('href'),
+    ).toBe('https://www.colman.ac.il/academics/ba/data-science/');
+    const primaryCta = screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' });
+    const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' });
+    expect(
+      primaryCta.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(
+      comparison.compareDocumentPosition(institutions) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    expect(container.querySelectorAll('script[type="application/ld+json"]')).toHaveLength(1);
+    expect(
+      await generateMetadata({ params: Promise.resolve({ programId: 'datascience' }) }),
+    ).toMatchObject({
+      title: 'מדעי הנתונים: השוואת מסלולים ותנאי קבלה',
+      description:
+        'השוו מסלולי לימוד במדעי הנתונים, הבינו את ההבדל ממדעי המחשב ובדקו את תנאי הקבלה של התוכניות שמעניינות אתכם.',
+      alternates: { canonical: '/programs/datascience' },
+    });
+  });
+
+  it('renders the reciprocal comparison only on the CS hub', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'cs' }) }));
+    const comparison = screen
+      .getByRole('heading', {
+        name: 'מתלבטים בין מדעי המחשב למדעי הנתונים?',
+      })
+      .closest('section')!;
+    expect(comparison.textContent).toContain(
+      'מדעי המחשב מתמקדים בפיתוח תוכנה, אלגוריתמים ומערכות. במדעי הנתונים הדגש הוא על ניתוח מידע, סטטיסטיקה ולמידת מכונה. השוו את תוכני הלימוד ואת תנאי הקבלה בשני התחומים.',
+    );
+    expect(
+      within(comparison)
+        .getByRole('link', { name: 'להשוואה עם מדעי הנתונים' })
+        .getAttribute('href'),
+    ).toBe('/programs/datascience');
+    expect(await generateMetadata({ params: Promise.resolve({ programId: 'cs' }) })).toEqual(
+      await import('@/lib/seo/metadata').then(({ buildProgramMetadata }) =>
+        buildProgramMetadata('cs'),
+      ),
+    );
+  });
+
   it('calls notFound for unknown program IDs', async () => {
     await expect(
       ProgramPage({ params: Promise.resolve({ programId: 'missing-program' }) }),
