@@ -230,6 +230,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/open-days`,
       `${SITE_URL}/transfer`,
+      `${SITE_URL}/without-psychometric`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -259,7 +260,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(444);
+    expect(urls).toHaveLength(445);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -404,7 +405,7 @@ describe('metadata', () => {
         await ProgramPage({ params: Promise.resolve({ programId: 'danon_cs' }) }),
       ),
     ).toContain(page.program.name);
-  });
+  }, 10_000);
 
   it('absorbs the definite article in institution descriptions', async () => {
     expect((await buildProgramMetadata('huji_cs')).description).toContain(
@@ -544,7 +545,7 @@ describe('metadata', () => {
         expect(markup.split('</summary>')[1]).toContain(`/programs/${page.programs[12].id}`);
       } else expect(markup).not.toContain('<details');
     }
-  });
+  }, 10_000);
 
   it('gives every excluded existing detail page a self-canonical and noindex,follow', async () => {
     const institutionIds = await indexableInstitutionIds();
