@@ -53,7 +53,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
                 <Link
-                  className="text-[var(--text-body)] underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center text-[var(--text-body)] underline-offset-4 hover:underline"
                   href={`/programs/${encodeURIComponent(program.id)}`}
                 >
                   {subject.institutions.find(
@@ -128,7 +128,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   key={institution.id}
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  <Link href={institutionProgramPaths[institution.id]}>{institution.name} </Link>
+                  <Link
+                    className={isGeneral ? 'inline-flex min-h-11 items-center' : undefined}
+                    href={institutionProgramPaths[institution.id]}
+                  >
+                    {institution.name}{' '}
+                  </Link>
                   <ProgramTrackedLink
                     event="program_contact_cta_clicked"
                     programId={program.id}
