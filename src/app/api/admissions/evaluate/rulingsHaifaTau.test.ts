@@ -1,7 +1,5 @@
-import { BATCH_C_PROGRAMS } from '@/server/admissions/batchCUnsupportedPathEvaluation';
 import qa from '../../../../../docs/admissions-verification/evidence/2026-10-29-haifa-qa-replay.json';
 import { normalizeEvaluationInputs } from '@/server/admissions/evaluationInputs';
-import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import TechnionMedicineComparison from '@/components/TechnionMedicineComparison';
@@ -177,12 +175,6 @@ it.each([
   },
 );
 
-const haifaNotice = 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה';
-const haifaSources = [
-  'https://admissions.haifa.ac.il/score-calculation/',
-  'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-];
-
 function haifaAverageApplicants(haifaInformationSystemsTrack?: 'single_major') {
   const qualification = {
     haifaHebrewQualification: 'hebrew_school' as const,
@@ -194,11 +186,6 @@ function haifaAverageApplicants(haifaInformationSystemsTrack?: 'single_major') {
     bagrut: 104,
   };
   return { saved, proxy };
-}
-
-function haifaAnswer(result: Awaited<ReturnType<typeof gapEvaluate>>['result']) {
-  const { capability, kind, decision, explanation, officialUrls } = result;
-  return { capability, kind, decision, explanation, officialUrls };
 }
 
 function stripHashKeys(value: unknown): unknown {
@@ -258,7 +245,7 @@ it.each(['sourceDigest', 'fingerprint'])(
 );
 
 it.each(['haifa_psychology', 'psychology'])(
-  'saved %s reaches its missing-month gate while a proxy keeps the Haifa note',
+  'saved %s reaches its missing-month gate while a proxy asks for subject rows',
   async (id) => {
     const { saved, proxy } = haifaAverageApplicants();
     expect(
@@ -276,11 +263,10 @@ it.each(['haifa_psychology', 'psychology'])(
       kind: 'needs_input',
       requiredInputs: ['haifa_psychometric_month'],
     });
-    expect(haifaAnswer(proxyResult)).toMatchObject({
-      kind: 'authority_unavailable',
-      capability: 'authority_unavailable',
-      explanation: HAIFA_NO_CALCULATION_NOTE,
-      officialUrls: expect.arrayContaining(haifaSources),
+    expect(proxyResult).toMatchObject({
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     for (const answer of [result, proxyResult]) {
       const stripped = stripHashKeys(answer);
@@ -619,29 +605,31 @@ it.each([
   ['saved', 'single_major'],
   ['proxy', 'single_major'],
   ['proxy', undefined],
-] as const)('Haifa infosystems stays blocked for %s average with track %s', async (path, track) => {
-  const applicants = haifaAverageApplicants(track);
-  const program = gapPrograms.find((program) => program.id === 'haifa_infosystems')!;
-  const { result } = await gapEvaluate(program, 'haifa', applicants[path]);
-  // Approved test update, Jorje 2026-10-31: proxy-only cases have no subject-derived average; the saved profile still uses its rows.
-  expect(result).toMatchObject(
-    path === 'proxy'
-      ? {
-          capability: 'tracked_missing_rule',
-          kind: 'tracked_missing_rule',
-          sourceLabel: 'אין מספיק מידע',
-          officialUrls: haifaSources,
-        }
-      : {
-          capability: 'blocked',
-          kind: 'tracked_missing_rule',
-          sourceLabel: 'מיפוי המסלול טרם אומת',
-          officialUrls: [
-            'https://admissions.haifa.ac.il/computer-information-science/program/3218/',
-          ],
-        },
-  );
-});
+] as const)(
+  'Haifa infosystems preserves the saved mapping gate and requests proxy rows for track %s',
+  async (path, track) => {
+    const applicants = haifaAverageApplicants(track);
+    const program = gapPrograms.find((program) => program.id === 'haifa_infosystems')!;
+    const { result } = await gapEvaluate(program, 'haifa', applicants[path]);
+    // Saved profiles with rows still reach the unresolved mapping gate; proxy-only profiles request rows.
+    expect(result).toMatchObject(
+      path === 'proxy'
+        ? {
+            capability: 'needs_input',
+            kind: 'needs_input',
+            requiredInputs: ['haifa_bagrut_average'],
+          }
+        : {
+            capability: 'blocked',
+            kind: 'tracked_missing_rule',
+            sourceLabel: 'מיפוי המסלול טרם אומת',
+            officialUrls: [
+              'https://admissions.haifa.ac.il/computer-information-science/program/3218/',
+            ],
+          },
+    );
+  },
+);
 
 it('saved Haifa infosystems without a track still asks for the track', async () => {
   const { saved } = haifaAverageApplicants();
@@ -655,7 +643,7 @@ it('saved Haifa infosystems without a track still asks for the track', async () 
 });
 
 it.each(['1280', '390', '1280-retry', '390-retry'])(
-  'H2 uses the real %s average-only CS UI request without asking for inputs',
+  'H2 asks for Bagrut subject rows for the real %s average-only CS request',
   async () => {
     // All four QA captures carry this same body; project only the per-degree server input.
     const { degreeIds, ...profile } = qa.h2.csRequest;
@@ -672,23 +660,19 @@ it.each(['1280', '390', '1280-retry', '390-retry'])(
       JSON.parse(JSON.stringify(profile)),
     );
     expect(result).toMatchObject({
-      kind: 'tracked_missing_rule',
-      capability: 'tracked_missing_rule',
-      explanation: haifaNotice,
-      officialUrls: expect.arrayContaining(haifaSources),
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['haifa_bagrut_average'],
+      nextAction: expect.stringContaining('מקצועות הבגרות'),
     });
-    expect(result.requiredInputs ?? []).toEqual([]);
     expect(fetcher).not.toHaveBeenCalled();
   },
 );
 
 it.each(qa.h2.allRequest.degreeIds)(
-  'H2 returns the honest note for captured average-only Haifa programme %s',
+  'H2 requests Bagrut rows for captured average-only Haifa programme %s',
   async (id) => {
     const { degreeIds: _ids, ...profile } = qa.h2.allRequest;
-    const kind = ['psychology', 'haifa_psychology'].includes(id)
-      ? 'authority_unavailable'
-      : 'tracked_missing_rule';
     const program = gapPrograms.find((program) => program.id === id)!;
     expect(program).toBeDefined();
     const { result, fetcher } = await gapEvaluate(
@@ -696,32 +680,12 @@ it.each(qa.h2.allRequest.degreeIds)(
       'haifa',
       JSON.parse(JSON.stringify(profile)),
     );
-    if (id === 'haifa_infosystems') {
-      // Approved test update, Jorje 2026-10-29
-      // Approved test update, Jorje 2026-10-31: missing subject rows produce the honest no-calculation result before track mapping.
-      expect(result).toMatchObject({
-        kind: 'tracked_missing_rule',
-        capability: 'tracked_missing_rule',
-        explanation: HAIFA_NO_CALCULATION_NOTE,
-        officialUrls: haifaSources,
-      });
-    } else if (id === 'haifa_engineering') {
-      // Approved test update, Jorje 2026-10-29
-      expect(result).toMatchObject({
-        kind: 'unsupported',
-        capability: 'unsupported',
-        explanation: BATCH_C_PROGRAMS.haifa_engineering.explanationHe,
-        nextAction: BATCH_C_PROGRAMS.haifa_engineering.nextActionHe,
-      });
-    } else {
-      expect(result).toMatchObject({
-        kind,
-        capability: kind,
-        explanation: haifaNotice,
-        officialUrls: expect.arrayContaining(haifaSources),
-      });
-    }
-    expect(result.requiredInputs ?? []).toEqual([]);
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['haifa_bagrut_average'],
+      nextAction: expect.stringContaining('מקצועות הבגרות'),
+    });
     expect(fetcher).not.toHaveBeenCalled();
   },
 );

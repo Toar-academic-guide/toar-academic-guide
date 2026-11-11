@@ -1,4 +1,5 @@
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
+import ProgramName from '@/components/ProgramName';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
 import {
   canLinkToSekhemCalculator,
@@ -48,12 +49,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           data-page-kind="subject"
           className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6"
         >
-          <h1 className="mb-8 text-3xl font-bold">{subject.hub.name}</h1>{' '}
+          <h1 className="mb-8 text-3xl font-bold">
+            <ProgramName name={subject.hub.name} />
+          </h1>{' '}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
                 <Link
-                  className="text-[var(--text-body)] underline-offset-4 hover:underline"
+                  className="inline-flex min-h-11 items-center text-[var(--text-body)] underline-offset-4 hover:underline"
                   href={`/programs/${encodeURIComponent(program.id)}`}
                 >
                   {subject.institutions.find(
@@ -99,7 +102,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           </Link>
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">{program.category}</p>{' '}
-            <h1 className="mt-2 text-3xl font-black sm:text-4xl">{program.name}</h1>{' '}
+            <h1 className="mt-2 text-3xl font-black sm:text-4xl">
+              <ProgramName name={program.name} />
+            </h1>{' '}
             <div className="mt-6 flex flex-wrap gap-3">
               {hasCalculator && (
                 <ProgramTrackedLink
@@ -128,7 +133,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   key={institution.id}
                   className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                 >
-                  <Link href={institutionProgramPaths[institution.id]}>{institution.name} </Link>
+                  <Link
+                    className={isGeneral ? 'inline-flex min-h-11 items-center' : undefined}
+                    href={institutionProgramPaths[institution.id]}
+                  >
+                    {institution.name}{' '}
+                  </Link>
                   <ProgramTrackedLink
                     event="program_contact_cta_clicked"
                     programId={program.id}

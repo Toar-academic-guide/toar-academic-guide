@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import ProgramName from '@/components/ProgramName';
 import type { SubjectHub } from '@/lib/publicCatalogueLinks';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 
@@ -78,7 +79,7 @@ export function RelatedPrograms({
           className={`${linkStyle} mb-4 inline-block font-semibold`}
           href={`/programs/${encodeURIComponent(hub.id)}`}
         >
-          {hub.name}{' '}
+          <ProgramName name={hub.name} />{' '}
         </Link>
       )}
       <ul className="grid gap-x-6 gap-y-3 text-sm sm:grid-cols-2">

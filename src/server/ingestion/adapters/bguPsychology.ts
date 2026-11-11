@@ -108,8 +108,24 @@ export async function runBguPsychologyProof(
     }
     if (admission.kind === 'needs_input' || admission.kind === 'score')
       throw new Error('Psychology requires route-specific applicant inputs.');
+    const mainCutoff =
+      rule.psycho_and_or.includes('ובנוסף') && rule.sekem_label.includes('סכם')
+        ? {
+            value: rule.score,
+            metric: 'sekhem' as const,
+            route: 'main' as const,
+            cycle: String(rule.mapping.year),
+            programPath: BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+            registrationStatus: rule.reg_status,
+            prerequisites: `psychometric ${rule.psychometric} AND sekhem ${rule.score}; ${rule.psycho_info}`,
+            sourceUrl: BGU_PSYCHOLOGY_SOURCE_URL,
+            sourceStatus: response.status,
+            sourceExcerpt: `psycho_sekem=${rule.score}; psycho_and_or=${rule.psycho_and_or}; psycho_value=${rule.psychometric}`,
+          }
+        : undefined;
     return {
       ...base,
+      ...(mainCutoff && { publicationCutoff: mainCutoff }),
       capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',

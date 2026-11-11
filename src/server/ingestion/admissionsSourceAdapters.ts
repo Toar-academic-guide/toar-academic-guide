@@ -74,6 +74,19 @@ export interface AdmissionsSourceProof {
   sourceClass: FreshnessSourceClass;
   reproducedFields: string[];
   normalizedPayload: Record<string, unknown>;
+  /** Source-backed main-route cutoff, separate from an applicant's selected route threshold. */
+  publicationCutoff?: {
+    value: number;
+    metric: 'sekhem' | 'quantitative_sekhem';
+    route: 'main';
+    cycle: string;
+    programPath: string;
+    registrationStatus?: string;
+    prerequisites: string;
+    sourceUrl: string;
+    sourceStatus: number;
+    sourceExcerpt: string;
+  };
   limitations: string[];
   nextAction: string;
   blockedReason?: string;

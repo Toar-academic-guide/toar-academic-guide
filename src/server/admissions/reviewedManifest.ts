@@ -1,6 +1,11 @@
 import 'server-only';
 
 import { z } from 'zod';
+import { bguQuantitativeProgramme } from './bguQuantitativeRoutesPolicy';
+import {
+  BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID,
+  BGU_PSYCHOLOGY_SOURCE_URL,
+} from '@/data/admissions/bguPsychologyVerification';
 
 const digestSchema = z.string().regex(/^sha256:[a-f0-9]{64}$/);
 const identifierSchema = z.string().regex(/^[a-z0-9]+(?:[_-][a-z0-9]+)*$/);
@@ -14,6 +19,109 @@ const numberOrTextSchema = z.union([z.number().finite(), z.string().trim().min(1
 const releaseKindSchema = z.enum(['canonical_bootstrap', 'canonical_change', 'operational_proof']);
 const proofTypeSchema = z.enum(['exact_official', 'controlled_fixture']);
 const proofTargets = new Set(['tau:tau_cs', 'bgu:bgu_cs']);
+const bguRoutePrograms = new Set([
+  'accounting',
+  'bgu_accounting',
+  'psychology',
+  'bgu_psychology',
+  'biology',
+  'bgu_biology',
+  'business',
+  'bgu_business',
+  'economics',
+  'bgu_economics',
+]);
+
+export function requiresCutoffEvidence(institutionId: string, programId: string): boolean {
+  return (
+    institutionId === 'technion' || (institutionId === 'bgu' && bguRoutePrograms.has(programId))
+  );
+}
+
+const cutoffEvidenceSchema = z
+  .object({
+    value: z.number().finite(),
+    metric: z.enum(['sekhem', 'quantitative_sekhem']),
+    route: z.literal('main'),
+    cycle: z.string().regex(/^20\d{2}$/),
+    programPath: safeExcerptSchema,
+    registrationStatus: safeExcerptSchema.optional(),
+    prerequisites: safeExcerptSchema,
+    sourceUrl: z.url().max(2048),
+    sourceStatus: z.number().int().min(200).max(299),
+    sourceExcerpt: safeExcerptSchema,
+  })
+  .strict();
+
+export function cutoffEvidenceMatchesTarget(input: {
+  institutionId: string;
+  programId: string;
+  cycle: string;
+  value: number;
+  sourceUrl: string;
+  evidence: z.infer<typeof cutoffEvidenceSchema>;
+}): boolean {
+  const { institutionId, programId, cycle, value, sourceUrl, evidence } = input;
+  const expectedMetric =
+    institutionId === 'bgu' && !['psychology', 'bgu_psychology'].includes(programId)
+      ? 'quantitative_sekhem'
+      : 'sekhem';
+  const bguProgramme = institutionId === 'bgu' ? bguQuantitativeProgramme(programId) : undefined;
+  const expectedBguPath =
+    bguProgramme?.officialProgramId ??
+    (['psychology', 'bgu_psychology'].includes(programId)
+      ? BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID
+      : undefined);
+  const expectedBguUrl =
+    bguProgramme?.sourceUrl ??
+    (expectedBguPath === BGU_PSYCHOLOGY_OFFICIAL_PROGRAM_ID
+      ? BGU_PSYCHOLOGY_SOURCE_URL
+      : undefined);
+  return (
+    evidence.route === 'main' &&
+    evidence.value === value &&
+    evidence.cycle === cycle &&
+    evidence.metric === expectedMetric &&
+    evidence.sourceUrl === sourceUrl &&
+    evidence.sourceStatus >= 200 &&
+    evidence.sourceStatus < 300 &&
+    !!evidence.prerequisites &&
+    !!evidence.programPath &&
+    evidence.sourceExcerpt.includes(String(value)) &&
+    (institutionId !== 'bgu' ||
+      (evidence.programPath === expectedBguPath &&
+        !!expectedBguUrl &&
+        bguSourceMatchesProgramme(evidence.sourceUrl, expectedBguUrl) &&
+        !!evidence.registrationStatus)) &&
+    (institutionId !== 'technion' ||
+      (evidence.sourceUrl.includes('/sechem-for-admission/') &&
+        evidence.sourceExcerpt.includes(evidence.programPath) &&
+        (programId !== 'technion_civil' || evidence.programPath === 'הנדסה אזרחית')))
+  );
+}
+
+function bguSourceMatchesProgramme(actual: string, expected: string): boolean {
+  const actualUrl = new URL(actual);
+  const expectedUrl = new URL(expected);
+  if (actualUrl.origin !== expectedUrl.origin || actualUrl.pathname !== expectedUrl.pathname)
+    return false;
+  const archivedExtras = new Map([
+    ['p_institution', '0'],
+    ['p_degree_level', '1'],
+  ]);
+  return (
+    [...expectedUrl.searchParams].every(
+      ([key, value]) =>
+        actualUrl.searchParams.getAll(key).length === 1 &&
+        actualUrl.searchParams.get(key) === value,
+    ) &&
+    [...actualUrl.searchParams].every(
+      ([key, value]) =>
+        expectedUrl.searchParams.has(key) ||
+        (archivedExtras.get(key) === value && actualUrl.searchParams.getAll(key).length === 1),
+    )
+  );
+}
 
 const sourceProofSchema = z
   .object({
@@ -22,6 +130,7 @@ const sourceProofSchema = z
     excerpt: safeExcerptSchema,
     url: z.url().max(2048),
     proofType: proofTypeSchema,
+    cutoffEvidence: cutoffEvidenceSchema.optional(),
   })
   .strict();
 
@@ -115,6 +224,33 @@ const manifestSchema = z
             path: ['changes', index, 'sourceProofs'],
             message: 'Canonical releases require exact official evidence only.',
           });
+        }
+        if (
+          change.ruleKind === 'admission_cutoff' &&
+          requiresCutoffEvidence(change.target.institutionId, change.target.programId)
+        ) {
+          for (const [proofIndex, proof] of change.sourceProofs.entries()) {
+            const evidence = proof.cutoffEvidence;
+            if (
+              !evidence ||
+              typeof change.after !== 'number' ||
+              !cutoffEvidenceMatchesTarget({
+                institutionId: change.target.institutionId,
+                programId: change.target.programId,
+                cycle: change.target.cycle,
+                value: change.after,
+                sourceUrl: proof.url,
+                evidence,
+              })
+            ) {
+              context.addIssue({
+                code: 'custom',
+                path: ['changes', index, 'sourceProofs', proofIndex],
+                message:
+                  'Canonical cutoff needs matching main-route, metric, cycle, prerequisites, and source evidence.',
+              });
+            }
+          }
         }
       }
     }

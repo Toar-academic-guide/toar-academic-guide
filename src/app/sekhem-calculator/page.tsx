@@ -34,7 +34,8 @@ const faq = [
   },
   {
     question: 'באילו תוכניות אפשר לבדוק את הסכם?',
-    answer: 'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
+    answer:
+      'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק. רוצים לראות לאן מתקבלים בתוכניות שבחרתם? למחשבון סיכויי הקבלה',
   },
 ];
 
@@ -128,7 +129,18 @@ export default async function Page({
           {faq.map(({ question, answer }) => (
             <div key={question}>
               <h2 className="text-xl font-semibold">{question}</h2>
-              <p className="mt-2 text-(--text-body)">{answer}</p>
+              <p className="mt-2 text-(--text-body)">
+                {question === 'באילו תוכניות אפשר לבדוק את הסכם?' ? (
+                  <>
+                    {answer.slice(0, -'למחשבון סיכויי הקבלה'.length)}
+                    <Link href="/calculator" className="underline underline-offset-4">
+                      למחשבון סיכויי הקבלה
+                    </Link>
+                  </>
+                ) : (
+                  answer
+                )}
+              </p>
             </div>
           ))}
         </section>

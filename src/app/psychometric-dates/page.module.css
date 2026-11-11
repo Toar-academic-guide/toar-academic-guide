@@ -214,6 +214,114 @@
   white-space: nowrap;
 }
 
+.semesters {
+  margin-top: 40px;
+  scroll-margin-top: 24px;
+}
+.semesters h2 {
+  color: #12234a;
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.35;
+  margin-bottom: 16px;
+  scroll-margin-top: 24px;
+}
+.semesterTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 28px;
+  font-size: 14px;
+  line-height: 1.65;
+}
+.semesterTable caption {
+  text-align: right;
+  color: #12234a;
+  font-size: 20px;
+  font-weight: 600;
+  padding-bottom: 16px;
+}
+.semesterTable th,
+.semesterTable td {
+  padding: 12px 8px;
+  border-bottom: 1px solid #d8dfeb;
+  text-align: right;
+  vertical-align: top;
+}
+.semesterTable thead th {
+  font-weight: 400;
+  color: #56627b;
+  background: #eef2ff;
+}
+.semesterTable tbody th {
+  font-weight: 600;
+  min-width: 88px;
+}
+.semesterTable td:last-child {
+  min-width: 112px;
+}
+.semesterTable small {
+  display: block;
+  color: #56627b;
+  font-size: 12px;
+}
+.semesterTable a {
+  min-height: 44px;
+  min-width: 44px;
+  display: inline-flex;
+  align-items: center;
+}
+.semesterTable ul {
+  list-style: disc;
+  padding-inline-start: 20px;
+  margin-top: 8px;
+}
+
+@media (max-width: 760px) {
+  .semesters h2 {
+    font-size: 23px;
+  }
+  .semesterTable {
+    font-size: 15px;
+  }
+  .semesterTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .semesterTable tbody,
+  .semesterTable tr,
+  .semesterTable th,
+  .semesterTable td {
+    display: block;
+  }
+  .semesterTable tr {
+    background: white;
+    border: 1px solid #d8dfeb;
+    border-radius: 12px;
+    padding: 8px 16px 16px;
+    margin-bottom: 12px;
+  }
+  .semesterTable tbody th {
+    font-size: 17px;
+  }
+  .semesterTable td {
+    border: 0;
+    padding: 10px 8px 0;
+  }
+  .semesterTable td::before {
+    content: attr(data-label);
+    display: block;
+    color: #56627b;
+    font-size: 12px;
+    margin-bottom: 2px;
+  }
+  .semesterTable td:empty {
+    display: none;
+  }
+}
+
 @media (max-width: 760px) {
   .main {
     padding: 22px 20px 44px;

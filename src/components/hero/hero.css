@@ -123,6 +123,15 @@
 .hero-v2 .hero-secondary:hover {
   text-decoration-color: currentColor;
 }
+.hero-v2 .hero-explainer {
+  display: inline-flex;
+  align-items: center;
+  min-height: 36px;
+  color: #34456f;
+  font-size: 14px;
+  text-decoration: underline;
+  text-decoration-color: #34456f88;
+}
 .study-journey .hero-v2 a:focus-visible {
   outline: 3px solid #2945cb;
   outline-offset: 5px;

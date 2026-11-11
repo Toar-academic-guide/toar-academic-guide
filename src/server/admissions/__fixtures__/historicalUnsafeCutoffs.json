@@ -1,0 +1,100 @@
+[
+  {
+    "week": "2026-W43",
+    "historicalCommit": "fc4828939e8b4d7a3acddda1bc6ea27b150d0a76",
+    "reportSha256": "14dfaf6a7bafc0bef4ba245509ba5ef7befb11fb6dd9476f78337e61250861d9",
+    "cases": [
+      {
+        "programId": "bgu_psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-bgu_psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "technion_civil",
+        "before": 88,
+        "after": 87,
+        "sourceProofId": "technion-technion_civil-live",
+        "sourceUrl": "https://admissions.technion.ac.il/calculator/"
+      }
+    ]
+  },
+  {
+    "week": "2026-W44",
+    "historicalCommit": "b39dae6abefb1becd1500f8d17119fc0f418a52f",
+    "reportSha256": "3994c66e0a31fe80fd3db0917e43da17ac1f6dd45fa724b7eb2495ae98a9566d",
+    "cases": [
+      {
+        "programId": "bgu_accounting",
+        "before": 620,
+        "after": 660,
+        "sourceProofId": "bgu-bgu_accounting-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6"
+      },
+      {
+        "programId": "bgu_psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-bgu_psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "technion_civil",
+        "before": 88,
+        "after": 87,
+        "sourceProofId": "technion-technion_civil-live",
+        "sourceUrl": "https://admissions.technion.ac.il/calculator/"
+      }
+    ]
+  },
+  {
+    "week": "2026-W45",
+    "historicalCommit": "c2d7c52e45db5004dd393b8e8329f67b001acda0",
+    "reportSha256": "fcbba200f231aaf5f43b7fd0cc430ababfde23f95534e23fe2d93b8ac1b58942",
+    "cases": [
+      {
+        "programId": "bgu_accounting",
+        "before": 620,
+        "after": 660,
+        "sourceProofId": "bgu-bgu_accounting-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_dep1=142&p_pat1=1&p_spe1=6"
+      },
+      {
+        "programId": "bgu_psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-bgu_psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "psychology",
+        "before": 650,
+        "after": 680,
+        "sourceProofId": "bgu-psychology-live",
+        "sourceUrl": "https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&p_dep1=101&p_pat1=2&p_degree_level=1"
+      },
+      {
+        "programId": "technion_civil",
+        "before": 88,
+        "after": 87,
+        "sourceProofId": "technion-technion_civil-live",
+        "sourceUrl": "https://admissions.technion.ac.il/calculator/"
+      }
+    ]
+  }
+]

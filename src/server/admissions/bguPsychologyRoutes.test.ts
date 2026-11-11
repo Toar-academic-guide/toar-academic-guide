@@ -209,3 +209,28 @@ it('blocks ambiguous score responses', async () => {
   });
   expect(proof.status).toBe('failed');
 });
+
+it.each(['psychology', 'bgu_psychology'])(
+  'keeps %s main 650 AND 650 separate from the alternative 680',
+  async (id) => {
+    const proof = await runBguPsychologyProof({
+      program: { ...psychologyProgram, id, pairId: `${id}__bgu` },
+      applicant: {
+        psychometric: 680,
+        extraInputs: { ...common, bguPsychologyRoute: 'psychometric' },
+      },
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response(JSON.stringify({ items: [official.officialRule] }))),
+    });
+    expect(proof.normalizedPayload.acceptanceThreshold).toBe(680);
+    expect(proof.publicationCutoff).toMatchObject({
+      value: 650,
+      route: 'main',
+      metric: 'sekhem',
+      cycle: '2027',
+      registrationStatus: official.officialRule.reg_status.trim(),
+    });
+    expect(proof.publicationCutoff?.prerequisites).toContain('psychometric 650 AND sekhem 650');
+  },
+);
