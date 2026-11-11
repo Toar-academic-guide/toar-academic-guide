@@ -40,16 +40,25 @@ describe('Batch C API dispatch', () => {
         const result = data.results.find(
           (row: AdmissionsEvaluationResult) => row.linkedInstitutionId === config.institutionId,
         );
-        // Ruling 3: Jorje 2026-10-29; no engineering calculator mapping exists, so all inputs reach unsupported.
+        // Haifa requests without subject rows ask for them before deciding whether the path is supported.
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(result).toMatchObject({
-          capability: 'unsupported',
-          kind: 'unsupported',
-          decision: 'unknown',
-          explanation: config.explanationHe,
-          nextAction: config.nextActionHe,
-        });
-        expect(result.requiredInputs).toBeUndefined();
+        if (config.institutionId === 'haifa') {
+          expect(result).toMatchObject({
+            capability: 'needs_input',
+            kind: 'needs_input',
+            decision: 'unknown',
+            requiredInputs: ['haifa_bagrut_average'],
+          });
+        } else {
+          expect(result).toMatchObject({
+            capability: 'unsupported',
+            kind: 'unsupported',
+            decision: 'unknown',
+            explanation: config.explanationHe,
+            nextAction: config.nextActionHe,
+          });
+          expect(result.requiredInputs).toBeUndefined();
+        }
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();

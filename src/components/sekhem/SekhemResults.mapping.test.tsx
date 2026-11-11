@@ -52,6 +52,7 @@ type ProfileCase = {
   expected: Pick<AdmissionsEvaluationResult, 'kind' | 'decision'> & {
     score: number | undefined;
     threshold: number | undefined;
+    requiredInputs?: AdmissionsEvaluationResult['requiredInputs'];
   };
 };
 
@@ -123,12 +124,13 @@ const profiles: ProfileCase[] = [
       },
     },
     responses: [{ data: {} }, haifaCapture.high.response],
-    // Approved test update, Jorje 2026-10-31: a legacy Haifa average without subject rows cannot produce a score or verdict.
+    // A legacy Haifa average without subject rows requests the missing grades.
     expected: {
-      kind: 'tracked_missing_rule',
+      kind: 'needs_input',
       decision: 'unknown',
       score: undefined,
       threshold: undefined,
+      requiredInputs: ['haifa_bagrut_average'],
     },
   },
   {
@@ -308,10 +310,10 @@ describe('real evaluator → batch POST → calculator result rows', () => {
               ? 'הציונים עומדים בתנאי הקבלה'
               : // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
                 belowLabel;
-      // Approved test update, Jorje 2026-10-31: the uncalculated legacy-only Haifa case shows its existing institution-check fallback.
+      // Missing subject rows show the actionable Haifa grade-entry prompt.
       expect(
         within(row!).getByText(
-          profile.institutionId === 'haifa' ? 'חיפה: בדיקה אישית מול המוסד' : expectedVerdict,
+          profile.institutionId === 'haifa' ? result.explanation : expectedVerdict,
         ),
       ).toBeTruthy();
       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);
