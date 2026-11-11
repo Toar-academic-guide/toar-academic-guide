@@ -40,6 +40,28 @@ describe('public institution directory', () => {
     expect(tau).not.toHaveProperty('confidence');
     expect(tau.programmes[0]).not.toHaveProperty('admissionFacts');
   });
+  it('keeps campus regions correct after combining database and directory identities', async () => {
+    const { institutions } = await getPublicInstitutionDirectoryData();
+    const center = institutions.filter((item) => item.areas.includes('center'));
+    for (const id of ['ariel', 'technion', 'bgu', 'haifa', 'telhai']) {
+      expect(
+        institutions.some((item) => item.id === id),
+        id,
+      ).toBe(true);
+      expect(
+        center.some((item) => item.id === id),
+        id,
+      ).toBe(false);
+    }
+    expect(center.some((item) => item.id === 'tau')).toBe(true);
+    expect(institutions.find((item) => item.id === 'ono')?.areas).toEqual([
+      'center',
+      'jerusalem',
+      'haifa',
+      'north',
+    ]);
+  });
+
   it('offers every mapped subject and distinguishes qualification types in ambiguous labels', async () => {
     const data = await getPublicInstitutionDirectoryData();
     for (const institution of data.institutions) {

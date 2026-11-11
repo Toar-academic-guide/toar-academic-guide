@@ -1,6 +1,7 @@
+import { directoryCampusAreas } from './institutionCampusAreas';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { mondayAdmissionEvidenceRecords } from '@/data/admissions/mondayEvidence.generated';
-import { INSTITUTION_BY_ID, type InstitutionRecord } from '@/data/institutions';
+import { INSTITUTION_BY_ID } from '@/data/institutions';
 import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
 import yoramInstitutionLogos from '@/data/yoramInstitutionLogos.generated.json';
 import { institutionWebsite } from '@/lib/institutionLinks';
@@ -262,52 +263,6 @@ function yoramLogoFromSourceUrl(sourceUrl: string | null) {
   return instituteId ? (yoramLogosByInstituteId[instituteId] ?? null) : null;
 }
 
-function addArea(areas: Set<InstitutionAreaFilter>, area: InstitutionAreaFilter) {
-  if (area !== 'all') {
-    areas.add(area);
-  }
-}
-
-function inferAreas(location: string | null, fallbackRegion: InstitutionRecord['region'] | null) {
-  const areas = new Set<InstitutionAreaFilter>();
-  const value = location ?? '';
-
-  if (/אונליין|און\s*ליין|on-?line|online/i.test(value)) {
-    addArea(areas, 'online');
-  }
-  if (/ירושלים/.test(value)) {
-    addArea(areas, 'jerusalem');
-  }
-  if (/תל\s*אביב/.test(value)) {
-    addArea(areas, 'tel_aviv');
-  }
-  if (/חיפה/.test(value)) {
-    addArea(areas, 'haifa');
-  }
-
-  if (
-    /גליל|גולן|חיפה|כרמיאל|צפת|כנרת|קרית\s*שמונה|קרית טבעון|עכו|עמק יזרעאל|נצרת|טבריה/.test(value)
-  ) {
-    addArea(areas, 'north');
-  }
-  if (/באר\s*שבע|אילת|שדה\s*בוקר|נגב|שדרות|אשדוד|אשקלון|באר טוביה|קבוצת יבנה/.test(value)) {
-    addArea(areas, 'south');
-  }
-  if (
-    /תל\s*אביב|רמת\s*גן|הרצליה|ראשון\s*לציון|פתח\s*תקווה|נתניה|חולון|אריאל|רחובות|כפר\s*סבא|בני\s*ברק|רעננה|קרית\s*אונו|עמק\s*חפר|חדרה|אור\s*עקיבא/.test(
-      value,
-    )
-  ) {
-    addArea(areas, 'center');
-  }
-
-  if (areas.size === 0 && fallbackRegion && fallbackRegion !== 'any') {
-    addArea(areas, fallbackRegion);
-  }
-
-  return [...areas];
-}
-
 function inferCategories(args: {
   id: string;
   name: string;
@@ -401,7 +356,7 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         sourceUrl,
         domain,
         logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
-        areas: inferAreas(location, institution?.region ?? null),
+        areas: directoryCampusAreas(id, location, institution?.region ?? null),
         categories: inferCategories({
           id,
           name,
