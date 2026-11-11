@@ -1,4 +1,5 @@
 import 'server-only';
+import { directoryCampusAreas } from '@/data/institutionCampusAreas';
 import type { CatalogueInstitution } from '@/types/catalogue';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import {
@@ -111,7 +112,7 @@ export async function getPublicInstitutionDirectoryData() {
           id === 'itc' ? itcOperatorUrl : (institutionLink(institution.programUrl, id) ?? null),
         domain: institution.domain ?? null,
         logoUrl: institution.logoUrl ?? null,
-        areas: institution.region === 'any' ? [] : [institution.region],
+        areas: directoryCampusAreas(id, null, institution.region),
         categories: [],
         credentials: [],
         fieldSources: { ...fieldSources[id] },

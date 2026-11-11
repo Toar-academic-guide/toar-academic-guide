@@ -4,9 +4,54 @@ import {
   getInstitutionDirectoryItems,
   getPublicInstitutionSourceUrl,
 } from './institutionDirectory';
+import { directoryCampusAreas } from './institutionCampusAreas';
 import yoramInstitutionLogos from './yoramInstitutionLogos.generated.json';
 
 describe('institution directory data', () => {
+  it('excludes out-of-region campuses from Center while preserving all institutions', () => {
+    const items = getInstitutionDirectoryItems();
+    for (const id of ['ariel', 'technion', 'bgu', 'haifa', 'telhai']) {
+      const institution = items.find((item) => item.id === id);
+      expect(institution, id).toBeDefined();
+      expect(institution!.areas, id).not.toContain('center');
+    }
+    expect(items.find((item) => item.id === 'tau')?.areas).toContain('center');
+    expect(items.find((item) => item.id === 'huji')?.areas).toEqual(['jerusalem', 'center']);
+    expect(items.find((item) => item.id === 'ono')?.areas).toEqual([
+      'center',
+      'jerusalem',
+      'haifa',
+      'north',
+    ]);
+    expect(items.find((item) => item.itemId === '12341098184')?.areas).toEqual([]);
+  });
+
+  it('uses campus cities rather than street names and applies the same overrides without an address', () => {
+    expect(directoryCampusAreas('prep_ariel', 'רמת הגולן 90, אריאל', 'center')).toEqual([]);
+    expect(directoryCampusAreas('school', 'רחוב ירושלים 5, תל אביב', null)).toEqual([
+      'tel_aviv',
+      'center',
+    ]);
+    expect(directoryCampusAreas('school', 'רחוב אילת 4, חיפה', null)).toEqual(['haifa', 'north']);
+    expect(directoryCampusAreas('ariel', null, 'center')).toEqual([]);
+    expect(directoryCampusAreas('campuses', 'ירושלים, תל אביב', null)).toEqual([
+      'jerusalem',
+      'tel_aviv',
+      'center',
+    ]);
+    expect(directoryCampusAreas('ono', null, 'center')).toEqual([
+      'center',
+      'jerusalem',
+      'haifa',
+      'north',
+    ]);
+    expect(directoryCampusAreas('nativ', 'תל אביב וירושלים', null)).toEqual([
+      'jerusalem',
+      'tel_aviv',
+      'center',
+    ]);
+  });
+
   it('keeps the verified doula school in Israel and separates the two Tiltan schools', () => {
     const institutions = getInstitutionDirectoryItems();
     expect(institutions.find((item) => item.id === 'mon_12341122982')).toMatchObject({
