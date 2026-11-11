@@ -43,6 +43,21 @@ import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
   it.each([
+    ['beit_berl_ai_education', 'בינה מלאכותית וחינוך (B.A.)', '(B.A.)'],
+    ['david_yellin_non_formal_education', 'חינוך בלתי פורמלי במסלול העל־יסודי (B.Ed.)', '(B.Ed.)'],
+  ])(
+    'preserves the qualification punctuation in %s headings and related links',
+    async (programId, name, qualification) => {
+      const { container } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const heading = screen.getByRole('heading', { level: 1, name });
+      const relatedLink = container.querySelector('section[aria-labelledby="related-title"] > a');
+      expect(heading.querySelector('bdi[dir="ltr"]')?.textContent).toBe(qualification);
+      expect(relatedLink?.querySelector('bdi[dir="ltr"]')?.textContent).toBe(qualification);
+      expect(heading.closest('[dir="rtl"]')?.className).toContain('text-right');
+    },
+  );
+
+  it.each([
     ['technion_ee', 91.5],
     ['technion_me', 87],
   ] as const)(
