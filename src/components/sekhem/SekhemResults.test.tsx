@@ -916,3 +916,19 @@ it('does not mix filtered programmes into a surviving institution group', () => 
   expect(screen.queryByText('תוכנית מסוננת')).toBeNull();
   expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
 });
+
+it('shows a returned institutional Bagrut average separately from the admission score', () => {
+  renderReports([report('tau', { calculatedBagrutAverage: 108.39, score: 679 })]);
+  const row = screen.getByTestId('result-psychology-tau');
+  expect(within(row).getByText(/ממוצע הבגרות לפי המוסד/)).toBeTruthy();
+  const average = within(row).getByText('108.39');
+  expect(average.getAttribute('dir')).toBe('ltr');
+  expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('679');
+});
+
+it('never presents the generic applicant average as a calculated institutional average', () => {
+  const source = report('tau');
+  source.input.bagrut = 110;
+  renderReports([source]);
+  expect(screen.queryByText(/ממוצע הבגרות לפי המוסד/)).toBeNull();
+});

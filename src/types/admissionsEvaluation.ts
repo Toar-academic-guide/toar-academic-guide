@@ -301,6 +301,8 @@ export interface AdmissionsEvaluationResult {
   sourceLabel: string;
   explanation: string;
   nextAction: string;
+  /** Institutional average calculated from subject rows, never an entered value or proxy. */
+  calculatedBagrutAverage?: number;
   score?: number;
   scoreLabel?: string;
   threshold?: number | null;
