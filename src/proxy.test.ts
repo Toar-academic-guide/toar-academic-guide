@@ -85,6 +85,29 @@ describe('production Vercel alias', () => {
 });
 
 describe('social short-link redirects', () => {
+  it.each([
+    ['fbg-calc', '/app/calculator?utm_source=facebook&utm_medium=group&utm_campaign=higher_ed'],
+    ['fbp-inst', '/institutions?utm_source=facebook&utm_medium=page&utm_campaign=higher_ed'],
+    ['x-sekhem', '/sekhem-calculator?utm_source=x&utm_medium=reply&utm_campaign=higher_ed'],
+    [
+      'tt-twodomain',
+      '/psychometric-two-domain?utm_source=tiktok&utm_medium=social&utm_campaign=higher_ed',
+    ],
+    [
+      'ig-nopsy',
+      '/without-psychometric?utm_source=instagram&utm_medium=social&utm_campaign=higher_ed',
+    ],
+    ['fbg-home', '/?utm_source=facebook&utm_medium=group&utm_campaign=higher_ed'],
+  ])('redirects reviewed %s with fixed UTM despite incoming query', async (slug, destination) => {
+    const response = await proxy(
+      new NextRequest(
+        `https://evil.example/go/${slug}?url=https://evil.example&email=secret@example.com&utm_source=override`,
+      ),
+    );
+    expect(response.status).toBe(307);
+    expect(response.headers.get('location')).toBe(`https://findmyway.co.il${destination}`);
+  });
+
   it('redirects the configured retake slug temporarily without caching or using request host/query', async () => {
     mocks.getUser.mockClear();
     const response = await proxy(
@@ -105,6 +128,7 @@ describe('social short-link redirects', () => {
     '/go',
     '/go/',
     '/go/missing',
+    '/go/fbg-calc-psychstate',
     '/go/retake-x/extra',
     '/go/%252e%252e/retake-x',
     '/go/%2f%2fevil.example',
