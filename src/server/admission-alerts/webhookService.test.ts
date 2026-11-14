@@ -36,6 +36,17 @@ describe('verified, privacy-safe admission webhook', () => {
       idempotencyKey: `admission-alert:${'a'.repeat(64)}`,
     });
   });
+  it('parses signed JSON after void verification and safely ignores signed non-JSON', () => {
+    const signedHeaders = headers();
+    expect(new Webhook(secret).verify(payload, Object.fromEntries(signedHeaders))).toBeUndefined();
+    expect(verifyAdmissionAlertWebhook(payload, signedHeaders, secret)).toMatchObject({
+      type: 'email.delivered',
+      providerMessageId: 'provider-1',
+    });
+
+    const raw = 'not JSON: private@example.org';
+    expect(verifyAdmissionAlertWebhook(raw, headers(raw), secret)).toBeNull();
+  });
   it('rejects a forged signature, mutated bytes and stale replay signatures', () => {
     expect(() => verifyAdmissionAlertWebhook(payload, new Headers(), secret)).toThrow();
     expect(() => verifyAdmissionAlertWebhook(`${payload} `, headers(), secret)).toThrow();
