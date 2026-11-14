@@ -145,6 +145,12 @@ describe('enquiry link integrity', () => {
     }
   });
 
+  it('routes an old Ono psychology enquiry to the behavioural-sciences degree', async () => {
+    const markup = await form('/enquiry?program=psychology&institution=ono');
+    expect(markup).toContain('מדעי ההתנהגות (B.A.)');
+    expect(markup).not.toContain('פסיכולוגיה · המכללה האקדמית אונו');
+  });
+
   it('keeps old medicine enquiry pairs pointed at their schools without changing design Tiltan', async () => {
     expect(
       (await getEnquiryTarget('givat_washington_medicine', 'givat_washington'))?.institution.id,

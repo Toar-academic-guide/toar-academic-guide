@@ -6,7 +6,12 @@ import { canonicalProgramId } from '@/lib/seo/programAliases';
 
 /** Use the same provider registry as programme pages, including legacy URLs. */
 export async function getEnquiryTarget(programId: string, institutionId: string) {
-  const canonicalId = canonicalProgramId(programId);
+  // Old subject links to Ono must now resolve to its actual B.A. in
+  // behavioural sciences, rather than presenting it as a psychology degree.
+  const canonicalId =
+    programId === 'psychology' && institutionId === 'ono'
+      ? 'ono_psychology'
+      : canonicalProgramId(programId);
   // Preserve enquiry links emitted before these schools received distinct IDs.
   // Scope the legacy institution lookup to its programme: `tiltan` is also a
   // separate design college and must not become a global institution alias.
