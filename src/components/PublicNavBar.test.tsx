@@ -93,7 +93,13 @@ describe('shared current navigation', () => {
       ],
     ],
     ['איפה ללמוד?', [['מוסדות לימוד', '/institutions']]],
-    ['הכנה וקבלה', [['עזרה בהכנה לפסיכומטרי', '/enquiry?program=psychometric-preparation']]],
+    [
+      'הכנה וקבלה',
+      [
+        ['עזרה בהכנה לפסיכומטרי', '/enquiry?program=psychometric-preparation'],
+        ['התאמות לפסיכומטרי', '/psychometric-accommodations'],
+      ],
+    ],
   ] as const)('discloses the ordered %s links with matching ARIA state', (label, links) => {
     render(<PublicNavBar />);
     const trigger = screen.getByRole('button', { name: label });
