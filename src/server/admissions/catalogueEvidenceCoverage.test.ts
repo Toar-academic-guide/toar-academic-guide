@@ -200,9 +200,16 @@ describe('catalogue admissions evidence coverage', () => {
     );
   });
 
-  it('drops stale Ono psychology and social-work mappings when the current official curriculum no longer exposes exact undergraduate pages for them', () => {
+  it('keeps Ono behavioural sciences distinct from a psychology BA and leaves social work unmapped', () => {
     expect(staticPrograms.some((program) => program.id === 'ono_socialwork')).toBe(false);
-    expect(staticPrograms.some((program) => program.id === 'ono_psychology')).toBe(false);
+    const ono = staticPrograms.find((program) => program.id === 'ono_psychology');
+    expect(ono?.name).toBe('מדעי ההתנהגות (B.A.)');
+    expect(ono?.institutionDetails?.[0].specificAdmissionNotes).toContain(
+      'התואר הוא B.A. במדעי ההתנהגות, לא תואר ראשון בפסיכולוגיה.',
+    );
+    expect(ono?.institutionDetails?.[0].programUrl).toMatch(
+      /^https:\/\/www\.ono\.ac\.il\/curriculum\//,
+    );
   });
 
   it('keeps BGU formula pairs unavailable until the qualified weekly check runs', () => {
