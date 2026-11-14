@@ -61,6 +61,15 @@
   color: #382772;
 }
 
+.main .source a {
+  display: inline-block;
+  min-height: 44px;
+  min-width: 44px;
+  max-width: 100%;
+  padding-block: 9px;
+  vertical-align: middle;
+}
+
 .main a:focus-visible {
   outline: 3px solid #6554b8;
   outline-offset: 4px;

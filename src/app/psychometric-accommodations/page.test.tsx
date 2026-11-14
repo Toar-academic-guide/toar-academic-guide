@@ -20,6 +20,9 @@ it('renders the approved answer and official-source policy in the page HTML', ()
   expect(main.textContent).toContain(
     'אישור לבחינה הפסיכומטרית אינו עובר אוטומטית לאמירנט ולא למוסד הלימודים.',
   );
+  expect(within(main).getByRole('heading', { level: 1 }).closest('header')?.textContent).toContain(
+    'שאלון למאבחן, למעט באבחון מת״ל עדכני',
+  );
   expect(main.textContent).toContain('אבחון שנערך אחרי גיל 16 ולא עברו 5 שנים מיום עריכתו.');
   expect(main.textContent).toContain('לצד האבחון מצרפים שאלון למאבחן ומסמכי רקע מגיל צעיר.');
   expect(main.textContent).toContain('לאבחון מת״ל עדכני אין צורך להוסיף שאלון למאבחן');
@@ -43,6 +46,7 @@ it('keeps FAQPage identical to the four visible questions and answers', () => {
   )['@graph'][0];
   expect(faq['@type']).toBe('FAQPage');
   expect(faq.mainEntity).toHaveLength(4);
+  expect(faq.mainEntity[0].acceptedAnswer.text).toContain('לאבחון מת״ל עדכני אין צורך בשאלון');
   const visible = Array.from(container.querySelectorAll('section[aria-labelledby="faq"] div'));
   expect(faq.mainEntity).toEqual(
     visible.map((item) => ({
