@@ -51,7 +51,12 @@ export const loadPublicCatalogue = cache(async () => {
   const currentProgramIds = new Set(programs.data.map((program) => program.id));
   const currentInstitutionIds = new Set(institutions.data.map((institution) => institution.id));
   const allPrograms = [
-    ...programs.data,
+    ...programs.data.map((program) =>
+      // The existing DB row has the old psychology label. Its official Ono
+      // curriculum awards a B.A. in behavioural sciences; fix public copy
+      // without writing to the active catalogue or changing evaluation.
+      program.id === 'ono_psychology' ? (STATIC_PROGRAM_BY_ID.get(program.id) ?? program) : program,
+    ),
     ...PUBLIC_PROGRAMS.filter((legacy) => !currentProgramIds.has(legacy.id)),
   ];
   const allInstitutions = [

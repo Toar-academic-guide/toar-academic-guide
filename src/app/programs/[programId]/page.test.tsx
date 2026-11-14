@@ -173,6 +173,37 @@ describe('ProgramPage', () => {
     expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
     expect(screen.getByText(/לא תואר ראשון בפסיכולוגיה/)).toBeTruthy();
   });
+
+  it('corrects the stale Ono psychology label in DB-mode presentation without claiming Ono awards a psychology BA', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().map((program) =>
+        program.id === 'ono_psychology'
+          ? { ...program, name: 'פסיכולוגיה', admissionRequirements: ['תנאים ישנים'] }
+          : program,
+      ),
+      meta: { catalogueSource: 'database' },
+    });
+    const ono = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(ono.container.textContent).not.toContain('תנאים ישנים');
+    ono.unmount();
+    const hub = render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
+    const graph = JSON.parse(
+      hub.container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const psychologyProgram = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(psychologyProgram.provider).toHaveLength(8);
+    expect(
+      psychologyProgram.provider.some((provider: { name: string }) =>
+        provider.name.includes('אונו'),
+      ),
+    ).toBe(false);
+  });
+
   it('renders Danon’s culinary programme link and the existing beginner note', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'danon_culinary' }) }));
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
