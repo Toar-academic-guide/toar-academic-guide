@@ -99,6 +99,35 @@ test.describe('durable URL model', () => {
     );
   });
 
+  for (const width of [1280, 390]) {
+    test(`CS threshold links retain Hebrew-number spaces at ${width}px`, async ({ page }) => {
+      const pageOrigin = new URL(process.env.BASE_URL || 'http://localhost:3000').origin;
+      await page.route('**/*', (route) => {
+        const request = route.request();
+        if (request.method() !== 'GET' || new URL(request.url()).origin !== pageOrigin) {
+          return route.abort();
+        }
+        return route.continue();
+      });
+      await page.setViewportSize({ width, height: 900 });
+      await page.goto('/programs/cs');
+      for (const [index, value] of [
+        [1, 'סף קבלה 705 · סף דחייה 695'],
+        [2, '700 ומעלה; טווח המתנה 680–699'],
+        [5, 'ממוצע בגרות 104 ומעלה'],
+      ] as const) {
+        const link = page
+          .locator('#cs-thresholds tbody tr')
+          .nth(index)
+          .locator('td')
+          .nth(1)
+          .locator('a');
+        expect(await link.evaluate((element) => (element as HTMLElement).innerText)).toBe(value);
+        expect((await link.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+      }
+    });
+  }
+
   test('internal data health remains fail-closed for unauthenticated visitors', async ({
     page,
   }) => {

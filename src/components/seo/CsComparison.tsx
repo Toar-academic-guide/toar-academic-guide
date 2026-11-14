@@ -94,7 +94,9 @@ export function CsComparison() {
                     rel="noopener noreferrer"
                     className="inline-flex min-h-11 items-center text-slate-700 underline decoration-[#b8b0d7] underline-offset-2 hover:text-[#6554b8]"
                   >
-                    <BidiText text={row.value} />
+                    <span>
+                      <BidiText text={row.value} />
+                    </span>
                   </a>
                 ) : (
                   row.value

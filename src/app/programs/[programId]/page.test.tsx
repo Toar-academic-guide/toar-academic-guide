@@ -242,8 +242,13 @@ describe('ProgramPage', () => {
         source.sourceUrl,
       );
       expect(row.textContent).toContain(source.checkedDate);
-      if (source.numeric)
-        expect(within(row).getByRole('link', { name: source.value })).toBeTruthy();
+      if (source.numeric) {
+        const valueLink = within(row).getByRole('link', { name: source.value });
+        // Group mixed Hebrew and isolated numbers in one flex item so spaces render.
+        expect(valueLink.firstElementChild?.tagName).toBe('SPAN');
+        expect(valueLink.firstElementChild?.textContent).toBe(source.value);
+        expect(valueLink.querySelector('bdi[dir="ltr"]')).toBeTruthy();
+      }
     }
     expect(container.querySelector('#cs-thresholds')).toBeTruthy();
     const cards = screen.getByRole('heading', { name: 'מוסדות לימוד' }).nextElementSibling!;
