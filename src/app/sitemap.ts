@@ -68,7 +68,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',
-    latestModified(STATIC_PAGE_MODIFIED_AT, ...catalogue.programs.map(programModifiedAt)),
+    latestModified(
+      STATIC_PAGE_MODIFIED_AT,
+      ...[...dates.entries()]
+        .filter(([path]) => path.startsWith('/programs/'))
+        .map(([, date]) => date),
+    ),
   );
   return [
     '/',

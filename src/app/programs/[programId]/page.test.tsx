@@ -102,7 +102,7 @@ describe('ProgramPage', () => {
     expect(programme.provider).toHaveLength(12);
     expect(await generateMetadata({ params: Promise.resolve({ programId: 'law' }) })).toMatchObject(
       {
-        title: { absolute: 'לימודי משפטים: תנאי קבלה וסיכויי קבלה | MyWay' },
+        title: 'לימודי משפטים: תנאי קבלה וסיכויי קבלה',
         description:
           'משפטים ב-12 מוסדות לימוד: תנאי קבלה, שיעורי מעבר בבחינת הלשכה במועד קיץ 2026, ובדיקת סיכויי קבלה ב-MyWay. התנאים המחייבים באתר המוסד.',
         alternates: { canonical: '/programs/law' },

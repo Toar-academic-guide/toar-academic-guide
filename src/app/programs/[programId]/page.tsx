@@ -26,7 +26,6 @@ import JsonLd from '@/components/seo/JsonLd';
 import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { absoluteUrl } from '@/lib/site';
-import type { PublicProgramPageData } from '@/lib/publicCataloguePages';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,12 +37,12 @@ export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
   const metadata = await buildProgramMetadata(programId);
   if (programId === 'law') {
-    const title = 'לימודי משפטים: תנאי קבלה וסיכויי קבלה | MyWay';
+    const title = 'לימודי משפטים: תנאי קבלה וסיכויי קבלה';
     const description =
       'משפטים ב-12 מוסדות לימוד: תנאי קבלה, שיעורי מעבר בבחינת הלשכה במועד קיץ 2026, ובדיקת סיכויי קבלה ב-MyWay. התנאים המחייבים באתר המוסד.';
     return {
       ...metadata,
-      title: { absolute: title },
+      title,
       description,
       openGraph: { ...metadata.openGraph, title, description },
     };
@@ -58,23 +57,6 @@ export async function generateMetadata({ params }: ProgramPageProps) {
     description,
     openGraph: { ...metadata.openGraph, title, description },
   };
-}
-
-async function withAllLawInstitutions(data: PublicProgramPageData): Promise<PublicProgramPageData> {
-  const additions = await Promise.all(
-    lawBarOutcomes.additionalHubProgramIds.map((id) => getPublicProgramPageData(id)),
-  );
-  const institutions = [...data.institutions];
-  const institutionProgramPaths = { ...data.institutionProgramPaths };
-  for (const [index, addition] of additions.entries()) {
-    const institution = addition?.institutions[0];
-    if (!institution)
-      throw new Error(`Missing law programme ${lawBarOutcomes.additionalHubProgramIds[index]}`);
-    if (!institutions.some((entry) => entry.id === institution.id)) institutions.push(institution);
-    institutionProgramPaths[institution.id] =
-      `/programs/${lawBarOutcomes.additionalHubProgramIds[index]}`;
-  }
-  return { ...data, institutions, institutionProgramPaths };
 }
 
 function lawOutcomeSchema() {
@@ -104,11 +86,7 @@ function lawOutcomeSchema() {
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
-  const originalData = await getPublicProgramPageData(programId);
-  const data =
-    programId === 'law' && originalData?.isGeneral
-      ? await withAllLawInstitutions(originalData)
-      : originalData;
+  const data = await getPublicProgramPageData(programId);
 
   if (!data) {
     const subject = await getPublicSubjectHub(programId);

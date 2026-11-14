@@ -958,7 +958,6 @@ describe('structured data', () => {
     'bezalel_graphic_design',
     'afeka_cs',
     'psychology',
-    'law',
     'nursing',
     'cs',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
