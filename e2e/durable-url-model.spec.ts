@@ -86,11 +86,10 @@ test.describe('durable URL model', () => {
   test('public catalogue pages render without login', async ({ page }) => {
     await page.goto('/programs/cs');
     await expect(page.getByRole('heading', { level: 1, name: 'מדעי המחשב' })).toBeVisible();
-    // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
-    await expect(page.getByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toHaveAttribute(
-      'href',
-      '/app/calculator?program=cs',
-    );
+    // The CS hub names the calculator's supported routes without changing the target.
+    await expect(
+      page.getByRole('link', { name: 'בדקו מסלולים נתמכים', exact: true }),
+    ).toHaveAttribute('href', '/app/calculator?program=cs');
 
     await page.goto('/institutions/tau');
     await expect(page.getByRole('heading', { name: 'אוניברסיטת תל אביב' })).toBeVisible();
