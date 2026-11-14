@@ -10,6 +10,7 @@ import {
 } from '@/lib/seo/catalogueModified';
 import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { absoluteUrl } from '@/lib/site';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 export const dynamic = 'force-dynamic';
 
@@ -58,6 +59,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/open-days', '2026-11-05');
   dates.set('/transfer', '2026-11-08');
   dates.set('/without-psychometric', '2026-11-10');
+  for (const id of [
+    'law',
+    ...lawBarOutcomes.rows.flatMap((row) => ('programId' in row ? [row.programId] : [])),
+  ]) {
+    dates.set(`/programs/${id}`, lawBarOutcomes.pageModifiedDate);
+  }
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',

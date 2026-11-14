@@ -38,10 +38,102 @@ import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThreshol
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it('renders all first-time law results, 12 law links, and matching hub schema', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'law' }) }),
+    );
+    const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' }).closest('section')!;
+    const institutionLinks = within(institutions)
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href')?.startsWith('/programs/'));
+    expect(institutionLinks.map((link) => link.getAttribute('href'))).toEqual([
+      '/programs/tau_law',
+      '/programs/huji_law',
+      '/programs/haifa_law',
+      '/programs/biu_law',
+      '/programs/reichman_law',
+      '/programs/colmgmt_law',
+      '/programs/ono_law',
+      '/programs/sapir_law',
+      '/programs/peres_law',
+      '/programs/ramat_gan_law',
+      '/programs/netanya_law',
+      '/programs/shaare_mishpat_law',
+    ]);
+    const section = container.querySelector('#bar-pass-rates')!;
+    expect(section).toBeTruthy();
+    expect(
+      institutions.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const table = within(section as HTMLElement).getByRole('table');
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(16);
+    expect(table.querySelector('caption')?.textContent).toBe(lawBarOutcomes.caption);
+    expect(table.querySelector('caption a')?.getAttribute('href')).toBe(lawBarOutcomes.sourceUrl);
+    expect(
+      within(table).getByRole('rowheader', { name: 'אוניברסיטת רייכמן' }).parentElement
+        ?.textContent,
+    ).toContain('37');
+    for (const name of [
+      'עולים מחו"ל',
+      'ישראלי שלמד בחו"ל',
+      'המכללה האקדמית צפת',
+      'המרכז האקדמי כרמל',
+    ]) {
+      expect(within(table).getByRole('rowheader', { name }).querySelector('a')).toBeNull();
+    }
+    expect(section.textContent).toContain(lawBarOutcomes.total);
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const faq = graph.find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    const dataset = graph.find((node: { '@type': string }) => node['@type'] === 'Dataset');
+    const programme = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(faq.mainEntity[0].name).toBe(lawBarOutcomes.question);
+    expect(faq.mainEntity[0].acceptedAnswer.text).toBe(lawBarOutcomes.answer);
+    expect(dataset.description).toBe(table.querySelector('caption')?.textContent);
+    expect(dataset.datePublished).toBe('2026-07-16');
+    expect(programme.provider).toHaveLength(12);
+    expect(await generateMetadata({ params: Promise.resolve({ programId: 'law' }) })).toMatchObject(
+      {
+        title: { absolute: 'לימודי משפטים: תנאי קבלה וסיכויי קבלה | MyWay' },
+        description:
+          'משפטים ב-12 מוסדות לימוד: תנאי קבלה, שיעורי מעבר בבחינת הלשכה במועד קיץ 2026, ובדיקת סיכויי קבלה ב-MyWay. התנאים המחייבים באתר המוסד.',
+        alternates: { canonical: '/programs/law' },
+      },
+    );
+  });
+
+  it.each(lawBarOutcomes.rows.filter((row) => 'programId' in row))(
+    'renders the dated law outcome after admissions on $programId',
+    async (row) => {
+      if (!('programId' in row)) return;
+      const { container } = render(
+        await ProgramPage({ params: Promise.resolve({ programId: row.programId }) }),
+      );
+      const admission = screen.getByRole('heading', { name: 'תנאי קבלה' }).closest('section')!;
+      const line = screen.getByText(/בחינת ההסמכה בכתב של לשכת עורכי הדין/).closest('section')!;
+      expect(
+        admission.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(line.textContent).toContain(
+        `${row.passed} עוברים מתוך ${row.candidates} נבחנים, שיעור מעבר ${row.rate}%`,
+      );
+      expect(within(line).getByRole('link', { name: 'עמוד משפטים' }).getAttribute('href')).toBe(
+        '/programs/law#bar-pass-rates',
+      );
+      const graph = JSON.parse(
+        container.querySelector('script[type="application/ld+json"]')!.textContent!,
+      )['@graph'];
+      expect(graph.some((node: { '@type': string }) => node['@type'] === 'FAQPage')).toBe(false);
+    },
+  );
   it.each([
     ['beit_berl_ai_education', 'בינה מלאכותית וחינוך (B.A.)', '(B.A.)'],
     ['david_yellin_non_formal_education', 'חינוך בלתי פורמלי במסלול העל־יסודי (B.Ed.)', '(B.Ed.)'],
