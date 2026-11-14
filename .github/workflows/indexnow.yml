@@ -1,0 +1,46 @@
+name: IndexNow
+
+on:
+  deployment_status:
+  schedule:
+    - cron: '17 4 * * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: indexnow
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    if: >
+      github.event_name != 'deployment_status' ||
+      (github.event.deployment_status.state == 'success' &&
+       github.event.deployment_status.environment == 'Production – toar-academic-guide' &&
+       startsWith(github.event.deployment_status.target_url, 'https://toar-academic-guide-') &&
+       endsWith(github.event.deployment_status.target_url, '-amitm1630-6681s-projects.vercel.app'))
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          sparse-checkout: scripts/indexnow.ts
+          sparse-checkout-cone-mode: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+      - uses: actions/cache/restore@v4
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
+          restore-keys: indexnow-
+      - run: node scripts/indexnow.ts
+      - if: success() && hashFiles('.indexnow/sitemap.json') != ''
+        uses: actions/cache/save@v4
+        with:
+          path: .indexnow
+          key: indexnow-${{ github.run_id }}
