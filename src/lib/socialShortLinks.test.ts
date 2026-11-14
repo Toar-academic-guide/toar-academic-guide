@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 
 import {
   getSocialShortLinkDestination,
+  getReviewedFacebookGroupDestination,
   isValidSocialShortLinkSlug,
   isValidSocialShortLinkTarget,
   SOCIAL_SHORT_LINKS,
@@ -12,6 +13,51 @@ describe('social short-link mappings', () => {
     expect(getSocialShortLinkDestination('retake-x')).toBe(
       'https://findmyway.co.il/app/calculator?utm_source=x&utm_medium=reply&utm_campaign=higher_ed&utm_content=before_retake_20261107',
     );
+  });
+
+  it('maps all 30 reviewed channel and destination slugs to fixed canonical URLs', () => {
+    const paths = {
+      calc: '/app/calculator',
+      inst: '/institutions',
+      sekhem: '/sekhem-calculator',
+      twodomain: '/psychometric-two-domain',
+      nopsy: '/without-psychometric',
+      home: '/',
+    };
+    const channels = {
+      fbg: ['facebook', 'group'],
+      fbp: ['facebook', 'page'],
+      x: ['x', 'reply'],
+      tt: ['tiktok', 'social'],
+      ig: ['instagram', 'social'],
+    };
+    expect(Object.keys(SOCIAL_SHORT_LINKS)).toHaveLength(31);
+    for (const [prefix, [source, medium]] of Object.entries(channels)) {
+      for (const [suffix, path] of Object.entries(paths)) {
+        const url = new URL(getSocialShortLinkDestination(`${prefix}-${suffix}`)!);
+        expect(url.origin + url.pathname).toBe(`https://findmyway.co.il${path}`);
+        expect(Object.fromEntries(url.searchParams)).toEqual({
+          utm_source: source,
+          utm_medium: medium,
+          utm_campaign: 'higher_ed',
+        });
+      }
+    }
+  });
+
+  it('resolves a reviewed Facebook group suffix only through its explicit allow-list', () => {
+    const reviewed = new Set(['reviewed-group']);
+    expect(getSocialShortLinkDestination('fbg-calc-reviewed-group')).toBeNull();
+    expect(getReviewedFacebookGroupDestination('fbg-calc-reviewed-group', reviewed)).toBe(
+      'https://findmyway.co.il/app/calculator?utm_source=facebook&utm_medium=group&utm_campaign=reviewed-group',
+    );
+    for (const slug of [
+      'fbg-calc-unreviewed',
+      'fbp-calc-reviewed-group',
+      'fbg-calc-reviewed-group-extra',
+    ]) {
+      expect(getReviewedFacebookGroupDestination(slug, reviewed)).toBeNull();
+    }
   });
 
   it('accepts readable lowercase slugs and rejects path-shaped keys', () => {
