@@ -459,7 +459,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             >
               השוו את ספי הקבלה למדעי המחשב בכל המוסדות
             </Link>
-          )}
+          )}{' '}
           {isCsHub && <CsFaq />}
           <RelatedPrograms {...related} />
         </section>
