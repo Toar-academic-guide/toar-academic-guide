@@ -51,7 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
   // Authored with the calculator page; never replace this with the build date.
-  dates.set('/sekhem-calculator', '2026-11-05');
+  dates.set('/sekhem-calculator', '2026-11-14');
   dates.set('/calculator', '2026-11-10');
   dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   dates.set('/psychometric-two-domain', '2026-11-06');

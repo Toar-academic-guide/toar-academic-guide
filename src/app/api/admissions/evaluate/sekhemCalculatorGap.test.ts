@@ -232,3 +232,9 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
     expect(fetcher).not.toHaveBeenCalled();
   });
 });
+
+it('returns Haifa subject-derived average independently from generic scores for the calculator UI', async () => {
+  const { result } = await gapEvaluate(program('haifa_cs'), 'haifa');
+  expect(result.calculatedBagrutAverage).toBe(105.12);
+  expect(result.calculatedBagrutAverage).not.toBe(88.1);
+});

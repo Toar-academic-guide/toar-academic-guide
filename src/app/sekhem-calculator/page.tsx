@@ -10,13 +10,51 @@ import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
 import { sekhemCalculatorLd } from '@/lib/seo/jsonLd';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
+import { isMedicineAcademicPair } from '@/lib/medicineAcademicInputs';
 
-const title = 'מחשבון סכם לפי מוסד ותוכנית | MyWay';
+const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const description =
-  'מחשבון סכם לפי ציוני הבגרות והפסיכומטרי שלכם. בחרו תוכנית לימודים ובדקו איך הציון שלכם משתווה לסף הקבלה שלה.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.';
 const canonical = absoluteUrl('/sekhem-calculator');
 
+const averageSources = [
+  {
+    id: 'tau',
+    name: 'אוניברסיטת תל אביב',
+    url: 'https://ims.tau.ac.il/Md/calc/Bagrut.aspx',
+    label: 'מחשבון הבגרות הרשמי',
+  },
+  {
+    id: 'bgu',
+    name: 'אוניברסיטת בן־גוריון בנגב',
+    url: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
+    label: 'מחשבון הבגרות והסכם',
+  },
+  {
+    id: 'haifa',
+    name: 'אוניברסיטת חיפה',
+    url: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
+    label: 'מחשבון הבגרות והסכם',
+  },
+  {
+    id: 'huji',
+    name: 'האוניברסיטה העברית',
+    url: 'https://info.huji.ac.il/reception-components/Bagrut',
+    label: 'הנחיות הבגרות באתר העברית',
+  },
+];
+
 const faq = [
+  {
+    question: 'איך שיפור בפסיכומטרי משפיע על הסכם?',
+    answer:
+      'הסכם מחושב לפי הנוסחה של המוסד שבחרתם. אחרי שמזינים את הציון החדש, רואים את הסכם העדכני לאותה תוכנית. שיפור בציון אינו מבטיח קבלה.',
+  },
+  {
+    question: 'איך ארבע יחידות במתמטיקה נכנסות לחישוב?',
+    answer:
+      'כל מוסד מפרסם איך הוא משקלל יחידות ובונוסים. מזינים את מספר היחידות ואת הציון כפי שהם בתעודה; אנחנו מחשבים לפי הכלל של המוסד בתוכנית שנבחרה, בלי מספר בונוס כללי שמומצא כאן.',
+  },
   {
     question: 'מהו ציון סכם?',
     answer:
@@ -61,6 +99,13 @@ export default async function Page({
   searchParams: Promise<{ program?: string; from?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
+  const coveredAverageSources = averageSources.filter((source) =>
+    offerings.some(
+      (offering) =>
+        offering.institutionId === source.id &&
+        (source.id !== 'huji' || isMedicineAcademicPair(offering.programId, 'huji')),
+    ),
+  );
   const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
   const initialProgramId = offerings.some((row) => row.programId === requestedId)
     ? requestedId
@@ -93,7 +138,9 @@ export default async function Page({
           ]}
         />
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">מחשבון סכם</h1>
+          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+            מחשבון סכם וממוצע בגרות לפי מוסד
+          </h1>
           <p className="mt-4 text-(--text-body)">
             חשבו את הסכם שלכם ובדקו איך הוא משתווה לסף הקבלה לתוכנית שבחרתם.
           </p>
@@ -122,6 +169,77 @@ export default async function Page({
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
+        <section className="mt-10 space-y-4 leading-7" aria-labelledby="bagrut-average-title">
+          <h2 id="bagrut-average-title" className="text-xl font-semibold">
+            ממוצע הבגרות שלכם לפי כל מוסד
+          </h2>
+          <p className="text-(--text-body)">
+            ממוצע הבגרות מחושב לפי משקל היחידות, וכל מוסד מוסיף בונוסים לפי הכללים שלו. לכן אותן
+            בגרויות יכולות לתת ממוצע שונה ממוסד למוסד. כאן מוצג הממוצע לפי המוסד של התוכנית שבחרתם,
+            ורק במוסדות שהמחשבון באמת מכסה. בטבלה מופיע קישור למחשבון הרשמי או להנחיות הבגרות של כל
+            מוסד כזה. אין כאן הבטחת קבלה, ואין נוסחה אחת לכולם.
+          </p>
+          <table
+            className="w-full table-fixed text-right text-sm leading-6"
+            aria-labelledby="bagrut-average-title"
+          >
+            <thead>
+              <tr className="border-b border-(--border)">
+                <th scope="col" className="w-[35%] py-3 pe-2">
+                  מוסד
+                </th>
+                <th scope="col" className="w-[40%] py-3 pe-2">
+                  קישור רשמי
+                </th>
+                <th scope="col" className="py-3">
+                  נבדק בתאריך
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {coveredAverageSources.map((source) => (
+                <tr key={source.id} className="border-b border-(--border)">
+                  <th scope="row" className="py-3 pe-2 align-top font-medium">
+                    {source.name}
+                    {source.id === 'huji' && (
+                      <span className="block font-normal">במסלול הרפואה הנתמך</span>
+                    )}
+                  </th>
+                  <td className="py-3 pe-2 align-top">
+                    <a
+                      href={source.url}
+                      className="inline-flex min-h-11 items-center underline underline-offset-4"
+                    >
+                      {source.label}
+                    </a>
+                  </td>
+                  <td className="py-3 align-top">
+                    <time dateTime="2026-11-14">
+                      <bdi dir="ltr">14.11.2026</bdi>
+                    </time>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <section className="mt-10 space-y-4 leading-7" aria-labelledby="sekhem-improvement-title">
+          <h2 id="sekhem-improvement-title" className="text-xl font-semibold">
+            איך שיפור בפסיכומטרי וארבע יחידות במתמטיקה נכנסים לסכם?
+          </h2>
+          <p className="text-(--text-body)">
+            הסכם מחושב לפי הנוסחה של כל מוסד, מציון הבגרות המשוקלל ומהפסיכומטרי. שיפור בפסיכומטרי
+            וציון בארבע יחידות מתמטיקה נכנסים לחישוב רק לפי כללי אותו מוסד, כולל הבונוס שהוא מפרסם.
+            מזינים את הציונים כפי שהם בתעודה ואת הציון החדש בפסיכומטרי, ורואים איך הסכם משתנה
+            בתוכנית שבחרתם. אין כאן הבטחת קבלה.
+          </p>
+          <Link
+            href="/without-psychometric"
+            className="inline-flex min-h-11 items-center underline underline-offset-4"
+          >
+            מסלולי קבלה ללא פסיכומטרי
+          </Link>
+        </section>
         <section className="mt-10 space-y-7 leading-7" aria-labelledby="sekhem-faq-title">
           <h2 id="sekhem-faq-title" className="sr-only">
             שאלות על מחשבון הסכם

@@ -99,16 +99,18 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
 
 it('renders an indexable public calculator with absolute title and canonical metadata', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
-  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('מחשבון סכם');
+  expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+    'מחשבון סכם וממוצע בגרות לפי מוסד',
+  );
   expect(screen.getByRole('link', { name: 'מועדי הפסיכומטרי' }).getAttribute('href')).toBe(
     '/psychometric-dates',
   );
-  expect(metadata.title).toEqual({ absolute: 'מחשבון סכם לפי מוסד ותוכנית | MyWay' });
+  expect(metadata.title).toEqual({ absolute: 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay' });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/sekhem-calculator');
   expect(metadata.description).toBe(
     // Approved test update, Jorje 2026-10-29: meta no-overclaim
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-    'מחשבון סכם לפי ציוני הבגרות והפסיכומטרי שלכם. בחרו תוכנית לימודים ובדקו איך הציון שלכם משתווה לסף הקבלה שלה.',
+    'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.',
   );
 });
 it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
@@ -121,7 +123,7 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
     (row) => row.url === 'https://findmyway.co.il/sekhem-calculator',
   );
   expect(entries).toHaveLength(1);
-  expect(entries[0].lastModified).toBe('2026-11-05');
+  expect(entries[0].lastModified).toBe('2026-11-14');
   expect(
     readFileSync('public/llms.txt', 'utf8')
       .split('\n')
@@ -248,6 +250,8 @@ it('sends only active supported programmes in a full nine-subject run without a 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
 // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 30)
 const answerHeadings = [
+  'איך שיפור בפסיכומטרי משפיע על הסכם?',
+  'איך ארבע יחידות במתמטיקה נכנסות לחישוב?',
   'מהו ציון סכם?',
   'למה אותם ציונים נותנים סכם שונה במוסדות שונים?',
   'עברתם את סף הקבלה. מה עוד כדאי לבדוק?',
@@ -334,7 +338,7 @@ it.each([undefined, 'not_a_public_programme'])(
     render(await Page({ searchParams: Promise.resolve({ program }) }));
     const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
     for (const phrase of ['הערכה', 'מבטיח', 'הבטחה']) {
-      expect(section.textContent).not.toContain(phrase);
+      expect(section.textContent?.replace('אינו מבטיח קבלה', '')).not.toContain(phrase);
     }
   },
 );
@@ -348,7 +352,8 @@ it('keeps the answer section free of numbers and unsupported admission promises'
   for (const phrase of ['לפי הנוסחה של כל מוסד', 'כל המוסדות', 'תתקבל']) {
     expect(text).not.toContain(phrase);
   }
-  expect(text).not.toContain('מבטיח');
+  expect(text).toContain('שיפור בציון אינו מבטיח קבלה.');
+  expect(text.replace('אינו מבטיח קבלה', '')).not.toContain('מבטיח');
   expect(text).not.toContain('הערכה בלבד');
 });
 
@@ -366,13 +371,13 @@ it('renders the FAQ below the unavailable block for an unknown programme', async
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
-it('renders the four visible answer headings in order', async () => {
+it('renders the six visible answer headings in order', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
   const headings = within(section)
     .getAllByRole('heading', { level: 2 })
     .filter((heading) => !heading.classList.contains('sr-only'));
-  expect(headings).toHaveLength(4);
+  expect(headings).toHaveLength(6);
   expect(headings.map((heading) => heading.textContent)).toEqual(answerHeadings);
   expect(section.textContent).not.toContain('האם התוצאה מבטיחה קבלה?');
 });
@@ -425,7 +430,7 @@ it('describes the calculator application with canonical site relationships and n
   expect(application).toEqual({
     '@type': 'WebApplication',
     '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
-    name: 'מחשבון סכם',
+    name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
     url: 'https://findmyway.co.il/sekhem-calculator',
     applicationCategory: 'EducationalApplication',
     operatingSystem: 'Web',
@@ -433,7 +438,12 @@ it('describes the calculator application with canonical site relationships and n
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-    featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: [
+      'חישוב ממוצע בגרות במוסדות הנתמכים',
+      'חישוב סכם לפי תוכנית',
+      'השוואה לסף הקבלה',
+      'קישור לתנאי הקבלה של התוכנית',
+    ],
     publisher: { '@id': 'https://findmyway.co.il/#organization' },
     isPartOf: { '@id': 'https://findmyway.co.il/#website' },
   });
@@ -472,4 +482,54 @@ it('renders the approved subtitle and explanation in the existing FAQ slot', asy
     'סכם הוא ציון שמשקלל את נתוני הקבלה שלכם, לרוב את ציוני הבגרות והפסיכומטרי. משווים אותו לסף שקבע החוג למסלול שבחרתם.',
   );
   expect(screen.queryByText('כל מוסד מחשב אותו אחרת, ואנחנו עושים בשבילכם את החשבון.')).toBeNull();
+});
+
+it('shows only active computed-average institutions and matches the visible new FAQ to schema', async () => {
+  const { container } = render(await Page({ searchParams: Promise.resolve({}) }));
+  const table = screen.getByRole('table', { name: 'ממוצע הבגרות שלכם לפי כל מוסד' });
+  expect(within(table).getAllByRole('row')).toHaveLength(5);
+  expect(within(table).queryByText('הטכניון')).toBeNull();
+  expect(within(table).queryByText('אוניברסיטת רייכמן')).toBeNull();
+  expect(within(table).getAllByText('14.11.2026')).toHaveLength(4);
+  expect(
+    within(table).getByRole('link', { name: 'הנחיות הבגרות באתר העברית' }).getAttribute('href'),
+  ).toBe('https://info.huji.ac.il/reception-components/Bagrut');
+  expect(screen.getByRole('link', { name: 'מסלולי קבלה ללא פסיכומטרי' }).getAttribute('href')).toBe(
+    '/without-psychometric',
+  );
+  const objects = [...container.querySelectorAll('script[type="application/ld+json"]')].flatMap(
+    (s) => {
+      const json = JSON.parse(s.textContent!);
+      return json['@graph'] ?? (Array.isArray(json) ? json : [json]);
+    },
+  );
+  const faq = objects.find((x) => x['@type'] === 'FAQPage');
+  for (const name of [
+    'איך שיפור בפסיכומטרי משפיע על הסכם?',
+    'איך ארבע יחידות במתמטיקה נכנסות לחישוב?',
+  ]) {
+    const question = screen.getByRole('heading', { name });
+    expect(faq.mainEntity.find((x: { name: string }) => x.name === name).acceptedAnswer.text).toBe(
+      question.parentElement?.querySelector('p')?.textContent,
+    );
+  }
+});
+
+it('removes a computed-average institution from the table when no active offering remains', async () => {
+  const spy = vi.spyOn(calculatorSupport, 'loadSekhemCalculatorOfferings').mockResolvedValue([
+    {
+      programId: 'haifa_cs',
+      institutionId: 'haifa',
+      institutionName: 'אוניברסיטת חיפה',
+      programName: 'מדעי המחשב',
+    },
+  ]);
+  try {
+    render(await Page({ searchParams: Promise.resolve({}) }));
+    const table = screen.getByRole('table', { name: 'ממוצע הבגרות שלכם לפי כל מוסד' });
+    expect(within(table).getAllByRole('row')).toHaveLength(2);
+    expect(within(table).getByText('אוניברסיטת חיפה')).toBeTruthy();
+  } finally {
+    spy.mockRestore();
+  }
 });

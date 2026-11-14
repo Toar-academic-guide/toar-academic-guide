@@ -284,6 +284,9 @@ export async function evaluateAdmissionsForProgram(args: {
     }
     return {
       ...displayedResult,
+      ...(normalized.calculatedBagrutAverages[institutionId] !== undefined && {
+        calculatedBagrutAverage: normalized.calculatedBagrutAverages[institutionId],
+      }),
       snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),
     };
   });
