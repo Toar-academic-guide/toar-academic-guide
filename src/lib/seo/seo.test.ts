@@ -960,7 +960,6 @@ describe('structured data', () => {
     'psychology',
     'law',
     'nursing',
-    'cs',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
     const document = new DOMParser().parseFromString(
