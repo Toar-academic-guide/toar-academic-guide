@@ -33,7 +33,7 @@ export function LawBarOutcomesTable() {
                 href={lawBarOutcomes.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="break-all text-[#6554b8] underline underline-offset-2"
+                className="inline-block min-h-11 max-w-full break-all py-2 align-middle text-[#6554b8] underline underline-offset-2"
               >
                 <bdi dir="ltr">{lawBarOutcomes.sourceUrl}</bdi>
               </a>
@@ -71,7 +71,7 @@ export function LawBarOutcomesTable() {
                     {'programId' in row ? (
                       <Link
                         href={`/programs/${row.programId}`}
-                        className="text-[#6554b8] underline underline-offset-2"
+                        className="flex min-h-11 items-center text-[#6554b8] underline underline-offset-2"
                       >
                         {row.school}
                       </Link>
@@ -110,7 +110,10 @@ export function LawBarOutcomeLine({ row }: { row: LawBarOutcomeRow }) {
         <bdi dir="ltr">{row.candidates}</bdi> נבחנים, שיעור מעבר <bdi dir="ltr">{row.rate}%</bdi>.
         מקור: לשכת עורכי הדין, נבדק בתאריך <bdi dir="ltr">{lawBarOutcomes.checkedDate}</bdi>. הטבלה
         המלאה לכל המוסדות ב
-        <Link href={hubPath} className="text-[#6554b8] underline underline-offset-2">
+        <Link
+          href={hubPath}
+          className="inline-flex min-h-11 items-center align-middle text-[#6554b8] underline underline-offset-2"
+        >
           עמוד משפטים
         </Link>
         .
