@@ -33,7 +33,10 @@ const NAV_GROUPS = [
   {
     id: 'preparation',
     label: 'הכנה וקבלה',
-    links: [{ label: 'עזרה בהכנה לפסיכומטרי', href: '/enquiry?program=psychometric-preparation' }],
+    links: [
+      { label: 'עזרה בהכנה לפסיכומטרי', href: '/enquiry?program=psychometric-preparation' },
+      { label: 'התאמות לפסיכומטרי', href: '/psychometric-accommodations' },
+    ],
   },
 ];
 

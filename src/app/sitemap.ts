@@ -55,6 +55,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/calculator', '2026-11-10');
   dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   dates.set('/psychometric-two-domain', '2026-11-06');
+  dates.set('/psychometric-accommodations', '2026-11-14');
   dates.set('/open-days', '2026-11-05');
   dates.set('/transfer', '2026-11-08');
   dates.set('/without-psychometric', '2026-11-10');
@@ -70,6 +71,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/calculator',
     '/psychometric-dates',
     '/psychometric-two-domain',
+    '/psychometric-accommodations',
     '/open-days',
     '/transfer',
     '/without-psychometric',
