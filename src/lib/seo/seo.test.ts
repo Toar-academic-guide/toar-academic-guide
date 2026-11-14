@@ -96,7 +96,7 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-08');
+    expect(llms).toContain('Last updated: 2026-11-14');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -228,6 +228,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/calculator`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
+      `${SITE_URL}/amirnet`,
       `${SITE_URL}/open-days`,
       `${SITE_URL}/transfer`,
       `${SITE_URL}/without-psychometric`,
@@ -260,7 +261,12 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(445);
+    expect(urls).toHaveLength(446);
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
+      url: `${SITE_URL}/amirnet`,
+      lastModified: '2026-11-14',
+      changeFrequency: 'weekly',
+    });
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -1106,7 +1112,7 @@ describe('llms.txt calculator link', () => {
 
   it('ends with the approved update date inside the Business model section', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-08';
+    const updated = 'Last updated: 2026-11-14';
     expect(llms).toContain(updated);
     expect(
       llms
