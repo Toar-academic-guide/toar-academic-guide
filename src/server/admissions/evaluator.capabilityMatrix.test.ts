@@ -523,10 +523,13 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
 
 it('preserves the pre-college capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
-  // This frozen matrix predates the 25 new college routes. Their no-formula
-  // behavior is checked route by route below.
-  const newCollegeIds = new Set(collegeProgrammes.map((program) => program.id));
-  expect(newCollegeIds.size).toBe(25);
+  // This frozen matrix predates the 25 new college routes and Ono's
+  // behavioural-sciences route. Their no-formula behavior is checked separately.
+  const newCollegeIds = new Set([
+    ...collegeProgrammes.map((program) => program.id),
+    'ono_psychology',
+  ]);
+  expect(newCollegeIds.size).toBe(26);
   const staticPrograms = getStaticCataloguePrograms().filter(
     (program) => !newCollegeIds.has(program.id),
   );

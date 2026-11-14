@@ -44,9 +44,9 @@ describe('seed mirrors the live official requirements', () => {
     ).toEqual(live.admissionAlternativePaths);
   });
 
-  it('leaves the unmanaged Ono psychology and social-work rows to the database', () => {
+  it('includes Ono behavioural sciences as requirements-only while leaving social work unmanaged', () => {
     const ids = seed.admissionRequirements.map((entry) => entry.id);
-    expect(ids).not.toContain('ono_psychology:ono');
+    expect(ids).toContain('ono_psychology:ono');
     expect(ids).not.toContain('ono_socialwork:ono');
   });
 });
