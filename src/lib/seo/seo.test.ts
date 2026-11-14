@@ -96,7 +96,7 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-08');
+    expect(llms).toContain('Last updated: 2026-11-14');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -641,9 +641,12 @@ describe('structured data', () => {
       alternateName: SITE_ALT_NAMES,
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/brand/myway-wordmark-1200.png`,
+      description:
+        'MyWay הוא מוצר עצמאי לבחירת לימודים בישראל. הוא אינו מערכת של אוניברסיטה או מכללה ואינו מסונף לאוניברסיטת תל אביב או למוסד לימודים אחר.',
       areaServed: 'IL',
       knowsLanguage: 'he',
     });
+    expect(organizationLd()).not.toHaveProperty('sameAs');
     expect(websiteLd()).toMatchObject({
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
@@ -1106,7 +1109,7 @@ describe('llms.txt calculator link', () => {
 
   it('ends with the approved update date inside the Business model section', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-08';
+    const updated = 'Last updated: 2026-11-14';
     expect(llms).toContain(updated);
     expect(
       llms
