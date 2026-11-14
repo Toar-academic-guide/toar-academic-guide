@@ -205,6 +205,11 @@
     overflow: visible;
   }
 
+  .table caption {
+    display: block;
+    width: 100%;
+  }
+
   .table,
   .table tbody,
   .table tr,
