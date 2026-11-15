@@ -17,6 +17,41 @@ vi.mock('@/lib/supabase/env', () => ({
 
 import { proxy } from './proxy';
 
+describe('IndexNow key file', () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  it('serves only the configured valid key as exact plain text before auth', async () => {
+    vi.stubEnv('INDEXNOW_KEY', 'abcd1234-ef');
+    mocks.getUser.mockClear();
+    const response = await proxy(new NextRequest('https://findmyway.co.il/abcd1234-ef.txt'));
+    expect(response.status).toBe(200);
+    expect(response.headers.get('content-type')).toBe('text/plain; charset=utf-8');
+    expect(response.headers.get('cache-control')).toBe('public, max-age=3600');
+    expect(await response.text()).toBe('abcd1234-ef');
+    expect(mocks.getUser).not.toHaveBeenCalled();
+  });
+
+  it('does not serve a different path, an absent key or an invalid key', async () => {
+    vi.stubEnv('INDEXNOW_KEY', 'abcd1234-ef');
+    const wrong = await proxy(new NextRequest('https://findmyway.co.il/wrong.txt'));
+    expect(wrong.headers.get('x-middleware-next')).toBe('1');
+    expect(await wrong.text()).toBe('');
+
+    const post = await proxy(
+      new NextRequest('https://findmyway.co.il/abcd1234-ef.txt', { method: 'POST' }),
+    );
+    expect(post.headers.get('x-middleware-next')).toBe('1');
+
+    vi.stubEnv('INDEXNOW_KEY', undefined);
+    const absent = await proxy(new NextRequest('https://findmyway.co.il/abcd1234-ef.txt'));
+    expect(absent.headers.get('x-middleware-next')).toBe('1');
+
+    vi.stubEnv('INDEXNOW_KEY', 'short');
+    const invalid = await proxy(new NextRequest('https://findmyway.co.il/short.txt'));
+    expect(invalid.headers.get('x-middleware-next')).toBe('1');
+  });
+});
+
 const RETAKE_DESTINATION =
   'https://findmyway.co.il/app/calculator?utm_source=x&utm_medium=reply&utm_campaign=higher_ed&utm_content=before_retake_20261107';
 

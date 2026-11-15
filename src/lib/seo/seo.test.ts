@@ -249,6 +249,12 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
+    for (const id of Object.keys(PROGRAM_RETIREMENT_REDIRECTS))
+      expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(id)}`);
+    for (const program of programs) {
+      if (canonicalProgramId(program.id) !== program.id)
+        expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(program.id)}`);
+    }
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
     // PM rule (#271): general subjects with no programme links stay out of the sitemap.
     // Education now links to Achva's source-backed B.Ed. route.
