@@ -38,6 +38,7 @@ const livePrograms = [
     id: id === 'social_work' ? 'ono_socialwork' : 'ono_psychology',
     institutionId: 'ono',
     linkedInstitutionIds: ['ono'],
+    isListed: id !== 'social_work',
     thresholds: {},
     institutionDetails: [],
   })),
@@ -138,10 +139,23 @@ describe('enquiry link integrity', () => {
     expect(await form(href)).toContain('<form');
   });
 
-  it('renders a form for every one of the 113 QA failures', async () => {
+  it('keeps the historical QA links reachable except the three delisted offers', async () => {
     expect(new Set(failedLinks).size).toBe(113);
+    const delisted = new Set([
+      '/enquiry?program=nursing&institution=telhai',
+      '/enquiry?program=social_work&institution=mta',
+      '/enquiry?program=social_work&institution=ono',
+    ]);
+    for (const href of delisted) expect(failedLinks).toContain(href);
     for (const href of failedLinks) {
-      await expect(form(href), href).resolves.toContain('<form');
+      if (delisted.has(href)) {
+        await expect(form(href)).rejects.toThrow('NEXT_HTTP_ERROR_FALLBACK;404');
+        continue;
+      }
+      const markup = await form(href).catch((error: unknown) => {
+        throw new Error(`${href}: ${String(error)}`);
+      });
+      expect(markup, href).toContain('<form');
     }
   });
 
@@ -168,6 +182,7 @@ describe('enquiry link integrity', () => {
       const catalogue = await loadPublicCatalogue();
       const hrefs = new Set<string>();
       for (const program of catalogue.programs) {
+        if (program.isListed === false) continue;
         const markup = renderToStaticMarkup(
           await ProgramPage({ params: Promise.resolve({ programId: program.id }) }),
         );

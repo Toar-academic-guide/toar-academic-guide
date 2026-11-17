@@ -51,11 +51,11 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '69e9019a8c7590756785eacb95a3bd58b54887942707e36db5f093c472ec79b8',
+    structuredDataSha256: '57e055e25f7dafb3531471addd640614cbcd706bb8199ff23990aef6f71dfb36',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
-      'סיעוד ב-8 מוסדות לימוד: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'סיעוד ב-7 מוסדות לימוד: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'tau',
@@ -78,10 +78,6 @@ const unchangedPrograms = [
         name: 'אוניברסיטת אריאל',
       },
       {
-        id: 'telhai',
-        name: 'מכללת תל-חי',
-      },
-      {
         id: 'mta',
         name: 'המכללה האקדמית תל-אביב-יפו',
       },
@@ -94,7 +90,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tlvyaffo_cs',
-    structuredDataSha256: '3128a1f6c9654b14cb70ea9b739840dab5e00ee00d5301d565f45fa6261f97e8',
+    structuredDataSha256: 'edcf2a353612fced9f1e8675f1dfeb965c7000e8d6b55d4812a70663d52d1d56',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה',
     description:
