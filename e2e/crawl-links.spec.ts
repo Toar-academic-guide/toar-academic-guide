@@ -59,7 +59,11 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
   test.setTimeout(300_000);
   const html = await (await request.get('/programs')).text();
   const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
-  const index = anchors(main).map((href) => decodeURIComponent(href.replace(/^\/programs\//, '')));
+  const links = anchors(main);
+  expect(links).toContain('/calculator');
+  const index = links
+    .filter((href) => href.startsWith('/programs/'))
+    .map((href) => decodeURIComponent(href.slice('/programs/'.length)));
   expect(index.length).toBeGreaterThan(0);
   expect(new Set(index).size).toBe(index.length);
   for (const id of ['cs', 'engineering', 'occupational_therapy']) expect(index).toContain(id);
