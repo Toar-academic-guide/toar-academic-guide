@@ -34,7 +34,9 @@ describe('psychology comparison sources', () => {
     expect(row('haifa_psychology').note).toContain('2–3 קורסים בציון 75');
     expect(row('ono_psychology').institution).toContain('מדעי ההתנהגות (B.A.)');
     expect(row('ariel_psychology').checkedDate).toBe('21.10.2026');
-    expect(row('ariel_psychology').main[0].text).toContain('ממוצע 75 וציון 70 לפחות');
-    expect(row('ariel_psychology').note).toContain('לא אומת');
+    expect(row('ariel_psychology').main[0].text).toBe('תנאי הקבלה הנוכחיים לא אומתו.');
+    expect(row('ariel_psychology').bagrut).toEqual([]);
+    expect(row('ariel_psychology').scale).toBe('לא אומת');
+    expect(row('ariel_psychology').note).toContain('לא אומתו מאז 21.10.2026');
   });
 });

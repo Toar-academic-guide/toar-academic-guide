@@ -11,15 +11,17 @@ const primaryLinkClass =
   'inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2';
 
 function BidiText({ text }: { text: string }) {
-  return text.split(/(\d+(?:[.,]\d+)*(?:[–-]\d+(?:[.,]\d+)*)?)/g).map((part, index) =>
-    /^\d/.test(part) ? (
-      <bdi key={index} dir="ltr">
-        {part}
-      </bdi>
-    ) : (
-      part
-    ),
-  );
+  return text
+    .split(/(\(B\.A\.\)|B\.A\.|\d+(?:[.,]\d+)*(?:[–-]\d+(?:[.,]\d+)*)?)/g)
+    .map((part, index) =>
+      part === '(B.A.)' || part === 'B.A.' || /^\d/.test(part) ? (
+        <bdi key={index} dir="ltr">
+          {part}
+        </bdi>
+      ) : (
+        part
+      ),
+    );
 }
 
 function SourceText({ text, url }: PsychologySourceText) {
@@ -91,7 +93,9 @@ export function PsychologyComparison() {
                   className="block pb-3 text-base font-semibold sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top sm:text-sm"
                 >
                   <Link href={`/programs/${row.programId}`} className={primaryLinkClass}>
-                    {row.institution}
+                    <span>
+                      <BidiText text={row.institution} />
+                    </span>
                   </Link>
                 </th>
                 <td className="block border-t border-slate-100 py-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
@@ -131,7 +135,9 @@ export function PsychologyComparison() {
                           <SourceText {...item} />
                         </p>
                       ))
-                    : '—'}
+                    : row.programId === 'ariel_psychology'
+                      ? 'לא אומת'
+                      : '—'}
                 </td>
                 <td className="block border-t border-slate-100 py-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 sm:hidden">

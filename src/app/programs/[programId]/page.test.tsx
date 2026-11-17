@@ -118,6 +118,15 @@ describe('ProgramPage', () => {
     expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
     expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
     expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
+    const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
+    expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
+    expect(ariel.querySelectorAll('td')[1].textContent).toContain('לא אומת');
+    expect(ariel.textContent).not.toContain('97');
+    expect(
+      within(table)
+        .getByRole('link', { name: 'הקריה האקדמית אונו — מדעי ההתנהגות (B.A.)' })
+        .querySelector('bdi[dir="ltr"]')?.textContent,
+    ).toBe('(B.A.)');
     expect(screen.queryByRole('heading', { name: 'מוסדות לימוד' })).toBeNull();
     const graph = JSON.parse(
       container.querySelector('script[type="application/ld+json"]')!.textContent!,
@@ -157,6 +166,9 @@ describe('ProgramPage', () => {
       .closest('section')!;
     expect(ofek.textContent).toContain('לומדים על תנאי');
     expect(ofek.textContent).toContain('2–3 קורסים בציון 75 לפחות');
+    expect(ofek.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2–3');
+    const related = screen.getByRole('heading', { name: 'מסלולים נוספים' }).closest('section')!;
+    expect(within(related).queryByRole('link', { name: /אונו/ })).toBeNull();
     expect(
       within(ofek)
         .getByRole('link', { name: 'תנאי מסלול אופק באתר אוניברסיטת חיפה' })

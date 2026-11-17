@@ -430,7 +430,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           )}{' '}
           {program.id === 'haifa_psychology' && <HaifaPsychologyOfek />}
-          <RelatedPrograms {...related} />
+          <RelatedPrograms
+            {...related}
+            programs={
+              program.id === 'haifa_psychology'
+                ? related.programs.filter((candidate) => candidate.id !== 'ono_psychology')
+                : related.programs
+            }
+          />
         </section>
       </main>
     </WayPageShell>
