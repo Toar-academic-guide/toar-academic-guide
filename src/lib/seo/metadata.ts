@@ -16,6 +16,7 @@ import {
   canLinkToSekhemCalculator,
   loadSekhemCalculatorOfferings,
 } from '@/lib/sekhemCalculatorSupport';
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/issue370Corrections';
 
 const TITLE_BUDGET = 62 - ` | ${SITE_NAME}`.length;
 const SEARCH_PHRASES = 'תנאי קבלה וסיכויי קבלה';
@@ -276,9 +277,16 @@ export async function buildProgramMetadata(id: string): Promise<Metadata> {
   const offerings = possibleCalculatorInstitutions.length
     ? await loadSekhemCalculatorOfferings()
     : [];
-  const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
-    canLinkToSekhemCalculator(data.program, institution.id, offerings),
-  );
+  const hasUnreviewedHubRoute =
+    data.isGeneral &&
+    data.institutions.some((institution) =>
+      ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${data.program.id}__${institution.id}`),
+    );
+  const hasCalculator =
+    !hasUnreviewedHubRoute &&
+    possibleCalculatorInstitutions.some((institution) =>
+      canLinkToSekhemCalculator(data.program, institution.id, offerings),
+    );
   return pageMetadata(
     titleForCalculatorSupport(title, hasCalculator),
     descriptionFor(

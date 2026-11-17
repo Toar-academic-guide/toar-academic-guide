@@ -7,6 +7,7 @@ import { allPrograms } from '@/data/degrees';
 import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
@@ -29,6 +30,49 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each(['tau_ee', 'ee', 'tau_datascience', 'datascience'])(
+    'keeps the reviewed TAU %s page and hub copy after loading stale database fields',
+    (id) => {
+      const seed = buildCatalogueSeed();
+      const stale = ['מתמטיקה: 5 יחידות בציון 80 לפחות, או 4 יחידות בציון 90 לפחות'];
+      const result = serializeProgramRow({
+        program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: seed.admissionRequirements
+          .filter((row) => row.programId === id)
+          .map((row) =>
+            row.institutionId === 'tau'
+              ? { ...row, admissionRequirements: stale, specificAdmissionNotes: stale }
+              : row,
+          ) as AdmissionRequirementRow[],
+        thresholds: seed.admissionThresholds.filter(
+          (row) => row.programId === id,
+        ) as AdmissionThresholdRow[],
+        sourceUrls: [],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      const detail = result.institutionDetails!.find(
+        (entry) => entry.institutionName === 'אוניברסיטת תל אביב',
+      )!;
+      const guidance = catalogueAdmissionRequirements(
+        detail.specificAdmissionNotes,
+        result.admissionRequirements,
+        id,
+      ).join(' ');
+      if (id === 'tau_ee' || id === 'ee') {
+        expect(guidance).toContain('5 יחידות בציון 90');
+        expect(guidance).toContain('4 יחידות בציון 95');
+        expect(guidance).not.toContain('5 יחידות בציון 80');
+        expect(guidance).not.toContain('4 יחידות בציון 90');
+      } else {
+        expect(guidance).toContain('5 יחידות בציון 80');
+        expect(guidance).not.toContain('4 יחידות בציון 85');
+      }
+    },
+  );
+
   it.each([
     'tau_me',
     'tau_ee',
@@ -74,13 +118,13 @@ describe('catalogue serializers', () => {
       institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
     });
     const detail = result.institutionDetails![0];
-    expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
     expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
     const issue370Row = ISSUE_370_CORRECTIONS.find((row) => row.programId === id);
     if (issue370Row) {
       expect(detail.specificAdmissionNotes).not.toContain(staleNotes[1]);
       expect(detail.specificAdmissionNotes).toEqual(expect.arrayContaining(issue370Row.notes));
     } else {
+      expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
       expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
     }
     expect(detail.admissionFacts).toContainEqual(

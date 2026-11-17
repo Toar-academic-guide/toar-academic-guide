@@ -129,7 +129,7 @@ describe('published-threshold calculator links', () => {
         'technion',
       ),
     ).toBe('score');
-    for (const id of ['tau_ee', 'tau_datascience']) {
+    for (const id of ['tau_ee', 'ee', 'tau_datascience', 'datascience']) {
       const html = renderToStaticMarkup(
         await ProgramPage({ params: Promise.resolve({ programId: id }) }),
       );
@@ -162,6 +162,8 @@ describe('published-threshold calculator links', () => {
         id: program.id,
         text: renderedRequirementText(section),
         supported:
+          // The mixed hubs also show TAU routes that the active evaluator cannot check.
+          !['ee', 'datascience'].includes(program.id) &&
           offerings.some((row) => row.programId === program.id) &&
           Object.entries(
             await getPublicProgramRequirementSources((await getPublicProgramPageData(program.id))!),
@@ -183,6 +185,9 @@ describe('published-threshold calculator links', () => {
       .sort();
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
+    expect(
+      rows.filter((row) => ['ee', 'datascience'].includes(row.id)).every((row) => !row.linked),
+    ).toBe(true);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
     // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
     expect(linked).not.toContain('cs');

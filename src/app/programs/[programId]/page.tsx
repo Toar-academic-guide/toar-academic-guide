@@ -23,6 +23,7 @@ import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/issue370Corrections';
 
 export const dynamic = 'force-dynamic';
 
@@ -96,6 +97,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
+  const hasUnreviewedHubRoute =
+    isGeneral &&
+    institutions.some((institution) =>
+      ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${program.id}__${institution.id}`),
+    );
 
   return (
     <WayPageShell>
@@ -119,7 +125,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               <ProgramName name={program.name} />
             </h1>{' '}
             <div className="mt-6 flex flex-wrap gap-3">
-              {hasCalculator && (
+              {hasCalculator && !hasUnreviewedHubRoute && (
                 <ProgramTrackedLink
                   event="program_calculator_cta_clicked"
                   programId={program.id}
@@ -291,11 +297,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           {program.isListed !== false && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
-              <SekhemCalculatorLink
-                data={data}
-                sources={institutionRequirementSources}
-                offerings={calculatorOfferings}
-              />{' '}
+              {!hasUnreviewedHubRoute && (
+                <SekhemCalculatorLink
+                  data={data}
+                  sources={institutionRequirementSources}
+                  offerings={calculatorOfferings}
+                />
+              )}{' '}
               <div className="mt-4 space-y-6">
                 {institutions.length === 0 && (
                   <AdmissionRequirements

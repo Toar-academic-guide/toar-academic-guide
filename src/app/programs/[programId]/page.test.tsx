@@ -180,11 +180,9 @@ describe('ProgramPage', () => {
         .getByRole('link', { name: 'מדע הנתונים — המסלול האקדמי המכללה למינהל' })
         .getAttribute('href'),
     ).toBe('https://www.colman.ac.il/academics/ba/data-science/');
-    const primaryCta = screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' });
+    expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'חשבו סכם לתוכנית הזו' })).toBeNull();
     const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' });
-    expect(
-      primaryCta.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
     expect(
       comparison.compareDocumentPosition(institutions) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -197,6 +195,18 @@ describe('ProgramPage', () => {
         'השוו מסלולי לימוד במדעי הנתונים, הבינו את ההבדל ממדעי המחשב ובדקו את תנאי הקבלה של התוכניות שמעניינות אתכם.',
       alternates: { canonical: '/programs/datascience' },
     });
+  });
+
+  it('does not promise the old TAU calculator route from the electrical engineering hub', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'ee' }) }));
+    expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'חשבו סכם לתוכנית הזו' })).toBeNull();
+    expect(
+      screen
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+        .join(' '),
+    ).toContain('5 יחידות בציון 90 לפחות או 4 יחידות בציון 95');
   });
 
   it('renders the reciprocal comparison only on the CS hub', async () => {
@@ -327,8 +337,8 @@ describe('ProgramPage', () => {
       /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
-    const sourceFooter = screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/);
-    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 30.10.2026');
+    const sourceFooter = screen.getByText(/^עודכן לאחרונה: 17\.11\.2026/);
+    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 17.11.2026');
     expect(within(sourceFooter).queryByRole('link')).toBeNull();
   });
 

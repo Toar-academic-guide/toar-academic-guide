@@ -308,6 +308,10 @@ export function serializeProgramRow(args: {
     ].includes(program.id) || ISSUE_370_REPAIR_IDS.has(program.id)
       ? applyHaifaOfficialUrls(applyCatalogueContentRepair(serialized))
       : applyHaifaOfficialUrls(serialized);
-  const curriculum = applyJamdCurriculum(applyEngineeringMathRequirements(repaired));
+  // Issue 370 copy is applied after the old mathematics overlay. Reapplying that overlay
+  // would put the previous semester's requirements back before the reviewed route copy.
+  const curriculum = applyJamdCurriculum(
+    ISSUE_370_REPAIR_IDS.has(program.id) ? repaired : applyEngineeringMathRequirements(repaired),
+  );
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }
