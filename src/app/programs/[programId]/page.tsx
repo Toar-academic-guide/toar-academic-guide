@@ -387,28 +387,23 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {source.checked && (
-                        <p
-                          dir="rtl"
-                          className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
-                        >
-                          עודכן לאחרונה: {source.checked.date}
-                          {source.checked.sourceUrl &&
-                            !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
-                              <>
-                                {' · מקור: '}
-                                <a
-                                  href={source.checked.sourceUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-inherit no-underline hover:underline focus-visible:underline"
-                                >
-                                  אתר {institution.name}
-                                </a>
-                              </>
-                            )}
-                        </p>
-                      )}
+                      {source.checked?.sourceUrl &&
+                        !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
+                          <p
+                            dir="rtl"
+                            className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
+                          >
+                            {'מקור: '}
+                            <a
+                              href={source.checked.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-inherit no-underline hover:underline focus-visible:underline"
+                            >
+                              אתר {institution.name}
+                            </a>
+                          </p>
+                        )}
                     </div>
                   );
                 })}

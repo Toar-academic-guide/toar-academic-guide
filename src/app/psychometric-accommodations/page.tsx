@@ -9,7 +9,6 @@ const title = 'התאמות לפסיכומטרי: אבחון, תוקף ובקש�
 const description =
   'מי זכאי לבחינה פסיכומטרית בתנאים מותאמים, מתי אבחון נחשב עדכני, ולמה אישור למאל״ו לא עובר אוטומטית לאמירנט או למוסד הלימודים. לפי הכללים הרשמיים של מאל״ו.';
 const canonical = absoluteUrl('/psychometric-accommodations');
-const checkedOn = '14.11.2026';
 const nite = {
   accommodations: 'https://www.nite.org.il/special-test-accommodations/',
   learning:
@@ -84,9 +83,8 @@ export default function Page() {
               מוסד מגישים בקשה נפרדת.
             </p>
             <p className={styles.source}>
-              הכללים ללקות למידה ולאופן הגשת הבקשה: <a href={nite.learning}>מאל״ו</a>, נבדק{' '}
-              <bdi dir="ltr">{checkedOn}</bdi>. לכל סיבת בקשה אחרת יש רשימת מסמכים נפרדת{' '}
-              <a href={nite.accommodations}>בעמוד הרשמי</a>.
+              הכללים ללקות למידה ולאופן הגשת הבקשה: <a href={nite.learning}>מאל״ו</a>. לכל סיבת בקשה
+              אחרת יש רשימת מסמכים נפרדת <a href={nite.accommodations}>בעמוד הרשמי</a>.
             </p>
           </header>
 
@@ -97,8 +95,7 @@ export default function Page() {
               האוטיסטי, מגבלה גופנית או מגבלה נפשית. אפשר לציין יותר מסיבה אחת.
             </p>
             <p className={styles.source}>
-              <a href={nite.accommodations}>בחינה בתנאים מותאמים באתר מאל״ו</a> · נבדק{' '}
-              <bdi dir="ltr">{checkedOn}</bdi>
+              <a href={nite.accommodations}>בחינה בתנאים מותאמים באתר מאל״ו</a>
             </p>
             <h3>בקשה בשל לקות למידה</h3>
             <p>
@@ -125,16 +122,14 @@ export default function Page() {
               אוטיזם או מגבלה גופנית או נפשית; בדקו את רשימת המסמכים לסיבת הבקשה שלכם באתר מאל״ו.
             </p>
             <p className={styles.source}>
-              <a href={nite.learning}>בקשה בשל לקות למידה באתר מאל״ו</a> · נבדק{' '}
-              <bdi dir="ltr">{checkedOn}</bdi>
+              <a href={nite.learning}>בקשה בשל לקות למידה באתר מאל״ו</a>
             </p>
             <p>
               המלצות המאבחן אינן מאושרות אוטומטית. מאל״ו קובע את התנאים לפי מאפייני הבחינה והחומר
               שהוגש.
             </p>
             <p className={styles.source}>
-              <a href={nite.faq}>שאלות ותשובות באתר מאל״ו</a> · נבדק{' '}
-              <bdi dir="ltr">{checkedOn}</bdi>
+              <a href={nite.faq}>שאלות ותשובות באתר מאל״ו</a>
             </p>
           </section>
 
@@ -153,12 +148,11 @@ export default function Page() {
               האקדמיות קובע המוסד לפי הכללים שלו.
             </p>
             <p className={styles.source}>
-              <a href={nite.faq}>בקשות נפרדות לפי מאל״ו</a> · נבדק <bdi dir="ltr">{checkedOn}</bdi>{' '}
-              ·{' '}
+              <a href={nite.faq}>בקשות נפרדות לפי מאל״ו</a>
+              {' · '}
               <a href={institutionalAccommodations}>
                 התאמות במוסד הלימודים לפי נציבות שוויון זכויות לאנשים עם מוגבלות
-              </a>{' '}
-              · נבדק <bdi dir="ltr">{checkedOn}</bdi>
+              </a>
             </p>
           </section>
 

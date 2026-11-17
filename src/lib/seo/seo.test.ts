@@ -96,7 +96,8 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-14');
+    expect(llms).not.toMatch(/Last updated:/i);
+    expect(llms).not.toContain('תאריך בדיקה');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -883,10 +884,8 @@ describe('structured data', () => {
           (heading) => heading.textContent,
         ),
       ).not.toContain('שאלות נפוצות');
-      // Each institution's checked requirements retain their existing single stamp.
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(Object.values(sources).filter((source) => source.checked).length);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/עודכן לאחרונה:/);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/נבדק בתאריך/);
       if (!formerlyFaqProgramIds.includes(id)) return;
       const visibleText =
         id === 'colmgmt_cs'
@@ -933,8 +932,8 @@ describe('structured data', () => {
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
       }
-      const checkedText = source.checked
-        ? `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${data.institutions[0].name}` : ''}`
+      const checkedText = source.checked?.sourceUrl
+        ? `מקור: אתר ${data.institutions[0].name}`
         : undefined;
       for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
         for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
@@ -948,7 +947,7 @@ describe('structured data', () => {
   );
 
   it.each(['afeka_ee', 'afeka_cs', 'afeka_softwareeng', 'bezalel_graphic_design'])(
-    'renders the requirements update stamp once on the non-FAQ programme page %s',
+    'renders the source line once and omits the checked date on %s',
     async (id) => {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
@@ -957,9 +956,9 @@ describe('structured data', () => {
         renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
         'text/html',
       );
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(1);
+      const text = document.querySelector('main')!.textContent!;
+      expect(text).not.toMatch(/עודכן לאחרונה:/);
+      expect(text.match(/מקור: אתר/g) ?? []).toHaveLength(1);
     },
   );
 
@@ -1120,18 +1119,19 @@ describe('llms.txt calculator link', () => {
     ).toBe(calculatorLine);
   });
 
-  it('ends with the approved update date inside the Business model section', () => {
+  it('ends the business-model section without a last-updated stamp', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-14';
-    expect(llms).toContain(updated);
+    const business =
+      'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.';
+    expect(llms).not.toMatch(/Last updated:/i);
     expect(
       llms
         .split('\n')
         .filter((line) => line.trim())
         .at(-1),
-    ).toBe(updated);
+    ).toBe(business);
     const businessSection = llms.split('## Business model\n')[1]?.split(/^## /m)[0];
-    expect(businessSection).toContain(updated);
-    expect(llms.endsWith(`${updated}\n`)).toBe(true);
+    expect(businessSection).toContain(business);
+    expect(llms.trimEnd().endsWith(business)).toBe(true);
   });
 });

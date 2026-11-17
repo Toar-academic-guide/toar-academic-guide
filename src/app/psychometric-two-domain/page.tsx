@@ -54,11 +54,6 @@ export default function Page() {
               פרטים לבדוק לקראת ההרשמה ללימודים.
             </p>
             <p className={styles.stamp}>
-              נבדק בתאריך{' '}
-              <time dateTime="2026-11-06">
-                <bdi dir="ltr">6.11.2026</bdi>
-              </time>
-              {' · '}
               <a href={nite.announcement}>העדכון באתר מאל״ו</a>
             </p>
           </header>
@@ -207,9 +202,9 @@ export default function Page() {
             <h2 id="admissions">איזה ציון ייחשב בקבלה לתשפ״ח?</h2>
             <p id="admissions-answer">
               איזה ציון פסיכומטרי ייחשב בקבלה? זה תלוי במוסד ובשנת הלימודים. בטבלה כאן מובא הכלל שכל
-              מוסד פרסם לתשפ״ח, עם קישור רשמי ותאריך בדיקה. באוניברסיטת בן־גוריון, לנבחנים שלפני
-              דצמבר <bdi dir="ltr">2026</bdi> ייחשב הציון הגבוה מבין הציון הרב־תחומי לבין הציון
-              הדו־תחומי. מוסדות שלא נמצא אצלם כלל מופיעים עם קישור בלבד.
+              מוסד פרסם לתשפ״ח, עם קישור רשמי. באוניברסיטת בן־גוריון, לנבחנים שלפני דצמבר{' '}
+              <bdi dir="ltr">2026</bdi> ייחשב הציון הגבוה מבין הציון הרב־תחומי לבין הציון הדו־תחומי.
+              מוסדות שלא נמצא אצלם כלל מופיעים עם קישור בלבד.
             </p>
             <table className={styles.admissionsTable} aria-labelledby="admissions">
               <thead>
@@ -217,7 +212,6 @@ export default function Page() {
                   <th scope="col">מוסד</th>
                   <th scope="col">איזה ציון נחשב?</th>
                   <th scope="col">מקור רשמי</th>
-                  <th scope="col">נבדק בתאריך</th>
                 </tr>
               </thead>
               <tbody>
@@ -234,12 +228,6 @@ export default function Page() {
                       מדיניות בן־גוריון
                     </a>
                   </td>
-                  <td>
-                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
-                    <time dateTime="2026-11-14">
-                      <bdi dir="ltr">14.11.2026</bdi>
-                    </time>
-                  </td>
                 </tr>
                 <tr>
                   <th scope="row">אוניברסיטת תל אביב</th>
@@ -253,12 +241,6 @@ export default function Page() {
                     <a href="https://go.tau.ac.il/he/psychometric-test">מדיניות תל אביב</a>
                     <a href="https://go.tau.ac.il/he/ba/psycho">עמוד הפסיכומטרי</a>
                   </td>
-                  <td>
-                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
-                    <time dateTime="2026-11-14">
-                      <bdi dir="ltr">14.11.2026</bdi>
-                    </time>
-                  </td>
                 </tr>
                 <tr>
                   <th scope="row">האוניברסיטה העברית</th>
@@ -268,12 +250,6 @@ export default function Page() {
                       הנחיות הפסיכומטרי
                     </a>
                   </td>
-                  <td>
-                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
-                    <time dateTime="2026-11-14">
-                      <bdi dir="ltr">14.11.2026</bdi>
-                    </time>
-                  </td>
                 </tr>
                 <tr>
                   <th scope="row">אוניברסיטת חיפה</th>
@@ -282,12 +258,6 @@ export default function Page() {
                     <a href="https://admissions.haifa.ac.il/psychometric-amirnet-yaelnet-tests/">
                       מידע על הבחינות
                     </a>
-                  </td>
-                  <td>
-                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
-                    <time dateTime="2026-11-14">
-                      <bdi dir="ltr">14.11.2026</bdi>
-                    </time>
                   </td>
                 </tr>
               </tbody>

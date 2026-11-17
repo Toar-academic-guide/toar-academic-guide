@@ -35,7 +35,8 @@ it('renders official sourced routes in numeric order, preserving cycle and condi
     expect(
       within(row).getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href'),
     ).toMatch(/^https:\/\//);
-    expect(within(row).getByText('10.11.2026')).toBeTruthy();
+    expect(within(row).queryByText('10.11.2026')).toBeNull();
+    expect(row.textContent).not.toMatch(/נבדק/);
   }
   const psychology = rows.find((row) => row.textContent?.includes('פסיכולוגיה — דו־מחלקתי'))!;
   expect(psychology.textContent).toContain('ההרשמה סגורה');
@@ -58,7 +59,7 @@ it('keeps source-only identities off internal programme and calculator links', a
   for (const name of ['סטטיסטיקה ומדע הנתונים', 'מדעי התזונה', 'רוקחות', 'הנדסת הסביבה']) {
     const row = screen.getByRole('heading', { name }).closest('tr')!;
     expect(within(row).getAllByRole('link')).toHaveLength(1);
-    expect(row.textContent).toContain('10.11.2026');
+    expect(row.textContent).not.toContain('10.11.2026');
   }
   const business = screen
     .getAllByRole('heading', { name: 'מנהל עסקים' })

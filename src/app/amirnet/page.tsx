@@ -5,11 +5,9 @@ import JsonLd from '@/components/seo/JsonLd';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
 
-const checkedOn = '2026-11-14';
-const checkedLabel = '14.11.2026';
 const title = 'רמות אמירנט ופטור באנגלית לפי מוסד | MyWay';
 const description =
-  'מה אומר הציון באמירנט, מאיזו רמה מתחיל הפטור, והאם רמת האנגלית יכולה לחסום קבלה. טבלה לפי מוסד, עם קישור למקור הרשמי ותאריך בדיקה.';
+  'מה אומר הציון באמירנט, מאיזו רמה מתחיל הפטור, והאם רמת האנגלית יכולה לחסום קבלה. טבלה לפי מוסד, עם קישור למקור הרשמי.';
 const canonical = absoluteUrl('/amirnet');
 
 const nite = {
@@ -116,7 +114,7 @@ const questions = [
   {
     question: 'מאיזה ציון מקבלים פטור באנגלית?',
     answer:
-      'אין סף פטור ארצי של מאל״ו. בכל שמונת המוסדות בטבלה סיווג הפטור מתחיל ב־134, לפי העמודים הרשמיים שנבדקו ב־14.11.2026. בחיפה ובפתוחה סיווג ״פטור״ עדיין מחייב קורסי תוכן באנגלית.',
+      'אין סף פטור ארצי של מאל״ו. בכל שמונת המוסדות בטבלה סיווג הפטור מתחיל ב־134. בחיפה ובפתוחה סיווג ״פטור״ עדיין מחייב קורסי תוכן באנגלית.',
   },
   {
     question: 'האם רמת האנגלית יכולה לחסום קבלה, או שהיא רק קובעת את מספר הקורסים?',
@@ -174,11 +172,7 @@ export default function Page() {
             </p>
             <p className={styles.stamp}>
               <a href={nite.significance}>הסולם ומדיניות המוסדות: מאל״ו</a>; ספי המוסדות: העמודים
-              הרשמיים בטבלה. נבדקו{' '}
-              <time dateTime={checkedOn}>
-                <bdi dir="ltr">{checkedLabel}</bdi>
-              </time>
-              .
+              הרשמיים בטבלה.
             </p>
           </header>
 
@@ -206,9 +200,7 @@ export default function Page() {
             <h2 id="levels">טבלת רמות וסף קבלה לפי מוסד</h2>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
-                <caption>
-                  רמות אמירנט בשמונה מוסדות, לפי המקורות הרשמיים שנבדקו ב־{checkedLabel}
-                </caption>
+                <caption>רמות אמירנט בשמונה מוסדות, לפי המקורות הרשמיים</caption>
                 <thead>
                   <tr>
                     <th scope="col">מוסד</th>
@@ -217,7 +209,7 @@ export default function Page() {
                     <th scope="col">מתקדמים א׳</th>
                     <th scope="col">האם הציון יכול לחסום קבלה?</th>
                     <th scope="col">אחרי הפטור</th>
-                    <th scope="col">מקור ותאריך בדיקה</th>
+                    <th scope="col">מקור</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -238,14 +230,11 @@ export default function Page() {
                         <p className={styles.rowDetail}>{isolatedNumbers(institution.details)}</p>
                       </td>
                       <td data-label="אחרי הפטור">{isolatedNumbers(institution.after)}</td>
-                      <td data-label="מקור ותאריך בדיקה">
+                      <td data-label="מקור">
                         <a href={institution.source}>עמוד המוסד הרשמי</a>
                         {'secondSource' in institution && (
                           <a href={institution.secondSource}>עמוד היחידה לאנגלית</a>
                         )}
-                        <time dateTime={checkedOn}>
-                          <bdi dir="ltr">{checkedLabel}</bdi>
-                        </time>
                       </td>
                     </tr>
                   ))}

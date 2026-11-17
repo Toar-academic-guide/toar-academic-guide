@@ -17,7 +17,8 @@ it('renders eight sourced institution rows with the distinct admission and post-
     expect(
       within(row).getByRole('link', { name: 'עמוד המוסד הרשמי' }).getAttribute('href'),
     ).toMatch(/^https:\/\//);
-    expect(row.querySelector('time[datetime="2026-11-14"]')).toBeTruthy();
+    expect(row.querySelector('time')).toBeNull();
+    expect(row.textContent).not.toContain('14.11.2026');
     expect(row.querySelectorAll('td:nth-child(-n+4) bdi[dir="ltr"]')).toHaveLength(3);
   }
   const rowFor = (name: string) =>

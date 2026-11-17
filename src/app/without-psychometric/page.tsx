@@ -1,10 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
-import {
-  withoutPsychometricRoutes,
-  WITHOUT_PSYCHOMETRIC_CHECKED_ON,
-} from '@/data/withoutPsychometricRoutes';
+import { withoutPsychometricRoutes } from '@/data/withoutPsychometricRoutes';
 import { allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import {
@@ -106,9 +103,6 @@ export default async function WithoutPsychometricPage() {
                             </Link>
                           )}
                         </div>
-                        <p className={styles.checked}>
-                          נבדק <time dateTime={WITHOUT_PSYCHOMETRIC_CHECKED_ON}>10.11.2026</time>
-                        </p>
                       </td>
                     </tr>
                   );
