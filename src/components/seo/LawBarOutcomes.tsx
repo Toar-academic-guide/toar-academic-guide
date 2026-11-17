@@ -13,9 +13,8 @@ function StaleNotice() {
 }
 
 export function LawBarOutcomesTable() {
-  const [captionBeforeUrl, captionAfterUrl] = lawBarOutcomes.caption.split(
-    lawBarOutcomes.sourceUrl,
-  );
+  const [captionBeforeSource, captionAfterSource] =
+    lawBarOutcomes.caption.split('לשכת עורכי הדין, PDF.');
   return (
     <section
       id="bar-pass-rates"
@@ -28,16 +27,18 @@ export function LawBarOutcomesTable() {
         <div>
           <table className="w-full table-fixed border-collapse text-right text-[11px] leading-4 sm:text-sm sm:leading-6">
             <caption className="mb-3 text-right text-sm leading-6 text-slate-700">
-              {captionBeforeUrl}
+              {captionBeforeSource}
               <a
                 href={lawBarOutcomes.sourceUrl}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-block min-h-11 max-w-full break-all py-2 align-middle text-[#6554b8] underline underline-offset-2"
+                className="inline-flex min-h-11 items-center align-middle text-[#6554b8] underline underline-offset-2"
               >
-                <bdi dir="ltr">{lawBarOutcomes.sourceUrl}</bdi>
+                <span>
+                  לשכת עורכי הדין, <bdi dir="ltr">PDF</bdi>.
+                </span>
               </a>
-              {captionAfterUrl}
+              {captionAfterSource}
             </caption>
             <thead className="bg-slate-50">
               <tr>

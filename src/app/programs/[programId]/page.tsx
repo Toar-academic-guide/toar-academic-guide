@@ -321,7 +321,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     event="program_contact_cta_clicked"
                     programId={program.id}
                     institutionId={institution.id}
-                    className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
+                    className={`shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]${
+                      program.id === 'law' &&
+                      lawBarOutcomes.additionalHubProgramIds.some(
+                        (id) => institutionProgramPaths[institution.id] === `/programs/${id}`,
+                      )
+                        ? ' inline-flex min-h-11 items-center'
+                        : ''
+                    }`}
                     href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
                   >
                     קבלו שיחה מהמוסד{' '}
@@ -357,7 +364,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                         <h3 className="font-semibold">{institution.name}</h3>
                         <Link
                           href={institutionProgramPaths[institution.id]}
-                          className="mt-2 inline-block font-semibold text-[#6554b8] underline"
+                          className="mt-2 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline"
                         >
                           לפרטים המלאים
                         </Link>

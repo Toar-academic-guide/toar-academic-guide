@@ -1,5 +1,9 @@
 import Image from 'next/image';
 import WayPageShell from '@/components/WayPageShell';
+import {
+  ABOUT_INDEPENDENCE_CHECKED_ON,
+  ABOUT_INDEPENDENCE_DESCRIPTION,
+} from '@/lib/aboutIndependence';
 
 // Temporary founders photo; replace the public asset before publishing.
 const ABOUT_FOUNDERS_IMAGE_SRC = '/about-founders-temporary.png';
@@ -9,6 +13,28 @@ export default function AboutPage() {
     <WayPageShell contentClassName="">
       <main className="relative z-10 flex items-center px-5 pb-16 pt-8 sm:px-8 lg:pt-12">
         <div className="mx-auto flex w-full max-w-5xl flex-col items-center text-center">
+          <section
+            id="independence"
+            aria-labelledby="independence-heading"
+            className="mb-10 w-full max-w-4xl rounded-[1.8rem] border border-white bg-white/78 p-6 text-right shadow-[0_24px_80px_rgba(105,133,190,0.16)] backdrop-blur sm:p-9"
+          >
+            <h2
+              id="independence-heading"
+              className="text-2xl font-semibold text-[#445274] sm:text-3xl"
+            >
+              MyWay הוא מוצר עצמאי
+            </h2>
+            <p className="mt-4 text-lg leading-8 text-[#52607f]">
+              {ABOUT_INDEPENDENCE_DESCRIPTION}
+            </p>
+            <time
+              dateTime={ABOUT_INDEPENDENCE_CHECKED_ON}
+              className="mt-5 block text-sm text-[#52607f]"
+            >
+              נבדק בתאריך: 14.11.2026
+            </time>
+          </section>
+
           <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">
             הדרך שלנו התחילה בדיוק בצומת הזאת.
           </h1>
