@@ -15,6 +15,7 @@ describe('enquiry source route guard', () => {
     ['/institutions/tau', '/institutions/tau'],
     ['/transfer?from=calculator', '/transfer'],
     ['/without-psychometric?from=hub', '/without-psychometric'],
+    ['/psychometric-accommodations?from=guide', '/psychometric-accommodations'],
     ['/calculator', '/calculator'],
     ['/app/calculator#inquiry', '/app/calculator'],
     ['/#inquiry', '/'],
