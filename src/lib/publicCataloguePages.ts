@@ -23,6 +23,7 @@ import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirem
 import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
@@ -191,6 +192,18 @@ export async function getPublicProgramPageData(
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
   const programPages = isGeneral ? subjectProgramPages(catalogue, program) : new Map();
+  if (isGeneral && program.id === 'law') {
+    for (const id of lawBarOutcomes.additionalHubProgramIds) {
+      const specific = catalogue.programs.find((candidate) => candidate.id === id);
+      const institution = catalogue.institutions.find(
+        (candidate) => candidate.id === specific?.institutionId,
+      );
+      if (!specific || !institution) throw new Error(`Missing law programme ${id}`);
+      if (!institutions.some((entry) => entry.id === institution.id))
+        institutions.push(institution);
+      programPages.set(institution.id, specific);
+    }
+  }
   const institutionProgramPaths: Record<string, string> = {};
   for (const institution of institutions) {
     const specific = programPages.get(institution.id);
