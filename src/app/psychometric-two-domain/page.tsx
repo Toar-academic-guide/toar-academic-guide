@@ -314,6 +314,11 @@ export default function Page() {
             <Link className={styles.nextLink} href="/institutions" prefetch={false}>
               למציאת מוסדות ותוכניות לימודים
             </Link>
+            <p>
+              <Link className={styles.nextLink} href="/calculator">
+                איך מחשבון סיכויי הקבלה עובד
+              </Link>
+            </p>
           </section>
 
           <section aria-labelledby="questions" className={styles.section}>

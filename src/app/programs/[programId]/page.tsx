@@ -62,6 +62,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
           </h1>{' '}
+          {programId !== 'medicine' && (
+            <Link
+              href="/calculator"
+              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+            >
+              איך מחשבון סיכויי הקבלה עובד
+            </Link>
+          )}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
@@ -126,6 +134,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 >
                   בדקו אם אתם מתקבלים{' '}
                 </ProgramTrackedLink>
+              )}
+              {isGeneral && program.id !== 'medicine' && (
+                <Link
+                  href="/calculator"
+                  className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  איך מחשבון סיכויי הקבלה עובד
+                </Link>
               )}
               <Link
                 href={ROUTES.assessment}

@@ -176,6 +176,7 @@ export default function Page() {
             <Link href="/psychometric-dates">מועדי הפסיכומטרי</Link>
             <Link href="/psychometric-two-domain">הפסיכומטרי הדו־תחומי</Link>
             <Link href="/sekhem-calculator">מחשבון סכם</Link>
+            <Link href="/calculator">מחשבון סיכויי קבלה</Link>
             <a href={nite.amirnet}>מידע רשמי על אמירנט</a>
           </nav>
         </article>
