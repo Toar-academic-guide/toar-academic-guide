@@ -5150,8 +5150,8 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
       // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
       expect(result).toMatchObject({ decision: 'unknown', kind: 'needs_input' });
     else {
-      expect(result.kind).toBe('manual_gate');
-      expect(result.explanation).toContain('ראיון');
+      expect(result.kind).toBe('requirements_only');
+      expect(result.explanation).not.toContain('ראיון');
     }
   },
 );

@@ -153,8 +153,9 @@ describe('HUJI psychology catalogue correction', () => {
     expect(
       getRequirementsChecked(program.id, { id: 'huji' }, detail.specificAdmissionNotes),
     ).toEqual({
-      date: '26.10.2026',
-      sourceUrl: 'https://info.huji.ac.il/bachelor/Psychology?utm_source=myway&utm_medium=referral',
+      date: '17.11.2026',
+      sourceUrl:
+        'https://info.huji.ac.il/reception-channels/KabalaYeshira_Bagrut?utm_source=myway&utm_medium=referral',
     });
     const beforeRepair = programsWithLegacyAdmissionFacts.find((item) => item.id === program.id)!;
     expect(

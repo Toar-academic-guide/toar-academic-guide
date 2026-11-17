@@ -8,7 +8,7 @@ import {
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, redirect } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 import AdmissionRequirements from '@/components/AdmissionRequirements';
 import TechnionThresholdNotice from '@/components/TechnionThresholdNotice';
@@ -47,6 +47,9 @@ export async function generateMetadata({ params }: ProgramPageProps) {
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'telhai_nursing') redirect('/programs/nursing');
+  if (programId === 'ono_socialwork' || programId === 'tlvyaffo_socialwork')
+    redirect('/programs/social_work');
   const data = await getPublicProgramPageData(programId);
 
   if (!data) {

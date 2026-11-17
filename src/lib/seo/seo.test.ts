@@ -267,7 +267,9 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(446);
+    for (const id of ['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork'])
+      expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
+    expect(urls).toHaveLength(444);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -458,7 +460,7 @@ describe('metadata', () => {
   });
 
   it.each([
-    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'mta', 'ono']],
     ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
   ])(
     'uses every provider for %s in metadata, JSON-LD and rendered links',

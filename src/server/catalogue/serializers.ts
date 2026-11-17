@@ -7,6 +7,7 @@ import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { repairSamSpiegelUrls } from '@/data/admissions/samSpiegelUrls';
 import { INSTITUTION_BY_ID } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
+import { ISSUE_370_REPAIR_IDS } from '@/data/admissions/issue370Corrections';
 import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
 import { applyHaifaOfficialUrls } from '@/data/admissions/haifaOfficialUrls';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
@@ -285,27 +286,28 @@ export function serializeProgramRow(args: {
       ...new Set(relations.map((relation) => canonicalInstitutionId(relation.institutionId))),
     ],
   };
-  const repaired = [
-    'haifa_cs',
-    'haifa_psychology',
-    'mon_12220708942_cs',
-    'huji_psychology',
-    'afeka_ee',
-    'afeka_softwareeng',
-    'afeka_cs',
-    'afeka_biomedical',
-    'ruppin_marine_bio',
-    'mon_12341092879_graphic_design',
-    'mon_12341101957_graphic_design',
-    'minshar_graphic_design',
-    'mon_12341138289_cs',
-    'johnbryce_cs',
-    'jerusalem_academy_graphic_design',
-    'jerusalem_academy_dance',
-    'rubin_classical',
-  ].includes(program.id)
-    ? applyHaifaOfficialUrls(applyCatalogueContentRepair(serialized))
-    : applyHaifaOfficialUrls(serialized);
+  const repaired =
+    [
+      'haifa_cs',
+      'haifa_psychology',
+      'mon_12220708942_cs',
+      'huji_psychology',
+      'afeka_ee',
+      'afeka_softwareeng',
+      'afeka_cs',
+      'afeka_biomedical',
+      'ruppin_marine_bio',
+      'mon_12341092879_graphic_design',
+      'mon_12341101957_graphic_design',
+      'minshar_graphic_design',
+      'mon_12341138289_cs',
+      'johnbryce_cs',
+      'jerusalem_academy_graphic_design',
+      'jerusalem_academy_dance',
+      'rubin_classical',
+    ].includes(program.id) || ISSUE_370_REPAIR_IDS.has(program.id)
+      ? applyHaifaOfficialUrls(applyCatalogueContentRepair(serialized))
+      : applyHaifaOfficialUrls(serialized);
   const curriculum = applyJamdCurriculum(applyEngineeringMathRequirements(repaired));
   return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
 }

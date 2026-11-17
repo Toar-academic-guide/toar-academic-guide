@@ -27,6 +27,7 @@ import {
   sekhemPairSupport,
 } from '@/lib/sekhemCalculatorSupport';
 import ProgramPage from '@/app/programs/[programId]/page';
+import { buildProgramMetadata } from './metadata';
 
 // Independent rendered-copy oracle: a named composite followed by a cutoff.
 // Do not call the production selector here: this must catch missing wording support.
@@ -103,6 +104,37 @@ describe('published-threshold calculator links', () => {
       );
       if (expected) expect(html).toContain(`href="/sekhem-calculator?program=${id}"`);
       else expect(html).toBe('');
+    }
+  });
+
+  it('does not promise calculator support for mismatched TAU semester or programme rules', async () => {
+    const programs = getStaticCataloguePrograms();
+    for (const id of ['tau_ee', 'ee', 'tau_datascience', 'datascience']) {
+      expect(
+        sekhemPairSupport(
+          programs.find((program) => program.id === id)!,
+          'tau',
+        ),
+      ).toBeUndefined();
+    }
+    expect(
+      sekhemPairSupport(
+        programs.find((program) => program.id === 'tau_me')!,
+        'tau',
+      ),
+    ).toBe('score');
+    expect(
+      sekhemPairSupport(
+        programs.find((program) => program.id === 'technion_ee')!,
+        'technion',
+      ),
+    ).toBe('score');
+    for (const id of ['tau_ee', 'tau_datascience']) {
+      const html = renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: id }) }),
+      );
+      expect(html).not.toContain(`href="/sekhem-calculator?program=${id}"`);
+      expect((await buildProgramMetadata(id)).title).not.toContain('סיכויי קבלה');
     }
   });
 

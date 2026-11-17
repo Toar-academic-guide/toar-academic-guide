@@ -23,6 +23,7 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'bgu_accounting',
   'bgu_business',
   'bgu_psychology',
+  'biology',
   'business',
   'communication',
   'cs',
@@ -31,14 +32,18 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'education',
   'ee',
   'haifa_accounting',
+  'haifa_biology',
   'haifa_communication',
   // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
   'haifa_cs',
+  'haifa_economics',
   'haifa_infosystems',
+  'haifa_law',
   'haifa_nursing',
   'haifa_politicalscience',
   // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
   'haifa_psychology',
+  'haifa_socialwork',
   'haifa_sociology',
   'huji_accounting',
   'huji_business',
@@ -57,15 +62,22 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'reichman_economics',
   'reichman_law',
   'reichman_psychology',
+  'social_work',
   'tau_accounting',
+  'tau_biology',
   'tau_business',
+  'tau_cs',
+  'tau_economics',
   'tau_law',
+  'tau_occupational_therapy',
+  'tau_psychology',
+  'tau_socialwork',
   'technion_ee',
   'technion_me',
 ];
 
 describe('published composite threshold selector', () => {
-  it('selects the 40 supported static pages from the same resolved requirements the page renders', async () => {
+  it('selects the supported static pages from the same resolved requirements the page renders', async () => {
     const programs = getStaticCataloguePrograms();
     vi.mocked(listCataloguePrograms).mockResolvedValue({ data: programs, meta: {} });
     vi.mocked(listCatalogueInstitutions).mockResolvedValue({
@@ -82,7 +94,7 @@ describe('published composite threshold selector', () => {
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
     // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(42);
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(54);
   });
 
   it.each([

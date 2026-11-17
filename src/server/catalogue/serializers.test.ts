@@ -1,4 +1,5 @@
 import * as contentRepair from '@/data/admissions/catalogueContentRepair';
+import { ISSUE_370_CORRECTIONS } from '@/data/admissions/issue370Corrections';
 import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
 import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
@@ -75,7 +76,13 @@ describe('catalogue serializers', () => {
     const detail = result.institutionDetails![0];
     expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
     expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
-    expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    const issue370Row = ISSUE_370_CORRECTIONS.find((row) => row.programId === id);
+    if (issue370Row) {
+      expect(detail.specificAdmissionNotes).not.toContain(staleNotes[1]);
+      expect(detail.specificAdmissionNotes).toEqual(expect.arrayContaining(issue370Row.notes));
+    } else {
+      expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    }
     expect(detail.admissionFacts).toContainEqual(
       expect.objectContaining({
         field: 'math_units',
@@ -365,6 +372,7 @@ describe('catalogue serializers', () => {
       specificAdmissionNotes: [
         'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
         'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'מסלול אופק ללא פסיכומטרי, החל מתשפ״ז: ממוצע בגרות משוקלל 105 לפחות, מתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 75 לפחות, ועמידה בדרישות השפה. נדרשים קורות חיים; הקבלה מותנית בהחלטת ועדת החוג ואינה מובטחת.',
         'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
       ],
       programUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',

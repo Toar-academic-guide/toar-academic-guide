@@ -478,7 +478,7 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-      'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
+      'https://admissions.technion.ac.il/2026/09/07/mor-calculation-for-2026/?utm_source=myway&utm_medium=referral',
     );
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
     const listChip = await screen.findByText('קבלה דרך מבחני מו"ר');

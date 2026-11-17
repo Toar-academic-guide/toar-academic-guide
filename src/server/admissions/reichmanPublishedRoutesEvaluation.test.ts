@@ -23,7 +23,7 @@ const math = { mathUnits: 5, mathGrade: 85 };
 const psychology = { mathUnits: 3, mathGrade: 85, englishUnits: 4, englishGrade: 90 };
 
 for (const [degreeId, bagrut, psychometric, coordinatedPsy, extra] of [
-  ['reichman_cs', 108, 720, 700, math],
+  ['reichman_cs', 104, 720, 700, math],
   ['reichman_law', 100, 700, 660, {}],
   ['reichman_psychology', 100, 640, 600, psychology],
 ] as const) {
@@ -37,7 +37,11 @@ for (const [degreeId, bagrut, psychometric, coordinatedPsy, extra] of [
     });
     it('matches a coordinated route from ordinary profile scores', () => {
       expect(
-        evaluate(degreeId, { bagrut: bagrut - 1, psychometric: coordinatedPsy }, extra),
+        evaluate(
+          degreeId,
+          { bagrut: degreeId === 'reichman_cs' ? 107 : bagrut - 1, psychometric: coordinatedPsy },
+          extra,
+        ),
       ).toMatchObject({
         decision: 'pending',
         kind: 'estimated',
@@ -104,7 +108,7 @@ describe('Reichman subject gates', () => {
     ).toBe('below');
   });
   it('asks for science only when the Bagrut route needs it', () => {
-    expect(evaluate('reichman_cs', { bagrut: 108 }, math)).toMatchObject({
+    expect(evaluate('reichman_cs', { bagrut: 104 }, math)).toMatchObject({
       kind: 'needs_input',
       requiredInputs: ['bagrut_subject_record'],
     });
@@ -113,13 +117,27 @@ describe('Reichman subject gates', () => {
       scoreLabel: 'ציון מתואם',
     });
   });
+  it('uses 104 and math 75 only for the CS bagrut route', () => {
+    const science = { physicsUnits: 5, physicsGrade: 85 };
+    expect(
+      evaluate('reichman_cs', { bagrut: 104 }, { ...science, mathUnits: 5, mathGrade: 75 }),
+    ).toMatchObject({ decision: 'pending', threshold: 104, scoreLabel: 'מסלול בגרות' });
+    expect(
+      evaluate('reichman_cs', { bagrut: 104 }, { ...science, mathUnits: 5, mathGrade: 74 })
+        .decision,
+    ).toBe('below');
+    expect(
+      evaluate('reichman_cs', { bagrut: 103 }, { ...science, mathUnits: 5, mathGrade: 75 })
+        .decision,
+    ).toBe('below');
+  });
   it.each(['physics', 'chemistry', 'biology', 'computer_science'])(
     'accepts the published science alternative %s from an exam record',
     (subjectId) => {
       expect(
         evaluate(
           'reichman_cs',
-          { bagrut: 108 },
+          { bagrut: 104 },
           {
             ...math,
             bagrutSubjectRecord: {
@@ -146,7 +164,7 @@ describe('Reichman subject gates', () => {
       expect(
         evaluate(
           'reichman_cs',
-          { bagrut: 108, psychometric: 420 },
+          { bagrut: 104, psychometric: 420 },
           {
             ...math,
             csUnits: 5,

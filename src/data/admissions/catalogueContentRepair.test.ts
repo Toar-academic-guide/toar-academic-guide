@@ -5,6 +5,7 @@ import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { getRequirementsChecked } from '@/lib/requirementsChecked';
 import { applyCatalogueContentRepair } from './catalogueContentRepair';
 import repair from './catalogueContentRepair.json';
+import { ISSUE_370_CORRECTIONS, ISSUE_370_REPAIR_IDS } from './issue370Corrections';
 import { BGU_QUANTITATIVE_PROGRAMMES } from '@/server/admissions/bguQuantitativeRoutesPolicy';
 
 describe('verified catalogue content repair', () => {
@@ -155,9 +156,10 @@ describe('verified catalogue content repair', () => {
     expect(notes).toEqual([
       'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
       'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+      'מסלול אופק ללא פסיכומטרי, החל מתשפ״ז: ממוצע בגרות משוקלל 105 לפחות, מתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 75 לפחות, ועמידה בדרישות השפה. נדרשים קורות חיים; הקבלה מותנית בהחלטת ועדת החוג ואינה מובטחת.',
       'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
     ]);
-    expect(notes).toHaveLength(3);
+    expect(notes).toHaveLength(4);
     expect(program.thresholds).toEqual({ haifa: 700 });
     expect(repair.requirements.find((row) => row.programId === program.id)).toMatchObject({
       institutionId: 'haifa',
@@ -165,10 +167,10 @@ describe('verified catalogue content repair', () => {
       sourceSha256: '7daea619ad71622a283aa2da04c7570d42b719c8d31e3c7ecfc35de1e6731b0d',
       checkedAt: '2026-10-30',
       coverage: 'published_conditions',
-      notes,
+      notes: [notes[0], notes[1], notes[3]],
     });
     expect(getRequirementsChecked(program.id, { id: 'haifa' }, notes)).toEqual({
-      date: '30.10.2026',
+      date: '17.11.2026',
       sourceUrl:
         'https://admissions.haifa.ac.il/computer-information-science/program/3210/?utm_source=myway&utm_medium=referral',
     });
@@ -362,17 +364,24 @@ describe('verified catalogue content repair', () => {
       // Live-only legacy rows are repaired in SQL, not reintroduced into the seed catalogue.
       if (!seededIds.has(row.programId)) continue;
       const id = `${row.programId}:${row.institutionId}`;
+      const current = ISSUE_370_CORRECTIONS.find(
+        (candidate) =>
+          candidate.programId === row.programId && candidate.institutionId === row.institutionId,
+      );
       expect(
         seed.admissionRequirements.find((item) => item.id === id),
         id,
       ).toMatchObject({
-        specificAdmissionNotes: row.notes,
+        specificAdmissionNotes: current?.notes ?? row.notes,
       });
       expect(
         seed.sourceUrls.find((item) => item.id === `${id}:program`),
         id,
       ).toMatchObject({
-        url: 'programUrl' in row ? row.programUrl : row.sourceUrl,
+        url:
+          current?.programUrl ??
+          current?.sourceUrl ??
+          ('programUrl' in row ? row.programUrl : row.sourceUrl),
       });
     }
   });
@@ -428,6 +437,7 @@ describe('verified catalogue content repair', () => {
 
   it('preserves every existing numeric rule, fact and alternative path across the content overlay', () => {
     for (const before of programsWithLegacyAdmissionFacts) {
+      if (ISSUE_370_REPAIR_IDS.has(before.id)) continue;
       const after = applyCatalogueContentRepair(before);
       expect(after.thresholds).toEqual(before.thresholds);
       expect(after.minimumBagrut).toBe(before.minimumBagrut);
