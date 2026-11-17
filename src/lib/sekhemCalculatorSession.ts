@@ -61,6 +61,7 @@ const resultSchema = z.object({
   explanation: z.string(),
   nextAction: z.string(),
   score: z.number().optional(),
+  calculatedBagrutAverage: z.number().optional(),
   threshold: z.number().nullable().optional(),
   scoreAssessment: z.enum(['meets_threshold', 'below_threshold']).optional(),
   requiredInputs: z.array(z.string()).optional(),
