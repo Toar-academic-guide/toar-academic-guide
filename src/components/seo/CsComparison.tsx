@@ -73,7 +73,7 @@ export function CsComparison() {
                 scope="row"
                 className="block pb-3 text-base sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top sm:text-sm"
               >
-                <Link href={`/programs/${row.programId}`} className={linkClass}>
+                <Link href={`/programs/${row.programId}`} className={`${linkClass} min-w-11`}>
                   {row.institution}
                 </Link>
               </th>
