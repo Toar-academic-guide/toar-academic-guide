@@ -30,6 +30,13 @@ interface ProgramPageProps {
   params: Promise<{ programId: string }>;
 }
 
+const atudaLinksBySubject: Record<string, string> = {
+  engineering: 'עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי 2027–2028',
+  ee: 'לומדים חשמל בעתודה? מסלול ״דיגמא״ ותוכניות ״פסגות״ ו״רעמים״',
+  cs: 'מדעי המחשב בעתודה (מסלול ״אמירים״): מוסדות ומועדים',
+  softwareeng: 'הנדסת תוכנה בעתודה: מוסדות ותוכנית ״פסגות״',
+};
+
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
   const metadata = await buildProgramMetadata(programId);
@@ -62,6 +69,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
           </h1>{' '}
+          {atudaLinksBySubject[programId] && (
+            <Link
+              href="/atuda"
+              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+            >
+              {atudaLinksBySubject[programId]}
+            </Link>
+          )}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
@@ -415,6 +430,16 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             </section>
           )}{' '}
+          {isGeneral && atudaLinksBySubject[program.id] && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <Link
+                href="/atuda"
+                className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+              >
+                {atudaLinksBySubject[program.id]}
+              </Link>
+            </section>
+          )}
           <RelatedPrograms {...related} />
         </section>
       </main>

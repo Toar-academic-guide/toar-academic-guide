@@ -125,6 +125,9 @@ export default async function Page() {
             </tbody>
           </table>
         </section>
+        <p className={styles.reformNote}>
+          <Link href="/atuda">מתכננים עתודה אקדמית? מועד אפריל 2027 הוא האחרון שנחשב</Link>
+        </p>
         <SemesterValidity />
         <div className={styles.ctaArea}>
           <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>

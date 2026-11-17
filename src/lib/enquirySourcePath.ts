@@ -17,6 +17,7 @@ const staticPages = new Set([
   '/psychometric-dates',
   '/psychometric-two-domain',
   '/psychometric-accommodations',
+  '/atuda',
   '/open-days',
   '/transfer',
   '/without-psychometric',
