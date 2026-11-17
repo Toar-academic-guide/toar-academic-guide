@@ -25,6 +25,9 @@ import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 import { PsychologyComparison, psychologyFaqLd } from '@/components/seo/PsychologyComparison';
 import { HaifaPsychologyOfek } from '@/components/seo/HaifaPsychologyOfek';
+import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
+import { absoluteUrl } from '@/lib/site';
 
 export const dynamic = 'force-dynamic';
 
@@ -35,6 +38,17 @@ interface ProgramPageProps {
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
   const metadata = await buildProgramMetadata(programId);
+  if (programId === 'law') {
+    const title = 'לימודי משפטים: תנאי קבלה וסיכויי קבלה';
+    const description =
+      'משפטים ב-12 מוסדות לימוד: תנאי קבלה, שיעורי מעבר בבחינת הלשכה במועד קיץ 2026, ובדיקת סיכויי קבלה ב-MyWay. התנאים המחייבים באתר המוסד.';
+    return {
+      ...metadata,
+      title,
+      description,
+      openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
   if (programId !== 'datascience') return metadata;
   const title = 'מדעי הנתונים: השוואת מסלולים ותנאי קבלה';
   const description =
@@ -45,6 +59,31 @@ export async function generateMetadata({ params }: ProgramPageProps) {
     description,
     openGraph: { ...metadata.openGraph, title, description },
   };
+}
+
+function lawOutcomeSchema() {
+  return [
+    {
+      '@type': 'FAQPage',
+      mainEntity: [
+        {
+          '@type': 'Question',
+          name: lawBarOutcomes.question,
+          acceptedAnswer: { '@type': 'Answer', text: lawBarOutcomes.answer },
+        },
+      ],
+    },
+    {
+      '@type': 'Dataset',
+      name: lawBarOutcomes.tableTitle,
+      description: lawBarOutcomes.caption,
+      url: absoluteUrl('/programs/law#bar-pass-rates'),
+      isBasedOn: lawBarOutcomes.sourceUrl,
+      creator: { '@type': 'Organization', name: 'לשכת עורכי הדין' },
+      temporalCoverage: lawBarOutcomes.examDate,
+      datePublished: lawBarOutcomes.publicationDate,
+    },
+  ];
 }
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
@@ -64,6 +103,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
           </h1>{' '}
+          {programId !== 'medicine' && (
+            <Link
+              href="/calculator"
+              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+            >
+              איך מחשבון סיכויי הקבלה עובד
+            </Link>
+          )}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
@@ -104,6 +151,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           await programLd(data),
           programBreadcrumbLd(data),
           ...(isPsychologyHub ? [psychologyFaqLd()] : []),
+          ...(programId === 'law' ? lawOutcomeSchema() : []),
         ]}
       />
       <main
@@ -137,6 +185,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 >
                   בדקו אם אתם מתקבלים{' '}
                 </ProgramTrackedLink>
+              )}
+              {isGeneral && program.id !== 'medicine' && (
+                <Link
+                  href="/calculator"
+                  className="inline-flex min-h-11 items-center px-2 text-sm font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  איך מחשבון סיכויי הקבלה עובד
+                </Link>
               )}
               <Link
                 href={ROUTES.assessment}
@@ -289,7 +345,14 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       event="program_contact_cta_clicked"
                       programId={program.id}
                       institutionId={institution.id}
-                      className="shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]"
+                      className={`shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]${
+                        program.id === 'law' &&
+                        lawBarOutcomes.additionalHubProgramIds.some(
+                          (id) => institutionProgramPaths[institution.id] === `/programs/${id}`,
+                        )
+                          ? ' inline-flex min-h-11 items-center'
+                          : ''
+                      }`}
                       href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
                     >
                       קבלו שיחה מהמוסד{' '}
@@ -299,6 +362,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             </section>
           )}
+          {isGeneral && program.id === 'law' && <LawBarOutcomesTable />}
           {!isPsychologyHub && program.isListed !== false && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
@@ -314,6 +378,24 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   />
                 )}
                 {institutions.map((institution) => {
+                  if (
+                    program.id === 'law' &&
+                    lawBarOutcomes.additionalHubProgramIds.some(
+                      (id) => institutionProgramPaths[institution.id] === `/programs/${id}`,
+                    )
+                  ) {
+                    return (
+                      <div key={institution.id}>
+                        <h3 className="font-semibold">{institution.name}</h3>
+                        <Link
+                          href={institutionProgramPaths[institution.id]}
+                          className="mt-2 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline"
+                        >
+                          לפרטים המלאים
+                        </Link>
+                      </div>
+                    );
+                  }
                   const source = institutionRequirementSources[institution.id];
                   const officialLink = source.officialUrl && (
                     <ProgramTrackedLink
@@ -401,28 +483,23 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {source.checked && (
-                        <p
-                          dir="rtl"
-                          className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
-                        >
-                          עודכן לאחרונה: {source.checked.date}
-                          {source.checked.sourceUrl &&
-                            !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
-                              <>
-                                {' · מקור: '}
-                                <a
-                                  href={source.checked.sourceUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-inherit no-underline hover:underline focus-visible:underline"
-                                >
-                                  אתר {institution.name}
-                                </a>
-                              </>
-                            )}
-                        </p>
-                      )}
+                      {source.checked?.sourceUrl &&
+                        !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
+                          <p
+                            dir="rtl"
+                            className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
+                          >
+                            {'מקור: '}
+                            <a
+                              href={source.checked.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className="text-inherit no-underline hover:underline focus-visible:underline"
+                            >
+                              אתר {institution.name}
+                            </a>
+                          </p>
+                        )}
                     </div>
                   );
                 })}
@@ -430,6 +507,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           )}{' '}
           {program.id === 'haifa_psychology' && <HaifaPsychologyOfek />}
+          {lawBarOutcomes.rows.map((row) =>
+            'programId' in row && row.programId === program.id ? (
+              <LawBarOutcomeLine key={row.programId} row={row} />
+            ) : null,
+          )}
           <RelatedPrograms
             {...related}
             programs={

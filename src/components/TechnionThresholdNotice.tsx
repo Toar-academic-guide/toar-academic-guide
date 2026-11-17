@@ -21,7 +21,7 @@ export default function TechnionThresholdNotice({
     >
       {id === 'ee' && <p>{TECHNION_EE_SPRING_NOTE}</p>}
       <p>
-        עודכן לאחרונה: <time dateTime="2026-10-25">25.10.2026</time> · מקור:{' '}
+        מקור:{' '}
         <a
           href={institutionLink(TECHNION_THRESHOLD_URL, 'technion')}
           target="_blank"

@@ -11,10 +11,12 @@ for (const width of [390, 1280]) {
       await expect(page.getByRole('listitem').first()).toHaveText(
         `בחורף תשפ"ז: סכם ${id === 'ee' ? '91.5' : '87'}`,
       );
-      const notice = page
-        .locator('div')
-        .filter({ has: page.locator('> p > time[datetime="2026-10-25"]') });
+      const notice = page.locator('div').filter({
+        has: page.locator('> p > a[href*="sechem-for-admission"]'),
+      });
       await expect(notice).toBeVisible();
+      await expect(notice).not.toContainText('25.10.2026');
+      await expect(notice).not.toContainText('עודכן לאחרונה');
       await expect(notice).toHaveCSS('text-align', 'right');
       await expect(notice.getByRole('link', { name: 'הטכניון', exact: true })).toHaveAttribute(
         'href',

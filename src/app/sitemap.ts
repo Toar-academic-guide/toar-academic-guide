@@ -10,6 +10,7 @@ import {
 } from '@/lib/seo/catalogueModified';
 import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { absoluteUrl } from '@/lib/site';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { ABOUT_INDEPENDENCE_CHECKED_ON } from '@/lib/aboutIndependence';
 
 export const dynamic = 'force-dynamic';
@@ -52,19 +53,31 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   ]);
   dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
   // Authored with the calculator page; never replace this with the build date.
-  dates.set('/sekhem-calculator', '2026-11-05');
+  dates.set('/sekhem-calculator', '2026-11-14');
   dates.set('/calculator', '2026-11-10');
   dates.set('/about', ABOUT_INDEPENDENCE_CHECKED_ON);
   dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   dates.set('/psychometric-two-domain', '2026-11-06');
+  dates.set('/amirnet', '2026-11-14');
   dates.set('/psychometric-accommodations', '2026-11-14');
   dates.set('/open-days', '2026-11-05');
   dates.set('/transfer', '2026-11-08');
   dates.set('/without-psychometric', '2026-11-10');
+  for (const id of [
+    'law',
+    ...lawBarOutcomes.rows.flatMap((row) => ('programId' in row ? [row.programId] : [])),
+  ]) {
+    dates.set(`/programs/${id}`, lawBarOutcomes.pageModifiedDate);
+  }
   // The subject index lists hubs built from the programme catalogue.
   dates.set(
     '/programs',
-    latestModified(STATIC_PAGE_MODIFIED_AT, ...catalogue.programs.map(programModifiedAt)),
+    latestModified(
+      STATIC_PAGE_MODIFIED_AT,
+      ...[...dates.entries()]
+        .filter(([path]) => path.startsWith('/programs/'))
+        .map(([, date]) => date),
+    ),
   );
   return [
     '/',
@@ -73,6 +86,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/calculator',
     '/psychometric-dates',
     '/psychometric-two-domain',
+    '/amirnet',
     '/psychometric-accommodations',
     '/open-days',
     '/transfer',
