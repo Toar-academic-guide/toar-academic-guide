@@ -7,7 +7,7 @@ import Page, { dynamic, metadata } from './page';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם תאריך בדיקה וקישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
 const canonical = 'https://findmyway.co.il/psychometric-dates';
 afterEach(() => vi.useRealTimers());
 
@@ -72,7 +72,8 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   ]);
-  expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(6);
+  expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(0);
+  expect(section.textContent).not.toMatch(/נבדק בתאריך/);
   expect(section.textContent).not.toContain('תל אביב');
 });
 
@@ -89,7 +90,7 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   expect(main.textContent).toContain(
     'המועד הפתוח הקרוב להרשמה: 18–19.4.2027. ההרשמה נסגרת ב־10.2.2027.',
   );
-  const examTable = within(main).getByRole('table', { name: /מועדי פסיכומטרי מ־/ });
+  const examTable = within(main).getByRole('table', { name: 'מועדי פסיכומטרי' });
   const rows = within(examTable).getAllByRole('row').slice(1);
   expect(rows).toHaveLength(5);
   expect(
@@ -105,13 +106,12 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   const stamp = within(main)
     .getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })
     .closest('p')!;
-  expect(stamp.textContent).toContain('29.10.2026');
+  expect(stamp.textContent).not.toMatch(/נבדק|29\.10\.2026/);
   expect(
     within(stamp).getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' }).getAttribute('href'),
   ).toBe('https://www.nite.org.il/test-dates-and-prices/');
-  expect(examTable.querySelector('caption')?.textContent).toBe(
-    'מועדי פסיכומטרי מ־29.10.2026 ואילך',
-  );
+  expect(examTable.querySelector('caption')?.textContent).toBe('מועדי פסיכומטרי');
+  expect(main.textContent).not.toMatch(/נבדק בתאריך/);
   expect(main.textContent).not.toMatch(/סכם/);
   expect(
     screen
@@ -192,7 +192,7 @@ it('omits an answer when no verified registration is open and hides past rows', 
   render(await Page());
   expect(screen.getByRole('main').textContent).not.toContain('המועד הפתוח הקרוב להרשמה:');
   expect(
-    within(screen.getByRole('table', { name: /מועדי פסיכומטרי מ־/ })).getAllByRole('row'),
+    within(screen.getByRole('table', { name: 'מועדי פסיכומטרי' })).getAllByRole('row'),
   ).toHaveLength(2);
   expect(screen.queryByText('המועד הקרוב')).toBeNull();
 });

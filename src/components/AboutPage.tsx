@@ -1,9 +1,6 @@
 import Image from 'next/image';
 import WayPageShell from '@/components/WayPageShell';
-import {
-  ABOUT_INDEPENDENCE_CHECKED_ON,
-  ABOUT_INDEPENDENCE_DESCRIPTION,
-} from '@/lib/aboutIndependence';
+import { ABOUT_INDEPENDENCE_DESCRIPTION } from '@/lib/aboutIndependence';
 
 // Temporary founders photo; replace the public asset before publishing.
 const ABOUT_FOUNDERS_IMAGE_SRC = '/about-founders-temporary.png';
@@ -27,12 +24,6 @@ export default function AboutPage() {
             <p className="mt-4 text-lg leading-8 text-[#52607f]">
               {ABOUT_INDEPENDENCE_DESCRIPTION}
             </p>
-            <time
-              dateTime={ABOUT_INDEPENDENCE_CHECKED_ON}
-              className="mt-5 block text-sm text-[#52607f]"
-            >
-              נבדק בתאריך: 14.11.2026
-            </time>
           </section>
 
           <h1 className="max-w-4xl text-4xl font-semibold leading-tight text-[#445274] sm:text-6xl">

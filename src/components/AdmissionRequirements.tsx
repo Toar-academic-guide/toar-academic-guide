@@ -245,9 +245,7 @@ export default function AdmissionRequirements({
           </table>
           {institutionId !== 'tau' && (
             <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              {programId !== 'biu_law' &&
-                programId !== 'law' &&
-                'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
+              {programId !== 'biu_law' && programId !== 'law' && 'מקור: אתר אוניברסיטת בר-אילן — '}
               <a
                 href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
                 target="_blank"
