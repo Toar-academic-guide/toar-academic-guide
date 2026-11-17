@@ -16,6 +16,7 @@ describe('enquiry source route guard', () => {
     ['/transfer?from=calculator', '/transfer'],
     ['/without-psychometric?from=hub', '/without-psychometric'],
     ['/amirnet?from=guide', '/amirnet'],
+    ['/psychometric-accommodations?from=guide', '/psychometric-accommodations'],
     ['/calculator', '/calculator'],
     ['/app/calculator#inquiry', '/app/calculator'],
     ['/#inquiry', '/'],

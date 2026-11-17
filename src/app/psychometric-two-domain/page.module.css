@@ -162,6 +162,44 @@
   margin-top: 12px;
 }
 
+.admissionsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-block: 24px;
+  font-size: 15px;
+  line-height: 1.8;
+}
+
+.admissionsTable th,
+.admissionsTable td {
+  padding: 16px 10px;
+  border-bottom: 1px solid var(--border);
+  text-align: right;
+  vertical-align: top;
+}
+
+.admissionsTable thead {
+  background: #eef0ff;
+}
+
+.admissionsTable th {
+  font-weight: 600;
+}
+
+.admissionsTable th:first-child {
+  width: 19%;
+}
+
+.admissionsTable a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.mobileDateLabel {
+  display: none;
+}
+
 @media (max-width: 760px) {
   .main {
     padding: 24px 20px 48px;
@@ -183,5 +221,47 @@
   .weights th,
   .weights td {
     padding: 10px 6px;
+  }
+
+  .admissionsTable,
+  .admissionsTable tbody,
+  .admissionsTable tr,
+  .admissionsTable th,
+  .admissionsTable td {
+    display: block;
+    width: 100%;
+  }
+
+  .admissionsTable thead {
+    display: none;
+  }
+
+  .admissionsTable tr {
+    padding-block: 18px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .admissionsTable th,
+  .admissionsTable td {
+    padding: 4px 0;
+    border: 0;
+  }
+
+  .admissionsTable th:first-child {
+    width: 100%;
+    font-size: 17px;
+  }
+
+  .admissionsTable td:last-child {
+    color: #56627b;
+    font-size: 14px;
+  }
+
+  .admissionsTable td a + a {
+    margin-inline-start: 16px;
+  }
+
+  .mobileDateLabel {
+    display: inline;
   }
 }

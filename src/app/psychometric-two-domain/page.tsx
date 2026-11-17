@@ -22,7 +22,7 @@ const sections = [
   ['scores', 'איך מחושב הציון?'],
   ['first-exam', 'ניגשים בפעם הראשונה'],
   ['existing-scores', 'כבר יש לכם ציון'],
-  ['admissions', 'קבלה ללימודים'],
+  ['admissions', 'איזה ציון נחשב?'],
   ['questions', 'שאלות נפוצות'],
 ] as const;
 
@@ -204,7 +204,94 @@ export default function Page() {
           </section>
 
           <section aria-labelledby="admissions" className={styles.section}>
-            <h2 id="admissions">איך השינוי משפיע על הקבלה ללימודים?</h2>
+            <h2 id="admissions">איזה ציון ייחשב בקבלה לתשפ״ח?</h2>
+            <p id="admissions-answer">
+              איזה ציון פסיכומטרי ייחשב בקבלה? זה תלוי במוסד ובשנת הלימודים. בטבלה כאן מובא הכלל שכל
+              מוסד פרסם לתשפ״ח, עם קישור רשמי ותאריך בדיקה. באוניברסיטת בן־גוריון, לנבחנים שלפני
+              דצמבר <bdi dir="ltr">2026</bdi> ייחשב הציון הגבוה מבין הציון הרב־תחומי לבין הציון
+              הדו־תחומי. מוסדות שלא נמצא אצלם כלל מופיעים עם קישור בלבד.
+            </p>
+            <table className={styles.admissionsTable} aria-labelledby="admissions">
+              <thead>
+                <tr>
+                  <th scope="col">מוסד</th>
+                  <th scope="col">איזה ציון נחשב?</th>
+                  <th scope="col">מקור רשמי</th>
+                  <th scope="col">נבדק בתאריך</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr>
+                  <th scope="row">אוניברסיטת בן־גוריון בנגב</th>
+                  <td>
+                    לנבחנים לפני דצמבר <bdi dir="ltr">2026</bdi>: הגבוה מבין הציון הרב־תחומי המקורי
+                    והציון הדו־תחומי המחושב ממנו. לנבחנים במתכונת החדשה: הציון הדו־תחומי. אין צורך
+                    להיבחן שוב רק בגלל השינוי. הכלל מתייחס לציון הכללי; למסלולים המשתמשים בסכם כמותי
+                    או בסכם הנדסה יש חישוב נפרד, כמפורט במקור.
+                  </td>
+                  <td>
+                    <a href="https://www.bgu.ac.il/welcome/blog/articles/new-psychometry/">
+                      מדיניות בן־גוריון
+                    </a>
+                  </td>
+                  <td>
+                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
+                    <time dateTime="2026-11-14">
+                      <bdi dir="ltr">14.11.2026</bdi>
+                    </time>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">אוניברסיטת תל אביב</th>
+                  <td>
+                    במתכונת הישנה: הגבוה מבין הציון התלת־תחומי והציון הדו־תחומי מאותו מועד. במתכונת
+                    החדשה: הציון הדו־תחומי. למי שנבחנו בשתי המתכונות: הגבוה מבין שלושת הציונים —
+                    התלת־תחומי הישן, הדו־תחומי המחושב מהבחינה הישנה והדו־תחומי החדש. המדיניות לתשפ״ח
+                    היא פיילוט לשנתיים.
+                  </td>
+                  <td>
+                    <a href="https://go.tau.ac.il/he/psychometric-test">מדיניות תל אביב</a>
+                    <a href="https://go.tau.ac.il/he/ba/psycho">עמוד הפסיכומטרי</a>
+                  </td>
+                  <td>
+                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
+                    <time dateTime="2026-11-14">
+                      <bdi dir="ltr">14.11.2026</bdi>
+                    </time>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">האוניברסיטה העברית</th>
+                  <td>לא נמצא כלל לתשפ״ח בעמוד שנבדק. בדקו באתר המוסד.</td>
+                  <td>
+                    <a href="https://info.huji.ac.il/reception-components/Psychometric">
+                      הנחיות הפסיכומטרי
+                    </a>
+                  </td>
+                  <td>
+                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
+                    <time dateTime="2026-11-14">
+                      <bdi dir="ltr">14.11.2026</bdi>
+                    </time>
+                  </td>
+                </tr>
+                <tr>
+                  <th scope="row">אוניברסיטת חיפה</th>
+                  <td>לא נמצא כלל לתשפ״ח בעמוד שנבדק. בדקו באתר המוסד.</td>
+                  <td>
+                    <a href="https://admissions.haifa.ac.il/psychometric-amirnet-yaelnet-tests/">
+                      מידע על הבחינות
+                    </a>
+                  </td>
+                  <td>
+                    <span className={styles.mobileDateLabel}>נבדק בתאריך </span>
+                    <time dateTime="2026-11-14">
+                      <bdi dir="ltr">14.11.2026</bdi>
+                    </time>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
             <p>
               המוסד קובע איזה ציון לקבל ואיך לשקלל אנגלית: כחלק מהסכם, כדרישת סף או לצורך סיווג
               לרמות. אין כלל אחד שמתאים לכל התוכניות.{' '}
@@ -217,16 +304,6 @@ export default function Page() {
               <li>מהו המועד האחרון לבחינה ולמסירת הציונים.</li>
               <li>אילו דרישות נוספות צריך להשלים לצד הפסיכומטרי.</li>
             </ul>
-            <p>
-              לדוגמה, אפשר להתחיל ב
-              <a href="https://go.tau.ac.il/he/Psychometric-english">
-                מידע של אוניברסיטת תל אביב על השינוי
-              </a>{' '}
-              או ב
-              <a href="https://info.huji.ac.il/node/475">הנחיות הפסיכומטרי של האוניברסיטה העברית</a>
-              . ודאו שההנחיות מתייחסות לתוכנית ולשנת ההרשמה שלכם; אם המדיניות עדיין אינה מפורסמת,
-              פנו למדור הרישום.
-            </p>
             <p>
               לפני שבוחרים מועד לבחינה, בדקו{' '}
               <Link href="/psychometric-dates#semester-validity" prefetch={false}>

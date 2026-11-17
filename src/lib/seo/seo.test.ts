@@ -229,6 +229,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/amirnet`,
+      `${SITE_URL}/psychometric-accommodations`,
       `${SITE_URL}/open-days`,
       `${SITE_URL}/transfer`,
       `${SITE_URL}/without-psychometric`,
@@ -250,6 +251,12 @@ describe('crawl policy', () => {
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
+    for (const id of Object.keys(PROGRAM_RETIREMENT_REDIRECTS))
+      expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(id)}`);
+    for (const program of programs) {
+      if (canonicalProgramId(program.id) !== program.id)
+        expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(program.id)}`);
+    }
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
     // PM rule (#271): general subjects with no programme links stay out of the sitemap.
     // Education now links to Achva's source-backed B.Ed. route.
@@ -261,7 +268,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(446);
+    expect(urls).toHaveLength(447);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -647,9 +654,12 @@ describe('structured data', () => {
       alternateName: SITE_ALT_NAMES,
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/brand/myway-wordmark-1200.png`,
+      description:
+        'MyWay הוא מוצר עצמאי לבחירת לימודים בישראל. הוא אינו מערכת של אוניברסיטה או מכללה ואינו מסונף לאוניברסיטת תל אביב או למוסד לימודים אחר.',
       areaServed: 'IL',
       knowsLanguage: 'he',
     });
+    expect(organizationLd()).not.toHaveProperty('sameAs');
     expect(websiteLd()).toMatchObject({
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
