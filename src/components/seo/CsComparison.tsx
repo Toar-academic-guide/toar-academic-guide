@@ -92,7 +92,7 @@ export function CsComparison() {
                     href={row.sourceUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex min-h-11 items-center text-slate-700 underline decoration-[#b8b0d7] underline-offset-2 hover:text-[#6554b8]"
+                    className="inline-flex min-h-11 min-w-11 items-center text-slate-700 underline decoration-[#b8b0d7] underline-offset-2 hover:text-[#6554b8]"
                   >
                     <span>
                       <BidiText text={row.value} />

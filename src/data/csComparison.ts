@@ -60,7 +60,7 @@ export const csComparisonRows: readonly CsComparisonRow[] = [
     route: 'סכם',
     value: '700 ומעלה; טווח המתנה 680–699',
     scale: 'סכם של אוניברסיטת חיפה',
-    cycle: 'כמפורסם באתר המוסד',
+    cycle: 'תשפ״ז',
     sourceUrl: csOfficialUrls.haifa,
     checkedDate,
     note: 'מתמטיקה: 4 יחידות בציון 90 או 5 יחידות בציון 75 לפחות; נדרשים סיווג אנגלית טרום בסיסי וציון 120 ביעלנט או מעבר מבחן סיווג בעברית או קורס עברית. מועמדים בטווח ההמתנה נידונים בוועדת החוג.',

@@ -40,6 +40,7 @@ describe('CS comparison source ledger', () => {
     });
     expect(csComparisonRows[1].sourceUrl).toBe(csOfficialUrls.tau);
     expect(csComparisonRows[2].value).toContain('680–699');
+    expect(csComparisonRows[2].cycle).toBe('תשפ״ז');
     expect(csComparisonRows[3].note).toContain('ועדת החוג');
     expect(csComparisonRows[3].note).toContain('4 יחידות בציון 85');
     expect(csComparisonRows[5].value).toContain('104');
