@@ -78,7 +78,8 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   ]);
-  expect(section.querySelectorAll('time[datetime="2026-11-17"]')).toHaveLength(9);
+  expect(section.querySelectorAll('time[datetime="2026-11-17"]')).toHaveLength(0);
+  expect(section.textContent).not.toMatch(/נבדק בתאריך/);
   const values = (row: HTMLElement) =>
     within(row)
       .getAllByRole('cell')
