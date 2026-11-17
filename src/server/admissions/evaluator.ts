@@ -30,7 +30,10 @@ import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
-import { ISSUE_370_LINK_ONLY_PROGRAM_IDS } from '@/data/admissions/issue370Corrections';
+import {
+  ISSUE_370_LINK_ONLY_PROGRAM_IDS,
+  ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS,
+} from '@/data/admissions/issue370Corrections';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   applyHujiPsychologyDirectRoute,
@@ -376,6 +379,11 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${program.id}__${institution.id}`)) {
+      results[index] = unverifiedRequirementsResult(institution, []);
       continue;
     }
 
