@@ -188,11 +188,8 @@ export default async function Page({
                 <th scope="col" className="w-[35%] py-3 pe-2">
                   מוסד
                 </th>
-                <th scope="col" className="w-[40%] py-3 pe-2">
-                  קישור רשמי
-                </th>
                 <th scope="col" className="py-3">
-                  נבדק בתאריך
+                  קישור רשמי
                 </th>
               </tr>
             </thead>
@@ -212,11 +209,6 @@ export default async function Page({
                     >
                       {source.label}
                     </a>
-                  </td>
-                  <td className="py-3 align-top">
-                    <time dateTime="2026-11-14">
-                      <bdi dir="ltr">14.11.2026</bdi>
-                    </time>
                   </td>
                 </tr>
               ))}

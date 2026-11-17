@@ -490,7 +490,8 @@ it('shows only active computed-average institutions and matches the visible new 
   expect(within(table).getAllByRole('row')).toHaveLength(5);
   expect(within(table).queryByText('הטכניון')).toBeNull();
   expect(within(table).queryByText('אוניברסיטת רייכמן')).toBeNull();
-  expect(within(table).getAllByText('14.11.2026')).toHaveLength(4);
+  expect(within(table).queryByText('14.11.2026')).toBeNull();
+  expect(table.textContent).not.toContain('נבדק בתאריך');
   expect(
     within(table).getByRole('link', { name: 'הנחיות הבגרות באתר העברית' }).getAttribute('href'),
   ).toBe('https://info.huji.ac.il/reception-components/Bagrut');
