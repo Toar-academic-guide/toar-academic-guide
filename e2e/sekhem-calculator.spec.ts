@@ -772,7 +772,7 @@ test('a missing subject action adds its row and focuses its grade', async ({ pag
         }
       : row,
   );
-  await page.goto('/sekhem-calculator?program=tau_ee');
+  await page.goto('/sekhem-calculator?program=tau_law');
   await fillProfile(page);
   await page.getByRole('button', { name: 'הסרת מקצוע 3', exact: true }).click();
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
