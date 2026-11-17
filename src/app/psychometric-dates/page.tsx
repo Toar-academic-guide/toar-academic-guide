@@ -134,6 +134,9 @@ export default async function Page() {
               <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
             </svg>
           </Link>
+          <Link href="/calculator" className="mt-2 inline-flex min-h-11 items-center font-semibold">
+            איך מחשבון סיכויי הקבלה עובד
+          </Link>
         </div>
         <p className={styles.reformNote}>
           <ReformNote />{' '}

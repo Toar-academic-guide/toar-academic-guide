@@ -179,7 +179,8 @@ describe('server-rendered crawl paths', () => {
     const html = renderToStaticMarkup(await SubjectIndexPage());
     expect(html).toContain('<h1');
     expect(html).toContain('תחומי לימוד');
-    const hrefs = paths(html);
+    const hrefs = paths(html).filter((href) => href.startsWith('/programs/'));
+    expect(paths(html)).toContain('/calculator');
     expect(hrefs).toHaveLength(links.hubs.length);
     expect(new Set(hrefs)).toEqual(new Set(links.hubs.map((hub) => `/programs/${hub.id}`)));
     expect(hrefs).toContain('/programs/engineering');
