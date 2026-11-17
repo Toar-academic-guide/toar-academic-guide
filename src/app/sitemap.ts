@@ -57,6 +57,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/about', ABOUT_INDEPENDENCE_CHECKED_ON);
   dates.set('/psychometric-dates', psychometricDatesCheckedOn);
   dates.set('/psychometric-two-domain', '2026-11-06');
+  dates.set('/amirnet', '2026-11-14');
   dates.set('/psychometric-accommodations', '2026-11-14');
   dates.set('/open-days', '2026-11-05');
   dates.set('/transfer', '2026-11-08');
@@ -73,6 +74,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/calculator',
     '/psychometric-dates',
     '/psychometric-two-domain',
+    '/amirnet',
     '/psychometric-accommodations',
     '/open-days',
     '/transfer',
