@@ -67,6 +67,7 @@ describe('evaluation input derivation and provenance', () => {
     const normalized = normalizeEvaluationInputs(source);
     expect(normalized.input.bagrut).toBe(100);
     expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+    expect(normalized.calculatedBagrutAverages.bgu).toBe(111.9);
     expect(normalized.reasons.bgu).toBeUndefined();
     expect(normalized.overallReason).toBeTruthy();
     expect(source).toEqual(before);
@@ -79,6 +80,7 @@ describe('evaluation input derivation and provenance', () => {
     });
     expect(normalized.input.bagrut).toBe(110);
     expect(normalized.input.extraInputs.tauBagrutAverage).toBe(108.39);
+    expect(normalized.calculatedBagrutAverages.tau).toBe(108.39);
     expect(normalized.reasons.tau).toBeUndefined();
   });
   it('keeps explicit institutional averages and historical exam years unchanged', () => {
@@ -104,6 +106,8 @@ describe('evaluation input derivation and provenance', () => {
       haifaPsychometricYear: 2020,
     });
     expect(normalized.reasons).toEqual({});
+    expect(normalized.calculatedBagrutAverages.tau).toBeUndefined();
+    expect(normalized.calculatedBagrutAverages.bgu).toBeUndefined();
   });
   it('marks every average-only institutional proxy and the assumed Haifa cycle', () => {
     const normalized = normalizeEvaluationInputs({
@@ -111,6 +115,7 @@ describe('evaluation input derivation and provenance', () => {
       bagrut: 105,
       psychometric: 650,
     });
+    expect(normalized.calculatedBagrutAverages).toEqual({});
     // Approved test update, Jorje 2026-10-31: never manufacture a Haifa average proxy; retain both cycle defaults.
     expect(normalized.input.extraInputs).toMatchObject({
       bguBagrutAverage: 105,

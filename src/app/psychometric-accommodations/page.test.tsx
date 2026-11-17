@@ -34,7 +34,9 @@ it('renders the approved answer and official-source policy in the page HTML', ()
   );
   expect(new Set(sourceHosts)).toEqual(new Set(['www.nite.org.il', 'www.gov.il']));
   for (const source of main.querySelectorAll('p[class*="source"]')) {
-    expect(source.textContent).toContain('14.11.2026');
+    expect(source.querySelector('a')).not.toBeNull();
+    expect(source.textContent).not.toMatch(/\d{2}\.\d{2}\.\d{4}/);
+    expect(source.textContent).not.toContain('נבדק');
   }
   for (const number of main.querySelectorAll('bdi')) expect(number.getAttribute('dir')).toBe('ltr');
 });

@@ -73,7 +73,8 @@ for (const width of [390, 1440]) {
       await page.goto(`/programs/${id}`);
       await expect(page.locator('h1')).toHaveText(name);
       if (id === 'jerusalem_academy_dance' || id === 'rubin_classical') {
-        await expect(page.getByText('עודכן לאחרונה: 24.10.2026', { exact: false })).toBeVisible();
+        await expect(page.getByText('עודכן לאחרונה', { exact: false })).toHaveCount(0);
+        await expect(page.getByText('מקור:', { exact: false })).toBeVisible();
       }
       const schema = await page.locator('script[type="application/ld+json"]').allTextContents();
       expect(schema.join('')).toContain('P48M');
