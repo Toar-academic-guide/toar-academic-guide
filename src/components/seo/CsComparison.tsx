@@ -37,7 +37,7 @@ export function CsComparison() {
     >
       <h2 className="text-xl font-bold">ספי הקבלה למדעי המחשב לפי מוסד</h2>
       <p className="mt-3 leading-7 text-slate-700">
-        כל מספר מופיע בסולם של המוסד עצמו, עם קישור לעמוד הרשמי ותאריך הבדיקה.
+        כל מספר מופיע בסולם של המוסד עצמו, עם קישור לעמוד הרשמי.
       </p>
       <table className="mt-5 block w-full text-right text-sm leading-6 sm:table sm:table-fixed">
         <caption className="sr-only">ספי קבלה למדעי המחשב לפי מוסד ומסלול קבלה</caption>
@@ -131,9 +131,6 @@ export function CsComparison() {
                 >
                   אתר המוסד
                 </a>
-                <span className="block text-xs text-slate-500">
-                  נבדק <bdi dir="ltr">{row.checkedDate}</bdi>
-                </span>
               </td>
             </tr>
           ))}

@@ -867,10 +867,8 @@ describe('structured data', () => {
           (heading) => heading.textContent,
         ),
       ).not.toContain('שאלות נפוצות');
-      // Each institution's checked requirements retain their existing single stamp.
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(Object.values(sources).filter((source) => source.checked).length);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/עודכן לאחרונה:/);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/נבדק בתאריך/);
       if (!formerlyFaqProgramIds.includes(id)) return;
       const visibleText =
         id === 'colmgmt_cs'
@@ -917,8 +915,8 @@ describe('structured data', () => {
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
       }
-      const checkedText = source.checked
-        ? `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${data.institutions[0].name}` : ''}`
+      const checkedText = source.checked?.sourceUrl
+        ? `מקור: אתר ${data.institutions[0].name}`
         : undefined;
       for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
         for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
@@ -941,9 +939,9 @@ describe('structured data', () => {
         renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
         'text/html',
       );
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(1);
+      const text = document.querySelector('main')!.textContent!;
+      expect(text).not.toMatch(/עודכן לאחרונה:/);
+      expect(text.match(/מקור: אתר/g) ?? []).toHaveLength(1);
     },
   );
 

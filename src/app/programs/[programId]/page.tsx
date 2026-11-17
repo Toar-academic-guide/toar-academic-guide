@@ -424,28 +424,23 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {checked && (
-                        <p
-                          dir="rtl"
-                          className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
-                        >
-                          עודכן לאחרונה: {checked.date}
-                          {checked.sourceUrl &&
-                            !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
-                              <>
-                                {' · מקור: '}
-                                <a
-                                  href={checked.sourceUrl}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className={`text-inherit no-underline hover:underline focus-visible:underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
-                                >
-                                  אתר {institution.name}
-                                </a>
-                              </>
-                            )}
-                        </p>
-                      )}
+                      {checked?.sourceUrl &&
+                        !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
+                          <p
+                            dir="rtl"
+                            className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
+                          >
+                            {'מקור: '}
+                            <a
+                              href={checked.sourceUrl}
+                              target="_blank"
+                              rel="noopener noreferrer"
+                              className={`text-inherit no-underline hover:underline focus-visible:underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
+                            >
+                              אתר {institution.name}
+                            </a>
+                          </p>
+                        )}
                     </div>
                   );
                 })}

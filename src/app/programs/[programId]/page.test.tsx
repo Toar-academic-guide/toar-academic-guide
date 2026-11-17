@@ -241,7 +241,7 @@ describe('ProgramPage', () => {
       expect(within(row).getByRole('link', { name: 'אתר המוסד' }).getAttribute('href')).toBe(
         source.sourceUrl,
       );
-      expect(row.textContent).toContain(source.checkedDate);
+      expect(row.textContent).not.toContain(source.checkedDate);
       if (source.numeric) {
         const valueLink = within(row).getByRole('link', { name: source.value });
         // Group mixed Hebrew and isolated numbers in one flex item so spaces render.
@@ -411,9 +411,8 @@ describe('ProgramPage', () => {
       /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
-    const sourceFooter = screen.getByText(/^עודכן לאחרונה: 30\.10\.2026/);
-    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 30.10.2026');
-    expect(within(sourceFooter).queryByRole('link')).toBeNull();
+    expect(screen.queryByText(/עודכן לאחרונה/)).toBeNull();
+    expect(container.textContent).not.toContain('30.10.2026');
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
@@ -487,9 +486,8 @@ describe('ProgramPage', () => {
         expect(sourceLink.getAttribute('href')).toBe(
           `${sourceUrl}?utm_source=myway&utm_medium=referral`,
         );
-        expect(sourceLink.closest('p')!.textContent).toBe(
-          `עודכן לאחרונה: ${date} · מקור: אתר ${institution.name}`,
-        );
+        expect(sourceLink.closest('p')!.textContent).toBe(`מקור: אתר ${institution.name}`);
+        expect(sourceLink.closest('p')!.textContent).not.toContain(date);
         if (programId === 'colmgmt_cs') {
           expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
             'https://www.colman.ac.il/academics/ba/computer-science/?utm_source=myway&utm_medium=referral',
@@ -530,7 +528,7 @@ describe('ProgramPage', () => {
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');
       const line = link.closest('p')!;
-      expect(line.textContent).toBe(`עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`);
+      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
       expect(line.getAttribute('dir')).toBe('rtl');
       expect(line.className).toBe(
         'mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]',
@@ -565,9 +563,8 @@ describe('ProgramPage', () => {
       );
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      expect(screen.getByText('עודכן לאחרונה: 21.10.2026').textContent).toBe(
-        'עודכן לאחרונה: 21.10.2026',
-      );
+      expect(screen.queryByText(/עודכן לאחרונה/)).toBeNull();
+      expect(screen.queryByText('21.10.2026')).toBeNull();
       expect(screen.queryByText(/מקור:/)).toBeNull();
       expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
     });
@@ -582,9 +579,9 @@ describe('ProgramPage', () => {
       expect(
         block.getByRole('link', { name: `אתר ${institution.name}` }).getAttribute('href'),
       ).toBe(trackedSource.href);
-      expect(block.getByText(/עודכן לאחרונה:/).textContent).toBe(
-        `עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`,
-      );
+      expect(
+        block.getByRole('link', { name: `אתר ${institution.name}` }).closest('p')!.textContent,
+      ).toBe(`מקור: אתר ${institution.name}`);
     });
 
     it('keeps the line at the bottom when there is no link row', async () => {
@@ -598,7 +595,8 @@ describe('ProgramPage', () => {
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      const line = screen.getByText(/עודכן לאחרונה:/);
+      const line = screen.getByRole('link', { name: `אתר ${institution.name}` }).closest('p')!;
+      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
       expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
       expect(line.parentElement?.lastElementChild).toBe(line);
       expect(line.classList.contains('mt-2')).toBe(true);
