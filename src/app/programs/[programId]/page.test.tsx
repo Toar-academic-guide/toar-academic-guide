@@ -110,7 +110,7 @@ describe('ProgramPage', () => {
       expect(within(row).getByRole('link', { name: source.institution }).getAttribute('href')).toBe(
         `/programs/${source.programId}`,
       );
-      expect(row.textContent).toContain(source.checkedDate);
+      expect(row.textContent).not.toContain(source.checkedDate);
       expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
         source.officialUrl,
       );
@@ -621,7 +621,7 @@ describe('ProgramPage', () => {
         psychologyComparisonRows.find((candidate) => candidate.programId === 'bgu_psychology')
           ?.officialUrl,
       );
-      expect(row.textContent).toContain('14.11.2026');
+      expect(row.textContent).not.toContain('14.11.2026');
       expect(row.textContent).toContain('סכם 650 וגם פסיכומטרי 650');
     });
 

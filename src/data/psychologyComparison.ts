@@ -134,7 +134,7 @@ export const psychologyComparisonRows: readonly PsychologyComparisonRow[] = [
     scale: 'לא אומת',
     officialUrl: ariel,
     checkedDate: '21.10.2026',
-    note: 'תנאי הקבלה לא אומתו מאז 21.10.2026. בדקו את התנאים המעודכנים באתר האוניברסיטה לפני הרשמה.',
+    note: 'תנאי הקבלה לא אומתו. בדקו את התנאים המעודכנים באתר האוניברסיטה לפני הרשמה.',
   },
   {
     institution: 'אוניברסיטת רייכמן',

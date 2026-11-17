@@ -74,11 +74,8 @@ export function PsychologyComparison() {
               <th scope="col" className="w-[17%] border border-slate-200 p-2">
                 סולם הציון
               </th>
-              <th scope="col" className="w-[9%] border border-slate-200 p-2">
+              <th scope="col" className="w-[17%] border border-slate-200 p-2">
                 מקור
-              </th>
-              <th scope="col" className="w-[8%] border border-slate-200 p-2">
-                נבדק
               </th>
             </tr>
           </thead>
@@ -157,12 +154,6 @@ export function PsychologyComparison() {
                   >
                     לאתר המוסד
                   </a>
-                </td>
-                <td className="block border-t border-slate-100 pt-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 sm:hidden">
-                    נבדק
-                  </span>
-                  <bdi dir="ltr">{row.checkedDate}</bdi>
                 </td>
               </tr>
             ))}

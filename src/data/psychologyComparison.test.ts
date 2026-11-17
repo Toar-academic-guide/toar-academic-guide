@@ -37,6 +37,7 @@ describe('psychology comparison sources', () => {
     expect(row('ariel_psychology').main[0].text).toBe('תנאי הקבלה הנוכחיים לא אומתו.');
     expect(row('ariel_psychology').bagrut).toEqual([]);
     expect(row('ariel_psychology').scale).toBe('לא אומת');
-    expect(row('ariel_psychology').note).toContain('לא אומתו מאז 21.10.2026');
+    expect(row('ariel_psychology').note).toContain('תנאי הקבלה לא אומתו');
+    expect(row('ariel_psychology').note).not.toContain('21.10.2026');
   });
 });

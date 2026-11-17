@@ -23,9 +23,6 @@ export function HaifaPsychologyOfek() {
       >
         תנאי מסלול אופק באתר אוניברסיטת חיפה
       </a>
-      <p className="text-xs text-slate-500">
-        נבדק בתאריך <bdi dir="ltr">14.11.2026</bdi>
-      </p>
     </section>
   );
 }
