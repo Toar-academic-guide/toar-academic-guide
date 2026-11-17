@@ -109,7 +109,7 @@ export function LawBarOutcomeLine({ row }: { row: LawBarOutcomeRow }) {
         ב{lawBarOutcomes.sitting} של בחינת ההסמכה בכתב של לשכת עורכי הדין, מי שלמדו {row.studiedAt}{' '}
         וניגשו בפעם הראשונה: <bdi dir="ltr">{row.passed}</bdi> עוברים מתוך{' '}
         <bdi dir="ltr">{row.candidates}</bdi> נבחנים, שיעור מעבר <bdi dir="ltr">{row.rate}%</bdi>.
-        מקור: לשכת עורכי הדין, נבדק בתאריך <bdi dir="ltr">{lawBarOutcomes.checkedDate}</bdi>. הטבלה
+        מקור: לשכת עורכי הדין. הטבלה
         המלאה לכל המוסדות ב
         <Link
           href={hubPath}
