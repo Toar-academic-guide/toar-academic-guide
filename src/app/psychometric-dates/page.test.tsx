@@ -15,12 +15,15 @@ it('renders sourced semester dates without filling unpublished deadlines', async
   render(await Page());
   const section = screen.getByRole('region', { name: 'איזה מועד פסיכומטרי נחשב לאיזה סמסטר' });
   expect(within(section).getByRole('heading', { level: 2 }).id).toBe('semester-validity');
-  const spring = within(section).getByRole('table', { name: 'סמסטר ב\' תשפ"ז (מרץ 2027)' });
+  const spring = within(section).getByRole('table', { name: 'סמסטר ב\' תשפ"ז (פברואר–מרץ 2027)' });
   const rows = within(spring).getAllByRole('row').slice(1);
   expect(rows.map((row) => within(row).getByRole('rowheader').textContent)).toEqual([
     'הטכניון',
     'אוניברסיטת חיפה',
     'האוניברסיטה העברית',
+    'אוניברסיטת תל אביב',
+    'אוניברסיטת בן־גוריון',
+    'האוניברסיטה הפתוחה',
   ]);
   expect(
     within(rows[0])
@@ -35,7 +38,7 @@ it('renders sourced semester dates without filling unpublished deadlines', async
   ]);
   expect(within(rows[1]).getAllByRole('cell')[0].textContent).toBe('29.11.2026');
   expect(within(rows[2]).getAllByRole('cell')[0].textContent).toBe('03.01.2027');
-  for (const row of rows.slice(1)) {
+  for (const row of rows.slice(1, 3)) {
     expect(
       within(row)
         .getAllByRole('cell')
@@ -68,12 +71,32 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'https://admissions.technion.ac.il/registeration-dates/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
     'https://info.huji.ac.il/registration-process/calendar',
+    'https://go.tau.ac.il/he/reg-dates',
+    'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
+    'https://www.openu.ac.il/registration/spring/pages/default.aspx',
     'https://admissions.technion.ac.il/technion_psychometri/',
     'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   ]);
-  expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(6);
-  expect(section.textContent).not.toContain('תל אביב');
+  expect(section.querySelectorAll('time[datetime="2026-11-17"]')).toHaveLength(9);
+  const values = (row: HTMLElement) =>
+    within(row)
+      .getAllByRole('cell')
+      .slice(0, 4)
+      .map((cell) => cell.textContent);
+  expect(values(rows[3])).toEqual([
+    '1.11.2026',
+    'התוכניות רשאיות לסגור את ההרשמה ללא הודעה מוקדמת.',
+    '',
+    '',
+  ]);
+  expect(values(rows[4])).toEqual(['3.1.2027', '', '', '28.2.2027']);
+  expect(values(rows[5])).toEqual([
+    '1.11.2026',
+    '29.12.2026הרשמה מאוחרת: 30.12.2026–12.2.2027הרשמה עד 5.3.2027 תתאפשר על בסיס מקום פנוי בקבוצת הלימוד.',
+    '',
+    '7.3.2027',
+  ]);
 });
 
 it('renders the approved dates, derived answer, closed badge, next label and single CTA', async () => {
