@@ -44,6 +44,21 @@ import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it('keeps the legacy Ono URL open with a link to Ono and no programme claims', async () => {
+    const params = Promise.resolve({ programId: 'ono_medicine' });
+    const { container } = render(await ProgramPage({ params }));
+    const main = screen.getByRole('main');
+    expect(within(main).getByRole('heading', { name: 'הלימודים בקריה האקדמית אונו' })).toBeTruthy();
+    expect(within(main).getAllByRole('link')).toHaveLength(1);
+    expect(
+      within(main).getByRole('link', { name: 'למסלולי הלימוד באונו' }).getAttribute('href'),
+    ).toBe('/institutions/ono');
+    expect(container.querySelector('script[type="application/ld+json"]')).toBeNull();
+    expect(await generateMetadata({ params })).toMatchObject({
+      robots: { index: false, follow: true },
+    });
+  });
+
   it('renders all first-time law results, 12 law links, and matching hub schema', async () => {
     const { container } = render(
       await ProgramPage({ params: Promise.resolve({ programId: 'law' }) }),
