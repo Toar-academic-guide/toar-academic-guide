@@ -26,7 +26,7 @@ jobs:
     env:
       INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: scripts/indexnow.ts
           sparse-checkout-cone-mode: false
