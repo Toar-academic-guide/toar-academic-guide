@@ -30,7 +30,7 @@ jobs:
         with:
           sparse-checkout: scripts/indexnow.ts
           sparse-checkout-cone-mode: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
       - uses: actions/cache/restore@v4
