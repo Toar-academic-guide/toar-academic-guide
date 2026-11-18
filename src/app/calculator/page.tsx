@@ -282,8 +282,7 @@ export default function CalculatorLandingPage() {
               className="inline-flex min-h-11 items-center align-middle underline underline-offset-4"
             >
               אוניברסיטת חיפה, מדעי המחשב
-            </a>{' '}
-            · נבדק <bdi dir="ltr">10.11.2026</bdi>
+            </a>
           </p>
         </section>
 

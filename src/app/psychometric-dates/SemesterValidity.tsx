@@ -6,6 +6,9 @@ const sources = {
   haifa: 'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   huji: 'https://info.huji.ac.il/registration-process/calendar',
   bgu: 'https://www.bgu.ac.il/events/registrastion-2027-2028/',
+  tauSpring: 'https://go.tau.ac.il/he/reg-dates',
+  bguSpring: 'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
+  openuSpring: 'https://www.openu.ac.il/registration/spring/pages/default.aspx',
 };
 
 function Source({ href, institution }: { href: string; institution: string }) {
@@ -14,12 +17,6 @@ function Source({ href, institution }: { href: string; institution: string }) {
       <a href={href} aria-label={`מידע באתר ${institution}`}>
         באתר המוסד
       </a>
-      <small>
-        נבדק בתאריך{' '}
-        <bdi dir="ltr">
-          <time dateTime="2026-11-10">10.11.2026</time>
-        </bdi>
-      </small>
     </>
   );
 }
@@ -36,7 +33,7 @@ export default function SemesterValidity() {
       </p>
       <table className={styles.semesterTable}>
         <caption>
-          סמסטר ב&apos; תשפ&quot;ז (מרץ <bdi dir="ltr">2027</bdi>)
+          סמסטר ב&apos; תשפ&quot;ז (פברואר–מרץ <bdi dir="ltr">2027</bdi>)
         </caption>
         <thead>
           <tr>
@@ -45,7 +42,7 @@ export default function SemesterValidity() {
             <th scope="col">סיום הרשמה רגילה</th>
             <th scope="col">מועד פסיכומטרי אחרון תקף</th>
             <th scope="col">תחילת הסמסטר</th>
-            <th scope="col">מקור ותאריך בדיקה</th>
+            <th scope="col">מקור</th>
           </tr>
         </thead>
         <tbody>
@@ -69,7 +66,7 @@ export default function SemesterValidity() {
             <td data-label="תחילת הסמסטר">
               <bdi dir="ltr">24.3.2027</bdi>
             </td>
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.technionDates} institution="הטכניון" />
             </td>
           </tr>
@@ -81,7 +78,7 @@ export default function SemesterValidity() {
             <td />
             <td />
             <td />
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.haifa} institution="אוניברסיטת חיפה" />
             </td>
           </tr>
@@ -93,8 +90,56 @@ export default function SemesterValidity() {
             <td />
             <td />
             <td />
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.huji} institution="האוניברסיטה העברית" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">אוניברסיטת תל אביב</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">1.11.2026</bdi>
+            </td>
+            <td data-label="סיום הרשמה רגילה">התוכניות רשאיות לסגור את ההרשמה ללא הודעה מוקדמת.</td>
+            <td />
+            <td />
+            <td data-label="מקור">
+              <Source href={sources.tauSpring} institution="אוניברסיטת תל אביב" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">אוניברסיטת בן־גוריון</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">3.1.2027</bdi>
+            </td>
+            <td />
+            <td />
+            <td data-label="תחילת הסמסטר">
+              <bdi dir="ltr">28.2.2027</bdi>
+            </td>
+            <td data-label="מקור">
+              <Source href={sources.bguSpring} institution="אוניברסיטת בן־גוריון" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">האוניברסיטה הפתוחה</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">1.11.2026</bdi>
+            </td>
+            <td data-label="סיום הרשמה רגילה">
+              <bdi dir="ltr">29.12.2026</bdi>
+              <small>
+                הרשמה מאוחרת: <bdi dir="ltr">30.12.2026–12.2.2027</bdi>
+              </small>
+              <small>
+                הרשמה עד <bdi dir="ltr">5.3.2027</bdi> תתאפשר על בסיס מקום פנוי בקבוצת הלימוד.
+              </small>
+            </td>
+            <td />
+            <td data-label="תחילת הסמסטר">
+              <bdi dir="ltr">7.3.2027</bdi>
+            </td>
+            <td data-label="מקור">
+              <Source href={sources.openuSpring} institution="האוניברסיטה הפתוחה" />
             </td>
           </tr>
         </tbody>
@@ -107,7 +152,7 @@ export default function SemesterValidity() {
           <tr>
             <th scope="col">מוסד</th>
             <th scope="col">המידע שפורסם</th>
-            <th scope="col">מקור ותאריך בדיקה</th>
+            <th scope="col">מקור</th>
           </tr>
         </thead>
         <tbody>
@@ -121,7 +166,7 @@ export default function SemesterValidity() {
                 <li>ספטמבר אינו תקף לסמסטר א&apos;.</li>
               </ul>
             </td>
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.technionValidity} institution="הטכניון" />
             </td>
           </tr>
@@ -131,7 +176,7 @@ export default function SemesterValidity() {
               פתיחת הרשמה: <bdi dir="ltr">31.1.2027</bdi>. שנת הלימודים מתחילה באוקטובר{' '}
               <bdi dir="ltr">2027</bdi>.
             </td>
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.bgu} institution="אוניברסיטת בן־גוריון" />
             </td>
           </tr>
@@ -140,7 +185,7 @@ export default function SemesterValidity() {
             <td data-label="המידע שפורסם">
               פתיחת הרשמה לשנת תשפ&quot;ח: <bdi dir="ltr">01.11.2026</bdi>.
             </td>
-            <td data-label="מקור ותאריך בדיקה">
+            <td data-label="מקור">
               <Source href={sources.haifa} institution="אוניברסיטת חיפה" />
             </td>
           </tr>

@@ -23,6 +23,7 @@ import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirem
 import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
@@ -51,7 +52,12 @@ export const loadPublicCatalogue = cache(async () => {
   const currentProgramIds = new Set(programs.data.map((program) => program.id));
   const currentInstitutionIds = new Set(institutions.data.map((institution) => institution.id));
   const allPrograms = [
-    ...programs.data,
+    ...programs.data.map((program) =>
+      // The existing DB row has the old psychology label. Its official Ono
+      // curriculum awards a B.A. in behavioural sciences; fix public copy
+      // without writing to the active catalogue or changing evaluation.
+      program.id === 'ono_psychology' ? (STATIC_PROGRAM_BY_ID.get(program.id) ?? program) : program,
+    ),
     ...PUBLIC_PROGRAMS.filter((legacy) => !currentProgramIds.has(legacy.id)),
   ];
   const allInstitutions = [
@@ -191,6 +197,18 @@ export async function getPublicProgramPageData(
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
   const programPages = isGeneral ? subjectProgramPages(catalogue, program) : new Map();
+  if (isGeneral && program.id === 'law') {
+    for (const id of lawBarOutcomes.additionalHubProgramIds) {
+      const specific = catalogue.programs.find((candidate) => candidate.id === id);
+      const institution = catalogue.institutions.find(
+        (candidate) => candidate.id === specific?.institutionId,
+      );
+      if (!specific || !institution) throw new Error(`Missing law programme ${id}`);
+      if (!institutions.some((entry) => entry.id === institution.id))
+        institutions.push(institution);
+      programPages.set(institution.id, specific);
+    }
+  }
   const institutionProgramPaths: Record<string, string> = {};
   for (const institution of institutions) {
     const specific = programPages.get(institution.id);

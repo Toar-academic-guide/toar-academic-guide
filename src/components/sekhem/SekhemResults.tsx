@@ -203,6 +203,16 @@ function InstitutionGroup({
                 </div>
               )}
             </div>
+            {hasNumber(result.calculatedBagrutAverage) && (
+              <p className="mt-3 text-sm text-(--text-body)">
+                ממוצע הבגרות לפי המוסד:{' '}
+                <bdi dir="ltr" className="tabular-nums">
+                  {result.calculatedBagrutAverage.toLocaleString('en-US', {
+                    maximumFractionDigits: 2,
+                  })}
+                </bdi>
+              </p>
+            )}
             {!scoreOnly && !textOnlyGate && (
               <p
                 data-result-reason={numberless ? '' : undefined}

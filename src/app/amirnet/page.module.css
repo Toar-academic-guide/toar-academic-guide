@@ -1,0 +1,266 @@
+.shell.shell {
+  background: var(--way-page-background);
+}
+
+.shell [data-way-backdrop] {
+  display: none;
+}
+
+.main {
+  max-width: 1180px;
+  margin-inline: auto;
+  padding: 40px 24px 80px;
+  color: var(--text-body);
+  text-align: right;
+  font-size: 17px;
+  line-height: 1.8;
+}
+
+.main h1,
+.main h2,
+.main h3 {
+  color: #12234a;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+
+.main h1 {
+  max-width: 850px;
+  font-size: clamp(1.8rem, 4vw, 2.5rem);
+}
+
+.main h2 {
+  font-size: 1.5rem;
+}
+
+.main h3 {
+  font-size: 1.12rem;
+}
+
+.main p {
+  margin-top: 14px;
+}
+
+.main a {
+  color: #55449a;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+
+.main a:focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+
+.main bdi {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.lead {
+  max-width: 850px;
+  font-size: 1.1rem;
+}
+
+.stamp,
+.note {
+  color: #56627b;
+  font-size: 14px;
+}
+
+.stamp a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.section {
+  padding-block: 32px;
+  border-bottom: 1px solid var(--border);
+}
+
+.section > p {
+  max-width: 850px;
+}
+
+.sourceLinks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 24px;
+  font-size: 15px;
+}
+
+.sourceLinks a,
+.related a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.tableWrap {
+  margin-block: 24px;
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.table caption {
+  text-align: right;
+  margin-bottom: 12px;
+  color: #56627b;
+}
+
+.table th,
+.table td {
+  text-align: right;
+  vertical-align: top;
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.table thead {
+  background: #eef0ff;
+}
+
+.table tbody tr:nth-child(even) {
+  background: #fafaff;
+}
+
+.table th[scope='row'] {
+  min-width: 125px;
+  color: #12234a;
+}
+
+.table td:nth-child(5) {
+  min-width: 245px;
+}
+
+.table td:nth-child(6) {
+  min-width: 155px;
+}
+
+.table td:last-child {
+  min-width: 140px;
+}
+
+.table td:last-child a {
+  display: flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+.table td:last-child time {
+  display: block;
+  color: #56627b;
+}
+
+.table .rowDetail {
+  margin-top: 8px;
+  color: #56627b;
+}
+
+.faq + .faq {
+  margin-top: 24px;
+}
+
+.faq h3 {
+  margin-top: 0;
+}
+
+.faq p {
+  max-width: 850px;
+  margin-top: 6px;
+}
+
+.related {
+  padding-top: 32px;
+}
+
+.related a {
+  margin-inline-end: 24px;
+}
+
+@media (max-width: 760px) {
+  .main {
+    padding: 24px 20px 48px;
+    font-size: 16px;
+  }
+
+  .lead {
+    font-size: 16px;
+  }
+
+  .section {
+    padding-block: 26px;
+  }
+
+  .tableWrap {
+    overflow: visible;
+  }
+
+  .table caption {
+    display: block;
+    width: 100%;
+  }
+
+  .table,
+  .table tbody,
+  .table tr,
+  .table th,
+  .table td {
+    display: block;
+  }
+
+  .table thead {
+    display: none;
+  }
+
+  .table tr {
+    margin-bottom: 16px;
+    padding: 16px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: #fff;
+  }
+
+  .table tbody tr:nth-child(even) {
+    background: #fafaff;
+  }
+
+  .table th,
+  .table td {
+    min-width: 0 !important;
+    padding: 8px 0;
+    border: 0;
+  }
+
+  .table th[scope='row'] {
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--border);
+    font-size: 17px;
+  }
+
+  .table td::before {
+    display: block;
+    content: attr(data-label);
+    color: #56627b;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  .table td:last-child a {
+    min-height: 44px;
+  }
+
+  .related a {
+    display: flex;
+    margin-inline-end: 0;
+  }
+}

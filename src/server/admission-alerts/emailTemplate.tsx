@@ -61,12 +61,6 @@ export async function renderAdmissionAlertEmail(
   ) {
     throw new Error('Admission-alert delivery context is invalid.');
   }
-  const reviewedDate = new Intl.DateTimeFormat('he-IL', {
-    timeZone: 'Asia/Jerusalem',
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-  }).format(content.reviewedAt);
   const calculateUrl = `${config.origin}/app/calculator`;
   const manageUrl = `${config.origin}/app/profile#admission-alerts`;
   // A fragment is not sent in HTTP requests/access logs. U6 handles explicit confirmation.
@@ -122,8 +116,8 @@ export async function renderAdmissionAlertEmail(
                           <strong>{content.programName}</strong> {withBet(content.institutionName)}.
                         </p>
                         <p>
-                          בעקבות שינוי בנתוני הקבלה שנבדק בתאריך {reviewedDate}, זוהתה התאמה ראשונית
-                          חדשה ליעד שביקשת לעקוב אחריו במחזור ההתראות {content.cycle}.
+                          בעקבות שינוי בנתוני הקבלה, זוהתה התאמה ראשונית חדשה ליעד שביקשת לעקוב
+                          אחריו במחזור ההתראות {content.cycle}.
                         </p>
                         <p>
                           ההתראה אינה הבטחת קבלה. תנאי הקבלה עשויים להשתנות, וייתכנו דרישות נוספות.

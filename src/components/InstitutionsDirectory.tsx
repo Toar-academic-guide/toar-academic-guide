@@ -212,6 +212,12 @@ export default function InstitutionsDirectory({
         <h1 className="mb-8 text-3xl font-semibold text-[#445274] sm:text-4xl">
           מוסדות לימוד בישראל
         </h1>
+        <Link
+          href="/calculator"
+          className={`mb-6 inline-flex min-h-11 items-center font-semibold text-[#5262d9] underline underline-offset-4 ${focusClass}`}
+        >
+          איך מחשבון סיכויי הקבלה עובד
+        </Link>
         <div className="space-y-6 rounded-3xl border border-white bg-white/80 p-5 sm:p-6">
           <PillGroup
             label="תחום לימודים"
