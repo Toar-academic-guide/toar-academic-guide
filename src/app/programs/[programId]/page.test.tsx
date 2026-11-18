@@ -324,6 +324,63 @@ describe('ProgramPage', () => {
     ).toBe(false);
   });
 
+  it('shows seven prep comparisons with only verified facts and a Bagrut calculator link', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'prep' }) }),
+    );
+
+    const table = screen.getByRole('table', { name: 'השוואת מכינות' });
+    expect(within(table).getAllByRole('row')).toHaveLength(8);
+    expect(within(table).getByText('תעודת הבגרות')).toBeTruthy();
+    expect(within(table).getByText('500 לפחות בפסיכומטרי או במימ״ד')).toBeTruthy();
+    for (const id of ['biu_prep', 'ruppin_prep', 'sapir_prep', 'sce_prep']) {
+      const row = table.querySelector(`a[href="/programs/${id}"]`)!.closest('tr')!;
+      expect(row.querySelectorAll('td')).toHaveLength(5);
+      expect([...row.querySelectorAll('td')].slice(0, 4).every((cell) => !cell.textContent)).toBe(
+        true,
+      );
+    }
+    expect(
+      screen.getByRole('link', { name: 'חישוב סכם מהבגרות והפסיכומטרי' }).getAttribute('href'),
+    ).toBe('/sekhem-calculator');
+    expect(screen.queryByText(/ציון מכינה במחשבון/)).toBeNull();
+    expect(screen.queryByText(/נבדק|עודכן לאחרונה/)).toBeNull();
+    expect(screen.getByRole('heading', { name: 'סיוע במימון המכינה' })).toBeTruthy();
+    expect(
+      screen
+        .getByRole('link', { name: 'תנאי הזכאות ואופן ההגשה באתר משרד הביטחון' })
+        .getAttribute('href'),
+    ).toBe(
+      'https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx',
+    );
+    expect(container.textContent).toContain('80%');
+    const faq = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'][0];
+    const visibleFaq = screen.getByRole('heading', { name: 'שאלה נפוצה' }).closest('section')!;
+    expect([
+      visibleFaq.querySelector('dt')?.textContent,
+      visibleFaq.querySelector('dd')?.textContent,
+    ]).toEqual([faq.mainEntity[0].name, faq.mainEntity[0].acceptedAnswer.text]);
+  });
+
+  it('links verified prep children to their mechina pages and removes Sapir’s law link', async () => {
+    for (const [programId, path] of [
+      ['huji_prep', 'mechina.huji.ac.il/'],
+      ['braude_prep', 'w3.braude.ac.il/department/mechina/'],
+      ['telhai_prep', 'www.telhai.ac.il/%D7%9E%D7%9B%D7%99%D7%A0%D7%94_'],
+    ]) {
+      const { unmount } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toContain(path);
+      expect(screen.getByRole('link', { name: 'השוואת כל המכינות' }).getAttribute('href')).toBe(
+        '/programs/prep',
+      );
+      unmount();
+    }
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'sapir_prep' }) }));
+    expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'השוואת כל המכינות' })).toBeTruthy();
+  });
   it('renders Danon’s culinary programme link and the existing beginner note', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'danon_culinary' }) }));
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(

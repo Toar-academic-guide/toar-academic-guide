@@ -30,6 +30,36 @@ import {
 
 describe('public catalogue page data', () => {
   it.each(['static', 'database'] as const)(
+    'uses the approved prep links in %s presentation',
+    async (source) => {
+      const programs = getStaticCataloguePrograms();
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: source === 'database' ? programs.map((program) => ({ ...program })) : programs,
+        meta: { catalogueSource: source },
+      });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+        data: getStaticCatalogueInstitutions(),
+        meta: { catalogueSource: source },
+      });
+      for (const [id, expected] of [
+        ['huji_prep', 'https://mechina.huji.ac.il/'],
+        ['biu_prep', 'https://mechina-kda.biu.ac.il/node/851'],
+        ['braude_prep', 'https://w3.braude.ac.il/department/mechina/'],
+        ['ruppin_prep', 'https://www.ruppin.ac.il/'],
+        ['sapir_prep', null],
+        ['telhai_prep', 'https://www.telhai.ac.il/'],
+        ['sce_prep', 'https://www.sce.ac.il/'],
+      ] as const) {
+        const page = (await getPublicProgramPageData(id))!;
+        const link = (await getPublicProgramRequirementSources(page))[page.institutions[0].id]
+          .officialUrl;
+        expect(link ?? null, id).toEqual(expected ? expect.stringContaining(expected) : null);
+        expect(link ?? '').not.toContain('/ba/law');
+      }
+    },
+  );
+
+  it.each(['static', 'database'] as const)(
     'shows sourced medicine, complementary-medicine and Ono nursing listings in %s mode',
     async (source) => {
       const programs = getStaticCataloguePrograms();
