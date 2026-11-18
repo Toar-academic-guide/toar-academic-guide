@@ -36,6 +36,7 @@ import { listCataloguePrograms, listCatalogueInstitutions } from '@/server/catal
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThresholds';
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
+import { csAnswer, csComparisonRows, csFaq, csOfficialUrls } from '@/data/csComparison';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
 import { psychologyComparisonRows, psychologyFaq } from '@/data/psychologyComparison';
@@ -359,7 +360,7 @@ describe('ProgramPage', () => {
 
     expect(screen.getByRole('heading', { name: program.name })).toBeTruthy();
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
-    expect(screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' }).getAttribute('href')).toBe(
+    expect(screen.getByRole('link', { name: 'בדקו מסלולים נתמכים' }).getAttribute('href')).toBe(
       `/app/calculator?program=${encodeURIComponent(program.id)}`,
     );
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 38)
@@ -441,11 +442,94 @@ describe('ProgramPage', () => {
         .getByRole('link', { name: 'להשוואה עם מדעי הנתונים' })
         .getAttribute('href'),
     ).toBe('/programs/datascience');
-    expect(await generateMetadata({ params: Promise.resolve({ programId: 'cs' }) })).toEqual(
-      await import('@/lib/seo/metadata').then(({ buildProgramMetadata }) =>
-        buildProgramMetadata('cs'),
-      ),
+    expect(await generateMetadata({ params: Promise.resolve({ programId: 'cs' }) })).toMatchObject({
+      title: 'לימודי מדעי המחשב: תנאי קבלה וסיכויי קבלה',
+      description: expect.stringContaining('ספי הקבלה למדעי המחשב'),
+      alternates: { canonical: '/programs/cs' },
+    });
+  });
+
+  it('renders the sourced CS table, preserves 15 cards, and matches visible FAQ to JSON-LD', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'cs' }) }),
     );
+    const answer = screen.getByText(csAnswer);
+    const table = screen.getByRole('table', {
+      name: 'ספי קבלה למדעי המחשב לפי מוסד ומסלול קבלה',
+    });
+    expect(answer.compareDocumentPosition(table) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(11);
+    for (const [index, row] of rows.entries()) {
+      const source = csComparisonRows[index];
+      expect(within(row).getByRole('link', { name: source.institution }).getAttribute('href')).toBe(
+        `/programs/${source.programId}`,
+      );
+      expect(within(row).getByRole('link', { name: 'אתר המוסד' }).getAttribute('href')).toBe(
+        source.sourceUrl,
+      );
+      expect(row.textContent).not.toContain(source.checkedDate);
+      if (source.numeric) {
+        const valueLink = within(row).getByRole('link', { name: source.value });
+        // Group mixed Hebrew and isolated numbers in one flex item so spaces render.
+        expect(valueLink.firstElementChild?.tagName).toBe('SPAN');
+        expect(valueLink.firstElementChild?.textContent).toBe(source.value);
+        expect(valueLink.querySelector('bdi[dir="ltr"]')).toBeTruthy();
+      }
+    }
+    expect(container.querySelector('#cs-thresholds')).toBeTruthy();
+    const cards = screen.getByRole('heading', { name: 'מוסדות לימוד' }).nextElementSibling!;
+    expect(cards.children).toHaveLength(15);
+    expect(
+      screen.getByRole('heading', { name: 'מתלבטים בין מדעי המחשב למדעי הנתונים?' }),
+    ).toBeTruthy();
+    expect(container.querySelector('main')!.textContent).not.toContain('108');
+    expect(container.querySelector('main')!.textContent).toContain('ממוצע בגרות 104');
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const faq = graph.find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    expect(faq['@id']).toBe('https://findmyway.co.il/programs/cs#cs-faq');
+    expect(
+      faq.mainEntity.map((item: { name: string; acceptedAnswer: { text: string } }) => [
+        item.name,
+        item.acceptedAnswer.text,
+      ]),
+    ).toEqual(csFaq.map(({ question, answer }) => [question, answer]));
+    const visibleFaq = container.querySelector('#cs-faq')!;
+    expect([...visibleFaq.querySelectorAll('dt, dd')].map((node) => node.textContent)).toEqual(
+      csFaq.flatMap(({ question, answer }) => [question, answer]),
+    );
+    expect(
+      within(visibleFaq as HTMLElement)
+        .getByRole('link', { name: 'בלי פסיכומטרי' })
+        .getAttribute('href'),
+    ).toBe('/without-psychometric');
+  });
+
+  it('uses direct official admissions links on the CS hub and links all eight child pages back', async () => {
+    const hub = render(await ProgramPage({ params: Promise.resolve({ programId: 'cs' }) }));
+    const admissionSection = screen.getByRole('heading', { name: 'תנאי קבלה' }).closest('section')!;
+    for (const [institution, source] of [
+      ['tau', csOfficialUrls.tau],
+      ['huji', csOfficialUrls.huji],
+      ['technion', csOfficialUrls.technion],
+    ] as const) {
+      expect(
+        admissionSection.querySelector(`a[href^="${source.replaceAll('"', '&quot;')}"]`),
+        institution,
+      ).toBeTruthy();
+    }
+    hub.unmount();
+    for (const programId of new Set(csComparisonRows.map((row) => row.programId))) {
+      const child = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      expect(
+        screen
+          .getByRole('link', { name: 'השוו את ספי הקבלה למדעי המחשב בכל המוסדות' })
+          .getAttribute('href'),
+      ).toBe('/programs/cs#cs-thresholds');
+      child.unmount();
+    }
   });
 
   it('calls notFound for unknown program IDs', async () => {
@@ -554,8 +638,8 @@ describe('ProgramPage', () => {
       /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
-    expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
-    expect(screen.queryByText('30.10.2026')).toBeNull();
+    expect(screen.queryByText(/עודכן לאחרונה/)).toBeNull();
+    expect(container.textContent).not.toContain('30.10.2026');
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
@@ -584,7 +668,7 @@ describe('ProgramPage', () => {
     },
   );
 
-  describe('requirements checked line', () => {
+  describe('requirements source line', () => {
     it.each([
       ['ono_law', 'ono', 'https://www.ono.ac.il/curriculum/llb/', '23.10.2026'],
       [
@@ -618,7 +702,7 @@ describe('ProgramPage', () => {
         '24.10.2026',
       ],
     ] as const)(
-      'renders the packet stamp for %s and withholds it on note drift',
+      'renders the source for %s and withholds it on note drift',
       async (programId, institutionId, sourceUrl, date) => {
         const institution = getStaticCatalogueInstitutions().find(
           (item) => item.id === institutionId,
@@ -630,6 +714,7 @@ describe('ProgramPage', () => {
           `${sourceUrl}?utm_source=myway&utm_medium=referral`,
         );
         expect(sourceLink.closest('p')!.textContent).toBe(`מקור: אתר ${institution.name}`);
+        expect(sourceLink.closest('p')!.textContent).not.toContain(date);
         expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
         expect(screen.queryByText(date)).toBeNull();
         if (programId === 'colmgmt_cs') {
@@ -664,7 +749,7 @@ describe('ProgramPage', () => {
     trackedSource.searchParams.set('utm_source', 'myway');
     trackedSource.searchParams.set('utm_medium', 'referral');
 
-    it('renders the exact date and fetched source below the link row', async () => {
+    it('renders the fetched source below the link row without the check date', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
       const link = screen.getByRole('link', { name: `אתר ${institution.name}` });
@@ -700,7 +785,7 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
     });
 
-    it('renders only the date when the presentation helper rejects the fetched URL', async () => {
+    it('omits the footer when the presentation helper rejects the fetched URL', async () => {
       const institutionLink = institutionLinks.institutionLink;
       vi.spyOn(institutionLinks, 'institutionLink').mockImplementation((url, id, options) =>
         url === entry.sourceUrl && options?.fallbackToWebsite === false
