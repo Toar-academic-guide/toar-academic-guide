@@ -78,6 +78,10 @@
   font-size: 14px;
 }
 
+.bookletLink {
+  gap: 0.25em;
+}
+
 .reviewDue {
   border-inline-start: 4px solid #b57724;
   padding: 8px 14px;

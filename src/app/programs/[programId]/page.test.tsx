@@ -44,6 +44,14 @@ import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it('isolates the engineering atuda year range in its inbound link', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'engineering' }) }));
+    const link = screen.getByRole('link', {
+      name: 'עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי 2027–2028',
+    });
+    expect(link.getAttribute('href')).toBe('/atuda');
+    expect(link.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
+  });
   it('renders all first-time law results, 12 law links, and matching hub schema', async () => {
     const { container } = render(
       await ProgramPage({ params: Promise.resolve({ programId: 'law' }) }),

@@ -42,6 +42,18 @@ const atudaLinksBySubject: Record<string, string> = {
   softwareeng: 'הנדסת תוכנה בעתודה: מוסדות ותוכנית ״פסגות״',
 };
 
+function AtudaLinkText({ text }: { text: string }) {
+  return text.split(/(2027–2028)/g).map((part, index) =>
+    part === '2027–2028' ? (
+      <bdi dir="ltr" key={index} className="whitespace-nowrap">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
   const metadata = await buildProgramMetadata(programId);
@@ -115,7 +127,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               href="/atuda"
               className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
             >
-              {atudaLinksBySubject[programId]}
+              <AtudaLinkText text={atudaLinksBySubject[programId]} />
             </Link>
           )}
           {programId !== 'medicine' && (
@@ -527,7 +539,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 href="/atuda"
                 className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
               >
-                {atudaLinksBySubject[program.id]}
+                <AtudaLinkText text={atudaLinksBySubject[program.id]} />
               </Link>
             </section>
           )}

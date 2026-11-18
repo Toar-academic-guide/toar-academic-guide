@@ -128,7 +128,6 @@ export const atudaMajors: AtudaMajor[] = [
       { name: 'אוניברסיטת אריאל', page: 'ariel_economics' },
       {
         name: 'אוניברסיטת רייכמן (חשבונאות או מנהל עסקים בהתמחות בחשבונאות)',
-        page: 'reichman_economics',
       },
       { name: 'מכללת תל־חי' },
       { name: 'עמק יזרעאל (כלכלה וניהול)' },

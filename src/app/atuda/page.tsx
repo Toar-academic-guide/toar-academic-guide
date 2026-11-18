@@ -92,6 +92,18 @@ function PageSources({ pages }: { pages: readonly number[] }) {
   );
 }
 
+function BidiRanges({ text }: { text: string }) {
+  return text.split(/(2027–2028|35–36)/g).map((part, index) =>
+    part === '2027–2028' || part === '35–36' ? (
+      <bdi dir="ltr" key={index}>
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 export default function Page() {
   const reviewDue = Date.now() > Date.UTC(2027, 7, 17);
   return (
@@ -126,7 +138,7 @@ export default function Page() {
             </h1>
             <p className={styles.source}>
               מקור:{' '}
-              <a href={atudaBooklet}>
+              <a className={styles.bookletLink} href={atudaBooklet}>
                 מידעון העתודה האקדמית של צה״ל לשנת <bdi dir="ltr">2027–2028</bdi>
               </a>{' '}
               ו<a href={atudaIdfPage}>אתר העתודה של צה״ל</a> · נבדק{' '}
@@ -304,8 +316,12 @@ export default function Page() {
             <h2 id="faq">שאלות נפוצות</h2>
             {atudaQuestions.map(({ question, answer }) => (
               <div key={question} className={styles.question}>
-                <h3>{question}</h3>
-                <p>{answer}</p>
+                <h3>
+                  <BidiRanges text={question} />
+                </h3>
+                <p>
+                  <BidiRanges text={answer} />
+                </p>
               </div>
             ))}
           </section>

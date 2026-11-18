@@ -32,6 +32,18 @@ it('renders the 2027–2028 booklet values and complete selected-major tables', 
     main.querySelector('a[href="/programs/technion_cs"]')?.closest('tr')?.textContent,
   ).toContain('מדעי המחשב');
   expect(main.querySelector('a[href="/programs/technion_softwareeng"]')).toBeNull();
+  const accountingRow = within(tables[2]).getByRole('row', { name: /כלכלה וחשבונאות/ });
+  const reichmanAccounting = within(accountingRow).getByText(
+    'אוניברסיטת רייכמן (חשבונאות או מנהל עסקים בהתמחות בחשבונאות)',
+  );
+  expect(reichmanAccounting.closest('a')).toBeNull();
+  expect(within(accountingRow).queryByRole('link', { name: /רייכמן/ })).toBeNull();
+  expect(
+    within(accountingRow).getByRole('link', { name: 'אוניברסיטת תל אביב' }).getAttribute('href'),
+  ).toBe('/programs/tau_economics');
+  expect(
+    within(main).getByRole('link', { name: /מידעון העתודה האקדמית של צה״ל לשנת/ }).textContent,
+  ).toContain('לשנת 2027–2028');
   for (const number of main.querySelectorAll('bdi')) expect(number.getAttribute('dir')).toBe('ltr');
 });
 
@@ -46,6 +58,10 @@ it('keeps the five visible FAQ answers identical to schema and has breadcrumb on
   ]);
   const visible = Array.from(container.querySelectorAll('section[aria-labelledby="faq"] > div'));
   expect(visible).toHaveLength(5);
+  expect(
+    Array.from(visible[0].querySelectorAll('p bdi[dir="ltr"]')).map((node) => node.textContent),
+  ).toEqual(['2027–2028', '35–36']);
+  expect(visible[2].querySelector('h3 bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
   expect(graph[0].mainEntity).toEqual(
     visible.map((item) => ({
       '@type': 'Question',
