@@ -16,6 +16,7 @@ it('renders the 2027–2028 booklet values and complete selected-major tables', 
     expect(main.textContent).toContain(value);
   }
   expect(main.textContent).not.toMatch(/28\.02\.26(?!\d)|28\.02\.2026|מובטח/);
+  expect(main.textContent).not.toMatch(/נבדק\s*\d|17\.11\.2026/);
   const tables = within(main).getAllByRole('table');
   expect(tables).toHaveLength(3);
   expect(tables[0].querySelectorAll('tbody tr')).toHaveLength(8);

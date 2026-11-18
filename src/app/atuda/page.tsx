@@ -4,7 +4,6 @@ import WayPageShell from '@/components/WayPageShell';
 import JsonLd from '@/components/seo/JsonLd';
 import {
   atudaBooklet,
-  atudaCheckedOn,
   atudaElite,
   atudaIdfPage,
   atudaMajors,
@@ -141,8 +140,7 @@ export default function Page() {
               <a className={styles.bookletLink} href={atudaBooklet}>
                 מידעון העתודה האקדמית של צה״ל לשנת <bdi dir="ltr">2027–2028</bdi>
               </a>{' '}
-              ו<a href={atudaIdfPage}>אתר העתודה של צה״ל</a> · נבדק{' '}
-              <bdi dir="ltr">{atudaCheckedOn}</bdi>
+              ו<a href={atudaIdfPage}>אתר העתודה של צה״ל</a>
             </p>
             {reviewDue && (
               <p className={styles.reviewDue}>
@@ -157,8 +155,7 @@ export default function Page() {
               להיבחן הוא אפריל <bdi dir="ltr">2027</bdi>.
             </p>
             <p className={styles.source}>
-              מידעון צה״ל <bdi dir="ltr">2027–2028</bdi>, <PageSources pages={[9, 10, 18]} /> · נבדק{' '}
-              <bdi dir="ltr">{atudaCheckedOn}</bdi>
+              מידעון צה״ל <bdi dir="ltr">2027–2028</bdi>, <PageSources pages={[9, 10, 18]} />
             </p>
           </header>
 
