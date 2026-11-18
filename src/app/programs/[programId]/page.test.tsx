@@ -38,6 +38,7 @@ import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThreshol
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
+import { psychologyComparisonRows, psychologyFaq } from '@/data/psychologyComparison';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 import ProgramPage, { generateMetadata } from './page';
@@ -188,6 +189,125 @@ describe('ProgramPage', () => {
       meta: {},
     });
   });
+
+  it('renders the sourced nine-row psychology comparison and matching visible FAQ schema', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }),
+    );
+    const table = screen.getByRole('table', { name: /תנאי קבלה לתואר ראשון/ });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(9);
+    for (const [index, row] of rows.entries()) {
+      const source = psychologyComparisonRows[index];
+      expect(within(row).getByRole('link', { name: source.institution }).getAttribute('href')).toBe(
+        `/programs/${source.programId}`,
+      );
+      expect(row.textContent).not.toContain(source.checkedDate);
+      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+        source.officialUrl,
+      );
+    }
+    expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
+    expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
+    expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
+    const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
+    expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
+    expect(ariel.querySelectorAll('td')[1].textContent).toContain('לא אומת');
+    expect(ariel.textContent).not.toContain('97');
+    expect(
+      within(table)
+        .getByRole('link', { name: 'הקריה האקדמית אונו — מדעי ההתנהגות (B.A.)' })
+        .querySelector('bdi[dir="ltr"]')?.textContent,
+    ).toBe('(B.A.)');
+    expect(screen.queryByRole('heading', { name: 'מוסדות לימוד' })).toBeNull();
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const psychologyProgram = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(psychologyProgram.provider).toHaveLength(8);
+    expect(
+      psychologyProgram.provider.some((provider: { name: string }) =>
+        provider.name.includes('אונו'),
+      ),
+    ).toBe(false);
+    const faq = graph.find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    expect(
+      faq.mainEntity.map((item: { name: string; acceptedAnswer: { text: string } }) => [
+        item.name,
+        item.acceptedAnswer.text,
+      ]),
+    ).toEqual(psychologyFaq.map(({ question, answer }) => [question, answer]));
+    const visibleFaq = screen.getByRole('heading', { name: 'שאלות נפוצות' }).closest('section')!;
+    expect([...visibleFaq.querySelectorAll('dt, dd')].map((node) => node.textContent)).toEqual(
+      psychologyFaq.flatMap(({ question, answer }) => [question, answer]),
+    );
+  });
+
+  it('keeps the Ono programme degree identity and Haifa conditional Ofek route visible', async () => {
+    const ono = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(ono.container.textContent).toContain('לא תואר ראשון בפסיכולוגיה');
+    ono.unmount();
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_psychology' }) }));
+    const ofek = screen
+      .getByRole('heading', { name: 'מסלול אופק בפסיכולוגיה — ללא פסיכומטרי' })
+      .closest('section')!;
+    expect(ofek.textContent).toContain('לומדים על תנאי');
+    expect(ofek.textContent).toContain('2–3 קורסים בציון 75 לפחות');
+    expect(ofek.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2–3');
+    const related = screen.getByRole('heading', { name: 'מסלולים נוספים' }).closest('section')!;
+    expect(within(related).queryByRole('link', { name: /אונו/ })).toBeNull();
+    expect(
+      within(ofek)
+        .getByRole('link', { name: 'תנאי מסלול אופק באתר אוניברסיטת חיפה' })
+        .getAttribute('href'),
+    ).toBe('https://admissions.haifa.ac.il/social-sciences/program/3268/');
+  });
+
+  it('serves the sourced Ono page through the existing static route fallback when the active catalogue lacks it', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().filter((program) => program.id !== 'ono_psychology'),
+      meta: { catalogueSource: 'database' },
+    });
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }));
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(screen.getByText(/לא תואר ראשון בפסיכולוגיה/)).toBeTruthy();
+  });
+
+  it('corrects the stale Ono psychology label in DB-mode presentation without claiming Ono awards a psychology BA', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().map((program) =>
+        program.id === 'ono_psychology'
+          ? { ...program, name: 'פסיכולוגיה', admissionRequirements: ['תנאים ישנים'] }
+          : program,
+      ),
+      meta: { catalogueSource: 'database' },
+    });
+    const ono = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(ono.container.textContent).not.toContain('תנאים ישנים');
+    ono.unmount();
+    const hub = render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
+    const graph = JSON.parse(
+      hub.container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const psychologyProgram = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(psychologyProgram.provider).toHaveLength(8);
+    expect(
+      psychologyProgram.provider.some((provider: { name: string }) =>
+        provider.name.includes('אונו'),
+      ),
+    ).toBe(false);
+  });
+
   it('renders Danon’s culinary programme link and the existing beginner note', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'danon_culinary' }) }));
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
@@ -580,18 +700,22 @@ describe('ProgramPage', () => {
       expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
     });
 
-    it('uses the own program’s entry in a general psychology institution block', async () => {
+    it('links the BGU comparison row to its own programme and official cycle source', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
 
-      const block = within(screen.getByRole('heading', { name: institution.name }).parentElement!);
-      expect(block.getByRole('link', { name: 'לפרטים המלאים' }).getAttribute('href')).toBe(
-        '/programs/bgu_psychology',
-      );
+      const row = within(screen.getByRole('table')).getByRole('rowheader', {
+        name: 'אוניברסיטת בן־גוריון בנגב',
+      }).parentElement!;
       expect(
-        block.getByRole('link', { name: `אתר ${institution.name}` }).getAttribute('href'),
-      ).toBe(trackedSource.href);
-      expect(block.getByText(/מקור:/).textContent).toBe(`מקור: אתר ${institution.name}`);
-      expect(block.queryByText(/עודכן לאחרונה:/)).toBeNull();
+        within(row).getByRole('link', { name: 'אוניברסיטת בן־גוריון בנגב' }).getAttribute('href'),
+      ).toBe('/programs/bgu_psychology');
+      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+        psychologyComparisonRows.find((candidate) => candidate.programId === 'bgu_psychology')
+          ?.officialUrl,
+      );
+      expect(row.textContent).not.toContain('14.11.2026');
+      expect(row.textContent).not.toMatch(/עודכן לאחרונה|נבדק בתאריך/);
+      expect(row.textContent).toContain('סכם 650 וגם פסיכומטרי 650');
     });
 
     it('keeps the line at the bottom when there is no link row', async () => {

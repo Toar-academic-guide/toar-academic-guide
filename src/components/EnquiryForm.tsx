@@ -13,6 +13,18 @@ import {
   type EnquiryInput,
 } from '@/lib/enquiries';
 
+function isolateDegree(text: string) {
+  return text.split(/(\(B\.A\.\)|B\.A\.)/g).map((part, index) =>
+    part === '(B.A.)' || part === 'B.A.' ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 const CONSENT_COLOR = '#666666';
 const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
 
@@ -173,7 +185,7 @@ export default function EnquiryForm({
       <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
         <h1 className="text-2xl font-bold">{heading}</h1>
         {intro && <p className="mt-2">{intro}</p>}
-        <p className="mt-2">{title}</p>
+        <p className="mt-2">{isolateDegree(title)}</p>
         <button
           type="button"
           className="way-button-primary mt-4 px-6 py-3"

@@ -23,6 +23,8 @@ import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import { PsychologyComparison, psychologyFaqLd } from '@/components/seo/PsychologyComparison';
+import { HaifaPsychologyOfek } from '@/components/seo/HaifaPsychologyOfek';
 import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { absoluteUrl } from '@/lib/site';
@@ -140,6 +142,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
+  const isPsychologyHub = isGeneral && program.id === 'psychology';
 
   return (
     <WayPageShell>
@@ -147,6 +150,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         data={[
           await programLd(data),
           programBreadcrumbLd(data),
+          ...(isPsychologyHub ? [psychologyFaqLd()] : []),
           ...(programId === 'law' ? lawOutcomeSchema() : []),
         ]}
       />
@@ -156,7 +160,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         data-page-kind={isGeneral ? 'subject' : 'programme'}
         className="px-4 py-10 text-right text-slate-900 sm:px-6"
       >
-        <section className="mx-auto flex max-w-4xl flex-col gap-8">
+        <section
+          className={`mx-auto flex flex-col gap-8 ${isPsychologyHub ? 'max-w-6xl' : 'max-w-4xl'}`}
+        >
           <Link
             href={ROUTES.home}
             className="text-sm font-semibold text-slate-500 hover:text-slate-900"
@@ -319,42 +325,45 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </Link>
             </section>
           )}
-          <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
-            <h2 className="text-xl font-bold">מוסדות לימוד</h2>{' '}
-            <div className="mt-4 grid gap-3 sm:grid-cols-2">
-              {institutions.map((institution) => (
-                <div
-                  key={institution.id}
-                  className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
-                >
-                  <Link
-                    className={isGeneral ? 'inline-flex min-h-11 items-center' : undefined}
-                    href={institutionProgramPaths[institution.id]}
+          {isPsychologyHub && <PsychologyComparison />}
+          {!isPsychologyHub && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <h2 className="text-xl font-bold">מוסדות לימוד</h2>{' '}
+              <div className="mt-4 grid gap-3 sm:grid-cols-2">
+                {institutions.map((institution) => (
+                  <div
+                    key={institution.id}
+                    className="flex items-center justify-between gap-3 rounded-xl border border-slate-200 px-4 py-3"
                   >
-                    {institution.name}{' '}
-                  </Link>
-                  <ProgramTrackedLink
-                    event="program_contact_cta_clicked"
-                    programId={program.id}
-                    institutionId={institution.id}
-                    className={`shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]${
-                      program.id === 'law' &&
-                      lawBarOutcomes.additionalHubProgramIds.some(
-                        (id) => institutionProgramPaths[institution.id] === `/programs/${id}`,
-                      )
-                        ? ' inline-flex min-h-11 items-center'
-                        : ''
-                    }`}
-                    href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
-                  >
-                    קבלו שיחה מהמוסד{' '}
-                  </ProgramTrackedLink>
-                </div>
-              ))}
-            </div>
-          </section>
+                    <Link
+                      className={isGeneral ? 'inline-flex min-h-11 items-center' : undefined}
+                      href={institutionProgramPaths[institution.id]}
+                    >
+                      {institution.name}{' '}
+                    </Link>
+                    <ProgramTrackedLink
+                      event="program_contact_cta_clicked"
+                      programId={program.id}
+                      institutionId={institution.id}
+                      className={`shrink-0 rounded-full border border-[#c9c2e4] px-3 py-2 text-sm text-[#6554b8]${
+                        program.id === 'law' &&
+                        lawBarOutcomes.additionalHubProgramIds.some(
+                          (id) => institutionProgramPaths[institution.id] === `/programs/${id}`,
+                        )
+                          ? ' inline-flex min-h-11 items-center'
+                          : ''
+                      }`}
+                      href={`/enquiry?program=${encodeURIComponent(program.id)}&institution=${encodeURIComponent(institution.id)}`}
+                    >
+                      קבלו שיחה מהמוסד{' '}
+                    </ProgramTrackedLink>
+                  </div>
+                ))}
+              </div>
+            </section>
+          )}
           {isGeneral && program.id === 'law' && <LawBarOutcomesTable />}
-          {program.isListed !== false && (
+          {!isPsychologyHub && program.isListed !== false && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
               <SekhemCalculatorLink
@@ -497,12 +506,20 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             </section>
           )}{' '}
+          {program.id === 'haifa_psychology' && <HaifaPsychologyOfek />}
           {lawBarOutcomes.rows.map((row) =>
             'programId' in row && row.programId === program.id ? (
               <LawBarOutcomeLine key={row.programId} row={row} />
             ) : null,
           )}
-          <RelatedPrograms {...related} />
+          <RelatedPrograms
+            {...related}
+            programs={
+              program.id === 'haifa_psychology'
+                ? related.programs.filter((candidate) => candidate.id !== 'ono_psychology')
+                : related.programs
+            }
+          />
         </section>
       </main>
     </WayPageShell>

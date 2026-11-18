@@ -250,6 +250,7 @@ describe('crawl policy', () => {
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_psychology`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
     for (const id of Object.keys(PROGRAM_RETIREMENT_REDIRECTS))
@@ -269,7 +270,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(448);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -860,7 +861,7 @@ describe('structured data', () => {
     return { data, sources, document, graph };
   }
 
-  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee', 'psychology'];
+  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee'];
 
   it('emits FAQPage on zero formerly-FAQ and control programme pages', async () => {
     const allowedIds: string[] = [];
@@ -977,7 +978,6 @@ describe('structured data', () => {
     'huji_engineering',
     'bezalel_graphic_design',
     'afeka_cs',
-    'psychology',
     'nursing',
     'cs',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
