@@ -28,6 +28,8 @@ import { HaifaPsychologyOfek } from '@/components/seo/HaifaPsychologyOfek';
 import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { absoluteUrl } from '@/lib/site';
+import PrepGuide, { prepFaqLd } from '@/components/seo/PrepGuide';
+import { prepRow } from '@/lib/prepGuide';
 
 export const dynamic = 'force-dynamic';
 
@@ -38,6 +40,17 @@ interface ProgramPageProps {
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
   const metadata = await buildProgramMetadata(programId);
+  if (programId === 'prep') {
+    const title = 'מכינה קדם־אקדמית: מה היא מחליפה ומה נדרש להיכנס';
+    const description =
+      'השוואת מכינות קדם־אקדמיות: מה התעודה מחליפה, מה נדרש כדי להיכנס, לאילו תחומים היא מיועדת וכמה זמן היא נמשכת, עם קישורים למוסדות.';
+    return {
+      ...metadata,
+      title,
+      description,
+      openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
   if (programId === 'law') {
     const title = 'לימודי משפטים: תנאי קבלה וסיכויי קבלה';
     const description =
@@ -93,6 +106,16 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   if (!data) {
     const subject = await getPublicSubjectHub(programId);
     if (!subject) notFound();
+    if (programId === 'prep') {
+      return (
+        <WayPageShell>
+          <main dir="rtl" data-page-kind="subject">
+            <JsonLd data={prepFaqLd} />
+            <PrepGuide programIds={subject.hub.programs.map((program) => program.id)} />
+          </main>
+        </WayPageShell>
+      );
+    }
     return (
       <WayPageShell>
         <main
@@ -131,6 +154,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   }
 
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
+  const prep = prepRow(program.id);
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
   const possibleCalculatorInstitutions = institutions.filter((institution) =>
@@ -405,7 +429,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       href={source.officialUrl}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#6554b8] underline"
+                      className={
+                        prep
+                          ? 'inline-flex min-h-11 min-w-11 items-center font-semibold text-[#6554b8] underline'
+                          : 'font-semibold text-[#6554b8] underline'
+                      }
                     >
                       לאתר המוסד
                     </ProgramTrackedLink>
@@ -415,13 +443,30 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
                       )}
-                      {source.requirements.length === 0 && (
+                      {!prep && source.requirements.length === 0 && (
                         <TechnionThresholdNotice
                           programId={program.id}
                           institutionId={institution.id}
                         />
                       )}
-                      {source.requirements.length > 0 ? (
+                      {prep ? (
+                        <div className="mt-3 space-y-3 text-sm leading-6 text-[#35415b]">
+                          {prep.replaces && (
+                            <p>
+                              תעודת המכינה מחליפה את {prep.replaces}.{' '}
+                              {prep.entry && `מבחן מיון לכניסה למכינה: ${prep.entry}`}
+                            </p>
+                          )}
+                          {prep.afterCompletion && <p>{prep.afterCompletion}</p>}
+                          {officialLink && <p>{officialLink}</p>}
+                          <Link
+                            href="/programs/prep"
+                            className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline"
+                          >
+                            השוואת כל המכינות
+                          </Link>
+                        </div>
+                      ) : source.requirements.length > 0 ? (
                         <>
                           <RequirementTiles
                             program={source.program}
@@ -483,7 +528,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {source.checked?.sourceUrl &&
+                      {!prep &&
+                        source.checked?.sourceUrl &&
                         !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
                           <p
                             dir="rtl"
