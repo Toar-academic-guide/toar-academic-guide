@@ -1,4 +1,5 @@
 import official from '../../../docs/admissions-verification/2026-09-28-huji-medicine-official.json';
+import finalCutoffEvidence from '../../../docs/admissions-verification/2026-11-01-huji-medicine-final-cutoff.json';
 import { createHash } from 'node:crypto';
 import {
   HUJI_MEDICINE_POLICY,
@@ -19,6 +20,7 @@ export const HUJI_MEDICINE_SOURCE_FINGERPRINT = `sha256:${createHash('sha256')
       requirements: HUJI_MEDICINE_REQUIREMENTS_URL,
       policy: HUJI_MEDICINE_POLICY,
       evidence: official,
+      finalCutoffEvidence,
     }),
   )
   .digest('hex')}`;
@@ -90,7 +92,7 @@ export function buildHujiMedicineVerification(programId: string): {
           HUJI_MEDICINE_REQUIRED_INPUTS.hujiMedicineAssessmentScore,
           HUJI_MEDICINE_REQUIRED_INPUTS.hujiMedicineAssessmentYear,
         ],
-        cutoff: { acceptance: 25.783, rejection: null },
+        cutoff: { acceptance: HUJI_MEDICINE_POLICY.finalCutoff, rejection: null },
         gates: [
           {
             id: 'medicine_psychometric',

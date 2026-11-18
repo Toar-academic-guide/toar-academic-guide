@@ -18,15 +18,15 @@ for (const width of [1280, 390]) {
     });
     await page.getByRole('button', { name: 'כן', exact: true }).click();
     await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await page.getByRole('button', { name: 'יש לי ציונים לפי מקצוע' }).click();
     await page.getByLabel('סוג תעודה').selectOption('internal');
     // A manually entered subject absent from the PDF must survive the import.
     await page.getByRole('button', { name: /הוספת מקצוע/ }).click();
     const added = await page.locator('input[aria-label^="מקצוע "]').count();
     await page.getByLabel(`מקצוע ${added}`, { exact: true }).fill('ביולוגיה');
-    await page.getByLabel(`יחידות ${added}`, { exact: true }).fill('5');
+    await page.getByLabel(`יחידות ${added}`, { exact: true }).selectOption('5');
     await page.getByLabel(`ציון ${added}`, { exact: true }).fill('94');
     const chunksBeforeUpload = [...pdfChunks];
     await page
@@ -35,7 +35,9 @@ for (const width of [1280, 390]) {
     await expect(page.getByRole('status')).toHaveText('זוהו 3 מקצועות · 1 לא זוהה, נא לבדוק');
     const actual = await page.locator('.journey-grade-table tbody tr').evaluateAll((rows) =>
       rows.map((row) => {
-        const inputs = Array.from(row.querySelectorAll('input'));
+        const inputs = Array.from(
+          row.querySelectorAll<HTMLInputElement | HTMLSelectElement>('input, select'),
+        );
         return inputs.map((input) => input.value);
       }),
     );
@@ -68,7 +70,7 @@ for (const width of [1280, 390]) {
     await page.getByRole('button', { name: /הוספת מקצוע/ }).click();
     const manualPhysics = await page.locator('input[aria-label^="מקצוע "]').count();
     await page.getByLabel(`מקצוע ${manualPhysics}`, { exact: true }).fill('פיזיקה');
-    await page.getByLabel(`יחידות ${manualPhysics}`, { exact: true }).fill('4');
+    await page.getByLabel(`יחידות ${manualPhysics}`, { exact: true }).selectOption('4');
     await page.getByLabel(`ציון ${manualPhysics}`, { exact: true }).fill('84');
     await page
       .locator('input[type="file"]')
@@ -86,7 +88,7 @@ for (const width of [1280, 390]) {
     await expect(page.getByLabel(`ציון ${physics}`, { exact: true })).toHaveValue('90');
     await expect(page.getByText('נא לבדוק את שם המקצוע', { exact: true })).toHaveCount(0);
     await review.check();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await expect(page).toHaveURL(/#psy-mode$/);
     expect(errors).toEqual([]);
     await testInfo.attach('lazy-chunk-requests', {

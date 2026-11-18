@@ -21,3 +21,31 @@ describe('prep forwarding requires stored explicit consent and exact evidence', 
     );
   });
 });
+
+describe('prep age attestation cannot be supplied by client-shaped evidence', () => {
+  it.each([
+    [
+      'unticked with forged evidence',
+      { prep_consent: false, prep_consent_text: ENQUIRY_PREP_CONSENT },
+    ],
+    ['missing age attestation', { prep_consent: true, prep_consent_text: null }],
+    [
+      'obsolete age attestation',
+      {
+        prep_consent: true,
+        prep_consent_text: ENQUIRY_PREP_CONSENT.replace('18 ומעלה', '16 ומעלה'),
+      },
+    ],
+    [
+      'client-shaped evidence only',
+      {
+        prep_consent: false,
+        prepConsent: true,
+        prepConsentText: ENQUIRY_PREP_CONSENT,
+        prepConsentAt: '2000-01-01',
+      },
+    ],
+  ])('denies partner eligibility for %s', (_label, evidence) => {
+    expect(canForwardToPrep(evidence)).toBe(false);
+  });
+});

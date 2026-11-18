@@ -14,6 +14,7 @@ import {
 import type { BagrutSubject, BagrutSector } from '@/types';
 import type { AdmissionsExtraInputs } from '@/types/admissionsEvaluation';
 import { createAdmissionsInputDigest } from '@/server/admissions/evaluationSnapshot';
+import { academicBagrutAverage } from '@/lib/admissionsEvaluationProfile';
 import { admissionCycleFor } from './cycle';
 import {
   fromStoredBagrutProfileVersion,
@@ -349,34 +350,47 @@ export function buildSavedAlertProfile(
     'id' | 'schemaVersion' | 'sector' | 'subjects'
   >,
 ): AdmissionAlertBaselineProfile | null {
-  if (profile.psychometricOverall === null || profile.bagrutWeightedAverage === null) return null;
+  const { activeBagrutPath, ...admissionsInputs } = profile.admissionsInputs ?? {};
+  if (
+    profile.psychometricOverall === null ||
+    activeBagrutPath === 'quick' ||
+    activeBagrutPath === 'none' ||
+    (activeBagrutPath !== 'exact' && profile.bagrutWeightedAverage === null)
+  )
+    return null;
   if (
     !['jewish', 'arab', 'druze', 'circassian', 'bedouin', 'samaritan'].includes(
       profileVersion.sector,
     )
   )
     return null;
+  const subjectRecord = fromStoredBagrutProfileVersion({
+    schemaVersion: profileVersion.schemaVersion,
+    sector: profileVersion.sector as BagrutSector,
+    payload: profileVersion.subjects,
+  });
+  const bagrutAverage = academicBagrutAverage({
+    bagrut: { weightedAverage: profile.bagrutWeightedAverage ?? undefined, subjectRecord },
+    admissions: { activeBagrutPath },
+  });
+  if (bagrutAverage === undefined) return null;
   const extraInputs: AdmissionsExtraInputs = {
-    ...profile.admissionsInputs,
+    ...admissionsInputs,
     psychometricMath: profile.psychometricQuantitative ?? undefined,
     psychometricVerbal: profile.psychometricVerbal ?? undefined,
     psychometricEnglish: profile.psychometricEnglish ?? undefined,
-    bagrutSubjectRecord: fromStoredBagrutProfileVersion({
-      schemaVersion: profileVersion.schemaVersion,
-      sector: profileVersion.sector as BagrutSector,
-      payload: profileVersion.subjects,
-    }),
+    bagrutSubjectRecord: subjectRecord,
   };
   return {
     profileVersionId: profileVersion.id,
     profileHash: createAdmissionsInputDigest({
       degreeId: 'admission-alert-profile',
       psychometric: profile.psychometricOverall,
-      bagrut: profile.bagrutWeightedAverage,
+      bagrut: bagrutAverage,
       extraInputs,
     }),
     psychometric: profile.psychometricOverall,
-    bagrutAverage: profile.bagrutWeightedAverage,
+    bagrutAverage,
     hasStructuredBagrut: Boolean(extraInputs.bagrutSubjectRecord),
     subjects: subjectsFromStoredBagrutProfile(profileVersion.subjects),
     extraInputs,

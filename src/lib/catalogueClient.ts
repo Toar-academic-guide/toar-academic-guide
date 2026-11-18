@@ -66,8 +66,13 @@ async function fetchEnvelope<T>(input: RequestInfo | URL): Promise<ApiEnvelope<T
   }
 }
 
-export async function fetchCataloguePrograms(): Promise<CatalogueProgram[]> {
-  const payload = await fetchEnvelope<CatalogueProgram[]>('/api/catalog/programs');
+export async function fetchCataloguePrograms(options?: {
+  includeCalculatorLinks?: boolean;
+}): Promise<CatalogueProgram[]> {
+  const url = options?.includeCalculatorLinks
+    ? '/api/catalog/programs?include=calculatorLinks'
+    : '/api/catalog/programs';
+  const payload = await fetchEnvelope<CatalogueProgram[]>(url);
   return payload.data ?? [];
 }
 

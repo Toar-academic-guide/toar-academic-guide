@@ -1,0 +1,106 @@
+.main {
+  max-width: 890px;
+  min-height: 70vh;
+  margin-inline: auto;
+  padding: 48px 24px 72px;
+  text-align: right;
+  font-family: var(--font-sans);
+  color: var(--text-heading);
+}
+.main h1 {
+  font-size: clamp(1.85rem, 4vw, 2.65rem);
+  line-height: 1.2;
+  font-weight: 700;
+  margin-bottom: 24px;
+}
+.filters {
+  display: inline-flex;
+  padding: 3px;
+  gap: 2px;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  background: #fff;
+}
+.filters a {
+  display: grid;
+  place-items: center;
+  min-height: 44px;
+  padding-inline: 16px;
+  border-radius: 9px;
+  color: var(--text-body);
+}
+.filters a[aria-current] {
+  background: #27355c;
+  color: white;
+}
+.table {
+  width: 100%;
+  background: white;
+  border-collapse: collapse;
+  font: inherit;
+}
+.table :is(th, td) {
+  text-align: right;
+  padding: 14px 18px;
+  vertical-align: top;
+  border-bottom: 1px solid var(--border);
+}
+.table thead th {
+  background: #eef2fb;
+  color: var(--text-body);
+  font-weight: 500;
+}
+.table th:first-child {
+  width: 36%;
+}
+.table tbody th {
+  font-weight: 600;
+}
+.event {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 14px;
+}
+.event small {
+  display: block;
+  margin-top: 3px;
+  color: var(--text-body);
+  font-size: 0.875rem;
+}
+.event a,
+.later summary {
+  color: #49388b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.event a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.later summary {
+  width: fit-content;
+  cursor: pointer;
+  padding-block: 10px;
+  font-size: 0.9rem;
+}
+.later .event {
+  padding-block: 8px;
+  border-top: 1px solid var(--border);
+}
+@media (max-width: 600px) {
+  .main {
+    padding: 28px 16px 48px;
+  }
+  .main h1 {
+    margin-bottom: 18px;
+  }
+  .table :is(th, td) {
+    padding: 12px 8px;
+  }
+  .event {
+    display: block;
+  }
+}

@@ -36,6 +36,7 @@ export function shouldRefreshAdmissionAlerts(
     previous.psychometricEnglish !== next.psychometricEnglish ||
     previous.bagrutWeightedAverage !== next.bagrutWeightedAverage ||
     previous.bagrutProfileVersionId !== next.bagrutProfileVersionId ||
+    previous.admissionsInputs?.activeBagrutPath !== next.admissionsInputs?.activeBagrutPath ||
     HAIFA_PROFILE_KEYS.some(
       (key) => previous.admissionsInputs?.[key] !== next.admissionsInputs?.[key],
     ) ||

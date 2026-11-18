@@ -174,6 +174,28 @@ function route(id: string, durationWeeks: number, effortPoints: number) {
 }
 
 describe('CalculatorResults', () => {
+  it('shows follow links after the institution results', async () => {
+    const result = qaReplay.h1.result as AdmissionsEvaluationResult;
+    hoistedMocks.fetchAdmissionsEvaluation.mockResolvedValue(report([result]));
+    render(
+      <CalculatorResults
+        degreeId="haifa_psychology"
+        programs={programs}
+        psychometric={700}
+        bagrut={86}
+        onBack={() => {}}
+      />,
+    );
+    const resultExplanation = await screen.findByText(result.explanation, { exact: true });
+    const instagram = screen.getByRole('link', { name: 'אינסטגרם של MyWay' });
+    const tiktok = screen.getByRole('link', { name: 'טיקטוק של MyWay' });
+    expect(instagram.getAttribute('href')).toBe('https://www.instagram.com/findmyway_il/');
+    expect(tiktok.getAttribute('href')).toBe('https://www.tiktok.com/@myway_study');
+    expect(
+      resultExplanation.compareDocumentPosition(instagram) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+  });
+
   it.each([
     ['haifa', 'authority_unavailable'],
     ['haifa', 'tracked_missing_rule'],

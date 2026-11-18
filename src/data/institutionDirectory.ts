@@ -1,5 +1,7 @@
+import { directoryCampusAreas } from './institutionCampusAreas';
+import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { mondayAdmissionEvidenceRecords } from '@/data/admissions/mondayEvidence.generated';
-import { INSTITUTION_BY_ID, type InstitutionRecord } from '@/data/institutions';
+import { INSTITUTION_BY_ID } from '@/data/institutions';
 import mondayInstitutionsExport from '@/data/mondayInstitutions.generated.json';
 import yoramInstitutionLogos from '@/data/yoramInstitutionLogos.generated.json';
 import { institutionWebsite } from '@/lib/institutionLinks';
@@ -37,6 +39,33 @@ export interface InstitutionDirectoryItem {
   launchPriority: string | null;
 }
 
+export interface DirectoryProgramme {
+  id: string;
+  name: string;
+  href: string;
+  subjectKey: string;
+  fieldKey: string;
+}
+
+export interface DirectoryInstitution extends Pick<
+  InstitutionDirectoryItem,
+  | 'id'
+  | 'name'
+  | 'type'
+  | 'funding'
+  | 'location'
+  | 'diplomaType'
+  | 'sourceUrl'
+  | 'domain'
+  | 'logoUrl'
+  | 'areas'
+  | 'categories'
+  | 'credentials'
+> {
+  programmes: DirectoryProgramme[];
+  fieldSources: Record<string, string>;
+}
+
 const POPULAR_INSTITUTION_IDS = new Set([
   'tau',
   'huji',
@@ -51,8 +80,16 @@ const POPULAR_INSTITUTION_IDS = new Set([
 
 const EXCLUDED_MONDAY_ITEM_IDS = new Set(['12242591498']);
 
-// These are separate institutions; the legacy name matcher collapsed both to "tiltan".
+// Institution identity overrides for rows that the legacy name matcher collapsed.
 const VERIFIED_DIRECTORY_IDENTITIES: Record<string, { id: string; name: string }> = {
+  '12341101391': { id: 'mon_12341101391', name: 'המכללה הטכנולוגית כנרת' },
+  '12341118864': { id: 'mon_12341118864', name: 'המכללה הטכנולוגית רופין' },
+  '12341168193': { id: 'mon_12341118864', name: 'המכללה הטכנולוגית רופין' },
+  '12341098142': { id: 'mon_12341098142', name: 'המכללה הטכנולוגית תל חי' },
+  '12341128804': {
+    id: 'mon_12341128804',
+    name: 'אדמה – בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון',
+  },
   '12341137918': {
     id: 'mon_12341137918',
     name: 'מכללת תילתן לרפואה משלימה',
@@ -226,52 +263,6 @@ function yoramLogoFromSourceUrl(sourceUrl: string | null) {
   return instituteId ? (yoramLogosByInstituteId[instituteId] ?? null) : null;
 }
 
-function addArea(areas: Set<InstitutionAreaFilter>, area: InstitutionAreaFilter) {
-  if (area !== 'all') {
-    areas.add(area);
-  }
-}
-
-function inferAreas(location: string | null, fallbackRegion: InstitutionRecord['region'] | null) {
-  const areas = new Set<InstitutionAreaFilter>();
-  const value = location ?? '';
-
-  if (/אונליין|און\s*ליין|on-?line|online/i.test(value)) {
-    addArea(areas, 'online');
-  }
-  if (/ירושלים/.test(value)) {
-    addArea(areas, 'jerusalem');
-  }
-  if (/תל\s*אביב/.test(value)) {
-    addArea(areas, 'tel_aviv');
-  }
-  if (/חיפה/.test(value)) {
-    addArea(areas, 'haifa');
-  }
-
-  if (
-    /גליל|גולן|חיפה|כרמיאל|צפת|כנרת|קרית\s*שמונה|קרית טבעון|עכו|עמק יזרעאל|נצרת|טבריה/.test(value)
-  ) {
-    addArea(areas, 'north');
-  }
-  if (/באר\s*שבע|אילת|שדה\s*בוקר|נגב|שדרות|אשדוד|אשקלון|באר טוביה|קבוצת יבנה/.test(value)) {
-    addArea(areas, 'south');
-  }
-  if (
-    /תל\s*אביב|רמת\s*גן|הרצליה|ראשון\s*לציון|פתח\s*תקווה|נתניה|חולון|אריאל|רחובות|כפר\s*סבא|בני\s*ברק|רעננה|קרית\s*אונו|עמק\s*חפר|חדרה|אור\s*עקיבא/.test(
-      value,
-    )
-  ) {
-    addArea(areas, 'center');
-  }
-
-  if (areas.size === 0 && fallbackRegion && fallbackRegion !== 'any') {
-    addArea(areas, fallbackRegion);
-  }
-
-  return [...areas];
-}
-
 function inferCategories(args: {
   id: string;
   name: string;
@@ -353,6 +344,9 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
       // Imported directory links are retained only for the existing local logo cache.
       const yoramLogoUrl = yoramLogoFromSourceUrl(importedSourceUrl);
       const location = override?.location ?? row.location;
+      // Reidman's official FAQ explicitly excludes academic degrees.
+      // https://www.reidman.co.il/index.php?cat=1&dir=site&page=faq
+      const diplomaType = id === 'reidman' ? 'תעודה מקצועית' : row.diplomaType;
 
       return {
         id,
@@ -361,19 +355,19 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
         type: row.institutionType,
         funding: row.funding,
         location,
-        diplomaType: row.diplomaType,
+        diplomaType,
         sourceUrl,
         domain,
         logoUrl: override?.logoUrl ?? institution?.logoUrl ?? yoramLogoUrl,
-        areas: inferAreas(location, institution?.region ?? null),
+        areas: directoryCampusAreas(id, location, institution?.region ?? null),
         categories: inferCategories({
           id,
           name,
           type: row.institutionType,
-          diplomaType: row.diplomaType,
+          diplomaType,
         }),
         credentials: inferCredentials({
-          diplomaType: row.diplomaType,
+          diplomaType,
           funding: row.funding,
         }),
         coverageLevel: row.coverageLevel ?? evidence?.publicBucket ?? null,
@@ -383,4 +377,19 @@ export function getInstitutionDirectoryItems(): InstitutionDirectoryItem[] {
           (evidence?.catalogueVisibility === 'catalogue_mapped' ? 'Product Ready' : null),
       };
     });
+}
+
+// Monday item IDs also exist as catalogue provider IDs. Use the directory's
+// explicit identity mapping to group the same provider across both sources.
+const directoryIdByLegacyProvider = new Map(
+  getInstitutionDirectoryItems().map((item) => [
+    `mon_${item.itemId}`,
+    canonicalInstitutionId(item.id),
+  ]),
+);
+
+export function publicDirectoryInstitutionId(id: string): string | null {
+  if (id === 'kiryat_shmona') return 'telhai';
+  if (id.startsWith('mon_') && EXCLUDED_MONDAY_ITEM_IDS.has(id.slice(4))) return null;
+  return directoryIdByLegacyProvider.get(id) ?? canonicalInstitutionId(id);
 }

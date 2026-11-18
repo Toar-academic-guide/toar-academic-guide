@@ -64,7 +64,7 @@ it('CDN-caches a database snapshot merged with deployment code-registry programm
     }),
   });
 
-  const response = await GET();
+  const response = await GET(new Request('https://example.test/api/catalog/programs'));
   const body = await response.json();
   expect(response.status).toBe(200);
   expect(body.meta.catalogueSource).toBe('database');

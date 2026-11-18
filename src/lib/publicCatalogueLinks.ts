@@ -7,8 +7,8 @@ import {
   PROGRAM_RETIREMENT_REDIRECTS,
 } from '@/lib/seo/programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { catalogueSubjectName } from '@/data/institutionSubjects';
 import type { CatalogueProgram } from '@/types/catalogue';
-import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
 
 export interface SubjectHub {
   id: string;
@@ -22,6 +22,16 @@ export interface SubjectHub {
 
 type PublicCatalogue = Awaited<ReturnType<typeof loadPublicCatalogue>>;
 
+const complementaryMedicineIds = new Set([
+  'mon_12341128804_medicine',
+  'mon_12341137918_medicine',
+  'reidman_medicine',
+]);
+
+const SUBJECT_HUB_NAMES: Readonly<Record<string, string>> = {
+  colmgmt_infosystems: 'מערכות מידע',
+};
+
 /**
  * The one source of subject hubs: the /programs index, the hub route and the
  * sitemap all read this, so they always agree.
@@ -30,7 +40,7 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   const programs = catalogue.programs.filter(
     (program) =>
       program.isListed !== false &&
-      !program.id.startsWith('mon_') &&
+      (!program.id.startsWith('mon_') || complementaryMedicineIds.has(program.id)) &&
       canonicalProgramId(program.id) === program.id &&
       catalogue.institutions.some((institution) =>
         program.linkedInstitutionIds.includes(institution.id),
@@ -57,15 +67,21 @@ export function buildSubjectHubs(catalogue: PublicCatalogue) {
   for (const program of programs) {
     if (catalogue.generalProgramIds.has(program.id)) continue;
     const institution = catalogue.institutions.find((i) => i.id === program.institutionId);
-    const name = institution ? institutionProgramName(program, institution) : program.name;
+    const name = catalogueSubjectName(
+      program.id,
+      SUBJECT_HUB_NAMES[program.id] ??
+        (institution ? institutionProgramName(program, institution) : program.name),
+    );
     const descriptiveId =
       Object.entries(PROGRAM_CANONICAL_ALIASES).find(
         ([alias, canonical]) => canonical === program.id && !PROGRAM_RETIREMENT_REDIRECTS[alias],
       )?.[0] ?? program.id;
     const prefix = `${program.institutionId}_`;
-    const subjectId = descriptiveId.startsWith(prefix)
-      ? descriptiveId.slice(prefix.length)
-      : descriptiveId.slice(descriptiveId.indexOf('_') + 1);
+    const subjectId = complementaryMedicineIds.has(program.id)
+      ? 'complementary_medicine'
+      : descriptiveId.startsWith(prefix)
+        ? descriptiveId.slice(prefix.length)
+        : descriptiveId.slice(descriptiveId.indexOf('_') + 1);
     if (unpublishedNames.has(name)) continue;
     let hub =
       hubByName.get(name) ??
@@ -114,55 +130,9 @@ const loadCatalogueLinks = cache(async () => {
   return { catalogue, ...buildSubjectHubs(catalogue) };
 });
 
-export const HOME_SUBJECT_COUNT = 12;
-export const HOME_INSTITUTION_COUNT = 8;
-
-export function rankDegreeInstitutions(
-  catalogue: Pick<PublicCatalogue, 'institutions' | 'programs' | 'generalProgramIds'>,
-) {
-  const directory = getInstitutionDirectoryItems();
-  const counts = new Map<string, Set<string>>();
-  for (const program of catalogue.programs) {
-    if (
-      program.isListed === false ||
-      program.id.startsWith('mon_') ||
-      canonicalProgramId(program.id) !== program.id ||
-      catalogue.generalProgramIds.has(program.id)
-    )
-      continue;
-    for (const id of program.linkedInstitutionIds) {
-      const ids = counts.get(id) ?? new Set<string>();
-      ids.add(program.id);
-      counts.set(id, ids);
-    }
-  }
-  return catalogue.institutions
-    .map((institution) => ({
-      institution,
-      count: counts.get(institution.id)?.size ?? 0,
-      degree: directory.some(
-        (item) => item.id === institution.id && item.credentials.includes('academic_degree'),
-      ),
-      university: directory.some(
-        (item) => item.id === institution.id && item.categories.includes('universities'),
-      ),
-    }))
-    .filter((row) => row.degree && row.count > 0 && !row.institution.id.startsWith('mon_'))
-    .sort(
-      (a, b) =>
-        Number(b.university) - Number(a.university) ||
-        b.count - a.count ||
-        a.institution.id.localeCompare(b.institution.id),
-    )
-    .map((row) => row.institution);
-}
-
 export async function getPublicBrowseLinks() {
-  const { catalogue, publishedHubs } = await loadCatalogueLinks();
-  return {
-    hubs: publishedHubs,
-    institutions: rankDegreeInstitutions(catalogue).slice(0, HOME_INSTITUTION_COUNT),
-  };
+  const { publishedHubs } = await loadCatalogueLinks();
+  return { hubs: publishedHubs };
 }
 
 /** Every published subject hub, alphabetical, for the /programs index. */

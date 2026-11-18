@@ -95,13 +95,16 @@ it('withholds the real Haifa CS vector when database authority is unavailable de
     now: new Date('2026-10-29T12:00:00Z'),
   });
   expect(report.results).toHaveLength(1);
+  // Missing subject rows request actionable input independently of database authority.
   expect(report.results[0]).toMatchObject({
     linkedInstitutionId: 'haifa',
-    capability: 'authority_unavailable',
-    kind: 'authority_unavailable',
+    capability: 'needs_input',
+    kind: 'needs_input',
     decision: 'unknown',
-    degradationReason: 'pair_verification_incomplete',
+    requiredInputs: ['haifa_bagrut_average'],
   });
+  // Approved test update, Jorje 2026-10-31: ignoring the legacy average reports missing calculation inputs rather than an authority degradation.
+  expect(report.results[0].degradationReason).toBeUndefined();
   expect(report.results[0].score).toBeUndefined();
   expect(offline.getDb).toHaveBeenCalled();
   expect(offline.fetch).not.toHaveBeenCalled();

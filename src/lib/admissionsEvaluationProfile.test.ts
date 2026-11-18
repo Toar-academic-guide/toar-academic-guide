@@ -2,8 +2,45 @@ import { HUJI_MEDICINE_ELIGIBLE_INPUTS } from '@/data/admissions/hujiMedicineVer
 import { HUJI_MEDICINE_PROFILE_KEYS, HUJI_MEDICINE_REQUIRED_INPUTS } from './hujiMedicineInputs';
 import { describe, expect, it } from 'vitest';
 
-import { admissionsExtraInputsFromAcademicScores } from './admissionsEvaluationProfile';
+import {
+  academicBagrutAverage,
+  admissionsExtraInputsFromAcademicScores,
+} from './admissionsEvaluationProfile';
 import { admissionsInputValue } from '@/server/admissions/admissionsInputValue';
+
+describe('active Bagrut path with both saved inputs', () => {
+  it.each(['quick', 'exact', 'none'] as const)(
+    'uses only the active %s path for profile evaluation without forwarding the marker',
+    (activeBagrutPath) => {
+      const subjectRecord = {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: false,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+          { subjectId: 'physics', units: 5, grade: 80, assessmentKind: 'exam' as const },
+        ],
+      };
+      const scores = {
+        bagrut: { weightedAverage: 110, subjectRecord },
+        psychometric: { overall: 700, english: 120 },
+        admissions: { activeBagrutPath },
+      };
+      expect(academicBagrutAverage(scores)).toBe(
+        activeBagrutPath === 'quick' ? 110 : activeBagrutPath === 'exact' ? 85 : undefined,
+      );
+      const extra = admissionsExtraInputsFromAcademicScores(scores);
+      expect(extra?.bagrutSubjectRecord).toEqual(
+        activeBagrutPath === 'exact' ? subjectRecord : undefined,
+      );
+      expect(extra?.mathGrade).toBe(activeBagrutPath === 'exact' ? 90 : undefined);
+      expect(extra?.psychometricEnglish).toBe(120);
+      expect(extra).not.toHaveProperty('activeBagrutPath');
+      expect(scores.bagrut).toEqual({ weightedAverage: 110, subjectRecord });
+    },
+  );
+});
 
 describe('admissionsExtraInputsFromAcademicScores', () => {
   it('forwards the Colman average and false certificate confirmation', () => {
@@ -36,6 +73,7 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       expect(admissionsInputValue(extra, HUJI_MEDICINE_REQUIRED_INPUTS[key])).toBe(extra?.[key]);
   });
   it('forwards the saved Haifa average and real years without rounding or substituting them', () => {
+    // Approved test update, Jorje 2026-10-31: omit stored Haifa average overrides while preserving real exam years.
     const admissions = {
       haifaBagrutAverage: 102.25,
       haifaBagrutYear: 2015,
@@ -53,8 +91,13 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       haifaInformationSystemsPartnerRequirementsConfirmed: false,
     };
     const input = admissionsExtraInputsFromAcademicScores({ admissions });
-    expect(input).toMatchObject(admissions);
-    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBe(102.25);
+    expect(input).toMatchObject(
+      Object.fromEntries(
+        Object.entries(admissions).filter(([key]) => key !== 'haifaBagrutAverage'),
+      ),
+    );
+    expect(input).not.toHaveProperty('haifaBagrutAverage');
+    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBeUndefined();
     expect(admissionsInputValue(input, 'haifa_bagrut_year')).toBe(2015);
     expect(admissionsInputValue(input, 'haifa_psychometric_year')).toBe(2026);
     expect(admissionsInputValue(input, 'haifa_information_systems_track')).toBe('computer_science');
@@ -258,4 +301,16 @@ it('forwards all health profile inputs while preserving decimals and false', () 
   expect(admissionsExtraInputsFromAcademicScores({ admissions })).toEqual(admissions);
   expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_completed')).toBe(false);
   expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_average')).toBe(85.25);
+});
+
+it('omits a stored Haifa average from client evaluation inputs while keeping the real years', () => {
+  const extra = admissionsExtraInputsFromAcademicScores({
+    admissions: {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2025,
+    },
+  });
+  expect(extra).not.toHaveProperty('haifaBagrutAverage');
+  expect(extra).toMatchObject({ haifaBagrutYear: 2015, haifaPsychometricYear: 2025 });
 });

@@ -89,34 +89,48 @@ it.each([
     score: 611,
     assessment: 'below_threshold',
   },
-] as const)('local Haifa CS score $score carries $assessment', async (profile) => {
-  const fetcher = vi.fn<typeof fetch>();
-  const report = await evaluateAdmissionsForProgram({
-    program: haifaCs,
-    institutions,
-    input: {
-      degreeId: 'haifa_cs',
-      psychometric: profile.psychometric,
-      extraInputs: {
-        haifaBagrutAverage: profile.average,
-        haifaBagrutYear: 2026,
-        haifaPsychometricYear: 2026,
-        psychometricMath: profile.q,
-        psychometricVerbal: profile.v,
-        psychometricEnglish: profile.e,
-        haifaHebrewQualification: 'hebrew_school',
-        mathUnits: 5,
-        mathGrade: 75,
+] as const)(
+  'legacy Haifa CS average $average without rows cannot produce score $score',
+  async (profile) => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      program: haifaCs,
+      institutions,
+      input: {
+        degreeId: 'haifa_cs',
+        psychometric: profile.psychometric,
+        extraInputs: {
+          haifaBagrutAverage: profile.average,
+          haifaBagrutYear: 2026,
+          haifaPsychometricYear: 2026,
+          psychometricMath: profile.q,
+          psychometricVerbal: profile.v,
+          psychometricEnglish: profile.e,
+          haifaHebrewQualification: 'hebrew_school',
+          mathUnits: 5,
+          mathGrade: 75,
+        },
       },
-    },
-    fetcher,
-    now: new Date('2026-10-29T12:00:00Z'),
-  });
-  const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
-  expect(result).toMatchObject({ capability: 'exact', score: profile.score, threshold: 700 });
-  expect(result.scoreAssessment).toBe(profile.assessment);
-  expect(fetcher).not.toHaveBeenCalled();
-});
+      fetcher,
+      now: new Date('2026-10-29T12:00:00Z'),
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
+    // Legacy-only Haifa CS profiles request subject rows rather than showing an uncalculated result.
+    expect(result).toMatchObject({
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+    });
+    // Approved test update, Jorje 2026-10-31: ignored averages cannot establish a score, cutoff or score assessment.
+    expect([result.score, result.threshold, result.scoreAssessment]).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    expect(fetcher).not.toHaveBeenCalled();
+  },
+);
 
 it.each([
   { bagrut: 70, psychometric: 400 },
@@ -133,9 +147,14 @@ it.each([
     fetcher,
   });
   const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
-  expect(result).toMatchObject({ capability: 'authority_unavailable', decision: 'unknown' });
+  expect(result).toMatchObject({
+    capability: 'needs_input',
+    kind: 'needs_input',
+    decision: 'unknown',
+    requiredInputs: ['haifa_bagrut_average'],
+  });
   expect(result.score).toBeUndefined();
-  expect(result.requiredInputs).toBeUndefined();
+  expect(result.nextAction).toContain('מקצועות הבגרות');
   expect(result.explanation).not.toMatch(/[a-zA-Z]|פסיכומטרי 680|בגרות 85/);
   expect(fetcher).not.toHaveBeenCalled();
   expect(haifaPolicies.records.find((row) => row.programme === 'psychology')).toMatchObject({
@@ -850,10 +869,12 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       fetcher,
     });
+    // A legacy overall average without subject rows requests the missing grades before mapping.
     expect(result.results[0]).toMatchObject({
-      capability: 'blocked',
+      capability: 'needs_input',
+      kind: 'needs_input',
       decision: 'unknown',
-      sourceLabel: 'מיפוי המסלול טרם אומת',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     expect(result.results[0].score).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
@@ -898,12 +919,18 @@ describe('evaluateAdmissionsForProgram', () => {
           fetcher,
           now: new Date('2026-09-28T20:00:00Z'),
         });
+        // Both captured legacy-average bands lack subject rows and request them.
         expect(result.results[0]).toMatchObject({
-          capability: 'exact',
-          score: fixture.expected.score,
-          threshold: 680,
-          decision: band === 'high' ? 'eligible_to_apply' : 'below',
+          capability: 'needs_input',
+          kind: 'needs_input',
+          decision: 'unknown',
+          requiredInputs: ['haifa_bagrut_average'],
         });
+        // Approved test update, Jorje 2026-10-31: neither legacy-average capture supplies a calculated score or cutoff.
+        expect([result.results[0].score, result.results[0].threshold]).toEqual([
+          undefined,
+          undefined,
+        ]);
       }
     },
   );
@@ -1010,7 +1037,8 @@ describe('evaluateAdmissionsForProgram', () => {
       decision: 'unknown',
     });
     expect(report.results[0].explanation).toContain('610');
-    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
+    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו למחזור');
+    expect(report.results[0].explanation).not.toMatch(/אומתו ב־/);
     expect(report.results[0].officialUrls?.[0]).toMatch(/^https:\/\//);
     expect(report.results[0].score).toBeUndefined();
   });
@@ -1290,14 +1318,14 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
-        kind: 'tracked_missing_rule',
-        capability: 'tracked_missing_rule',
+        kind: 'needs_input',
+        capability: 'needs_input',
         decision: 'unknown',
-        explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+        requiredInputs: ['haifa_bagrut_average'],
       }),
     );
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].requiredInputs).toEqual(['haifa_bagrut_average']);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -1305,8 +1333,10 @@ describe('evaluateAdmissionsForProgram', () => {
   });
 
   it.each([
-    { year: 2015, bagrut: 115, score: 702, decision: 'eligible_to_apply' },
-    { year: 2020, bagrut: undefined, score: 699, decision: 'pending' },
+    // Approved test update, Jorje 2026-10-31: an actual 2015 year does not make the ignored legacy average usable.
+    { year: 2015, bagrut: 115, score: undefined, decision: 'unknown' },
+    // Approved test update, Jorje 2026-10-31: an actual 2020 year does not make the ignored legacy average usable.
+    { year: 2020, bagrut: undefined, score: undefined, decision: 'unknown' },
   ])(
     'uses the Haifa average and actual year $year, preserving $decision',
     async ({ year, bagrut, score, decision }) => {
@@ -1343,7 +1373,8 @@ describe('evaluateAdmissionsForProgram', () => {
       });
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       expect(fetcher).not.toHaveBeenCalled();
-      expect(report.results[0]).toMatchObject({ score, decision });
+      // Approved test update, Jorje 2026-10-31: preserve each year case while asserting the missing-row result.
+      expect([report.results[0].score, report.results[0].decision]).toEqual([score, decision]);
     },
   );
 
@@ -1366,11 +1397,15 @@ describe('evaluateAdmissionsForProgram', () => {
     });
     expect(fetcher).not.toHaveBeenCalled();
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
+    // Approved test update, Jorje 2026-10-31: missing subject rows take precedence over later year and qualification questions.
     expect(report.results[0]).toMatchObject({
       kind: 'needs_input',
+      capability: 'needs_input',
       // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
-      requiredInputs: ['math_units', 'math_grade', 'haifa_hebrew_qualification'],
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
     });
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -3690,6 +3725,37 @@ describe('current HUJI Medicine staged evaluation', () => {
     linkedInstitutionIds: ['huji'],
     thresholds: {},
   };
+  it.each(['medicine', 'huji_medicine'])(
+    'no longer rejects %s between the old and revised final cutoffs',
+    async (id) => {
+      const report = await evaluateAdmissionsForProgram({
+        program: { ...medicine, id },
+        institutions: hujiInstitutions,
+        input: {
+          degreeId: id,
+          psychometric: 800,
+          extraInputs: {
+            ...HUJI_MEDICINE_ELIGIBLE_INPUTS,
+            hujiMedicineRoute: 'official_cognitive',
+            hujiMedicineCognitiveScore: 26.854,
+            hujiMedicineAssessmentScore: 175,
+          },
+        },
+        fetcher: vi
+          .fn<typeof fetch>()
+          .mockResolvedValue(new Response(medicineOfficial.calculatorHtml)),
+      });
+      expect(report.results).toContainEqual(
+        expect.objectContaining({
+          capability: 'exact',
+          decision: 'eligible_to_apply',
+          score: 25.75,
+          threshold: 25.708,
+          scoreLabel: 'ציון התאמה סופי לרפואה',
+        }),
+      );
+    },
+  );
   it.each(['medicine', 'huji_medicine'])('evaluates %s without generic Bagrut', async (id) => {
     const report = await evaluateAdmissionsForProgram({
       program: { ...medicine, id },
@@ -3705,7 +3771,7 @@ describe('current HUJI Medicine staged evaluation', () => {
         kind: 'manual_gate',
         decision: 'eligible_to_apply',
         score: 26.612,
-        threshold: 25.783,
+        threshold: 25.708,
         scoreLabel: 'ציון התאמה סופי לרפואה',
       }),
     );
@@ -4417,12 +4483,12 @@ describe('results average normalization regressions', () => {
     expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_bagrut_year');
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0]).toMatchObject({
-      kind: 'tracked_missing_rule',
-      capability: 'tracked_missing_rule',
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
   });
   it('does not leak the HIT implementation note after math gates are supplied', async () => {
     const report = await evaluateAdmissionsForProgram({
@@ -4913,15 +4979,15 @@ it.each([
   if (proxy) {
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0]).toMatchObject({
-      kind: 'tracked_missing_rule',
-      capability: 'tracked_missing_rule',
+      kind: 'needs_input',
+      capability: 'needs_input',
       decision: 'unknown',
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0].score).toBeUndefined();
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0].estimated).not.toBe(true);
     // Approved test update, Jorje 2026-10-29
@@ -4929,12 +4995,16 @@ it.each([
     return;
   }
   // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-  expect(report.results[0].score).toBe(proxy ? 806 : defaulted ? 699 : 702);
-  expect(report.results[0].estimated === true).toBe(defaulted);
+  // Approved test update, Jorje 2026-10-31: no subject-derived average means no score for any of these legacy-average cases.
+  expect(report.results[0].score).toBeUndefined();
+  // Approved test update, Jorje 2026-10-31: uncalculated Haifa results do not carry an estimated-score flag.
+  expect(report.results[0].estimated === true).toBe(false);
   if (defaulted) {
-    expect(report.results[0].estimationReason).toContain('שנת הבגרות');
+    // Approved test update, Jorje 2026-10-31: cycle assumptions are not presented as a calculated-score reason without usable rows.
+    expect(report.results[0].estimationReason).toBeUndefined();
     if (proxy) expect(report.results[0].estimationReason).toContain('הממוצע הכללי');
-    else expect(report.results[0].estimationReason).not.toContain('הממוצע הכללי');
+    // Approved test update, Jorje 2026-10-31: ignored legacy averages produce no calculated-score provenance.
+    else expect(report.results[0].estimationReason).toBeUndefined();
   } else expect(report.results[0].estimationReason).toBeUndefined();
 });
 
@@ -5017,7 +5087,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      expect(pairs).toBe(436);
+      // The sourced college routes, complementary certificates and Hadassah add distinct pairs.
+      expect(pairs).toBe(465);
     },
   );
   it.each([

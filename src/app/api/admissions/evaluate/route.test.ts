@@ -4,6 +4,16 @@ import { resetAdmissionsEvaluationRateLimitForTests } from '@/server/admissions/
 import { PROGRAM_CANONICAL_ALIASES } from '@/lib/seo/programAliases';
 import { BATCH_B_PROGRAMS } from '@/server/admissions/batchBManualPathEvaluation';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import {
+  haifaQaApplicant,
+  haifaQaFreshness,
+  haifaQaNow,
+  haifaQaProgramIds,
+} from '@/server/admissions/haifaLegacyAverage.fixture';
+import type {
+  AdmissionsBatchReport,
+  AdmissionsEvaluationResult,
+} from '@/types/admissionsEvaluation';
 
 const hoistedMocks = vi.hoisted(() => ({
   listCataloguePrograms: vi.fn(),
@@ -44,13 +54,84 @@ describe('admissions evaluate route', () => {
       }),
     );
 
+  it('accepts a legacy Haifa average override in batch requests without stripping it', async () => {
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: [{ id: 'haifa_cs', name: 'CS', linkedInstitutionIds: ['haifa'] }],
+    });
+    const extraInputs = {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2024,
+    };
+    const response = await batchRequest({
+      degreeIds: ['haifa_cs'],
+      psychometric: 700,
+      extraInputs,
+    });
+    expect(response.status).toBe(200);
+    expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenCalledWith(
+      expect.objectContaining({
+        input: { degreeId: 'haifa_cs', psychometric: 700, extraInputs },
+      }),
+    );
+
+    hoistedMocks.listCataloguePrograms.mockResolvedValue({
+      data: getStaticCataloguePrograms().filter((program) =>
+        haifaQaProgramIds.includes(program.id),
+      ),
+    });
+    hoistedMocks.listCatalogueInstitutions.mockResolvedValue({
+      data: getStaticCatalogueInstitutions().filter((institution) => institution.id === 'haifa'),
+    });
+    const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected network call'));
+    hoistedMocks.evaluateAdmissionsForProgram.mockImplementation((args) =>
+      evaluateAdmissionsForProgramActual({
+        ...args,
+        now: haifaQaNow,
+        freshnessStatesBySourceId: haifaQaFreshness(),
+        fetcher,
+      }),
+    );
+    const evaluateBatch = async (legacy?: number) => {
+      const evaluated = await batchRequest({
+        ...haifaQaApplicant,
+        degreeIds: haifaQaProgramIds,
+        extraInputs: {
+          ...haifaQaApplicant.extraInputs,
+          ...(legacy === undefined ? {} : { haifaBagrutAverage: legacy }),
+        },
+      });
+      expect(evaluated.status).toBe(200);
+      return ((await evaluated.json()) as { data: AdmissionsBatchReport }).data;
+    };
+    const outcome = (result: AdmissionsEvaluationResult) => ({
+      kind: result.kind,
+      decision: result.decision,
+      score: result.score,
+      threshold: result.threshold,
+      requiredInputs: result.requiredInputs,
+    });
+    const baseline = await evaluateBatch();
+    expect(baseline.reports.haifa_psychology.results[0].score).toBe(775);
+    expect(baseline.reports.haifa_cs.results[0].score).toBe(718);
+    expect(baseline.reports.haifa_infosystems.results[0].score).toBe(718);
+    for (const legacy of [60, 119]) {
+      const withLegacy = await evaluateBatch(legacy);
+      for (const id of haifaQaProgramIds)
+        expect(outcome(withLegacy.reports[id].results[0])).toEqual(
+          outcome(baseline.reports[id].results[0]),
+        );
+    }
+    expect(fetcher).not.toHaveBeenCalled();
+  });
+
   it.each([
     { batch: false, missingInstitution: false },
     { batch: false, missingInstitution: true },
     { batch: true, missingInstitution: false },
     { batch: true, missingInstitution: true },
   ])(
-    'returns numberless unsupported with the real evaluator for missing haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
+    'requests Haifa subject rows with the real evaluator for haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
     async ({ batch, missingInstitution }) => {
       const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!;
       const institution = getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!;
@@ -82,11 +163,12 @@ describe('admissions evaluate route', () => {
         expect(report.results).toHaveLength(1);
         expect(report.results[0]).toMatchObject({
           linkedInstitutionId: 'haifa',
-          capability: 'unsupported',
-          kind: 'unsupported',
+          capability: 'needs_input',
+          kind: 'needs_input',
           decision: 'unknown',
+          requiredInputs: ['haifa_bagrut_average'],
         });
-        for (const key of ['score', 'threshold', 'requiredInputs', 'scoreAssessment']) {
+        for (const key of ['score', 'threshold', 'scoreAssessment']) {
           expect(report.results[0]).not.toHaveProperty(key);
         }
         expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({

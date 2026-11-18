@@ -4,6 +4,7 @@ import { metadata as rootMetadata } from '@/app/layout';
 import ProgramPage from '@/app/programs/[programId]/page';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -95,7 +96,27 @@ describe('enquiry link integrity', () => {
     );
     expect(markup).toContain('השאירו פרטים</button>');
     expect(markup).not.toContain('רוצים תשובות ישר מהמוסד?');
-    expect(markup).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/);
+    const hero = markup.match(/<section\b[^>]*>[\s\S]*?<\/section>/)?.[0];
+    const dialog = markup.match(/<dialog\b[^>]*>[\s\S]*?<\/dialog>/)?.[0];
+    expect(hero).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(dialog).toBeDefined(); // Approved test update, Jorje 2026-10-30
+    expect(`${hero}${dialog}`).not.toMatch(/חינם|בחינם|ללא עלות|תוצאות/); // Approved test update, Jorje 2026-10-30
+  });
+
+  it('allows the approved government-course sentence as the only free-course claim', async () => {
+    const markup = await form('/enquiry?program=psychometric-preparation');
+    const sentence = 'הקורס מוצע בחינם לכל דורש, ולמי שרוצה יותר יש לצדו גם מסלול מתוגבר בתשלום.';
+    const sentenceMarkup = sentence.replace(
+      'מסלול מתוגבר בתשלום',
+      '<strong>מסלול מתוגבר בתשלום</strong>',
+    );
+    const reading = markup.match(/<section\b[^>]*data-prep-content[^>]*>[\s\S]*?<\/section>/)?.[0];
+    const renderedText = markup.replace(/<[^>]*>/g, '');
+    expect(reading).toContain(`<p>${sentenceMarkup}</p>`); // Approved test update, Jorje 2026-10-30
+    expect(renderedText).toContain(sentence); // Approved test update, Jorje 2026-10-30
+    expect(markup.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.match(/חינם/g)).toHaveLength(1); // Approved test update, Jorje 2026-10-30
+    expect(renderedText.replace(sentence, '')).not.toMatch(/חינם/); // Approved test update, Jorje 2026-10-30
   });
 
   it('keeps the institution enquiry intro unchanged', async () => {
@@ -122,6 +143,25 @@ describe('enquiry link integrity', () => {
     for (const href of failedLinks) {
       await expect(form(href), href).resolves.toContain('<form');
     }
+  });
+
+  it('routes an old Ono psychology enquiry to the behavioural-sciences degree', async () => {
+    const markup = await form('/enquiry?program=psychology&institution=ono');
+    expect(markup).toContain('מדעי ההתנהגות <bdi dir="ltr">(B.A.)</bdi>');
+    expect(markup).not.toContain('פסיכולוגיה · המכללה האקדמית אונו');
+  });
+
+  it('keeps old medicine enquiry pairs pointed at their schools without changing design Tiltan', async () => {
+    expect(
+      (await getEnquiryTarget('givat_washington_medicine', 'givat_washington'))?.institution.id,
+    ).toBe('mon_12341128804');
+    expect((await getEnquiryTarget('tiltan_medicine', 'tiltan'))?.institution.id).toBe(
+      'mon_12341137918',
+    );
+    expect((await getEnquiryTarget('tiltan_graphic_design', 'tiltan'))?.institution.id).toBe(
+      'tiltan',
+    );
+    expect(await form('/enquiry?program=tiltan_medicine&institution=tiltan')).toContain('<form');
   });
 
   it.each(['static', 'database'] as const)(

@@ -99,7 +99,11 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
   it('keeps a generic average without subjects non-exact', async () => {
     const proxy = { ...gapApplicant({ bagrutSubjectRecord: undefined }), bagrut: 104 };
     const { result, fetcher } = await gapEvaluate(program('haifa_cs'), 'haifa', proxy);
-    expect(result).toMatchObject({ kind: 'tracked_missing_rule', decision: 'unknown' });
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+    });
     expect(result.score).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
   });
@@ -125,8 +129,14 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
         haifaHebrewQualification: 'hebrew_school',
       },
     });
-    expect(result.requiredInputs).toBeUndefined();
-    expect(result).toMatchObject({ capability: 'exact', score: 701, threshold: 650 });
+    // NITE total cannot replace missing subject rows when the legacy average is ignored.
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+    });
+    // Approved test update, Jorje 2026-10-31: the ignored legacy average cannot establish a Haifa score or cutoff.
+    expect([result.score, result.threshold]).toEqual([undefined, undefined]);
     expect(fetcher).not.toHaveBeenCalled();
   });
   it('asks for the missing PM components on maths programmes', async () => {
@@ -160,12 +170,16 @@ describe('Haifa local evaluator input and mapping boundaries', () => {
     expect(result.explanation).toContain('10');
     expect(fetcher).not.toHaveBeenCalled();
   });
-  it('routes engineering without an average to unsupported', async () => {
+  it('asks for subject rows before routing engineering', async () => {
     const { result } = await gapEvaluate(program('haifa_engineering'), 'haifa', {
       psychometric: 590,
       extraInputs: {},
     });
-    expect(result).toMatchObject({ kind: 'unsupported', decision: 'unknown' });
+    expect(result).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+    });
     expect(result.institution.programUrl ?? result.officialUrls?.[0]).toBeTruthy();
   });
 });

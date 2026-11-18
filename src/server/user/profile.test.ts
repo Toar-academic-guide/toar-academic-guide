@@ -12,8 +12,65 @@ vi.mock('@/db/client', () => ({
 
 import { buildUserProfileRow, serializeUserProfileSnapshot } from '@/server/user/serializers';
 import { getUserProfileSnapshot } from '@/server/user/profile';
+import { userProfileSchema } from './profileSchema';
 
 describe('user profile serializers', () => {
+  it.each(['quick', 'exact', 'none'] as const)(
+    'validates and round-trips both Bagrut paths with active %s through existing profile storage',
+    (activeBagrutPath) => {
+      const subjectRecord = {
+        schemaVersion: 2 as const,
+        sector: 'jewish' as const,
+        certificateType: 'internal' as const,
+        complete: false,
+        subjects: [
+          { subjectId: 'mathematics', units: 5, grade: 90, assessmentKind: 'exam' as const },
+        ],
+      };
+      const academicScores = {
+        bagrut: { weightedAverage: 110, subjectRecord },
+        admissions: { activeBagrutPath, tauBagrutAverage: 105 },
+      };
+      const parsed = userProfileSchema.safeParse({ geographicPreference: 'any', academicScores });
+      expect(parsed.success).toBe(true);
+      if (!parsed.success) return;
+      const row = buildUserProfileRow('test-user', parsed.data);
+      expect(row.bagrutWeightedAverage).toBe(110);
+      expect(row.admissionsInputs).toEqual(academicScores.admissions);
+      const restored = serializeUserProfileSnapshot(
+        {
+          ...row,
+          riasecR: null,
+          riasecI: null,
+          riasecA: null,
+          riasecS: null,
+          riasecE: null,
+          riasecC: null,
+          avoidanceTags: [],
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        },
+        [],
+        [],
+        {
+          id: 'test-version',
+          userId: 'test-user',
+          schemaVersion: 2,
+          sector: 'jewish',
+          contentHash: 'sha256:test-record',
+          subjects: {
+            certificateType: 'internal',
+            complete: false,
+            subjects: subjectRecord.subjects,
+          },
+          createdAt: new Date(),
+        },
+      );
+      expect(restored.academicScores?.admissions).toEqual(academicScores.admissions);
+      expect(restored.academicScores?.bagrut?.weightedAverage).toBe(110);
+      expect(restored.academicScores?.bagrut?.subjectRecord).toMatchObject(subjectRecord);
+    },
+  );
   it('round-trips Architecture inputs through the stored profile row without losing zero or false', () => {
     const admissions = {
       technionArchitectureBagrutAverage: 101.9,

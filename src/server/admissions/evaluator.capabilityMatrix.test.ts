@@ -1,5 +1,6 @@
 import { expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import type {
   AdmissionsCapabilityEntry,
   buildAdmissionsCapabilityMatrix,
@@ -197,7 +198,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["elevation_fullstack","elevation_fullstack","elevation","manual_gate",null,null,null,null,null,null,[],[]]
 ["emek_yezreel_general_academic","emek_yezreel_general_academic","emek_yezreel","manual_gate",null,null,null,null,null,null,[],[]]
 ["givat_washington_certificate","givat_washington_certificate","givat_washington","manual_gate",null,null,null,null,null,null,[],[]]
-["givat_washington_medicine","givat_washington_medicine","givat_washington","manual_gate",null,null,null,null,null,null,[],[]]
+["givat_washington_medicine","givat_washington_medicine","mon_12341128804","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_cs","hackeru_cs","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_cyber","hackeru_cyber","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
 ["hackeru_data","hackeru_data","hackeru","manual_gate",null,null,null,null,null,null,[],[]]
@@ -271,6 +272,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["minshar_fine_arts","minshar_fine_arts","minshar","manual_gate",null,null,null,null,null,null,[],[]]
 ["minshar_graphic_design","minshar_graphic_design","minshar","manual_gate",null,null,null,null,null,null,[],[]]
 ["minshar_photography","minshar_photography","minshar","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12220685569_cs","mon_12220685569_cs","hadassah","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220685573_culinary","mon_12220685573_culinary","mon_12220685573","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220685575_graphic_design","mon_12220685575_graphic_design","mon_12220685575","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12220696299_certificate","mon_12220696299_certificate","mon_12220696299","manual_gate",null,null,null,null,null,null,[],[]]
@@ -321,6 +323,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["mon_12341127690_certificate","mon_12341127690_certificate","mon_12341127690","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128142_beauty","mon_12341128142_beauty","mon_12341128142","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128292_medicine","mon_12341128292_medicine","mon_12341128292","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12341128804_medicine","mon_12341128804_medicine","mon_12341128804","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341128848_engineering","mon_12341128848_engineering","mon_12341128848","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341129101_certificate","mon_12341129101_certificate","mon_12341129101","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341133521_certificate","mon_12341133521_certificate","mon_12341133521","manual_gate",null,null,null,null,null,null,[],[]]
@@ -334,6 +337,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["mon_12341134798_general_academic","mon_12341134798_general_academic","mon_12341134798","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341137305_general_academic","mon_12341137305_general_academic","mon_12341137305","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341137650_certificate","mon_12341137650_certificate","mon_12341137650","manual_gate",null,null,null,null,null,null,[],[]]
+["mon_12341137918_medicine","mon_12341137918_medicine","mon_12341137918","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138289_certificate","mon_12341138289_certificate","mon_12341138289","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138306_certificate","mon_12341138306_certificate","mon_12341138306","manual_gate",null,null,null,null,null,null,[],[]]
 ["mon_12341138357_certificate","mon_12341138357_certificate","mon_12341138357","manual_gate",null,null,null,null,null,null,[],[]]
@@ -497,7 +501,7 @@ const BASELINE_ROWS: MatrixRow[] = String.raw`
 ["telhai_socialwork","telhai_socialwork","telhai","manual_gate",null,null,null,null,null,null,[],[]]
 ["tiltan_certificate","tiltan_certificate","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
 ["tiltan_graphic_design","tiltan_graphic_design","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
-["tiltan_medicine","tiltan_medicine","tiltan","manual_gate",null,null,null,null,null,null,[],[]]
+["tiltan_medicine","tiltan_medicine","mon_12341137918","manual_gate",null,null,null,null,null,null,[],[]]
 ["tlvyaffo_business","tlvyaffo_business","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
 ["tlvyaffo_cs","tlvyaffo_cs","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
 ["tlvyaffo_economics","tlvyaffo_economics","mta","manual_gate",null,"mta-requirements-only",null,null,null,null,[],[]]
@@ -517,12 +521,21 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
   return a[0].localeCompare(b[0]) || a[2].localeCompare(b[2]);
 }
 
-it('preserves the capability matrix except approved medicine and duplicate-ID corrections', async () => {
+it('preserves the pre-college capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
-  const staticPrograms = getStaticCataloguePrograms();
+  // This frozen matrix predates the 25 new college routes and Ono's
+  // behavioural-sciences route. Their no-formula behavior is checked separately.
+  const newCollegeIds = new Set([
+    ...collegeProgrammes.map((program) => program.id),
+    'ono_psychology',
+  ]);
+  expect(newCollegeIds.size).toBe(26);
+  const staticPrograms = getStaticCataloguePrograms().filter(
+    (program) => !newCollegeIds.has(program.id),
+  );
   expect(
     staticPrograms.reduce((count, program) => count + program.linkedInstitutionIds.length, 0),
-  ).toBe(436);
+  ).toBe(439);
   const medicine = staticPrograms.find((program) => program.id === 'medicine')!;
   expect(medicine.linkedInstitutionIds).not.toContain('bgu');
   const programs = staticPrograms.map((program) =>
@@ -553,8 +566,8 @@ it('preserves the capability matrix except approved medicine and duplicate-ID co
   }
   expect(capture.getDb).not.toHaveBeenCalled();
   expect(unexpectedFetch).not.toHaveBeenCalled();
-  expect(capture.rows).toHaveLength(437);
-  expect(BASELINE_ROWS).toHaveLength(437);
+  expect(capture.rows).toHaveLength(440);
+  expect(BASELINE_ROWS).toHaveLength(440);
   capture.rows.sort(comparePairs);
 
   // The exception must use exactly the existing named medicine target, including
@@ -671,4 +684,78 @@ it('requires the top-level NITE total for Haifa communication', async () => {
   const { result } = await gapEvaluate(program, 'haifa', applicant);
   // Approved test update: Jorje 2026-10-29, haifa_communication uses the NITE total (general group), haifa_cs keeps Q; file granted by Oded.
   expect(result).toMatchObject({ kind: 'needs_input', requiredInputs: ['psychometric_overall'] });
+});
+
+it('keeps each sourced college route at requirements-only with no admissions decision', async () => {
+  // Route-specific notes are sourced, but no complete evaluator formula was verified.
+  // These expected outcomes are fixed separately from the evaluator under test.
+  const expectedRouteResults = {
+    achva_psychology: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_digital_behavior: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_cs_information_systems: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_information_systems: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_communication_disorders: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_life_sciences: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_education: ['manual_gate', 'requirements_only', 'unknown'],
+    achva_social_humanities: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_primary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_secondary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_special_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_special_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_english_teaching: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_non_formal_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_youth_advancement: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_art_teaching: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_film_education: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_criminology: ['manual_gate', 'requirements_only', 'unknown'],
+    beit_berl_ai_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_early_childhood: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_primary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_secondary_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_special_education: ['manual_gate', 'requirements_only', 'unknown'],
+    david_yellin_non_formal_education: ['manual_gate', 'requirements_only', 'unknown'],
+  } as const;
+  const expectedRouteIds = Object.keys(expectedRouteResults);
+  expect(collegeProgrammes.map((program) => program.id)).toEqual(expectedRouteIds);
+  capture.rows.length = 0;
+  const institutions = getStaticCatalogueInstitutions();
+  for (const program of getStaticCataloguePrograms().filter((row) =>
+    expectedRouteIds.includes(row.id),
+  )) {
+    capture.programmeId = program.id;
+    const report = await evaluateAdmissionsForProgram({
+      program,
+      institutions,
+      input: { degreeId: program.id, bagrut: 100, psychometric: 650 },
+      now: new Date('2026-11-08T12:00:00Z'),
+      freshnessStatesBySourceId: new Map(),
+      fetcher: vi.fn<typeof fetch>().mockRejectedValue(new Error('Offline college route')),
+    });
+    expect(report.results, program.id).toHaveLength(1);
+    const [, capability, decision] =
+      expectedRouteResults[program.id as keyof typeof expectedRouteResults];
+    expect(report.results[0], program.id).toMatchObject({ capability, decision });
+    for (const inheritedClaim of [
+      'אין צורך בבגרות',
+      'אין צורך בפסיכומטרי',
+      'ראיון קבלה חובה',
+      'הגשת תיק עבודות חובה',
+    ]) {
+      expect(report.results[0].explanation, program.id).not.toContain(inheritedClaim);
+    }
+    if (program.id === 'beit_berl_ai_education') {
+      expect(report.results[0].explanation).toContain('תנאי הקבלה למסלול אינם מפורטים');
+    }
+    if (program.id === 'david_yellin_non_formal_education') {
+      expect(report.results[0].explanation).toContain('תנאים ייחודיים לחוג אינם מפורטים');
+    }
+  }
+  expect(capture.rows).toHaveLength(25);
+  for (const row of capture.rows) {
+    expect(row[3], row[0]).toBe(
+      expectedRouteResults[row[0] as keyof typeof expectedRouteResults][0],
+    );
+    expect(row[6], row[0]).toBeNull();
+  }
 });

@@ -109,6 +109,8 @@ describe('canonical programme aliases', () => {
       ...Object.fromEntries(aliases),
       jerusalem_academy_graphic_design: 'jerusalem_academy_dance',
       rubin_graphic_design: 'rubin_classical',
+      givat_washington_medicine: 'mon_12341128804_medicine',
+      tiltan_medicine: 'mon_12341137918_medicine',
     });
   });
 
@@ -118,7 +120,9 @@ describe('canonical programme aliases', () => {
     expect((await getPublicProgramPageData(keeper))?.program.id).toBe(keeper);
     const institution = (await getPublicInstitutionPageData(page.program.institutionId!))!;
     expect(institution.programs.map((program) => program.id)).not.toContain(hidden);
-    expect(institution.programs.map((program) => program.id)).toContain(keeper);
+    expect(
+      [...(institution.categoryPages ?? []), ...institution.programs].map((program) => program.id),
+    ).toContain(keeper);
     const indexable = await indexableProgramIds();
     expect(indexable).not.toContain(hidden);
     expect(indexable).toContain(keeper);

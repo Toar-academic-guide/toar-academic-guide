@@ -66,15 +66,13 @@ describe('SekhemCalculatorLink offered programme identity', () => {
     });
   });
 
-  it('keeps the DB-shaped generic CS CTA and sends it to the programme picker', async () => {
+  it('omits the CTA on a generic CS page without its own offering', async () => {
     const { data, sources, offerings } = await databaseCsPages();
     expect(hasPublishedCompositeThresholds(data, sources, offerings)).toBe(true);
     const html = renderToStaticMarkup(
       <SekhemCalculatorLink data={data} sources={sources} offerings={offerings} />,
     );
-    const link = new DOMParser().parseFromString(html, 'text/html').querySelector('a')!;
-    expect(link.getAttribute('href')).toBe('/sekhem-calculator');
-    expect(link.textContent).toBe('מחשבון סכם וסיכויי קבלה');
+    expect(html).toBe('');
   });
 
   it('does not treat an offering source alias as an offered programme ID', async () => {
@@ -86,16 +84,14 @@ describe('SekhemCalculatorLink offered programme identity', () => {
     const html = renderToStaticMarkup(
       <SekhemCalculatorLink data={data} sources={sources} offerings={withSourceAlias} />,
     );
-    const link = new DOMParser().parseFromString(html, 'text/html').querySelector('a')!;
-    expect(link.getAttribute('href')).toBe('/sekhem-calculator');
+    expect(html).toBe('');
   });
 
-  it('keeps the guard fallback and uses the picker when offerings are omitted', async () => {
+  it('omits the CTA when offerings are omitted', async () => {
     const { data, sources } = await databaseCsPages();
     expect(hasPublishedCompositeThresholds(data, sources)).toBe(true);
     const html = renderToStaticMarkup(<SekhemCalculatorLink data={data} sources={sources} />);
-    const link = new DOMParser().parseFromString(html, 'text/html').querySelector('a')!;
-    expect(link.getAttribute('href')).toBe('/sekhem-calculator');
+    expect(html).toBe('');
   });
 
   it('keeps the Haifa CS own-page calculator link with its exact offered ID', async () => {
@@ -108,17 +104,19 @@ describe('SekhemCalculatorLink offered programme identity', () => {
     );
     const link = new DOMParser().parseFromString(html, 'text/html').querySelector('a')!;
     expect(link.getAttribute('href')).toBe('/sekhem-calculator?program=haifa_cs');
-    expect(link.textContent).toBe('מחשבון סכם וסיכויי קבלה');
+    expect(link.textContent).toBe('חשבו סכם לתוכנית הזו');
   });
 
   it('emits only working calculator destinations across the real static catalogue', async () => {
     const offerings = await loadSekhemCalculatorOfferings();
     const linked: string[] = [];
-    const picker: string[] = [];
+
     for (const program of getStaticCataloguePrograms()) {
       const data = (await getPublicProgramPageData(program.id))!;
       const sources = await getPublicProgramRequirementSources(data);
-      const passes = hasPublishedCompositeThresholds(data, sources, offerings);
+      const passes =
+        hasPublishedCompositeThresholds(data, sources, offerings) &&
+        offerings.some((row) => row.programId === canonicalProgramId(data.program.id));
       const html = renderToStaticMarkup(
         <SekhemCalculatorLink data={data} sources={sources} offerings={offerings} />,
       );
@@ -127,28 +125,12 @@ describe('SekhemCalculatorLink offered programme identity', () => {
       const link = new DOMParser().parseFromString(html, 'text/html').querySelector('a')!;
       const href = link.getAttribute('href')!;
       const requestedId = canonicalProgramId(data.program.id);
-      const isOffered = offerings.some((row) => row.programId === requestedId);
       expect(href, program.id).toBe(
-        isOffered
-          ? `/sekhem-calculator?program=${encodeURIComponent(requestedId)}`
-          : '/sekhem-calculator',
+        `/sekhem-calculator?program=${encodeURIComponent(requestedId)}`,
       );
-      if (href === '/sekhem-calculator') picker.push(program.id);
-      else {
-        const params = new URL(href, 'https://findmyway.co.il').searchParams;
-        expect(
-          offerings.some((row) => row.programId === canonicalProgramId(params.get('program')!)),
-          program.id,
-        ).toBe(true);
-      }
       linked.push(data.program.id);
     }
     expect(linked).toContain('haifa_cs');
-    expect(picker).toEqual(
-      expect.arrayContaining(['cs', 'ee', 'psychology', 'me', 'law', 'business', 'accounting']),
-    );
-    console.info(
-      `Static catalogue CTA inventory: ${linked.length} pages; picker: ${picker.join(', ')}.`,
-    );
+    expect(linked).not.toContain('cs');
   });
 });

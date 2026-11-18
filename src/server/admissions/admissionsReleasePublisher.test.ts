@@ -223,7 +223,7 @@ describe('admissions release publisher', () => {
     },
   );
 
-  it('publishes Technion civil alongside four already-published winter changes and aliases', async () => {
+  it('rejects a cached civil cutoff even beside reviewed winter changes', async () => {
     const repository = new MemoryAdmissionsReleaseRepository();
     for (const [programId, value] of [
       ['technion_ee', 91.5],
@@ -243,42 +243,22 @@ describe('admissions release publisher', () => {
           ...technionWinterManifest.changes[0].sourceProofs[0],
           sourceId: 'technion-technion_civil-live',
           excerpt: 'Fixture: Civil Engineering cutoff 87.',
+          cutoffEvidence: undefined,
         },
       ],
     };
-    const result = await createAdmissionsReleasePublisher(repository).publish({
-      manifest: {
-        ...technionWinterManifest,
-        changes: [...technionWinterManifest.changes, civilChange],
-      },
-      repositoryCommit: 'technion-w43-carried-forward',
-    });
+    await expect(
+      createAdmissionsReleasePublisher(repository).publish({
+        manifest: {
+          ...technionWinterManifest,
+          changes: [...technionWinterManifest.changes, civilChange],
+        },
+        repositoryCommit: 'technion-w43-carried-forward',
+      }),
+    ).rejects.toThrow('Canonical cutoff needs matching main-route');
 
-    expect(result.status).toBe('published');
-    if (result.status !== 'published') throw new Error('Expected a published release.');
-    expect(result.alreadyApplied).toEqual(
-      ['ee', 'me', 'technion_ee', 'technion_me'].map((programId) => ({
-        target: { institutionId: 'technion', programId, cycle: '2027' },
-        ruleKind: 'admission_cutoff',
-      })),
-    );
-    expect(repository.canonicalCutoffs.get('technion:technion_civil')).toBe(87);
-    expect(repository.transitions).toEqual([
-      expect.objectContaining({
-        institutionId: 'technion',
-        programId: 'technion_civil',
-        cycle: '2027',
-      }),
-    ]);
-    expect(repository.items).toEqual([
-      expect.objectContaining({
-        transitionId: repository.transitions[0].id,
-        beforeValue: { value: 88 },
-        afterValue: { value: 87 },
-      }),
-    ]);
-    expect(repository.releases[0].status).toBe('published');
-    expect(repository.attempts[0].status).toBe('succeeded');
+    expect(repository.canonicalCutoffs.get('technion:technion_civil')).toBe(88);
+    expect(repository.releases).toHaveLength(0);
   });
 
   it('publishes an entirely already-applied manifest without claiming any transitions or items', async () => {

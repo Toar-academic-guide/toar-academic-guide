@@ -1,6 +1,8 @@
 import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
+import { getMedicineAcademicVerification } from './capabilityMatrix';
+import { evaluateMedicineAcademicStage } from './medicineAcademicEvaluation';
 import { bguMathematicsSubjects } from '@/lib/bagrutSubjectRecord';
 import { evaluateAfekaPublishedRoutes } from './afekaPublishedRoutesEvaluation';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
@@ -26,6 +28,7 @@ import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateReichmanPublishedRoutes } from './reichmanPublishedRoutesEvaluation';
 import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
+import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
@@ -98,6 +101,7 @@ import {
   getMondayAdmissionEvidenceByCatalogueInstitutionId,
   type MondayAdmissionEvidenceRecord,
 } from '@/data/admissions/mondayEvidence';
+import { studentExplanations } from '@/data/admissions/studentExplanations';
 import {
   ADMISSIONS_EVALUATOR_VERSION,
   createAdmissionsInputDigest,
@@ -280,6 +284,9 @@ export async function evaluateAdmissionsForProgram(args: {
     }
     return {
       ...displayedResult,
+      ...(normalized.calculatedBagrutAverages[institutionId] !== undefined && {
+        calculatedBagrutAverage: normalized.calculatedBagrutAverages[institutionId],
+      }),
       snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),
     };
   });
@@ -302,6 +309,7 @@ function withVerifiedAdmissionInformation(
   entry: AdmissionsCapabilityEntry | undefined,
   input: AdmissionsEvaluationRequest,
 ): AdmissionsEvaluationResult {
+  if (result.stage === 'academic') return result;
   if (entry?.formulaPairScope === 'excluded' || entry?.pairVerification?.state !== 'exact')
     return result;
 
@@ -315,15 +323,7 @@ function withVerifiedAdmissionInformation(
   if (!contract || contract.proof.state !== 'verified' || !contract.proof.liveComparedAt)
     return result;
 
-  const checkedAt =
-    entry.freshnessState?.reviewedSourceFingerprint === contract.sourceFingerprint &&
-    entry.freshnessState.lastExactCheckAt
-      ? entry.freshnessState.lastExactCheckAt
-      : new Date(contract.proof.liveComparedAt);
-  const verificationNote = `נתוני הבסיס אומתו ב־${new Intl.DateTimeFormat('he-IL', {
-    dateStyle: 'short',
-    timeZone: 'Asia/Jerusalem',
-  }).format(checkedAt)}, למחזור ${contract.admissionCycle}.`;
+  const verificationNote = `נתוני הבסיס אומתו למחזור ${contract.admissionCycle}.`;
 
   if (result.capability === 'exact') {
     return result.scoreAssessment
@@ -373,18 +373,38 @@ async function evaluateCapabilityEntries(args: {
       continue;
     }
 
+    if (getMedicineAcademicVerification(program.id, institution.id, input.extraInputs)) {
+      if (
+        entry.freshnessState &&
+        ['blocked', 'failed', 'changed_needs_review'].includes(entry.freshnessState.status)
+      ) {
+        results[index] = evaluateNonExactResult({
+          input,
+          program,
+          institution,
+          entry: { ...entry, capability: 'authority_unavailable' },
+        });
+      } else {
+        exactTasks.push(async () => {
+          results[index] = await evaluateMedicineAcademicStage({ input, institution, fetcher });
+        });
+      }
+      continue;
+    }
+
     if (institution.id === 'haifa') {
       const { calculateHaifaBagrutAverage } =
         await import('@/data/admissions/haifaAdmissionFormula');
-      const average =
-        (!args.haifaAverageIsProxy ? input.extraInputs?.haifaBagrutAverage : undefined) ??
-        calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
-      if (average !== undefined)
-        input.extraInputs = { ...input.extraInputs, haifaBagrutAverage: average };
+      const average = calculateHaifaBagrutAverage(input.extraInputs?.bagrutSubjectRecord);
+      if (average === undefined) {
+        results[index] = requiredInputsResult(publicInstitutionShape(institution), [
+          'haifa_bagrut_average',
+        ]);
+        continue;
+      }
       if (
-        average === undefined ||
-        (program.id === 'haifa_infosystems' &&
-          input.extraInputs?.haifaInformationSystemsTrack === 'single_major')
+        program.id === 'haifa_infosystems' &&
+        input.extraInputs?.haifaInformationSystemsTrack === 'single_major'
       ) {
         const missingRule = haifaMissingRuleResult(
           program.id,
@@ -1028,10 +1048,14 @@ async function evaluateExactScores(args: {
     if (exactTarget.sourceTarget.adapterId === 'haifa') {
       if (requestedInput.psychometric === undefined)
         return requiredInputsResult(institution, ['psychometric_overall']);
-      const average = requestedInput.extraInputs?.haifaBagrutAverage;
+      const {
+        calculateHaifaAdmissionScore,
+        calculateHaifaBagrutAverage,
+        haifaUsesMathPsychometric,
+        HAIFA_FORMULA_SOURCE_URL,
+      } = await import('@/data/admissions/haifaAdmissionFormula');
+      const average = calculateHaifaBagrutAverage(requestedInput.extraInputs?.bagrutSubjectRecord);
       if (average === undefined) return requiredInputsResult(institution, ['haifa_bagrut_average']);
-      const { calculateHaifaAdmissionScore, haifaUsesMathPsychometric, HAIFA_FORMULA_SOURCE_URL } =
-        await import('@/data/admissions/haifaAdmissionFormula');
       const policy = getHaifaProgrammePolicy(
         program.id,
         requestedInput.extraInputs?.haifaInformationSystemsTrack,
@@ -2192,8 +2216,11 @@ function evaluateNonExactResult(args: {
       officialUrls: ['https://admissions.haifa.ac.il/computer-information-science/program/3218/'],
     };
 
-  const evidenceRecord =
-    entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0];
+  // These route-specific records must not inherit broad institution claims about
+  // grade gates or interviews when building the student-facing requirements copy.
+  const evidenceRecord = isSourcedCollegeProgrammeId(program.id)
+    ? undefined
+    : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
 
   if (entry.capability === 'needs_input') {
@@ -2264,8 +2291,10 @@ function evaluateNonExactResult(args: {
       decision: 'unknown',
       confidence: 'low',
       sourceLabel: 'מקור חסום',
-      explanation: entry.sourceTarget?.blockedReason ?? 'המקור הרשמי דורש דפדפן או תהליך ידני.',
-      nextAction: entry.sourceTarget?.nextAction ?? 'בדקו ישירות באתר המוסד.',
+      explanation:
+        hebrewStudentText(entry.sourceTarget?.blockedReason) ??
+        'המקור הרשמי דורש בדיקה ידנית באתר המוסד.',
+      nextAction: hebrewStudentText(entry.sourceTarget?.nextAction) ?? 'בדקו ישירות באתר המוסד.',
     };
   }
 
@@ -2287,7 +2316,8 @@ function evaluateNonExactResult(args: {
   if (entry.capability === 'open_admission') {
     const defaultText =
       'מוסד זה מציע אפיק קבלה פתוחה ללא צורך בציון פסיכומטרי או ממוצע בגרות מינימלי.';
-    const explanation = catalogueDescription(evidenceRecord?.decisionReason) || defaultText;
+    const explanation =
+      hebrewStudentText(studentExplanations[evidenceRecord?.itemId ?? '']?.text) ?? defaultText;
     return {
       institution: publicInstitutionShape(institution),
       linkedInstitutionId: institution.id,
@@ -3387,6 +3417,11 @@ function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
       explanation: 'במסלול דו־חוגי נדרשת עמידה גם בתנאי הקבלה של החוג השני.',
       nextAction: 'בדקו את תנאי החוג השני וענו על השאלה שמעל התוצאות.',
     };
+  if (requiredInputs.length === 1 && requiredInputs[0] === 'haifa_bagrut_average')
+    return {
+      explanation: 'כדי לחשב סיכויי קבלה בחיפה צריך להזין מקצועות בגרות.',
+      nextAction: 'השלימו את מקצועות הבגרות כדי להמשיך.',
+    };
   if (requiredInputs.some((input) => input.startsWith('haifa_')))
     return {
       explanation: `לבדיקת חיפה חסרים הנתונים הבאים: ${requiredInputs.map((input) => HAIFA_REQUIRED_INPUT_LABELS[input] ?? 'נתון נוסף').join(', ')}.`,
@@ -3506,6 +3541,10 @@ function unsupportedResult(
   };
 }
 
+function hebrewStudentText(text: string | null | undefined): string | undefined {
+  return text && /[א-ת]/.test(text) ? text : undefined;
+}
+
 function trackedMissingRuleResult(
   institution: CatalogueInstitution,
   entry: AdmissionsCapabilityEntry,
@@ -3513,7 +3552,6 @@ function trackedMissingRuleResult(
   const evidence = entry.evidence;
   const missingData = evidence?.missingData.length ? [...evidence.missingData] : ['official_rule'];
   const officialUrls = evidence?.officialUrls.length ? [...evidence.officialUrls] : [];
-  const readableMissing = missingData.join(', ');
 
   return {
     institution: publicInstitutionShape(institution),
@@ -3523,13 +3561,13 @@ function trackedMissingRuleResult(
     decision: 'unknown',
     confidence: evidence?.confidence ?? 'medium',
     sourceLabel: 'חסר כלל רשמי ממופה',
-    explanation: evidence
-      ? `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}. מקור העבודה: ${evidence.itemName}.`
-      : `עדיין חסר כלל רשמי כדי לתת החלטת קבלה: ${readableMissing}.`,
+    explanation: 'עדיין חסר כלל רשמי כדי לתת החלטת קבלה.',
     nextAction:
-      evidence?.nextAction ??
-      entry.sourceTarget?.nextAction ??
-      'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.',
+      hebrewStudentText(evidence?.nextAction) ??
+      hebrewStudentText(entry.sourceTarget?.nextAction) ??
+      (institution.id === 'ariel'
+        ? 'בדקו את תנאי הקבלה ישירות באתר של אוניברסיטת אריאל.'
+        : 'צריך להשלים אימות רשמי לפני שנציג קבלה או דחייה.'),
     evidenceItemId: evidence?.itemId,
     evidenceItemName: evidence?.itemName,
     missingData,

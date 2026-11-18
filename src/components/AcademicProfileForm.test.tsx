@@ -43,7 +43,7 @@ describe('AcademicProfileForm', () => {
     );
     // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
     expect(screen.queryByLabelText('האם יש לך זכאות לתעודת בגרות מלאה ומוכרת?')).toBeNull();
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
         // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
@@ -71,14 +71,14 @@ describe('AcademicProfileForm', () => {
       'value',
       'bagrut',
     );
-    expect(screen.getByLabelText('האם מגיע לך בונוס הקורס המקוון לפיזיותרפיה?')).toHaveProperty(
+    expect(screen.getByLabelText('האם מגיע לכם בונוס הקורס המקוון לפיזיותרפיה?')).toHaveProperty(
       'value',
       'false',
     );
     fireEvent.change(screen.getByLabelText('האם אושר קורס אקדמי במתמטיקה כחלופה לבגרות?'), {
       target: { value: 'true' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
         admissions: { ...admissions, tauPhysiotherapyAcademicMathConfirmed: true },
@@ -98,11 +98,12 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('שנת הזכאות לבגרות או השיפור האחרון בחיפה'), {
       target: { value: '2015.5' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     expect(onComplete).not.toHaveBeenCalled();
     expect(await screen.findByText(/בדקו את נתוני חיפה/)).toBeTruthy();
   });
   it('loads and saves Haifa decimal average and actual years without generic scores', async () => {
+    // Approved test update, Jorje 2026-10-31: omit the retired Haifa average field and save only actual exam years.
     const onComplete = vi.fn();
     const admissions = {
       haifaBagrutAverage: 102.25,
@@ -117,17 +118,14 @@ describe('AcademicProfileForm', () => {
         initialScores={{ admissions }}
       />,
     );
-    expect(screen.getByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toHaveProperty(
-      'value',
-      '102.25',
-    );
+    expect(screen.queryByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toBeNull();
     fireEvent.change(screen.getByLabelText('שנת הזכאות לבגרות או השיפור האחרון בחיפה'), {
       target: { value: '2020' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
-        admissions: { ...admissions, haifaBagrutYear: 2020 },
+        admissions: { haifaBagrutYear: 2020, haifaPsychometricYear: 2026 },
       }),
     );
   });
@@ -187,7 +185,7 @@ describe('AcademicProfileForm', () => {
       'value',
       'precise_sciences_engineering',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(1));
     const saved = onComplete.mock.calls[0][0];
     expect(saved.admissions).toEqual({
@@ -206,7 +204,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(psychologyAverage(), { target: { value: '' } });
     expect(quantitativeAverage()).toHaveProperty('value', '');
     expect(socialAverage()).toHaveProperty('value', '');
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() => expect(onComplete).toHaveBeenCalledTimes(2));
     expect(onComplete.mock.calls[1][0].admissions).not.toHaveProperty('bguPreparatoryAverage');
     expect(onComplete.mock.calls[1][0].admissions.bguPreparatoryCompleted).toBe(false);
@@ -235,7 +233,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('האם יש לימודים אקדמיים קודמים?'), {
       target: { value: 'false' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
     const saved = onComplete.mock.calls[0][0];
     expect(saved).toEqual({
@@ -307,7 +305,7 @@ describe('AcademicProfileForm', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'חשב אומדן' }));
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     return waitFor(() => expect(onComplete).toHaveBeenCalledWith({}));
   });
@@ -324,8 +322,8 @@ describe('AcademicProfileForm', () => {
     );
 
     fireEvent.click(screen.getByRole('button', { name: 'חשב אומדן' }));
-    fireEvent.click(screen.getByRole('button', { name: 'העתק לשדה' }));
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'העתיקו לשדה' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     return waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
@@ -357,7 +355,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לבדיקת המעקב ←' }));
 
     expect(
-      await screen.findByText('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלך.'),
+      await screen.findByText('כדי להפעיל מעקב צריך להשלים את מקצועות הבגרות והיחידות שלכם.'),
     ).toBeTruthy();
     expect(onComplete).not.toHaveBeenCalled();
   });
@@ -391,7 +389,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('שני הקורסים לאפיק ללא פסיכומטרי'), {
       target: { value: 'true' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
         admissions: {
@@ -441,7 +439,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('מספר היחידות המדעיות לסיעוד בחיפה'), {
       target: { value: '9' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
         admissions: { ...admissions, haifaScienceUnits: 9 },
@@ -450,6 +448,7 @@ describe('AcademicProfileForm', () => {
   });
 
   it('hydrates and saves only defined admissions inputs, preserving false and zero', async () => {
+    // Approved test update, Jorje 2026-10-31: exclude the legacy Haifa average from saved admissions inputs.
     const onComplete = vi.fn();
 
     render(
@@ -484,7 +483,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('אישור דרישות שפה בבן־גוריון'), {
       target: { value: 'false' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({
@@ -494,7 +493,6 @@ describe('AcademicProfileForm', () => {
           tauApplicationRequirementsConfirmed: false,
           bguLanguageRequirementsConfirmed: false,
           tauMathPlacementScore: 0,
-          haifaBagrutAverage: 102.25,
           haifaBagrutYear: 2015,
           haifaPsychometricYear: 2026,
         },
@@ -544,7 +542,7 @@ describe('AcademicProfileForm', () => {
     fireEvent.change(screen.getByLabelText('השלמת קורס פיזיקה מוכר בבן־גוריון'), {
       target: { value: '' },
     });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     const { physicsCoursePassed: omitted, ...remaining } = bguEngineering;
     void omitted;
     await waitFor(() =>
@@ -588,7 +586,7 @@ describe('AcademicProfileForm', () => {
       'value',
       'false',
     );
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
     await waitFor(() =>
       expect(onComplete).toHaveBeenCalledWith({ bagrut: { weightedAverage: 100 }, admissions }),
     );
@@ -618,10 +616,10 @@ describe('AcademicProfileForm', () => {
     expect(screen.getByText('test_psy.pdf')).toBeTruthy();
 
     fireEvent.change(screen.getByPlaceholderText('למשל: 650'), { target: { value: '710' } });
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     expect(
-      screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
+      screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }).hasAttribute('disabled'),
     ).toBe(true);
     expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב').hasAttribute('disabled')).toBe(true);
 
@@ -665,11 +663,11 @@ describe('AcademicProfileForm', () => {
 
     expect(screen.getByText('תדפיס פסיכומטרי')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'הסר קובץ' }));
+    fireEvent.click(screen.getByRole('button', { name: 'הסירו קובץ' }));
 
     expect(screen.queryByText('תדפיס פסיכומטרי')).toBeNull();
 
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     await waitFor(() => expect(onComplete).toHaveBeenCalled());
 
@@ -702,7 +700,7 @@ describe('AcademicProfileForm', () => {
     const fileInput = screen.getByLabelText('העלאת תדפיס פסיכומטרי');
     fireEvent.change(fileInput, { target: { files: [file] } });
 
-    fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+    fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
 
     await waitFor(() => {
       expect(screen.getByText('קובץ גדול מדי')).toBeTruthy();
@@ -710,7 +708,7 @@ describe('AcademicProfileForm', () => {
 
     expect(onComplete).not.toHaveBeenCalled();
     expect(
-      screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).hasAttribute('disabled'),
+      screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }).hasAttribute('disabled'),
     ).toBe(false);
   });
 
@@ -740,7 +738,7 @@ describe('AcademicProfileForm', () => {
     expect(screen.getByDisplayValue('700')).toBeTruthy();
     expect(screen.getByDisplayValue('105')).toBeTruthy();
 
-    fireEvent.click(screen.getByRole('button', { name: 'נקה נתונים מהמכשיר הזה' }));
+    fireEvent.click(screen.getByRole('button', { name: 'נקו נתונים מהמכשיר הזה' }));
 
     await waitFor(() => expect(onClearLocalProfileData).toHaveBeenCalled());
     expect(screen.queryByDisplayValue('700')).toBeNull();
@@ -793,7 +791,7 @@ it('restores and saves Psychology prep decimals and false values without generic
     '94.25',
   );
   expect(screen.getByLabelText('האם המכינה לפסיכולוגיה הושלמה?')).toHaveProperty('value', 'false');
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
 });
 
@@ -831,7 +829,7 @@ it('retains Medicine inputs when reopened, edited and saved', async () => {
     screen.getByLabelText('לימודים קודמים ברפואה, רפואת שיניים או הפסקת לימודי בריאות'),
     { target: { value: 'documents_and_committee_approved' } },
   );
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() =>
     expect(onComplete).toHaveBeenCalledWith({
       admissions: {
@@ -861,7 +859,7 @@ it('retains an external preparatory conversion confirmation when the profile is 
   const label = 'מדור הקבלה המיר את ממוצע המכינה לסולם העברית?';
   expect(screen.getByLabelText(label)).toHaveProperty('value', 'false');
   fireEvent.change(screen.getByLabelText(label), { target: { value: 'true' } });
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   const saved = { admissions: { ...admissions, hujiMedicinePreparatoryConversionConfirmed: true } };
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith(saved));
   view.unmount();
@@ -885,7 +883,7 @@ it('clears a Medicine field without replacing unknown information with a value',
   fireEvent.change(screen.getByLabelText('ממוצע בגרות רשמי של העברית (60–127)'), {
     target: { value: '' },
   });
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({}));
 });
 
@@ -923,7 +921,7 @@ it('restores and saves social science details and shares the same prep values', 
     'value',
     '90.75',
   );
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() =>
     expect(onComplete).toHaveBeenCalledWith({
       admissions: { ...admissions, bguPreparatoryAverage: 90.75 },
@@ -955,7 +953,7 @@ it('saves and reopens health decimals, false and unknown values without generic 
   // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
   expect(screen.getByLabelText(/פיזיותרפיה: אנגלית/)).toHaveProperty('value', 'false');
   expect(screen.getByLabelText('מועד הבחינה לריפוי בעיסוק')).toHaveProperty('value', '');
-  fireEvent.click(screen.getByRole('button', { name: 'שמור והמשך לשאלון ←' }));
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
   await waitFor(() => expect(onComplete).toHaveBeenCalledWith({ admissions }));
   view.unmount();
   render(
@@ -1031,4 +1029,50 @@ it('Amit 07:33: legacy certificate fields render safely without full-bagrut cont
     'תעודת הקבלה לאוניברסיטת חיפה',
   ])
     expect(screen.queryByLabelText(label)).toBeNull();
+});
+
+it('never renders an institutional Haifa average for a stored profile', () => {
+  render(
+    <AcademicProfileForm
+      onComplete={vi.fn()}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      initialScores={{
+        admissions: {
+          haifaBagrutAverage: 102.25,
+          haifaBagrutYear: 2015,
+          haifaPsychometricYear: 2025,
+        },
+      }}
+    />,
+  );
+  expect(screen.queryByLabelText('ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)')).toBeNull();
+  expect(screen.getByLabelText('שנת הבחינה הפסיכומטרית לחישוב בחיפה')).toHaveProperty(
+    'value',
+    '2025',
+  );
+});
+
+it('saves a profile without a legacy Haifa average override', async () => {
+  const onComplete = vi.fn();
+  render(
+    <AcademicProfileForm
+      onComplete={onComplete}
+      onSkip={vi.fn()}
+      onClearLocalProfileData={vi.fn()}
+      initialScores={{
+        admissions: {
+          haifaBagrutAverage: 102.25,
+          haifaBagrutYear: 2015,
+          haifaPsychometricYear: 2025,
+        },
+      }}
+    />,
+  );
+  fireEvent.click(screen.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }));
+  await waitFor(() =>
+    expect(onComplete).toHaveBeenCalledWith({
+      admissions: { haifaBagrutYear: 2015, haifaPsychometricYear: 2025 },
+    }),
+  );
 });

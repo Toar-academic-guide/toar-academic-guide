@@ -40,7 +40,11 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
   const labels =
     result.additionalConditions
       ?.filter((condition) => condition.status !== 'confirmed')
-      .map((condition) => condition.label) ?? [];
+      .map((condition) =>
+        result.stage === 'academic'
+          ? `${condition.status === 'unmet' ? 'לא מתקיים' : 'חסר מידע'}: ${condition.label}`
+          : condition.label,
+      ) ?? [];
   // Text-only routes (including HUJI Kidum) deliberately have no numerical fields.
   const namesGate = /ראיון|ריאיון|מבחן|תיק עבודות|אודישן|ראויים לקידום|האגודה לקידום/;
   if (result.kind === 'manual_gate' && !labels.length && namesGate.test(result.explanation)) {
@@ -63,6 +67,33 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     );
 }
 
+function haifaReasons(result: AdmissionsEvaluationResult): string[] {
+  if (result.linkedInstitutionId !== 'haifa') return [];
+  return [...new Set([result.explanation, result.estimationReason])]
+    .filter(
+      (text): text is string =>
+        typeof text === 'string' &&
+        Boolean(text.trim()) &&
+        /[א-ת]/.test(text) &&
+        !/[a-z_]|מיפוי|טרם אומת|מקור חסום|עדיין לא מחשבים כאן|ציון הקבלה חושב לפי נוסחת/i.test(
+          text,
+        ),
+    )
+    .map((text) => text.trim().replace(/מתואם|סכם|מצרף/g, 'ציון הקבלה'));
+}
+
+function renderHaifaReason(text: string) {
+  return text.split(/(\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*)/g).map((part, index) =>
+    index % 2 ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
+
 function InstitutionGroup({
   entries,
   entry,
@@ -82,6 +113,8 @@ function InstitutionGroup({
   const score = hasNumber(result.score);
   const threshold = hasNumber(result.threshold);
   const presentation = resultPresentation(result);
+  const reasons = haifaReasons(result);
+  const resultText = numberless && reasons.length ? reasons[0] : presentation.text;
   const scoreOnly = presentation.text === null;
   // Accepted floor-only routes have one unambiguous line. A text-only manual gate
   // instead carries the actual returned gate, without a generic fallback sentence.
@@ -92,7 +125,11 @@ function InstitutionGroup({
     result.decision !== 'below' &&
     result.scoreAssessment !== 'below_threshold';
   const visibleGates =
-    scoreOnly || acceptedWithoutNumbers || result.decision === 'below' ? [] : gates;
+    result.stage === 'academic'
+      ? gates
+      : scoreOnly || acceptedWithoutNumbers || result.decision === 'below'
+        ? []
+        : gates;
   const textOnlyGate = numberless && visibleGates.length > 0 && result.kind === 'manual_gate';
   return (
     <section
@@ -147,25 +184,45 @@ function InstitutionGroup({
                     {formatSekhemNumber(result.score!, offering.institutionId)}
                   </span>
                   <span className="text-sm text-(--text-body)">
-                    {result.kind === 'estimated' ? 'ציון הקבלה המשוער' : 'ציון הקבלה'}
+                    {result.stage === 'academic'
+                      ? (result.scoreLabel ?? 'ציון אקדמי')
+                      : result.kind === 'estimated'
+                        ? 'ציון הקבלה המשוער'
+                        : 'ציון הקבלה'}
                   </span>
                 </div>
               )}
               {threshold && (
                 <div>
-                  <span className="block text-sm text-(--text-body)">סף קבלה</span>
+                  <span className="block text-sm text-(--text-body)">
+                    {result.stage === 'academic' ? 'סף אקדמי' : 'סף קבלה'}
+                  </span>
                   <span data-result-number="threshold" dir="ltr" className="tabular-nums">
                     {formatSekhemNumber(result.threshold!, offering.institutionId)}
                   </span>
                 </div>
               )}
             </div>
+            {hasNumber(result.calculatedBagrutAverage) && (
+              <p className="mt-3 text-sm text-(--text-body)">
+                ממוצע הבגרות לפי המוסד:{' '}
+                <bdi dir="ltr" className="tabular-nums">
+                  {result.calculatedBagrutAverage.toLocaleString('en-US', {
+                    maximumFractionDigits: 2,
+                  })}
+                </bdi>
+              </p>
+            )}
             {!scoreOnly && !textOnlyGate && (
               <p
                 data-result-reason={numberless ? '' : undefined}
                 className={`mt-3 font-medium ${presentation.tone === 'positive' ? 'text-[#206345]' : presentation.tone === 'negative' ? 'text-[#8c2438]' : ''}`}
               >
-                {presentation.text}
+                {offering.institutionId === 'haifa' &&
+                resultText !== null &&
+                reasons.includes(resultText)
+                  ? renderHaifaReason(resultText)
+                  : resultText}
                 {presentation.actions?.map((action, index) => (
                   <span key={action.label}>
                     {index > 0 && ' וב'}
@@ -185,6 +242,22 @@ function InstitutionGroup({
                 {gate}
               </p>
             ))}
+            {result.stage === 'academic' && (
+              <div className="mt-3 space-y-2 text-sm text-(--text-body)">
+                {result.scoreAssessment === 'below_threshold' && <p>הציון נמוך מהסף האקדמי.</p>}
+                <p>
+                  תשפ״ז (2026–2027){result.registrationStatus === 'closed' ? ' · ההרשמה סגורה' : ''}
+                </p>
+                <p>{result.nextAction}</p>
+              </div>
+            )}
+            {reasons
+              .filter((reason) => reason !== resultText && !visibleGates.includes(reason))
+              .map((reason) => (
+                <p key={reason} data-result-reason className="mt-2 text-sm text-(--text-body)">
+                  {renderHaifaReason(reason)}
+                </p>
+              ))}
           </div>
         )}
       </div>

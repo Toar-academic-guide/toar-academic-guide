@@ -56,6 +56,42 @@ function report(institutionId: string): AdmissionsEvaluationReport {
   };
 }
 describe('canonical alert baseline', () => {
+  it.each(['quick', 'none'] as const)(
+    'does not monitor inactive stored subjects when the active path is %s',
+    (activeBagrutPath) => {
+      expect(
+        buildSavedAlertProfile(
+          {
+            ...scores,
+            admissionsInputs: { ...scores.admissionsInputs, activeBagrutPath },
+          },
+          version,
+        ),
+      ).toBeNull();
+    },
+  );
+  it('reconstructs exact alert inputs from subjects instead of the retained quick average', () => {
+    const saved = buildSavedAlertProfile(
+      {
+        ...scores,
+        admissionsInputs: { ...scores.admissionsInputs, activeBagrutPath: 'exact' },
+      },
+      version,
+    )!;
+    expect(saved.bagrutAverage).toBe(85);
+    expect(saved.extraInputs?.bagrutSubjectRecord?.subjects).toEqual(version.subjects);
+    expect(saved.extraInputs).not.toHaveProperty('activeBagrutPath');
+    expect(
+      buildSavedAlertProfile(
+        {
+          ...scores,
+          bagrutWeightedAverage: null,
+          admissionsInputs: { activeBagrutPath: 'exact' },
+        },
+        version,
+      )?.bagrutAverage,
+    ).toBe(85);
+  });
   it.each(['tau', 'bgu'])(
     'replays all saved inputs through the canonical %s evaluator',
     async (institutionId) => {

@@ -1,4 +1,4 @@
-import type { Metadata } from 'next';
+import type { Metadata, Viewport } from 'next';
 import { Analytics } from '@vercel/analytics/next';
 import { AuthProvider } from '@/context/AuthContext';
 import SiteFooter from '@/components/SiteFooter';
@@ -21,8 +21,35 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'he_IL',
     siteName: 'MyWay',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
   },
-  twitter: { card: 'summary' },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: '/opengraph-image.png',
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
+  },
+};
+
+export const viewport: Viewport = {
+  themeColor: [
+    { media: '(prefers-color-scheme: light)', color: '#FFFFFF' },
+    { media: '(prefers-color-scheme: dark)', color: '#0C1D45' },
+  ],
 };
 
 export default function RootLayout({
@@ -32,6 +59,15 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="he" dir="rtl" className="h-full">
+      <head>
+        <link
+          rel="preload"
+          href="/fonts/heebo-variable.ttf"
+          as="font"
+          type="font/ttf"
+          crossOrigin="anonymous"
+        />
+      </head>
       <body className="min-h-full antialiased">
         <SkipLink />
         <JsonLd data={[organizationLd(), websiteLd()]} />

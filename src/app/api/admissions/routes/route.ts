@@ -9,6 +9,7 @@ import { acquireAdmissionsRouteRequest } from '@/server/admissions/routes/rateLi
 import { getAdmissionRouteCapability } from '@/server/admissions/routes/capabilityRegistry';
 import { getUserProfileSnapshot } from '@/server/user/profile';
 import { bagrutSubjectRecordSchema } from '@/lib/bagrutSubjectRecordSchema';
+import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 
 export const dynamic = 'force-dynamic';
 
@@ -128,7 +129,8 @@ async function loadSavedAcademicScores() {
 async function loadSavedTauProfile() {
   const academicScores = await loadSavedAcademicScores();
   const psychometric = academicScores?.psychometric?.overall;
-  const subjectRecord = academicScores?.bagrut?.subjectRecord;
+  const subjectRecord =
+    admissionsExtraInputsFromAcademicScores(academicScores)?.bagrutSubjectRecord;
   const tauBagrutAverage = academicScores?.admissions?.tauBagrutAverage;
   if (psychometric === undefined || !subjectRecord || tauBagrutAverage === undefined) {
     throw incompleteProfile();
@@ -146,7 +148,8 @@ async function loadSavedTauProfile() {
 async function loadSavedBguProfile() {
   const academicScores = await loadSavedAcademicScores();
   const psychometric = academicScores?.psychometric?.overall;
-  const subjectRecord = academicScores?.bagrut?.subjectRecord;
+  const subjectRecord =
+    admissionsExtraInputsFromAcademicScores(academicScores)?.bagrutSubjectRecord;
   if (psychometric === undefined || !subjectRecord) {
     throw incompleteProfile();
   }

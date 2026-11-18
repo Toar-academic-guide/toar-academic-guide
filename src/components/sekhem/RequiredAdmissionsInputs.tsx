@@ -9,16 +9,20 @@ import {
   type HaifaAdmissionsInputs,
 } from '@/lib/haifaAdmissionsInputs';
 import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import type { BagrutSubjectRecord } from '@/types';
+import { calculateHaifaBagrutAverage } from '@/data/admissions/haifaAdmissionFormula';
 
 export function requestedHaifaKeys(
   required: AdmissionsRequiredInput[],
 ): (keyof HaifaAdmissionsInputs)[] {
-  return HAIFA_PROFILE_KEYS.filter((key) =>
-    required.includes(
-      key
-        .replace(/Confirmed$/, '')
-        .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
-    ),
+  return HAIFA_PROFILE_KEYS.filter(
+    (key) =>
+      (key === 'haifaPsychometricYear' && required.includes('haifa_psychometric_month')) ||
+      required.includes(
+        key
+          .replace(/Confirmed$/, '')
+          .replace(/[A-Z]/g, (char) => `_${char.toLowerCase()}`) as AdmissionsRequiredInput,
+      ),
   );
 }
 
@@ -27,21 +31,25 @@ export default function RequiredAdmissionsInputs({
   values,
   onChange,
   disabled,
+  bagrutSubjectRecord,
+  onBagrutFocus,
 }: {
   keys: (keyof HaifaAdmissionsInputs)[];
   values: HaifaQualificationValues;
   onChange: (key: keyof HaifaAdmissionsInputs, value: string) => void;
   disabled: boolean;
+  bagrutSubjectRecord?: BagrutSubjectRecord;
+  onBagrutFocus?: () => void;
 }) {
-  if (!keys.length) return null;
+  const needsBagrutRows =
+    keys.includes('haifaBagrutAverage') &&
+    calculateHaifaBagrutAverage(bagrutSubjectRecord) === undefined;
+  const qualificationKeys = keys.filter((key) => key !== 'haifaBagrutAverage');
+  const visibleKeys = qualificationKeys.includes('haifaPsychometricMonth')
+    ? [...qualificationKeys, 'haifaPsychometricYear' as const]
+    : qualificationKeys;
+  if (!visibleKeys.length && !needsBagrutRows) return null;
   const numeric = [
-    {
-      key: 'haifaBagrutAverage' as const,
-      label: 'ממוצע בגרות בחיפה',
-      min: 50,
-      max: 130,
-      step: 0.1,
-    },
     {
       key: 'haifaBagrutYear' as const,
       label: 'שנת הבגרות',
@@ -49,16 +57,19 @@ export default function RequiredAdmissionsInputs({
       max: HAIFA_ADMISSION_YEAR,
       step: 1,
     },
-    {
-      key: 'haifaPsychometricYear' as const,
-      label: 'שנת הפסיכומטרי',
-      min: 1948,
-      max: HAIFA_ADMISSION_YEAR,
-      step: 1,
-    },
   ];
   return (
     <div className="mt-5 grid gap-4">
+      {needsBagrutRows && (
+        <button
+          type="button"
+          className="min-h-11 text-right text-sm underline underline-offset-4"
+          onClick={onBagrutFocus}
+          disabled={disabled}
+        >
+          השלימו ציוני בגרות
+        </button>
+      )}
       {numeric
         .filter((field) => keys.includes(field.key))
         .map((field) => (
@@ -81,7 +92,7 @@ export default function RequiredAdmissionsInputs({
         values={values}
         onChange={onChange}
         disabled={disabled}
-        visibleKeys={keys}
+        visibleKeys={visibleKeys}
         compact
         inputClassName="sekhem-input"
       />

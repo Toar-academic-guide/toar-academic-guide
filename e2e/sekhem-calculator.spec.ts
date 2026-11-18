@@ -7,12 +7,12 @@ import type {
   AdmissionsEvaluationResult,
 } from '../src/types/admissionsEvaluation';
 
-const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
+const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const canonical = 'https://findmyway.co.il/sekhem-calculator';
 const description =
   // Approved test update, Jorje 2026-10-29: meta no-overclaim
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.';
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
@@ -161,9 +161,11 @@ async function installMocks(
         inputDigest: 'browser-response-contract',
         input: { ...input, degreeId },
         program: { id: degreeId, name: degreeId },
-        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage).map(
-          (row) => (decorate ? decorate(row) : row),
-        ),
+        // Approved test update, Jorje 2026-10-31: resolve Haifa follow-ups from the Hebrew answer instead of the removed average.
+        results: apiResults(
+          degreeId,
+          requestHaifa && !batch.extraInputs?.haifaHebrewQualification,
+        ).map((row) => (decorate ? decorate(row) : row)),
       };
       response[degreeId] = report;
       reports.set(degreeId, report);
@@ -175,12 +177,53 @@ async function installMocks(
 
 async function fillProfile(page: Page) {
   for (let row = 1; row <= 4; row++) {
-    await page.getByRole('spinbutton', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
   }
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('700');
   await page.getByLabel('מילולי', { exact: true }).fill('130');
   await page.getByLabel('כמותי', { exact: true }).fill('140');
   await page.locator('#psychometric-english').fill('135');
+}
+
+async function restoreInvalidUnits(page: Page, rowIndex: number, units: number) {
+  await page.addInitScript(
+    ({ rowIndex, units }) => {
+      sessionStorage.setItem(
+        'myway:sekhem-calculator:v1',
+        JSON.stringify({
+          version: 1,
+          rows: [
+            ['מתמטיקה', 5, 92],
+            ['אנגלית', 5, 95],
+            ['הבעה עברית', 2, 88],
+            ['תנ״ך', 2, 85],
+            ['ספרות', 2, 90],
+            ['היסטוריה / תע״י', 2, 87],
+            ['אזרחות', 2, 93],
+            ['פיזיקה', 5, 90],
+            ['מדעי המחשב', 5, 94],
+          ].map(([label, storedUnits, grade], index) => ({
+            label,
+            units: index === rowIndex ? units : storedUnits,
+            grade,
+            assessmentKind: 'exam',
+          })),
+          sector: 'יהודי',
+          certificate: 'internal',
+          psychometric: '700',
+          verbal: '130',
+          quantitative: '140',
+          english: '135',
+          programId: '',
+          requiredKeys: [],
+          haifaValues: {},
+          reports: [],
+          failedIds: [],
+        }),
+      );
+    },
+    { rowIndex, units },
+  );
 }
 
 async function assertAlignedFields(root: Locator) {
@@ -251,11 +294,11 @@ for (const width of [1280, 390]) {
     const mocks = await installMocks(page, baseURL);
     await page.goto('/sekhem-calculator');
     await expect(
-      page.getByRole('heading', { name: 'מחשבון סכם וסיכויי קבלה', exact: true }),
+      page.getByRole('heading', { name: 'מחשבון סכם וממוצע בגרות לפי מוסד', exact: true }),
     ).toBeVisible();
     const headingBox = (await page
       .getByRole('heading', {
-        name: 'מחשבון סכם וסיכויי קבלה',
+        name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
         exact: true,
       })
       .boundingBox())!;
@@ -294,7 +337,11 @@ for (const width of [1280, 390]) {
       });
       expect(batch.extraInputs?.bagrutSubjectRecord?.subjects).toHaveLength(4);
       for (const subject of batch.extraInputs!.bagrutSubjectRecord!.subjects) {
-        expect(subject).toMatchObject({ units: 5, grade: 90 });
+        // Approved test update, Jorje 2026-10-30
+        expect(subject).toMatchObject({
+          units: ['mathematics', 'english'].includes(subject.subjectId) ? 3 : 2,
+          grade: 90,
+        });
       }
       assertNoCompositePayload(batch);
     }
@@ -514,12 +561,13 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await fillProfile(page);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the Haifa average field is removed, including its fill and required-field check.
+  await expect(average).toHaveCount(0);
   await expect(hebrew).toBeVisible();
-  await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   ]);
   await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
   const haifa = page.getByTestId('institution-haifa');
@@ -529,22 +577,31 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   ).toHaveAttribute('href', `/programs/${selectedProgram}`);
   await expect(page.getByTestId('institution-haifa')).toContainText(
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   );
-  await average.fill('104');
   await hebrew.selectOption('hebrew_school');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toHaveCount(0);
-  await expect(hebrew).toHaveCount(0);
+  // Approved test update, Jorje 2026-10-31: retain the answered Hebrew qualification across recalculation.
+  await expect(hebrew).toHaveValue('hebrew_school');
   await expect(page.getByTestId('institution-haifa')).toContainText('706');
-  expect(mocks.batches.some((batch) => batch.extraInputs?.haifaBagrutAverage === 104)).toBe(true);
+  // Approved test update, Jorje 2026-10-31: never forward a removed Haifa average override.
+  expect(mocks.batches.every((batch) => batch.extraInputs?.haifaBagrutAverage === undefined)).toBe(
+    true,
+  );
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('701');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the removed Haifa average field stays absent after editing a score.
+  await expect(average).toHaveCount(0);
   expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaBagrutAverage');
-  expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaHebrewQualification');
+  // Approved test update, Jorje 2026-10-31: a psychometric edit preserves the independent Hebrew qualification.
+  expect(mocks.batches.at(-1)!.extraInputs).toHaveProperty(
+    'haifaHebrewQualification',
+    'hebrew_school',
+  );
   expect(mocks.submissions).toHaveLength(0);
 });
 
@@ -563,7 +620,7 @@ test('public metadata and crawl links use the calculator URL; homepage hero has 
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toMatch(
-    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-10-28(?:T[^<]+)?<\/lastmod>/,
+    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-14(?:T[^<]+)?<\/lastmod>/,
   );
   const llms = await request.get('/llms.txt');
   expect(llms.ok()).toBe(true);
@@ -885,8 +942,12 @@ for (const width of [1280, 390]) {
       ['ציון 1', '101', 'ציון בין 0 ל-100'],
       ['יחידות 1', '0', 'יחידות בין 1 ל-5'],
     ]) {
+      if (label.startsWith('יחידות')) {
+        await restoreInvalidUnits(page, 0, Number(value));
+        await page.goto('/sekhem-calculator');
+      }
       const input = page.getByLabel(label, { exact: true });
-      await input.fill(value);
+      if (label.startsWith('ציון')) await input.fill(value);
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
       await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
@@ -903,7 +964,8 @@ for (const width of [1280, 390]) {
         body: await page.screenshot(),
         contentType: 'image/png',
       });
-      await input.fill(label.startsWith('ציון') ? '100' : '5');
+      if (label.startsWith('ציון')) await input.fill('100');
+      else await input.selectOption('5');
     }
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
@@ -933,17 +995,18 @@ for (const width of [1280, 390]) {
     await page.setViewportSize({ width, height: 900 });
     const mocks = await installMocks(page, baseURL);
     await page.goto('/app/calculator?program=tau_cs');
-    const next = page.getByRole('button', { name: 'המשך', exact: true });
+    const next = page.getByRole('button', { name: 'המשיכו', exact: true });
     await next.click();
     await next.click();
     await page.getByRole('button', { name: /יש לי ציונים לפי מקצוע/ }).click();
     await page.getByRole('combobox', { name: 'סוג תעודה', exact: true }).selectOption('internal');
     const units = page.getByLabel('יחידות 1', { exact: true });
     const grade = page.getByLabel('ציון 1', { exact: true });
-    await expect(units).toHaveValue('');
+    // Approved test update, Jorje 2026-10-30
+    await expect(units).toHaveValue('2');
     await expect(grade).toHaveValue('');
     await assertAlignedFields(page.locator('.journey-grade-table'));
-    await units.fill('5');
+    await units.selectOption('5');
     await grade.fill('90');
     await expect(units).toHaveValue('5');
     await expect(grade).toHaveValue('90');
@@ -973,10 +1036,12 @@ for (const width of [1280, 390]) {
     }) => {
       await page.setViewportSize({ width, height: 900 });
       const mocks = await installMocks(page, baseURL);
+      if (field === 'units') await restoreInvalidUnits(page, 0, Number(value));
       await page.goto('/sekhem-calculator');
-      await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+      if (field === 'grade')
+        await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
       const input = page.getByLabel(label, { exact: true });
-      await input.fill(value);
+      if (field === 'grade') await input.fill(value);
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
       await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
       await expect(input).toBeFocused();
@@ -1024,13 +1089,12 @@ for (const width of [1280, 390]) {
   }) => {
     await page.setViewportSize({ width, height: 900 });
     const mocks = await installMocks(page, baseURL);
+    await restoreInvalidUnits(page, 1, 6);
     await page.goto('/sekhem-calculator');
-    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
     const first = page.getByLabel('ציון 1', { exact: true });
     const second = page.getByLabel('יחידות 2', { exact: true });
     const valid = page.getByLabel('ציון 4', { exact: true });
     await first.fill('130');
-    await second.fill('6');
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
     await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
     await expect(first).toBeFocused();
@@ -1069,5 +1133,35 @@ for (const width of [1280, 390]) {
     expect((await appearance(valid)).borders).toEqual(normal);
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
+  });
+}
+
+for (const width of [1280, 390]) {
+  test(`medicine academic HUJI result and missing-details correction at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/sekhem-calculator?program=huji_medicine');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 9', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 8', exact: true }).click();
+    for (let row = 1; row <= 7; row++)
+      await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('spinbutton', { name: 'פסיכומטרי — ציון כללי', exact: true }).fill('750');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    const results = page.getByRole('region', { name: 'הסכם לפי מוסד ותוכנית', exact: true });
+    await expect(results).toContainText('24.366');
+    await expect(results).toContainText('25.186');
+    await expect(results).toContainText('חסר מידע: פסיכומטרי');
+    await page.locator('#medicinePsychometricDate').fill('2025-12-01');
+    await page.locator('#medicineHebrewBasis').selectOption('hebrew_school');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    await expect(results).toContainText('24.366');
+    await expect(results).not.toContainText('חסר מידע');
+    await expect(results).toContainText('ההרשמה סגורה');
+    await expect(page.getByLabel(/מו״ר|מרק״ם|ממוצע הבגרות הרשמי/)).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('#medicinePsychometricDate')).toHaveValue('2025-12-01');
+    await expect(results).toContainText('24.366');
   });
 }

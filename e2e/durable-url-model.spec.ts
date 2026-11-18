@@ -27,7 +27,7 @@ test.describe('durable URL model', () => {
     await page.getByLabel('שעות פיזיקה בתעודת הנדסאי').fill('90');
     await page.getByLabel('ציון פיזיקה בתעודת הנדסאי', { exact: true }).fill('85');
     await page.getByLabel('כל נתוני ההנדסה הרלוונטיים הוזנו').check();
-    await page.getByRole('button', { name: 'שמור והמשך לשאלון ←' }).click();
+    await page.getByRole('button', { name: 'שמרו והמשיכו לשאלון ←' }).click();
     await expect(page).toHaveURL(/\/app\/assessment$/);
     await page.goto('/app/profile');
     await page.reload();
@@ -85,7 +85,7 @@ test.describe('durable URL model', () => {
 
   test('public catalogue pages render without login', async ({ page }) => {
     await page.goto('/programs/cs');
-    await expect(page.getByRole('heading', { name: 'מדעי המחשב' })).toBeVisible();
+    await expect(page.getByRole('heading', { level: 1, name: 'מדעי המחשב' })).toBeVisible();
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
     await expect(page.getByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toHaveAttribute(
       'href',

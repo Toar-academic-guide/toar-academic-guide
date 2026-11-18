@@ -1,5 +1,4 @@
 import type { Metadata } from 'next';
-import { HomeBrowse } from '@/components/seo/CatalogueLinks';
 import StudyJourney from '@/components/StudyJourney';
 import JsonLd from '@/components/seo/JsonLd';
 import { webApplicationLd } from '@/lib/seo/jsonLd';
@@ -23,14 +22,25 @@ export const metadata: Metadata = {
     title,
     description,
   },
+  twitter: {
+    card: 'summary_large_image',
+    images: [
+      {
+        url: absoluteUrl('/opengraph-image.png'),
+        width: 1200,
+        height: 630,
+        type: 'image/png',
+        alt: 'MyWay — הדרך ללימודים שלכם מתחילה כאן.',
+      },
+    ],
+  },
 };
 
 export default function Home() {
   return (
     <>
       <JsonLd data={webApplicationLd()} />
-      {/* No Suspense boundary: the links must be inline in the HTML, not streamed. */}
-      <StudyJourney browse={<HomeBrowse />} />
+      <StudyJourney />
     </>
   );
 }

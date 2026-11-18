@@ -4,8 +4,8 @@ import type { PDFPageProxy } from 'pdfjs-dist';
 
 export interface ExtractedGrade {
   label: string;
-  units: number;
-  grade: number;
+  units: number | '';
+  grade: number | '';
   unmatched?: boolean;
 }
 export interface PositionedItem {
@@ -130,29 +130,46 @@ export function parseBagrutTable(pages: PositionedItem[][]) {
 }
 
 export function parseSimpleBagrutLines(lines: string[]): ExtractedGrade[] {
-  return lines.flatMap((line) => {
+  const rows = lines.flatMap((line) => {
     const text = line.trim().replace(/\s+/g, ' ');
     const forward = text.match(/^(.+?)\s+(\d{1,3})\s+(\d{1,3})$/);
     const reverse = text.match(/^(\d{1,3})\s+(\d{1,3})\s+(.+)$/);
     const name = forward?.[1] ?? reverse?.[3] ?? '';
-    let units = Number(forward?.[2] ?? reverse?.[2]);
-    let grade = Number(forward?.[3] ?? reverse?.[1]);
-    // LTR numeric spans can reverse the pair in an otherwise RTL line.
-    // Keep the existing positional rule when both values could be units.
-    if (units > 10 && grade >= 1 && grade <= 10) [units, grade] = [grade, units];
-    if (
-      !/[א-ת]/.test(name) ||
-      /[\d*]/.test(normalize(name)) ||
-      /שעות|יח["״׳']?ל/.test(name) ||
-      !Number.isInteger(units) ||
-      units < 1 ||
-      units > 10 ||
-      !Number.isInteger(grade) ||
-      grade < 0 ||
-      grade > 100
-    )
+    if (!/[א-ת]/.test(name) || /[\d*]/.test(normalize(name)) || /שעות|יח["״׳']?ל/.test(name))
       return [];
-    return [{ ...subjectLabel(name), units, grade }];
+    // Normalize both text directions to distance from the subject name.
+    const adjacent = Number(forward?.[2] ?? reverse?.[2]);
+    const far = Number(forward?.[3] ?? reverse?.[1]);
+    const interpretations = [
+      { units: adjacent, grade: far, unitsAdjacent: true },
+      { units: far, grade: adjacent, unitsAdjacent: false },
+    ].filter(
+      ({ units, grade }) =>
+        Number.isInteger(units) &&
+        units >= 1 &&
+        units <= 5 &&
+        Number.isInteger(grade) &&
+        grade >= 0 &&
+        grade <= 100,
+    );
+    return interpretations.length ? [{ ...subjectLabel(name), interpretations }] : [];
+  });
+  const orders = new Set(
+    rows.flatMap(({ interpretations }) =>
+      interpretations.length === 1 && interpretations[0].grade > 5
+        ? [interpretations[0].unitsAdjacent]
+        : [],
+    ),
+  );
+  const order = orders.size === 1 ? [...orders][0] : undefined;
+  return rows.map(({ interpretations, ...subject }) => {
+    const resolved =
+      interpretations.length === 1 || interpretations[0].units === interpretations[1].units
+        ? interpretations[0]
+        : interpretations.find(({ unitsAdjacent }) => unitsAdjacent === order);
+    return resolved
+      ? { ...subject, units: resolved.units, grade: resolved.grade }
+      : { ...subject, units: '', grade: '', unmatched: true };
   });
 }
 

@@ -3,6 +3,7 @@ import {
   HUJI_MEDICINE_REQUIRED_INPUTS,
 } from '@/lib/hujiMedicineInputs';
 import type { AdmissionsExtraInputs, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import { calculateHaifaBagrutAverage } from '@/data/admissions/haifaAdmissionFormula';
 
 export function admissionsInputValue(
   input: AdmissionsExtraInputs | undefined,
@@ -18,7 +19,7 @@ export function admissionsInputValue(
     case 'haifa_information_systems_partner_requirements':
       return input?.haifaInformationSystemsPartnerRequirementsConfirmed;
     case 'haifa_bagrut_average':
-      return input?.haifaBagrutAverage;
+      return calculateHaifaBagrutAverage(input?.bagrutSubjectRecord);
     case 'haifa_bagrut_year':
       return input?.haifaBagrutYear;
     case 'haifa_psychometric_year':

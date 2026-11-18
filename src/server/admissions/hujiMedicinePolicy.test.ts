@@ -4,10 +4,48 @@ import {
   hujiMedicineFinalScore,
   resolveHujiMedicineAdmission,
 } from './hujiMedicinePolicy';
-import { HUJI_MEDICINE_ELIGIBLE_INPUTS as eligible } from '@/data/admissions/hujiMedicineVerification';
+import {
+  HUJI_MEDICINE_ELIGIBLE_INPUTS as eligible,
+  buildHujiMedicineVerification,
+} from '@/data/admissions/hujiMedicineVerification';
 import type { HujiMedicineInputs } from '@/lib/hujiMedicineInputs';
 
 describe('HUJI Medicine current official policy', () => {
+  it.each([
+    [26.746, 25.707, 'below'],
+    [26.749, 25.708, 'eligible_to_apply'],
+    [26.751, 25.709, 'eligible_to_apply'],
+    [26.854, 25.75, 'eligible_to_apply'],
+  ] as const)(
+    'compares final score %s / 175 against the revised cutoff',
+    (cognitive, score, decision) => {
+      const result = resolveHujiMedicineAdmission(800, {
+        ...eligible,
+        hujiMedicineRoute: 'official_cognitive',
+        hujiMedicineCognitiveScore: cognitive,
+        hujiMedicineAssessmentScore: 175,
+      });
+      expect(result).toMatchObject({
+        status: 'decided',
+        stage: 'final',
+        score,
+        threshold: 25.708,
+        decision,
+      });
+      if (decision === 'below') {
+        expect(result.reasons).toContain('הציון הסופי נמוך מסף תשפ״ז הנוכחי, 25.708.');
+      }
+    },
+  );
+  it.each(['medicine', 'huji_medicine'])(
+    'uses the revised final cutoff in the %s contract',
+    (id) => {
+      expect(buildHujiMedicineVerification(id).contract.calculation.cutoff).toEqual({
+        acceptance: 25.708,
+        rejection: null,
+      });
+    },
+  );
   it.each([
     ['bagrut', 120, 800, 27.921],
     ['bagrut', 100, 700, 22.265],
@@ -50,7 +88,7 @@ describe('HUJI Medicine current official policy', () => {
       status: 'decided',
       stage: 'final',
       score: 26.612,
-      threshold: 25.783,
+      threshold: 25.708,
       decision: 'eligible_to_apply',
       missing: [],
     });
@@ -187,7 +225,7 @@ describe('HUJI Medicine current official policy', () => {
         hujiMedicineCognitiveScore: 25.5,
         hujiMedicineAssessmentScore: 175,
       }),
-    ).toMatchObject({ stage: 'final', score: 25.209, threshold: 25.783, decision: 'below' });
+    ).toMatchObject({ stage: 'final', score: 25.209, threshold: 25.708, decision: 'below' });
   });
 });
 

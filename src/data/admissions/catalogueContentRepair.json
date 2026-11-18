@@ -813,7 +813,7 @@
     },
     {
       "programId": "mon_12220685569_cs",
-      "institutionId": "mon_12220685569",
+      "institutionId": "hadassah",
       "sourceUrl": "https://www.jmc.ac.il/תוכניות-לימוד/ביה-ס-הבינתחומי-לבריאות-חברה-ומדע/מדעי-המחשב/קבלה-ורישום/תנאי-קבלה/",
       "sourceSha256": "fe72d51204f9c6e047ef00e07f6cad71e5ba759e3e5352cc2768b0b845f74115",
       "checkedAt": "2026-10-21",
@@ -1044,6 +1044,7 @@
     },
     {
       "programId": "minshar_graphic_design",
+      "identity": { "name": "תקשורת חזותית", "type": "certificate", "category": "עיצוב" },
       "institutionId": "minshar",
       "sourceUrl": "https://www.minshar.org.il/visual-communication/acceptance-tasks/",
       "sourceSha256": "4a0e36a9e934cb0b71641c04669802721786efb2e43c5e40d513ad152b42e609",
@@ -1057,6 +1058,7 @@
     },
     {
       "programId": "mon_12341101957_graphic_design",
+      "identity": { "name": "עיצוב פנים", "type": "certificate", "category": "עיצוב" },
       "institutionId": "mon_12341101957",
       "sourceUrl": "https://www.arti-studio.co.il/עיצוב-פנים-1/",
       "sourceSha256": "d33a8fc7e4df225f8d3ed6634505a4da92159dd84e0ad17b0ab71979bfda5c43",
@@ -1078,6 +1080,7 @@
     },
     {
       "programId": "mon_12341092879_graphic_design",
+      "identity": { "name": "עיצוב גרפי ו־UX/UI", "type": "certificate", "category": "עיצוב" },
       "institutionId": "mon_12341092879",
       "sourceUrl": "https://www.6bstudio.co.il/graphicuxui2026/",
       "sourceSha256": "107df51e49d1a827238969fd99c011f0b49c25098accb46b7df804e2d55535d6",
@@ -1280,6 +1283,7 @@
     },
     {
       "programId": "johnbryce_cs",
+      "identity": { "name": "DevOps", "type": "certificate", "category": "טכנולוגיה ופיתוח" },
       "institutionId": "johnbryce",
       "sourceUrl": "https://www.johnbryce.co.il/catalog/hi-tech-courses/קורס-devops/",
       "sourceSha256": "d20399d9fb4567571f4d6dc43c13326a9de9ee6b013378541d3e35dbe2d59857",
@@ -1330,6 +1334,7 @@
     },
     {
       "programId": "mon_12341138289_cs",
+      "identity": { "name": "בדיקות תוכנה", "type": "certificate", "category": "טכנולוגיה ופיתוח" },
       "institutionId": "mon_12341138289",
       "sourceUrl": "https://lp.smart-college.co.il/qa/",
       "sourceSha256": "d4e584094b87d44254fb98e8907bea6851ad2aac6dacc6d49fab2050828a2d7f",
@@ -1390,9 +1395,9 @@
     {
       "programId": "mon_12341128804_medicine",
       "institutionId": "mon_12341128804",
-      "sourceUrl": "https://washington.ac.il/",
-      "sourceSha256": "60fa2fd8655d182730a586a94b2d100972d45d91d354955833bb4ce869924612",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.washington.ac.il/teuda/adama/",
+      "sourceSha256": "ae9ce1ad1a166765dd30e9d7f148979e25f1501ba64c1ade8f57b1a1bfd3cfb7",
+      "checkedAt": "2026-11-08",
       "notes": [
         "דרישות הקבלה למסלולי הרפואה המשלימה אינן מפורטות באתר הקריה. יש לבחור מסלול ולברר את תנאיו עם בית הספר אדמה."
       ],
@@ -1652,6 +1657,34 @@
     }
   ],
   "excludedPrograms": [
+    {
+      "programId": "achva_general_academic",
+      "institutionId": "achva",
+      "reason": "Broad imported placeholder replaced by the eight current, source-backed first-degree routes.",
+      "sourceUrl": "https://www.achva.ac.il/תואר-ראשון/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_general_academic",
+      "institutionId": "beit_berl",
+      "reason": "Broad imported placeholder replaced by current, specific first-degree routes.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_graphic_design",
+      "institutionId": "beit_berl",
+      "reason": "Broad design category does not identify a specific qualification; current art and film B.Ed.F.A. routes have their own records.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "david_yellin_education",
+      "institutionId": "david_yellin",
+      "reason": "Broad imported education placeholder replaced by current B.Ed. study routes.",
+      "sourceUrl": "https://dyellin.ac.il/bed",
+      "checkedAt": "2026-11-08"
+    },
     {
       "programId": "bgu_law",
       "institutionId": "bgu",

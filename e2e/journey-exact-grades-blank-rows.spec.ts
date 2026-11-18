@@ -21,8 +21,8 @@ test('exact grades submit with untouched blank starter rows and send only filled
   await page.getByRole('button', { name: 'כן', exact: true }).waitFor();
   await page.getByRole('button', { name: 'כן', exact: true }).click();
   await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   await page.getByRole('button', { name: 'יש לי ציונים לפי מקצוע' }).click();
   await page.getByLabel('סוג תעודה').selectOption('internal');
 
@@ -31,16 +31,16 @@ test('exact grades submit with untouched blank starter rows and send only filled
     .evaluateAll((inputs) => inputs.map((input) => (input as HTMLInputElement).value));
   const math = labels.indexOf('מתמטיקה') + 1;
   const english = labels.indexOf('אנגלית') + 1;
-  await page.getByLabel(`יחידות ${math}`, { exact: true }).fill('5');
+  await page.getByLabel(`יחידות ${math}`, { exact: true }).selectOption('5');
   await page.getByLabel(`ציון ${math}`, { exact: true }).fill('90');
-  await page.getByLabel(`יחידות ${english}`, { exact: true }).fill('5');
+  await page.getByLabel(`יחידות ${english}`, { exact: true }).selectOption('5');
   await page.getByLabel(`ציון ${english}`, { exact: true }).fill('85');
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
 
   await expect(page).toHaveURL(/#psy-mode$/);
   await page.getByRole('button', { name: 'כן, יש לי ציון', exact: true }).click();
   await page.getByLabel('ציון כללי', { exact: true }).fill('650');
-  await page.getByRole('button', { name: 'המשך', exact: true }).click();
+  await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
   const requestPromise = page.waitForRequest(
     (request) => request.url().endsWith('/api/admissions/evaluate') && request.method() === 'POST',
   );

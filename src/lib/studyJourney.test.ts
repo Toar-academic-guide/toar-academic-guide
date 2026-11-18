@@ -6,6 +6,7 @@ import { catalogueAdmissionRequirements } from './catalogueDisplayText';
 import { describe, expect, it, vi } from 'vitest';
 import {
   toggleLocation,
+  bagrutScoresForMode,
   resultLabel,
   resultExplanation,
   showsOfficialNoCalculationNote,
@@ -15,6 +16,7 @@ import {
   selectedStudyFieldIds,
   journeyRows,
   distinctRecommendations,
+  type JourneyRow,
 } from './studyJourney';
 import { getStaticCataloguePrograms, getStaticCatalogueInstitutions } from './catalogueStatic';
 import { evaluateBatchBManualPath } from '@/server/admissions/batchBManualPathEvaluation';
@@ -26,6 +28,86 @@ import type {
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 
 vi.mock('server-only', () => ({}));
+
+describe('groupJourneyRows BIU/Ariel last', () => {
+  const row = (fieldId: string, institutionId: string, institutionName = institutionId) =>
+    ({
+      id: `${fieldId}:${institutionId}`,
+      fieldId,
+      fieldName: fieldId,
+      institution: { id: institutionId, name: institutionName },
+    }) as JourneyRow;
+
+  it('stably partitions every field without moving field groups, including BIU/Ariel-only groups', () => {
+    const rows = [
+      row('cs', 'ariel'),
+      row('arts', 'biu'),
+      row('law', 'biu'),
+      row('cs', 'tau'),
+      row('cs', 'biu'),
+      row('law', 'huji'),
+      row('arts', 'ariel'),
+      row('cs', 'huji'),
+      row('cs', 'technion'),
+      row('law', 'ariel'),
+      row('law', 'tau'),
+    ];
+    const originalRows = [...rows];
+    const groups = groupJourneyRows(rows, 'field');
+
+    expect(groups.map((group) => group.id)).toEqual(['cs', 'arts', 'law']);
+    expect(groups.map((group) => group.rows.map((item) => item.institution.id))).toEqual([
+      ['tau', 'huji', 'technion', 'ariel', 'biu'],
+      ['biu', 'ariel'],
+      ['huji', 'tau', 'biu', 'ariel'],
+    ]);
+    expect(rows).toEqual(originalRows);
+  });
+
+  it('stably partitions institution groups while preserving programme order', () => {
+    const rows = [
+      row('cs', 'biu'),
+      row('cs', 'tau'),
+      row('law', 'ariel'),
+      row('cs', 'huji'),
+      row('law', 'tau'),
+      row('law', 'biu'),
+    ];
+    const groups = groupJourneyRows(rows, 'institution');
+
+    expect(groups.map((group) => group.id)).toEqual(['tau', 'huji', 'biu', 'ariel']);
+    expect(groups.map((group) => group.rows.map((item) => item.id))).toEqual([
+      ['cs:tau', 'law:tau'],
+      ['cs:huji'],
+      ['cs:biu', 'law:biu'],
+      ['law:ariel'],
+    ]);
+  });
+
+  it.each(['field', 'institution'] as const)(
+    'matches only exact institution ids in the %s view',
+    (groupBy) => {
+      const rows = [
+        row('cs', 'ariel'),
+        row('cs', 'mon_12341114114', 'הנדסאים אריאל'),
+        row('cs', 'biu'),
+        row('cs', 'mon_12341098184', 'מכינה אריאל'),
+        row('cs', 'other_ariel', 'אריאל'),
+        row('cs', 'tau'),
+      ];
+      const groups = groupJourneyRows(rows, groupBy);
+
+      expect(groups.flatMap((group) => group.rows.map((item) => item.institution.id))).toEqual([
+        'mon_12341114114',
+        'mon_12341098184',
+        'other_ariel',
+        'tau',
+        'ariel',
+        'biu',
+      ]);
+    },
+  );
+});
 
 it('never labels TAU architecture "אפשר להגיש מועמדות" when a floor fails', async () => {
   const program = {
@@ -305,7 +387,7 @@ describe('approved journey', () => {
         { ...template, id: canonical },
         { ...template, id: alias },
       ];
-      const rows = journeyRows(studyFields(programmes), getStaticCatalogueInstitutions());
+      const rows = journeyRows(studyFields(programmes, true), getStaticCatalogueInstitutions());
       expect(rows.map((row) => row.program.id)).toContain(alias);
       expect(distinctRecommendations(rows).map((row) => row.program.id)).toEqual([canonical]);
       expect(distinctRecommendations(rows.filter((row) => row.program.id === alias))).toHaveLength(
@@ -515,3 +597,51 @@ it.each([
     expect(resultExplanation(apiResult, programId)).toBe(generic);
   },
 );
+
+describe('bagrutScoresForMode', () => {
+  const subjectRecord = {
+    schemaVersion: 1 as const,
+    sector: 'jewish' as const,
+    subjects: [{ subjectId: 'mathematics', units: 5, grade: 80 }],
+  };
+  const scores = {
+    bagrut: { weightedAverage: 110, subjectRecord },
+    psychometric: { overall: 650 },
+  };
+  it.each(['quick', 'exact', 'none'] as const)(
+    'aligns a stale profile marker with the newly submitted %s projection',
+    (mode) => {
+      const saved = { ...scores, admissions: { activeBagrutPath: 'quick' as const } };
+      const result = bagrutScoresForMode(saved, mode);
+      expect(result.admissions?.activeBagrutPath).toBe(mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(saved.admissions.activeBagrutPath).toBe('quick');
+    },
+  );
+  it.each(['quick', 'exact', 'none'] as const)(
+    'selects only the %s path without mutating scores',
+    (mode) => {
+      const result = bagrutScoresForMode(scores, mode);
+      expect(result.bagrut).toEqual(
+        mode === 'quick'
+          ? { weightedAverage: 110 }
+          : mode === 'exact'
+            ? { subjectRecord }
+            : undefined,
+      );
+      expect(result.psychometric).toBe(scores.psychometric);
+      expect(scores.bagrut).toEqual({ weightedAverage: 110, subjectRecord });
+    },
+  );
+  it('preserves legacy scores with no chosen mode and tolerates missing bagrut', () => {
+    expect(bagrutScoresForMode(scores, undefined)).toBe(scores);
+    expect(bagrutScoresForMode({}, 'exact').bagrut).toBeUndefined();
+    expect(bagrutScoresForMode({}, 'quick').bagrut).toBeUndefined();
+  });
+});

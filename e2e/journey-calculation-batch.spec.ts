@@ -14,17 +14,17 @@ for (const width of [1440, 390]) {
     await page.getByRole('button', { name: 'כן', exact: true }).click();
     await page.getByRole('button', { name: 'מדעי המחשב', exact: true }).click();
     await page.getByRole('button', { name: 'פסיכולוגיה', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await page.getByRole('button', { name: 'יש לי ממוצע בגרות' }).click();
     await page.getByLabel('ממוצע בגרות', { exact: true }).fill('110.5');
     await page.reload();
     await expect(page.getByLabel('ממוצע בגרות', { exact: true })).toHaveValue('110.5');
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     await expect(page).toHaveURL(/#psy-mode$/);
     await page.getByRole('button', { name: 'כן, יש לי ציון', exact: true }).click();
     await page.getByLabel('ציון כללי', { exact: true }).fill('700');
-    await page.getByRole('button', { name: 'המשך', exact: true }).click();
+    await page.getByRole('button', { name: 'המשיכו', exact: true }).click();
     const responsePromise = page.waitForResponse(
       (response) =>
         response.url().endsWith('/api/admissions/evaluate') &&
@@ -39,7 +39,7 @@ for (const width of [1440, 390]) {
     const { data } = await response.json();
     expect(Object.keys(data.reports).sort()).toEqual([...input.degreeIds].sort());
     expect(data.failedDegreeIds).toEqual([]);
-    await expect(page.getByText('בודקים את ההתאמה לציונים שלך…', { exact: true })).toBeHidden();
+    await expect(page.getByText('בודקים את ההתאמה לציונים שלכם…', { exact: true })).toBeHidden();
     await expect(page.getByText('חלק מהחישובים לא נטענו.', { exact: false })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'לפי מוסד', exact: true })).toBeVisible();
   });

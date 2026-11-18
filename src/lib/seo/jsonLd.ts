@@ -4,6 +4,7 @@ import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { ABOUT_INDEPENDENCE_DESCRIPTION } from '@/lib/aboutIndependence';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -16,6 +17,7 @@ export function organizationLd() {
     alternateName: SITE_ALT_NAMES,
     url: absoluteUrl(),
     logo: absoluteUrl('/brand/myway-wordmark-1200.png'),
+    description: ABOUT_INDEPENDENCE_DESCRIPTION,
     areaServed: 'IL',
     knowsLanguage: 'he',
   };
@@ -59,9 +61,18 @@ function officialHttpsUrl(value: string | undefined): string | undefined {
   }
 }
 
-export function institutionLd({ institution, programs }: PublicInstitutionPageData) {
+export function institutionLd({
+  institution,
+  programs,
+  officialProgrammes = [],
+}: PublicInstitutionPageData) {
+  const offerings = [
+    ...programs.map((p) => ({ name: p.name, url: absoluteUrl(canonicalProgramPath(p.id)) })),
+    ...officialProgrammes.map((p) => ({ name: p.name, url: p.url })),
+  ];
   const academic =
-    Boolean(institution.universityId) || programs.some((program) => program.type === 'academic');
+    Boolean(institution.universityId) ||
+    [...programs, ...officialProgrammes].some((program) => program.type === 'academic');
   const sameAs = officialHttpsUrl(institution.programUrl) ?? officialHttpsUrl(institution.domain);
   return {
     '@type': academic ? 'CollegeOrUniversity' : 'EducationalOrganization',
@@ -71,12 +82,12 @@ export function institutionLd({ institution, programs }: PublicInstitutionPageDa
     hasOfferCatalog: {
       '@type': 'OfferCatalog',
       name: 'מסלולי לימוד',
-      numberOfItems: programs.length,
-      itemListElement: programs.map((program, index) => ({
+      numberOfItems: offerings.length,
+      itemListElement: offerings.map((program, index) => ({
         '@type': 'ListItem',
         position: index + 1,
         name: program.name,
-        url: absoluteUrl(canonicalProgramPath(program.id)),
+        url: program.url,
       })),
     },
     ...(sameAs ? { sameAs } : {}),
@@ -165,20 +176,27 @@ export function sekhemCalculatorLd() {
   return {
     '@type': 'WebApplication',
     '@id': absoluteUrl('/sekhem-calculator#webapp'),
-    name: 'מחשבון סכם וסיכויי קבלה',
+    name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
     url: absoluteUrl('/sekhem-calculator'),
     applicationCategory: 'EducationalApplication',
     operatingSystem: 'Web',
     inLanguage: 'he',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-    featureList: ['חישוב סכם לפי תוכנית', 'בדיקת סיכויי קבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: [
+      'חישוב ממוצע בגרות במוסדות הנתמכים',
+      'חישוב סכם לפי תוכנית',
+      'השוואה לסף הקבלה',
+      'קישור לתנאי הקבלה של התוכנית',
+    ],
     publisher: { '@id': ORGANIZATION_ID },
     isPartOf: { '@id': WEBSITE_ID },
   };
 }
 
-export function institutionDirectoryLd(institutions: InstitutionDirectoryItem[]) {
+export function institutionDirectoryLd(
+  institutions: Pick<InstitutionDirectoryItem, 'id' | 'name'>[],
+) {
   const url = absoluteUrl('/institutions');
   const listId = `${url}#institutions`;
   const breadcrumb = breadcrumbLd([

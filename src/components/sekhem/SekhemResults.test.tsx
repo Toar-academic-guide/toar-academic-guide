@@ -15,6 +15,94 @@ const institution = (id: string) => ({
   region: 'מרכז',
   domain: 'university',
 });
+
+it.each([
+  ['below', 'נדרש פסיכומטרי כללי 650 לפחות.'],
+  ['tracked_missing_rule', 'לא ניתן לחשב את ציון הקבלה בחיפה עם פסיכומטרי מלפני יותר מ־10 שנים.'],
+  ['needs_input', 'יש להשלים את חודש הבחינה הפסיכומטרית.'],
+] as const)('shows the returned Haifa reason for a numberless %s result', (kind, explanation) => {
+  render(
+    <SekhemResults
+      reports={[
+        report('haifa', {
+          kind: kind === 'below' ? 'exact' : kind,
+          decision: kind === 'below' ? 'below' : 'unknown',
+          score: undefined,
+          threshold: undefined,
+          explanation,
+        }),
+      ]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByTestId('result-psychology-haifa').textContent).toBe(explanation);
+});
+
+it('shows a Haifa floor reason alongside returned scores', () => {
+  const explanation = 'דרישת העברית במסלול זה: ציון 120 לפחות או פטור מוכר.';
+  render(
+    <SekhemResults
+      reports={[report('haifa', { decision: 'below', explanation })]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByText(explanation)).toBeTruthy();
+});
+
+it('keeps a Haifa waiting range in left-to-right order within its reason', () => {
+  const explanation = 'ציון הקבלה נמצא בטווח ההמתנה 680–699; נדרשת החלטת החוג.';
+  const source = report('haifa', {
+    score: 694,
+    threshold: 700,
+    explanation,
+  });
+  source.input.degreeId = source.program.id = 'haifa_cs';
+  render(
+    <SekhemResults
+      reports={[source]}
+      offerings={[
+        {
+          ...offerings[0],
+          programId: 'haifa_cs',
+          institutionId: 'haifa',
+          programName: 'מדעי המחשב',
+        },
+      ]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+
+  const row = screen.getByTestId('result-haifa_cs-haifa');
+  const ranges = Array.from(row.querySelectorAll('[dir="ltr"]')).filter(
+    (element) => element.textContent === '680–699',
+  );
+  expect(ranges).toHaveLength(1);
+  expect(ranges[0].textContent).toBe('680–699');
+  expect(row.querySelector('[data-result-reason]')?.textContent).toBe(explanation);
+});
+
+it('shows returned Haifa year assumptions without internal diagnostic text', () => {
+  const estimationReason = 'שנת הפסיכומטרי לא נמסרה; החישוב מניח את מחזור 2026.';
+  render(
+    <SekhemResults
+      reports={[
+        report('haifa', {
+          estimated: true,
+          estimationReason,
+          explanation: 'haifa_psychometric_year: missing',
+        }),
+      ]}
+      offerings={[{ ...offerings[0], institutionId: 'haifa' }]}
+      onEnquiry={vi.fn()}
+    />,
+  );
+  expect(screen.getByText(estimationReason)).toBeTruthy();
+  expect(screen.getByTestId('result-psychology-haifa').textContent).not.toContain(
+    'haifa_psychometric_year',
+  );
+});
 function report(
   id: string,
   values: Partial<AdmissionsEvaluationResult> = {},
@@ -827,4 +915,20 @@ it('does not mix filtered programmes into a surviving institution group', () => 
   expect(screen.queryByRole('combobox', { name: 'בחירת תוכנית' })).toBeNull();
   expect(screen.queryByText('תוכנית מסוננת')).toBeNull();
   expect(container.querySelector('[data-testid^="programme-actions-"]')).toBeNull();
+});
+
+it('shows a returned institutional Bagrut average separately from the admission score', () => {
+  renderReports([report('tau', { calculatedBagrutAverage: 108.39, score: 679 })]);
+  const row = screen.getByTestId('result-psychology-tau');
+  expect(within(row).getByText(/ממוצע הבגרות לפי המוסד/)).toBeTruthy();
+  const average = within(row).getByText('108.39');
+  expect(average.getAttribute('dir')).toBe('ltr');
+  expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('679');
+});
+
+it('never presents the generic applicant average as a calculated institutional average', () => {
+  const source = report('tau');
+  source.input.bagrut = 110;
+  renderReports([source]);
+  expect(screen.queryByText(/ממוצע הבגרות לפי המוסד/)).toBeNull();
 });

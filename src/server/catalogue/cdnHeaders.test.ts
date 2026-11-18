@@ -12,7 +12,7 @@ beforeEach(() => {
   vi.spyOn(console, 'info').mockImplementation(() => {});
 });
 describe.each([
-  ['programs', programs],
+  ['programs', () => programs(new Request('https://example.test/api/catalog/programs'))],
   ['institutions', institutions],
 ] as const)('%s CDN headers', (_name, GET) => {
   it('caches successful DB responses', async () => {
@@ -41,7 +41,9 @@ it('CDN-caches DB programmes supplemented by the code registry', async () => {
     data: [],
     meta: { catalogueSource: 'database' },
   });
-  expect((await programs()).headers.get('cache-control')).toBe(
-    'public, s-maxage=120, stale-while-revalidate=600',
-  );
+  expect(
+    (await programs(new Request('https://example.test/api/catalog/programs'))).headers.get(
+      'cache-control',
+    ),
+  ).toBe('public, s-maxage=120, stale-while-revalidate=600');
 });

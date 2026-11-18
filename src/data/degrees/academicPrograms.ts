@@ -129,6 +129,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ביולוגיה ו/או כימיה 5 יח"ל — יתרון'],
       officialCalculatorUrl: 'https://info.huji.ac.il/chishuv',
+      programUrl: 'https://info.huji.ac.il/bachelor/Life-Sciences',
     },
   ],
   huji_socialwork: [
@@ -403,6 +404,7 @@ const D: Record<string, InstitutionDetail[]> = {
       englishMinRequirement: null,
       specificAdmissionNotes: ['ראיון אישי לאחר מיון ראשוני', 'ממוצע בגרות ≥ 100 — מומלץ'],
       officialCalculatorUrl: 'https://go.tau.ac.il/b.a/chishuv',
+      programUrl: 'https://go.tau.ac.il/he/med/ba/med-doc?v=new-info',
     },
   ],
   tau_accounting: [
@@ -515,7 +517,11 @@ const D: Record<string, InstitutionDetail[]> = {
       estimatedStudentsPerYear: 'כ-100 סטודנטים',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: ['ראיון אישי — מחייב', 'ממוצע בגרות ≥ 100 — מומלץ מאוד'],
+      specificAdmissionNotes: [
+        '92 — סף זימון משוער למבחן מו״ר.',
+        'ראיון אישי — מחייב',
+        'ממוצע בגרות ≥ 100 — מומלץ מאוד',
+      ],
       officialCalculatorUrl: 'https://admissions.technion.ac.il/',
     },
   ],
@@ -702,7 +708,7 @@ const D: Record<string, InstitutionDetail[]> = {
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-150 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -718,8 +724,8 @@ const D: Record<string, InstitutionDetail[]> = {
   reichman_psychology: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 4,
-      estimatedStudentsPerYear: 'כ-120 סטודנטים',
+      durationYears: 3,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -734,8 +740,8 @@ const D: Record<string, InstitutionDetail[]> = {
   reichman_law: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-180 סטודנטים',
+      durationYears: 4,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -750,7 +756,7 @@ const D: Record<string, InstitutionDetail[]> = {
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-200 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -760,13 +766,15 @@ const D: Record<string, InstitutionDetail[]> = {
         'ייתכן קורס הכנה במתמטיקה לפי היחידות והציון; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/business/undergraduate/ba/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_economics: [
     {
       institutionName: 'אוניברסיטת רייכמן',
       durationYears: 3,
-      estimatedStudentsPerYear: 'כ-160 סטודנטים',
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
       specificAdmissionNotes: [
@@ -775,20 +783,20 @@ const D: Record<string, InstitutionDetail[]> = {
         'מתמטיקה מתחת ל־4 יחידות בציון 85 או 5 יחידות בציון 65 מחייבת קורס הכנה; נדרש אישור זכאות לבגרות ודרישות שפה',
       ],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl:
+        'https://www.runi.ac.il/schools/economics/undergraduate/?utm_source=myway&utm_medium=referral',
     },
   ],
   reichman_infosystems: [
     {
       institutionName: 'אוניברסיטת רייכמן',
-      durationYears: 3,
-      estimatedStudentsPerYear: 'כ-140 סטודנטים',
+      durationYears: null,
+      estimatedStudentsPerYear: '',
       quantitativeMinRequirement: null,
       englishMinRequirement: null,
-      specificAdmissionNotes: [
-        'חובה ממוצע בגרות 100 ומעלה לקבלה ישירה במסלול המבוקש',
-        "מותנה ברמת אנגלית 'מתקדמים א' לפחות או ציון אמיר\"ם/פסיכומטרי תואם",
-      ],
+      specificAdmissionNotes: [],
       officialCalculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      programUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
     },
   ],
 
@@ -1529,7 +1537,9 @@ export const academicPrograms: Program[] = [
     profileScore: P.biology,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 640, technion: null, bgu: null },
+    // Official cutoff 19 uses HUJI's 11–30 scale, not this legacy 200–800 column.
+    // https://info.huji.ac.il/bachelor/Life-Sciences
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_biology'],
   },
   {
@@ -1555,7 +1565,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: null, huji: 775, technion: null, bgu: null },
+    thresholds: { tau: null, huji: null, technion: null, bgu: null },
     institutionDetails: D['huji_medicine'],
   },
 
@@ -1722,7 +1732,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { tau: 770, huji: null, technion: null, bgu: null },
+    thresholds: { tau: 726.44, huji: null, technion: null, bgu: null },
     institutionDetails: D['tau_medicine'],
   },
 
@@ -2281,7 +2291,7 @@ export const academicPrograms: Program[] = [
     profileScore: P.medicine,
     admissionType: 'sekhem',
     admissionRequirements: [],
-    thresholds: { biu: 740 },
+    thresholds: { biu: null },
     institutionDetails: D['biu_medicine'],
   },
   {
@@ -3093,6 +3103,39 @@ export const academicPrograms: Program[] = [
   // המכללה האקדמית אונו (Ono Academic College)
   // ══════════════════════════════════════════════════════════════════════════
   {
+    id: 'ono_psychology',
+    name: 'מדעי ההתנהגות (B.A.)',
+    institution: 'המכללה האקדמית אונו',
+    institutionId: 'ono',
+    type: 'academic',
+    category: 'מדעי החברה',
+    profileScore: P.psychology,
+    admissionType: 'requirements',
+    admissionRequirements: [
+      'קבלה ישירה: בגרות מלאה בממוצע 90 ומעלה, או 24 נ״ז מהאוניברסיטה הפתוחה, או תעודת הנדסאי; נדרש ראיון מקדים עם ראש המיקוד.',
+      'קבלה משוקללת: ראיון, וגם ממוצע בגרות 85–90 או פסיכומטרי 550 ומעלה ובגרות מלאה.',
+      'מעל גיל 30: ראיון ובגרות מלאה. בעלי רקע לימודי קודם נדרשים לראיון.',
+    ],
+    institutionDetails: [
+      {
+        institutionName: 'המכללה האקדמית אונו',
+        durationYears: 3,
+        estimatedStudentsPerYear: '',
+        quantitativeMinRequirement: null,
+        englishMinRequirement: null,
+        officialCalculatorUrl: '',
+        specificAdmissionNotes: [
+          'התואר הוא B.A. במדעי ההתנהגות, לא תואר ראשון בפסיכולוגיה.',
+          'קבלה ישירה: בגרות מלאה בממוצע 90 ומעלה, או 24 נ״ז מהאוניברסיטה הפתוחה, או תעודת הנדסאי; נדרש ראיון מקדים עם ראש המיקוד.',
+          'קבלה משוקללת: ראיון, וגם ממוצע בגרות 85–90 או פסיכומטרי 550 ומעלה ובגרות מלאה.',
+          'מעל גיל 30: ראיון ובגרות מלאה. בעלי רקע לימודי קודם נדרשים לראיון.',
+        ],
+        programUrl:
+          'https://www.ono.ac.il/curriculum/%d7%9e%d7%93%d7%a2%d7%99-%d7%94%d7%aa%d7%a0%d7%94%d7%92%d7%95%d7%aa-%d7%91%d7%a9%d7%99%d7%9c%d7%95%d7%91-%d7%a7%d7%95%d7%a8%d7%a1-%d7%91%d7%9b%d7%9c%d7%91%d7%a0%d7%95%d7%aa-%d7%98%d7%99%d7%a4%d7%95/',
+      },
+    ],
+  },
+  {
     id: 'ono_law',
     name: 'משפטים',
     institution: 'המכללה האקדמית אונו',
@@ -3314,7 +3357,7 @@ export const academicPrograms: Program[] = [
     category: 'כלכלה ועסקים',
     profileScore: P.infoSystems,
     admissionType: 'requirements',
-    admissionRequirements: ['ראיון קבלה / ועדת קבלה', 'בדקו את תנאי המסלול באתר רייכמן'],
+    admissionRequirements: ['בדקו את תנאי המסלול באתר רייכמן'],
     institutionDetails: D['reichman_infosystems'],
   },
   {

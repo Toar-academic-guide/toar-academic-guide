@@ -73,7 +73,8 @@ for (const width of [390, 1440]) {
       await page.goto(`/programs/${id}`);
       await expect(page.locator('h1')).toHaveText(name);
       if (id === 'jerusalem_academy_dance' || id === 'rubin_classical') {
-        await expect(page.getByText('עודכן לאחרונה: 24.10.2026', { exact: false })).toBeVisible();
+        await expect(page.getByText('עודכן לאחרונה', { exact: false })).toHaveCount(0);
+        await expect(page.getByText('מקור:', { exact: false })).toBeVisible();
       }
       const schema = await page.locator('script[type="application/ld+json"]').allTextContents();
       expect(schema.join('')).toContain('P48M');
@@ -94,18 +95,15 @@ for (const width of [390, 1440]) {
 }
 
 for (const width of [390, 1440]) {
-  test(`homepage retains eight university links in collapsed browse at ${width}px`, async ({
+  // Approved test update, Jorje 2026-10-31
+  test(`homepage has no subject or institution page links outside the footer at ${width}px`, async ({
     page,
   }) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/');
-    const browse = page.locator('details').filter({ has: page.locator('a[href="/programs"]') });
-    await expect(browse).not.toHaveAttribute('open');
-    const links = browse.locator('a[href^="/institutions/"]');
-    await expect(links).toHaveCount(8);
-    await expect(browse.locator('a[href="/institutions/spieldocs"]')).toHaveCount(0);
-    await browse.locator('summary').click();
-    await expect(links.first()).toBeVisible();
+    await expect(
+      page.locator('a[href^="/programs/"]:not(footer a), a[href^="/institutions/"]:not(footer a)'),
+    ).toHaveCount(0);
     expect(
       await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth),
     ).toBe(true);

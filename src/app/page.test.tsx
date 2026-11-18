@@ -43,7 +43,9 @@ describe('Home catalogue cutover', () => {
     expect(await screen.findByRole('alert')).toBeTruthy();
     expect(screen.getByText('לא הצלחנו לטעון את המסלולים. נסו שוב.')).toBeTruthy();
     expect(screen.queryByRole('button', { name: 'פיזיותרפיה' })).toBeNull();
-    expect((screen.getByRole('button', { name: 'המשך' }) as HTMLButtonElement).disabled).toBe(true);
+    expect((screen.getByRole('button', { name: 'המשיכו' }) as HTMLButtonElement).disabled).toBe(
+      true,
+    );
   });
 
   it('shows one primary hero link directly to the calculator with a decorative spark', () => {
@@ -60,21 +62,54 @@ describe('Home catalogue cutover', () => {
     expect(screen.queryByText('עזרו לי לבחור מה ללמוד')).toBeNull();
   });
 
+  // Approved test update, Jorje 2026-10-30
   it('preserves the hero heading, intro and supporting copy', () => {
     window.history.replaceState(null, '', '/');
     const { container } = render(<Home />);
-    const hero = container.querySelector('.journey-hero-copy')!;
+    const hero = container.querySelector('.hero-v2')!;
     expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
-      'בוחרים מה ללמוד,איפה ללמודואיך להתקבל.',
+      'הדרך ללימודים שלכם מתחילה כאן.',
     );
-    expect(hero.querySelector('p.journey-hero-intro')?.textContent).toBe(
-      'הדרך ללימודים שלך מתחילה כאן.',
+    expect(hero.querySelector('.hero-subline')?.textContent).toBe(
+      'בתוך ריבוי האפשרויות, MyWay עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
     );
-    expect(hero.querySelector('p:not(.journey-hero-intro)')?.textContent).toBe(
-      'בתוך ריבוי האפשרויות, Way עוזרת לעשות סדר ולבנות דרך שמתאימה לך. שנתחיל?',
+    expect(hero.querySelector('.hero-intro')?.textContent).toBe(
+      'בוחרים תחום לימודים ומשווים בין אוניברסיטאות ומכללות בכל הארץ',
     );
-    expect(hero.querySelector('small')?.textContent).toBe(
-      'אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.',
+    expect(hero.querySelector('small')).toBeNull();
+    expect(
+      screen.queryByText('אפשר להתחיל גם בלי כל הציונים. התוצאות הראשונות בלי הרשמה.'),
+    ).toBeNull();
+  });
+});
+
+describe('Homepage hero 2.0', () => {
+  it('renders the approved plural copy, exact separator, destinations and no funnel', () => {
+    window.history.replaceState(null, '', '/');
+    const { container } = render(<Home />);
+    const hero = container.querySelector('.hero-v2')!;
+    expect(hero).toBeTruthy();
+    expect(hero.querySelector('h1')?.textContent).toBe('הדרך ללימודים שלכם מתחילה כאן.');
+    expect(hero.querySelector('.hero-subline')?.textContent).toBe(
+      'בתוך ריבוי האפשרויות, MyWay עוזרת לעשות סדר ולבנות דרך שמתאימה לכם. שנתחיל?',
     );
+    expect(hero.querySelector('bdi')?.getAttribute('dir')).toBe('ltr');
+    expect(hero.querySelector('.hero-intro')?.textContent).toBe(
+      'בוחרים תחום לימודים ומשווים בין אוניברסיטאות ומכללות בכל הארץ',
+    );
+    const primary = screen.getByRole('link', { name: 'בדקו לאן אתם מתקבלים' });
+    expect(primary.getAttribute('href')).toBe('/app/calculator');
+    expect(primary.textContent).toBe('בדקו לאן אתם מתקבלים\n\n\n');
+    expect(
+      screen.getByRole('link', { name: 'לא בטוחים מה ללמוד? לשאלון' }).getAttribute('href'),
+    ).toBe('/app/assessment');
+    expect(hero.querySelector('canvas')?.getAttribute('aria-hidden')).toBe('true');
+    expect(container.querySelector('.journey-funnel')).toBeNull();
+    expect(
+      hero.querySelectorAll('small, .journey-funnel-cloud, .journey-funnel-stage'),
+    ).toHaveLength(0);
+    expect(container.querySelectorAll('main')).toHaveLength(1);
+    expect(container.querySelectorAll('#main')).toHaveLength(1);
+    expect(container.querySelector('#main-content')).toBeTruthy();
   });
 });

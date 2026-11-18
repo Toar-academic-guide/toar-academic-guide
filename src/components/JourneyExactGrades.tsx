@@ -1,77 +1,95 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useLayoutEffect, useState } from 'react';
+import type { ExactInProgress } from '@/lib/studyJourney';
 import { ArrowLeft, Upload } from 'lucide-react';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { normalizeBagrutPdfSubject } from '@/lib/bagrutPdfSubjectName';
-import BagrutSubjectRows from './BagrutSubjectRows';
+import BagrutSubjectRows, {
+  rowsForSector,
+  subjectRowValues,
+  type BagrutSubjectRow,
+} from './BagrutSubjectRows';
+import { defaultUnitsFor } from './bagrutUnitOptions';
 import {
   buildBagrutSubjectRecord,
+  sectorLabelForRecord,
   bagrutSubjectLabelForId,
   subjectIdForWizardLabel,
   resolveBagrutWizardSubject,
-  type BagrutWizardSubjectInput,
 } from '@/utils/bagrutSubjectRecord';
-import type { BagrutCertificateType, BagrutSector, BagrutSubjectRecord } from '@/types';
+import type { BagrutCertificateType, BagrutSubjectRecord } from '@/types';
 
-const SECTOR_LABELS: Record<BagrutSector, string> = {
-  jewish: 'יהודי',
-  arab: 'ערבי',
-  druze: 'דרוזי',
-  circassian: 'צרקסי',
-  bedouin: 'בדואי',
-  samaritan: 'שומרוני',
-};
+const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
+
 const starterRows = new Set(
-  Object.values(SECTORS).flatMap((items) =>
-    items.map((item) => `${item.n}|${item.min === 1 ? '' : item.min}`),
+  Object.entries(SECTORS).flatMap(([sector, items]) =>
+    items.map((item) => `${item.n}|${defaultUnitsFor(item.n, sector)}`),
   ),
 );
 // A row the student never filled: an empty added row, or an untouched starter row.
-const isBlankRow = (row: BagrutWizardSubjectInput) =>
+const isBlankRow = (row: BagrutSubjectRow) =>
   row.grade === '' &&
   (row.assessmentKind ?? 'exam') === 'exam' &&
-  (row.label.trim() === '' || starterRows.has(`${row.label}|${row.units}`));
-const emptyRows = (sector: string): BagrutWizardSubjectInput[] =>
+  (row.label.trim() === '' || (!row.edited && starterRows.has(`${row.label}|${row.units}`)));
+const emptyRows = (sector: string): BagrutSubjectRow[] =>
   SECTORS[sector].map((subject) => ({
     label: subject.n,
-    units: subject.min === 1 ? '' : subject.min,
+    units: defaultUnitsFor(subject.n, sector),
+    autoUnits: true,
     grade: '',
     assessmentKind: 'exam',
   }));
 
 export default function JourneyExactGrades({
   initialRecord,
+  initialProgress,
+  onProgress,
   onComplete,
 }: {
   initialRecord?: BagrutSubjectRecord;
+  initialProgress?: ExactInProgress;
+  onProgress?: (progress: ExactInProgress) => void;
   onComplete: (record: BagrutSubjectRecord) => void;
 }) {
   const [sector, setSector] = useState(
-    initialRecord ? SECTOR_LABELS[initialRecord.sector] : 'יהודי',
+    initialProgress?.sector ??
+      (initialRecord ? sectorLabelForRecord(initialRecord.sector) : 'יהודי'),
   );
   const [certificate, setCertificate] = useState<BagrutCertificateType | ''>(
-    initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : '',
+    initialProgress?.certificate ??
+      (initialRecord?.schemaVersion === 2 ? initialRecord.certificateType : ''),
   );
-  const [complete, setComplete] = useState(
-    initialRecord?.schemaVersion === 2 ? initialRecord.complete : false,
+  const [complete] = useState(
+    initialProgress?.complete ??
+      (initialRecord?.schemaVersion === 2 ? initialRecord.complete : false),
   );
-  const [rows, setRows] = useState<BagrutWizardSubjectInput[]>(
+  const [rows, setRows] = useState<BagrutSubjectRow[]>(
     () =>
+      (initialProgress ? subjectRowValues(initialProgress.rows) : undefined) ??
       initialRecord?.subjects.map((subject) => ({
         label: bagrutSubjectLabelForId(subject.subjectId) ?? subject.subjectId,
         units: subject.units,
         grade: subject.grade,
         assessmentKind: 'assessmentKind' in subject ? subject.assessmentKind : 'exam',
-      })) ?? emptyRows('יהודי'),
+      })) ??
+      emptyRows('יהודי'),
   );
   const [error, setError] = useState('');
   const [reading, setReading] = useState('');
   const [importStatus, setImportStatus] = useState('');
-  const [imported, setImported] = useState(false);
-  const [reviewed, setReviewed] = useState(false);
-  const change = (index: number, updates: Partial<BagrutWizardSubjectInput>) =>
-    setRows((current) => current.map((row, i) => (i === index ? { ...row, ...updates } : row)));
+  const [imported, setImported] = useState(initialProgress?.imported ?? false);
+  const [reviewed, setReviewed] = useState(initialProgress?.reviewed ?? false);
+  useIsomorphicLayoutEffect(() => {
+    onProgress?.({
+      sector,
+      certificate,
+      complete,
+      rows: subjectRowValues(rows),
+      imported,
+      reviewed,
+    });
+  }, [sector, certificate, complete, rows, imported, reviewed, onProgress]);
   return (
     <form
       className="journey-narrow"
@@ -86,8 +104,8 @@ export default function JourneyExactGrades({
         const record = buildBagrutSubjectRecord({
           sectorLabel: sector,
           certificateType: certificate || 'other',
-          complete,
-          subjects: filledRows,
+          complete: true,
+          subjects: subjectRowValues(filledRows),
         });
         if (!filledRows.length || record.subjects.length !== filledRows.length) {
           setError('יש להשלים את המקצוע, היחידות והציון בכל שורה ולוודא שאין כפילויות.');
@@ -109,11 +127,14 @@ export default function JourneyExactGrades({
                 rows.every(
                   (row, index) =>
                     row.label === defaults[index].label &&
+                    row.autoUnits &&
+                    !row.edited &&
                     row.units === defaults[index].units &&
                     row.grade === '' &&
                     row.assessmentKind === defaults[index].assessmentKind,
                 );
               if (untouched) setRows(emptyRows(nextSector));
+              else setRows(rowsForSector(rows, nextSector));
               setSector(nextSector);
             }}
             required
@@ -170,11 +191,14 @@ export default function JourneyExactGrades({
                 for (const row of found) {
                   const key = subjectIdForWizardLabel(normalizeBagrutPdfSubject(row.label));
                   const previous = merged.get(key);
+                  const flagged = row.unmatched && row.units === '' && row.grade === '';
+                  if (flagged && previous) continue;
                   merged.set(key, {
                     label: row.label,
                     units: row.units,
                     grade: row.grade,
                     assessmentKind: previous?.assessmentKind ?? 'exam',
+                    ...(flagged ? { edited: true } : {}),
                   });
                 }
                 return [...merged.values()];
@@ -193,7 +217,6 @@ export default function JourneyExactGrades({
               );
               setImported(true);
               setReviewed(false);
-              setComplete(false);
             } catch (cause) {
               setError(
                 cause instanceof Error && /^(אפשר|בחרו)/.test(cause.message)
@@ -216,43 +239,13 @@ export default function JourneyExactGrades({
         rows={rows}
         onChange={setRows}
         isBlankRow={isBlankRow}
+        sector={sector}
         fieldErrors={rows.map((row) =>
           row.label.trim() && !resolveBagrutWizardSubject(row.label)
             ? { label: 'נא לבדוק את שם המקצוע' }
             : {},
         )}
       />
-      <details className="journey-field-group">
-        <summary>
-          עבודת גמר או ציון משולב
-          <ArrowLeft size={16} />
-        </summary>
-        {rows.map((row, index) => (
-          <label className="journey-complete" key={index}>
-            {row.label || `מקצוע ${index + 1}`}
-            <select
-              value={row.assessmentKind ?? 'exam'}
-              onChange={(event) =>
-                change(index, {
-                  assessmentKind: event.target.value as BagrutWizardSubjectInput['assessmentKind'],
-                })
-              }
-            >
-              <option value="exam">בחינה</option>
-              <option value="final_project">עבודת גמר</option>
-              <option value="combined">משולב</option>
-            </select>
-          </label>
-        ))}
-      </details>
-      <label className="journey-complete">
-        <input
-          type="checkbox"
-          checked={complete}
-          onChange={(event) => setComplete(event.target.checked)}
-        />
-        הזנתי את כל המקצועות שמופיעים בתעודה
-      </label>
       {imported && (
         <label className="journey-complete">
           <input
@@ -266,7 +259,7 @@ export default function JourneyExactGrades({
       )}
       <div className="journey-actions">
         <button className="journey-primary" disabled={!!reading}>
-          המשך
+          המשיכו
           <ArrowLeft size={18} />
         </button>
       </div>

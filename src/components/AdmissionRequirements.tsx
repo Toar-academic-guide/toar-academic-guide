@@ -25,15 +25,21 @@ function communicationOverview(requirements: string[]): string[] | undefined {
 }
 
 function highlightedNumbers(text: string) {
-  return text.split(/(\d+(?:[.,]\d+)?)/).map((part, index) =>
-    index % 2 ? (
+  return text.split(/(\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*|\d+(?:[.,]\d+)?)/).map((part, index) => {
+    if (!(index % 2)) return <Fragment key={index}>{part}</Fragment>;
+    if (/^\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*$/.test(part)) {
+      return (
+        <bdi key={index} dir="ltr" className="font-bold text-[#19233d]">
+          {part}
+        </bdi>
+      );
+    }
+    return (
       <strong key={index} className="font-bold text-[#19233d]">
         {part}
       </strong>
-    ) : (
-      <Fragment key={index}>{part}</Fragment>
-    ),
-  );
+    );
+  });
 }
 
 function RequirementText({
@@ -239,9 +245,7 @@ export default function AdmissionRequirements({
           </table>
           {institutionId !== 'tau' && (
             <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              {programId !== 'biu_law' &&
-                programId !== 'law' &&
-                'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
+              {programId !== 'biu_law' && programId !== 'law' && 'מקור: אתר אוניברסיטת בר-אילן — '}
               <a
                 href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
                 target="_blank"

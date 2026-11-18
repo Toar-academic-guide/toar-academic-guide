@@ -14,6 +14,18 @@ const previous = {
 };
 
 describe('alert profile refresh detection', () => {
+  it('refreshes when only the active Bagrut path changes with both stored inputs unchanged', () => {
+    const saved = { ...previous, admissionsInputs: { activeBagrutPath: 'exact' as const } };
+    for (const activeBagrutPath of ['quick', 'none'] as const) {
+      expect(
+        shouldRefreshAdmissionAlerts(saved, {
+          ...saved,
+          admissionsInputs: { activeBagrutPath },
+        }),
+      ).toBe(true);
+    }
+    expect(shouldRefreshAdmissionAlerts(saved, { ...saved })).toBe(false);
+  });
   it('refreshes when College of Management inputs change or clear', () => {
     const saved = {
       ...previous,

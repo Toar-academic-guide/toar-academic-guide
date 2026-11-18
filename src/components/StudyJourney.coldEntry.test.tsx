@@ -47,7 +47,8 @@ describe('calculator cold entry', () => {
   it('renders the calculator without a server searchParams prop', async () => {
     const page = await (CalculatorPage as unknown as () => Promise<React.ReactNode>)();
     render(page);
-    expect(await screen.findByRole('heading', { name: 'מה מעניין אותך ללמוד?' })).toBeTruthy();
+    // Approved test update, Jorje 2026-10-30
+    expect(await screen.findByRole('heading', { name: 'מה מעניין אתכם ללמוד?' })).toBeTruthy();
   });
 
   it('selects the URL programme exactly like an explicit initialProgramId', async () => {
@@ -59,7 +60,8 @@ describe('calculator cold entry', () => {
         selectedRowId: 'huji_cs:huji',
       }),
     );
-    expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', false);
+    // Approved test update, Jorje 2026-10-30
+    expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', false);
   });
 
   it.each(['', '?program=huji_cs&program=tau_cs'])(
@@ -68,7 +70,8 @@ describe('calculator cold entry', () => {
       window.history.replaceState(null, '', '/app/calculator' + query);
       render(<StudyJourney initialStep="subjects" />);
       await screen.findByRole('textbox', { name: 'חיפוש תחום לימודים' });
-      expect(screen.getByRole('button', { name: 'המשך' })).toHaveProperty('disabled', true);
+      // Approved test update, Jorje 2026-10-30
+      expect(screen.getByRole('button', { name: 'המשיכו' })).toHaveProperty('disabled', true);
     },
   );
 
@@ -87,7 +90,8 @@ describe('calculator cold entry', () => {
   it('retains the exact-grade hash entry', async () => {
     window.history.replaceState(null, '', '/app/calculator#grades-exact');
     render(<StudyJourney initialStep="subjects" />);
-    expect(await screen.findByRole('heading', { name: 'ציוני הבגרות שלך' })).toBeTruthy();
+    // Approved test update, Jorje 2026-10-30
+    expect(await screen.findByRole('heading', { name: 'ציוני הבגרות שלכם' })).toBeTruthy();
     expect(state.preload).toHaveBeenCalled();
   });
 });

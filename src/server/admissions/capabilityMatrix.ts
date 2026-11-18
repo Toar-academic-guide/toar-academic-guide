@@ -1,3 +1,5 @@
+import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
+import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
 import 'server-only';
@@ -30,6 +32,7 @@ import {
 } from '@/server/ingestion/admissionsSourceRegistry';
 import type { AdmissionsProgramInput } from '@/server/ingestion/admissionsSourceAdapters';
 import { getProgramVerificationArtifact } from '@/data/admissions/tauProgramVerification';
+import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import { HUJI_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/hujiProgramVerification';
 import { BGU_PROGRAM_VERIFICATION_ARTIFACTS } from '@/data/admissions/bguProgramVerification';
 import {
@@ -770,7 +773,9 @@ export function buildAdmissionsCapabilityMatrix(args: {
       : EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
-    const evidence = selectBestEvidence(institutionId);
+    const evidence = isSourcedCollegeProgrammeId(program.id)
+      ? undefined
+      : selectBestEvidence(institutionId);
     const freshnessState = exactTarget
       ? freshnessStatesBySourceId.get(exactTarget.targetId)
       : sourceTarget
@@ -1360,4 +1365,17 @@ function hasDecisionThreshold(program: CatalogueProgram, institutionId: string):
     (sekhemThreshold !== undefined && sekhemThreshold !== null) ||
     (directPsychometric !== undefined && directPsychometric !== null)
   );
+}
+
+/** Academic evidence never promotes the final-stage medicine ledger entry. */
+export function getMedicineAcademicVerification(
+  programId: string,
+  institutionId: string,
+  extra: AdmissionsExtraInputs | undefined,
+) {
+  if (!isMedicineAcademicPair(programId, institutionId) || !usesMedicineAcademicStage(extra))
+    return undefined;
+  return MEDICINE_ACADEMIC_REFERENCE_CASES[
+    institutionId as keyof typeof MEDICINE_ACADEMIC_REFERENCE_CASES
+  ];
 }

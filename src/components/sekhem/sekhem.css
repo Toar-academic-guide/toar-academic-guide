@@ -49,7 +49,7 @@
 }
 @media (max-width: 430px) {
   .sekhem-calculator form.way-surface {
-    padding-inline: 12px;
+    padding-inline: 4px;
   }
   .sekhem-calculator .journey-grade-table {
     border-spacing: 2px 8px;
@@ -58,7 +58,7 @@
     width: auto;
   }
   .sekhem-calculator .journey-grade-table th:nth-child(2) {
-    width: 44px;
+    width: 72px;
   }
   .sekhem-calculator .journey-grade-table th:nth-child(3) {
     width: 52px;

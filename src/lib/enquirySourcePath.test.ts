@@ -13,6 +13,11 @@ describe('enquiry source route guard', () => {
     ['/programs/cs', '/programs/cs'],
     ['/programs/cs?psychometric=680#score_680', '/programs/cs'],
     ['/institutions/tau', '/institutions/tau'],
+    ['/transfer?from=calculator', '/transfer'],
+    ['/without-psychometric?from=hub', '/without-psychometric'],
+    ['/amirnet?from=guide', '/amirnet'],
+    ['/psychometric-accommodations?from=guide', '/psychometric-accommodations'],
+    ['/calculator', '/calculator'],
     ['/app/calculator#inquiry', '/app/calculator'],
     ['/#inquiry', '/'],
   ])('normalizes %s to %s', (input, expected) => {
