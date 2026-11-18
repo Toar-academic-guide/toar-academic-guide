@@ -60,14 +60,17 @@ describe('public catalogue page data', () => {
   );
 
   it.each(['static', 'database'] as const)(
-    'shows one sourced complementary-medicine card per school in %s mode',
+    'shows sourced medicine, complementary-medicine and Ono nursing listings in %s mode',
     async (source) => {
       const programs = getStaticCataloguePrograms();
       vi.mocked(listCataloguePrograms).mockResolvedValue({
         data:
           source === 'database'
             ? programs.filter(
-                (program) => !['tiltan_medicine', 'givat_washington_medicine'].includes(program.id),
+                (program) =>
+                  !['tiltan_medicine', 'givat_washington_medicine', 'ono_medicine'].includes(
+                    program.id,
+                  ),
               )
             : programs,
         meta: { catalogueSource: source },
@@ -101,6 +104,17 @@ describe('public catalogue page data', () => {
         [...ids, 'reidman_medicine'].sort(),
       );
       expect(complementary.programLinks).toBe(3);
+
+      const onoLegacy = (await getPublicProgramPageData('ono_medicine'))!;
+      expect(onoLegacy.program).toMatchObject({ id: 'ono_medicine', isListed: false });
+      expect(onoLegacy.institutions.map((institution) => institution.id)).toEqual(['ono']);
+      expect(await isIndexableProgram('ono_medicine')).toBe(false);
+      expect((await getPublicProgramPageData('nursing'))?.institutionProgramPaths.ono).toBe(
+        '/programs/ono_nursing',
+      );
+      const ono = (await getPublicInstitutionPageData('ono'))!;
+      expect(ono.programs.map((program) => program.id)).toContain('ono_nursing');
+      expect(ono.programs.map((program) => program.id)).not.toContain('ono_medicine');
 
       for (const id of ids) {
         const page = (await getPublicProgramPageData(id))!;

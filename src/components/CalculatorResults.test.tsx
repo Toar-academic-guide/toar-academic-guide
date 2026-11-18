@@ -65,12 +65,12 @@ const programs = getStaticCataloguePrograms();
 // Amit ruling 2026-10-25 07:30 via Jorje
 it.each([
   // Approved test update, Jorje 2026-10-29
-  [95, 'ציון הקבלה שלך 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
+  [95, 'ציון הקבלה שלכם 95, מעל סף הזימון המשוער (92)', 'text-green-700'],
   // Approved test update, Jorje 2026-10-29
-  [84.5, 'ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
+  [84.5, 'ציון הקבלה שלכם 84.5, מתחת לסף הזימון המשוער (92)', 'text-slate-500'],
   // Approved test update, Jorje 2026-10-28
   // Approved test update, Jorje 2026-10-29
-  [92, 'ציון הקבלה שלך 92, בסף הזימון המשוער (92)', 'text-green-700'],
+  [92, 'ציון הקבלה שלכם 92, בסף הזימון המשוער (92)', 'text-green-700'],
 ] as const)(
   'renders one medicine comparison for sekem %s without an admission verdict',
   async (score, comparison, color) => {
@@ -116,7 +116,7 @@ it.each([
     expect(line.classList.contains(color)).toBe(true);
     expect(line.className).not.toMatch(/red|rose|amber|yellow|danger|warning/);
     // Approved test update, Jorje 2026-10-29
-    expect(screen.getAllByText(/ציון הקבלה שלך/)).toHaveLength(1);
+    expect(screen.getAllByText(/ציון הקבלה שלכם/)).toHaveLength(1);
     expect(screen.queryByText('אין הכרעת קבלה')).toBeNull();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();
     expect(screen.queryByText(/סכם לרפואה|סכם 84\.5|סכם 95|סכם 92/)).toBeNull();
@@ -435,9 +435,9 @@ describe('CalculatorResults', () => {
     expect(screen.queryByLabelText('האם אתם עומדים בתנאי הקבלה של החוג השני?')).toBeNull();
   });
   it.each([
-    [680, 110, 'אפשר להגיש מועמדות', 'עומד/ת', 'עומד/ת'],
-    [680, 90, 'לא עומד/ת בתנאי הסף', 'עומד/ת', 'לא עומד/ת'],
-    [500, 110, 'לא עומד/ת בתנאי הסף', 'לא עומד/ת', 'עומד/ת'],
+    [680, 110, 'אפשר להגיש מועמדות', 'עומדים', 'עומדים'],
+    [680, 90, 'לא עומד/ת בתנאי הסף', 'עומדים', 'לא עומדים'],
+    [500, 110, 'לא עומד/ת בתנאי הסף', 'לא עומדים', 'עומדים'],
   ])(
     'renders TAU architecture screening and checked floors for %s / English %s',
     async (psychometric, english, label, psychStatus, englishStatus) => {
@@ -470,7 +470,7 @@ describe('CalculatorResults', () => {
       expect(await screen.findByText('נדרש מיון נוסף', { exact: true })).toBeTruthy();
       expect(screen.getByLabelText(`אוניברסיטת תל אביב: ${label}`)).toBeTruthy();
       expect(screen.getByText(/אוניברסיטת תל אביב מחליטה על הקבלה לאחריו/)).toBeTruthy();
-      const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
       const studentMathsValue = within(table).getByRole('cell', {
         name: (name) => name.replace(/\u00a0/g, ' ') === '5 יח״ל, 70',
       });
@@ -479,7 +479,7 @@ describe('CalculatorResults', () => {
       );
       expect(studentMathsValue.textContent).toBe('5\u00a0יח״ל, 70');
       expect(
-        within(table).getByRole('columnheader', { name: 'שלך' }).classList.contains('w-[25%]'),
+        within(table).getByRole('columnheader', { name: 'שלכם' }).classList.contains('w-[25%]'),
       ).toBe(true);
       expect(
         within(table).getByRole('columnheader', { name: 'בדיקה' }).classList.contains('w-[30%]'),
@@ -533,7 +533,7 @@ describe('CalculatorResults', () => {
         onBack={() => {}}
       />,
     );
-    const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     const studentMathsValues = within(table).getAllByRole('cell', {
       name: (name) => name.replace(/\u00a0/g, ' ') === '4 יח״ל בציון 100',
     });
@@ -663,7 +663,7 @@ describe('CalculatorResults', () => {
     expect(badge.classList.contains('whitespace-nowrap')).toBe(true);
     expect(badge.classList.contains('shrink-0')).toBe(true);
 
-    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     const mathsRow = within(table).getByRole('rowheader', { name: 'מתמטיקה' }).closest('tr')!;
     const mathsRequirement = within(mathsRow).getAllByRole('cell')[0];
     expect(table.querySelectorAll('td[colspan]')).toHaveLength(0);
@@ -712,7 +712,7 @@ describe('CalculatorResults', () => {
       />,
     );
     expect(await screen.findByLabelText('אוניברסיטת תל אביב: אפשר להגיש מועמדות')).toBeTruthy();
-    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     const englishCondition = within(table).getByRole('rowheader', { name: 'אנגלית בפסיכומטרי' });
     for (const className of [
       '[overflow-wrap:anywhere]',
@@ -1585,7 +1585,7 @@ describe('CalculatorResults', () => {
 
     // Approved test update, Jorje 2026-10-29
     expect(
-      await screen.findByText('ציון הקבלה שלך 84.5, מתחת לסף הזימון המשוער (92)'),
+      await screen.findByText('ציון הקבלה שלכם 84.5, מתחת לסף הזימון המשוער (92)'),
     ).toBeTruthy();
     expect(screen.getByText('קבלה דרך מבחני מו"ר')).toBeTruthy();
     expect(screen.queryByText(/סף זימון משוער למבחן המו"ר/)).toBeNull();

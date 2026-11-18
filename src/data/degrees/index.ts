@@ -1113,6 +1113,7 @@ export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
 ].map((program): Program => {
+  if (program.id === 'ono_medicine') return { ...program, isListed: false };
   const verifiedProgramUrl = VERIFIED_KEEPER_PROGRAM_URLS[program.id];
   if (verifiedProgramUrl) {
     return {
