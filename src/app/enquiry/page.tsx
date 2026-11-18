@@ -20,11 +20,13 @@ export default async function EnquiryPage({
   if (!programId) notFound();
   const isPrep = programId === 'psychometric-preparation' && institutionId === '';
   let title: string;
+  let resolvedProgramId = programId;
   if (isPrep) {
     title = 'הכנה לפסיכומטרי';
   } else {
     const target = await getEnquiryTarget(programId, institutionId);
     if (!target) notFound();
+    resolvedProgramId = target.program.id;
     title = `${target.program.name} · ${target.institution.name}`;
   }
   return (
@@ -37,7 +39,7 @@ export default async function EnquiryPage({
           חזרה לאפשרויות שלי
         </Link>
         <EnquiryForm
-          programId={programId}
+          programId={resolvedProgramId}
           institutionId={institutionId}
           title={title}
           heading={isPrep ? ENQUIRY_PREP_INTRO.heading : undefined}

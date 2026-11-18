@@ -96,7 +96,8 @@ describe('crawl policy', () => {
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-08');
+    expect(llms).not.toMatch(/Last updated:/i);
+    expect(llms).not.toContain('תאריך בדיקה');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -228,6 +229,8 @@ describe('crawl policy', () => {
       `${SITE_URL}/calculator`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
+      `${SITE_URL}/amirnet`,
+      `${SITE_URL}/psychometric-accommodations`,
       `${SITE_URL}/open-days`,
       `${SITE_URL}/transfer`,
       `${SITE_URL}/without-psychometric`,
@@ -247,8 +250,15 @@ describe('crawl policy', () => {
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_psychology`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
+    for (const id of Object.keys(PROGRAM_RETIREMENT_REDIRECTS))
+      expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(id)}`);
+    for (const program of programs) {
+      if (canonicalProgramId(program.id) !== program.id)
+        expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(program.id)}`);
+    }
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
     // PM rule (#271): general subjects with no programme links stay out of the sitemap.
     // Education now links to Achva's source-backed B.Ed. route.
@@ -260,7 +270,12 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(445);
+    expect(urls).toHaveLength(448);
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
+      url: `${SITE_URL}/amirnet`,
+      lastModified: '2026-11-14',
+      changeFrequency: 'weekly',
+    });
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -641,9 +656,12 @@ describe('structured data', () => {
       alternateName: SITE_ALT_NAMES,
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/brand/myway-wordmark-1200.png`,
+      description:
+        'MyWay הוא מוצר עצמאי לבחירת לימודים בישראל. הוא אינו מערכת של אוניברסיטה או מכללה ואינו מסונף לאוניברסיטת תל אביב או למוסד לימודים אחר.',
       areaServed: 'IL',
       knowsLanguage: 'he',
     });
+    expect(organizationLd()).not.toHaveProperty('sameAs');
     expect(websiteLd()).toMatchObject({
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
@@ -679,7 +697,7 @@ describe('structured data', () => {
     expect(application).toEqual({
       '@type': 'WebApplication',
       '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
-      name: 'מחשבון סכם',
+      name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
       url: 'https://findmyway.co.il/sekhem-calculator',
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
@@ -687,7 +705,12 @@ describe('structured data', () => {
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-      featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
+      featureList: [
+        'חישוב ממוצע בגרות במוסדות הנתמכים',
+        'חישוב סכם לפי תוכנית',
+        'השוואה לסף הקבלה',
+        'קישור לתנאי הקבלה של התוכנית',
+      ],
       publisher: { '@id': organizationLd()['@id'] },
       isPartOf: { '@id': websiteLd()['@id'] },
     });
@@ -838,7 +861,7 @@ describe('structured data', () => {
     return { data, sources, document, graph };
   }
 
-  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee', 'psychology'];
+  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee'];
 
   it('emits FAQPage on zero formerly-FAQ and control programme pages', async () => {
     const allowedIds: string[] = [];
@@ -930,7 +953,7 @@ describe('structured data', () => {
   );
 
   it.each(['afeka_ee', 'afeka_cs', 'afeka_softwareeng', 'bezalel_graphic_design'])(
-    'renders the requirements update stamp once on the non-FAQ programme page %s',
+    'renders the source line once and omits the checked date on %s',
     async (id) => {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
@@ -955,8 +978,6 @@ describe('structured data', () => {
     'huji_engineering',
     'bezalel_graphic_design',
     'afeka_cs',
-    'psychology',
-    'law',
     'nursing',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
@@ -1101,18 +1122,19 @@ describe('llms.txt calculator link', () => {
     ).toBe(calculatorLine);
   });
 
-  it('ends with the approved update date inside the Business model section', () => {
+  it('ends the business-model section without a last-updated stamp', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-08';
-    expect(llms).toContain(updated);
+    const business =
+      'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.';
+    expect(llms).not.toMatch(/Last updated:/i);
     expect(
       llms
         .split('\n')
         .filter((line) => line.trim())
         .at(-1),
-    ).toBe(updated);
+    ).toBe(business);
     const businessSection = llms.split('## Business model\n')[1]?.split(/^## /m)[0];
-    expect(businessSection).toContain(updated);
-    expect(llms.endsWith(`${updated}\n`)).toBe(true);
+    expect(businessSection).toContain(business);
+    expect(llms.trimEnd().endsWith(business)).toBe(true);
   });
 });

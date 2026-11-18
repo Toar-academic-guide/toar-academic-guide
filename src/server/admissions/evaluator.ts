@@ -284,6 +284,9 @@ export async function evaluateAdmissionsForProgram(args: {
     }
     return {
       ...displayedResult,
+      ...(normalized.calculatedBagrutAverages[institutionId] !== undefined && {
+        calculatedBagrutAverage: normalized.calculatedBagrutAverages[institutionId],
+      }),
       snapshot: createAdmissionsEvaluationSnapshot({ input, result: displayedResult }),
     };
   });
@@ -320,15 +323,7 @@ function withVerifiedAdmissionInformation(
   if (!contract || contract.proof.state !== 'verified' || !contract.proof.liveComparedAt)
     return result;
 
-  const checkedAt =
-    entry.freshnessState?.reviewedSourceFingerprint === contract.sourceFingerprint &&
-    entry.freshnessState.lastExactCheckAt
-      ? entry.freshnessState.lastExactCheckAt
-      : new Date(contract.proof.liveComparedAt);
-  const verificationNote = `נתוני הבסיס אומתו ב־${new Intl.DateTimeFormat('he-IL', {
-    dateStyle: 'short',
-    timeZone: 'Asia/Jerusalem',
-  }).format(checkedAt)}, למחזור ${contract.admissionCycle}.`;
+  const verificationNote = `נתוני הבסיס אומתו למחזור ${contract.admissionCycle}.`;
 
   if (result.capability === 'exact') {
     return result.scoreAssessment

@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import { HubLinks } from '@/components/seo/CatalogueLinks';
 import { getPublicSubjectIndex } from '@/lib/publicCatalogueLinks';
@@ -28,6 +29,12 @@ export default async function SubjectIndexPage() {
     <WayPageShell>
       <main dir="rtl" className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6">
         <h1 className="mb-8 text-3xl font-bold">תחומי לימוד</h1>
+        <Link
+          href="/calculator"
+          className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+        >
+          איך מחשבון סיכויי הקבלה עובד
+        </Link>
         <HubLinks hubs={hubs} />
       </main>
     </WayPageShell>

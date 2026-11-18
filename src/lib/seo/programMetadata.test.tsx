@@ -51,7 +51,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '69e9019a8c7590756785eacb95a3bd58b54887942707e36db5f093c472ec79b8',
+    structuredDataSha256: '148113e959aa38bc398ef2d1ec930372b627b85ad2756e1554419fccef9382ad',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
@@ -175,6 +175,15 @@ describe('program institution attribution', () => {
     if (expected.id === 'nursing') {
       expect(page.isGeneral).toBe(true);
       expect(page.program.institutionId).toBeUndefined();
+      const ono = ld.provider.find((provider) => provider.name === 'המכללה האקדמית אונו');
+      expect(ono?.hasOfferCatalog.itemListElement).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'מדעי ההתנהגות (B.A.)',
+            url: 'https://findmyway.co.il/programs/ono_psychology',
+          }),
+        ]),
+      );
     }
   });
 

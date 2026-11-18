@@ -16,6 +16,22 @@ const socialShortLinks: Record<string, string> = {
 };
 
 export async function proxy(request: NextRequest) {
+  const indexNowKey = process.env.INDEXNOW_KEY;
+  if (
+    indexNowKey &&
+    /^[A-Za-z0-9-]{8,128}$/.test(indexNowKey) &&
+    request.method === 'GET' &&
+    request.nextUrl.pathname === `/${indexNowKey}.txt`
+  ) {
+    return new NextResponse(indexNowKey, {
+      status: 200,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'public, max-age=3600',
+      },
+    });
+  }
+
   if (process.env.VERCEL_ENV === 'production' && request.nextUrl.hostname.endsWith('.vercel.app')) {
     return NextResponse.redirect(
       `https://findmyway.co.il${request.nextUrl.pathname}${request.nextUrl.search}`,
