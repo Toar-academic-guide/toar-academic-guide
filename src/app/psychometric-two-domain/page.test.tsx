@@ -19,7 +19,9 @@ describe('psychometric score choice guide', () => {
     const table = root.querySelector('table[aria-labelledby="admissions"]');
     expect(table).not.toBeNull();
     expect(table?.querySelectorAll('tbody tr')).toHaveLength(4);
-    expect(table?.querySelectorAll('time[datetime="2026-11-14"]')).toHaveLength(4);
+    expect(table?.querySelectorAll('time')).toHaveLength(0);
+    expect(table?.textContent).not.toMatch(/נבדק בתאריך/);
+    expect(root.textContent).not.toMatch(/נבדק בתאריך/);
     const answer = root.querySelector('#admissions-answer')?.textContent?.trim().split(/\s+/);
     expect(answer?.length).toBeGreaterThanOrEqual(40);
     expect(answer?.length).toBeLessThanOrEqual(60);

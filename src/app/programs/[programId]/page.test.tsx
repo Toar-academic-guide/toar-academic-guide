@@ -38,10 +38,103 @@ import { hasPublishedCompositeThreshold } from '@/lib/publishedCompositeThreshol
 import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
+import { psychologyComparisonRows, psychologyFaq } from '@/data/psychologyComparison';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it('renders all first-time law results, 12 law links, and matching hub schema', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'law' }) }),
+    );
+    const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' }).closest('section')!;
+    const institutionLinks = within(institutions)
+      .getAllByRole('link')
+      .filter((link) => link.getAttribute('href')?.startsWith('/programs/'));
+    expect(institutionLinks.map((link) => link.getAttribute('href'))).toEqual([
+      '/programs/tau_law',
+      '/programs/huji_law',
+      '/programs/haifa_law',
+      '/programs/biu_law',
+      '/programs/reichman_law',
+      '/programs/colmgmt_law',
+      '/programs/ono_law',
+      '/programs/sapir_law',
+      '/programs/peres_law',
+      '/programs/ramat_gan_law',
+      '/programs/netanya_law',
+      '/programs/shaare_mishpat_law',
+    ]);
+    const section = container.querySelector('#bar-pass-rates')!;
+    expect(section).toBeTruthy();
+    expect(
+      institutions.compareDocumentPosition(section) & Node.DOCUMENT_POSITION_FOLLOWING,
+    ).toBeTruthy();
+    const table = within(section as HTMLElement).getByRole('table');
+    expect(table.querySelectorAll('tbody tr')).toHaveLength(16);
+    expect(table.querySelector('caption')?.textContent).toBe(lawBarOutcomes.caption);
+    expect(table.querySelector('caption a')?.getAttribute('href')).toBe(lawBarOutcomes.sourceUrl);
+    expect(
+      within(table).getByRole('rowheader', { name: 'אוניברסיטת רייכמן' }).parentElement
+        ?.textContent,
+    ).toContain('37');
+    for (const name of [
+      'עולים מחו"ל',
+      'ישראלי שלמד בחו"ל',
+      'המכללה האקדמית צפת',
+      'המרכז האקדמי כרמל',
+    ]) {
+      expect(within(table).getByRole('rowheader', { name }).querySelector('a')).toBeNull();
+    }
+    expect(section.textContent).toContain(lawBarOutcomes.total);
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const faq = graph.find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    const dataset = graph.find((node: { '@type': string }) => node['@type'] === 'Dataset');
+    const programme = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(faq.mainEntity[0].name).toBe(lawBarOutcomes.question);
+    expect(faq.mainEntity[0].acceptedAnswer.text).toBe(lawBarOutcomes.answer);
+    expect(dataset.description).toBe(table.querySelector('caption')?.textContent);
+    expect(dataset.datePublished).toBe('2026-07-16');
+    expect(programme.provider).toHaveLength(12);
+    expect(await generateMetadata({ params: Promise.resolve({ programId: 'law' }) })).toMatchObject(
+      {
+        title: 'לימודי משפטים: תנאי קבלה וסיכויי קבלה',
+        description:
+          'משפטים ב-12 מוסדות לימוד: תנאי קבלה, שיעורי מעבר בבחינת הלשכה במועד קיץ 2026, ובדיקת סיכויי קבלה ב-MyWay. התנאים המחייבים באתר המוסד.',
+        alternates: { canonical: '/programs/law' },
+      },
+    );
+  });
+
+  it.each(lawBarOutcomes.rows.filter((row) => 'programId' in row))(
+    'renders the dated law outcome after admissions on $programId',
+    async (row) => {
+      if (!('programId' in row)) return;
+      const { container } = render(
+        await ProgramPage({ params: Promise.resolve({ programId: row.programId }) }),
+      );
+      const admission = screen.getByRole('heading', { name: 'תנאי קבלה' }).closest('section')!;
+      const line = screen.getByText(/בחינת ההסמכה בכתב של לשכת עורכי הדין/).closest('section')!;
+      expect(
+        admission.compareDocumentPosition(line) & Node.DOCUMENT_POSITION_FOLLOWING,
+      ).toBeTruthy();
+      expect(line.textContent).toContain(
+        `${row.passed} עוברים מתוך ${row.candidates} נבחנים, שיעור מעבר ${row.rate}%`,
+      );
+      expect(within(line).getByRole('link', { name: 'עמוד משפטים' }).getAttribute('href')).toBe(
+        '/programs/law#bar-pass-rates',
+      );
+      const graph = JSON.parse(
+        container.querySelector('script[type="application/ld+json"]')!.textContent!,
+      )['@graph'];
+      expect(graph.some((node: { '@type': string }) => node['@type'] === 'FAQPage')).toBe(false);
+    },
+  );
   it.each([
     ['beit_berl_ai_education', 'בינה מלאכותית וחינוך (B.A.)', '(B.A.)'],
     ['david_yellin_non_formal_education', 'חינוך בלתי פורמלי במסלול העל־יסודי (B.Ed.)', '(B.Ed.)'],
@@ -96,6 +189,125 @@ describe('ProgramPage', () => {
       meta: {},
     });
   });
+
+  it('renders the sourced nine-row psychology comparison and matching visible FAQ schema', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }),
+    );
+    const table = screen.getByRole('table', { name: /תנאי קבלה לתואר ראשון/ });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(9);
+    for (const [index, row] of rows.entries()) {
+      const source = psychologyComparisonRows[index];
+      expect(within(row).getByRole('link', { name: source.institution }).getAttribute('href')).toBe(
+        `/programs/${source.programId}`,
+      );
+      expect(row.textContent).not.toContain(source.checkedDate);
+      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+        source.officialUrl,
+      );
+    }
+    expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
+    expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
+    expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
+    const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
+    expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
+    expect(ariel.querySelectorAll('td')[1].textContent).toContain('לא אומת');
+    expect(ariel.textContent).not.toContain('97');
+    expect(
+      within(table)
+        .getByRole('link', { name: 'הקריה האקדמית אונו — מדעי ההתנהגות (B.A.)' })
+        .querySelector('bdi[dir="ltr"]')?.textContent,
+    ).toBe('(B.A.)');
+    expect(screen.queryByRole('heading', { name: 'מוסדות לימוד' })).toBeNull();
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const psychologyProgram = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(psychologyProgram.provider).toHaveLength(8);
+    expect(
+      psychologyProgram.provider.some((provider: { name: string }) =>
+        provider.name.includes('אונו'),
+      ),
+    ).toBe(false);
+    const faq = graph.find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    expect(
+      faq.mainEntity.map((item: { name: string; acceptedAnswer: { text: string } }) => [
+        item.name,
+        item.acceptedAnswer.text,
+      ]),
+    ).toEqual(psychologyFaq.map(({ question, answer }) => [question, answer]));
+    const visibleFaq = screen.getByRole('heading', { name: 'שאלות נפוצות' }).closest('section')!;
+    expect([...visibleFaq.querySelectorAll('dt, dd')].map((node) => node.textContent)).toEqual(
+      psychologyFaq.flatMap(({ question, answer }) => [question, answer]),
+    );
+  });
+
+  it('keeps the Ono programme degree identity and Haifa conditional Ofek route visible', async () => {
+    const ono = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(ono.container.textContent).toContain('לא תואר ראשון בפסיכולוגיה');
+    ono.unmount();
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'haifa_psychology' }) }));
+    const ofek = screen
+      .getByRole('heading', { name: 'מסלול אופק בפסיכולוגיה — ללא פסיכומטרי' })
+      .closest('section')!;
+    expect(ofek.textContent).toContain('לומדים על תנאי');
+    expect(ofek.textContent).toContain('2–3 קורסים בציון 75 לפחות');
+    expect(ofek.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2–3');
+    const related = screen.getByRole('heading', { name: 'מסלולים נוספים' }).closest('section')!;
+    expect(within(related).queryByRole('link', { name: /אונו/ })).toBeNull();
+    expect(
+      within(ofek)
+        .getByRole('link', { name: 'תנאי מסלול אופק באתר אוניברסיטת חיפה' })
+        .getAttribute('href'),
+    ).toBe('https://admissions.haifa.ac.il/social-sciences/program/3268/');
+  });
+
+  it('serves the sourced Ono page through the existing static route fallback when the active catalogue lacks it', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().filter((program) => program.id !== 'ono_psychology'),
+      meta: { catalogueSource: 'database' },
+    });
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }));
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(screen.getByText(/לא תואר ראשון בפסיכולוגיה/)).toBeTruthy();
+  });
+
+  it('corrects the stale Ono psychology label in DB-mode presentation without claiming Ono awards a psychology BA', async () => {
+    vi.mocked(listCataloguePrograms).mockResolvedValue({
+      data: getStaticCataloguePrograms().map((program) =>
+        program.id === 'ono_psychology'
+          ? { ...program, name: 'פסיכולוגיה', admissionRequirements: ['תנאים ישנים'] }
+          : program,
+      ),
+      meta: { catalogueSource: 'database' },
+    });
+    const ono = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'ono_psychology' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1, name: 'מדעי ההתנהגות (B.A.)' })).toBeTruthy();
+    expect(ono.container.textContent).not.toContain('תנאים ישנים');
+    ono.unmount();
+    const hub = render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
+    const graph = JSON.parse(
+      hub.container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const psychologyProgram = graph.find(
+      (node: { '@type': string }) => node['@type'] === 'EducationalOccupationalProgram',
+    );
+    expect(psychologyProgram.provider).toHaveLength(8);
+    expect(
+      psychologyProgram.provider.some((provider: { name: string }) =>
+        provider.name.includes('אונו'),
+      ),
+    ).toBe(false);
+  });
+
   it('renders Danon’s culinary programme link and the existing beginner note', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'danon_culinary' }) }));
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
@@ -337,9 +549,8 @@ describe('ProgramPage', () => {
       /ציון פסיכומטרי מינימלי|ממוצע בגרות מינימלי|5 יח"ל מתמטיקה — חובה/,
     );
     expect(hasPublishedCompositeThreshold(items as string[])).toBe(true);
-    const sourceFooter = screen.getByText(/^עודכן לאחרונה: 17\.11\.2026/);
-    expect(sourceFooter.textContent).toBe('עודכן לאחרונה: 17.11.2026');
-    expect(within(sourceFooter).queryByRole('link')).toBeNull();
+    expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+    expect(screen.queryByText('30.10.2026')).toBeNull();
   });
 
   it('shows the regular Haifa psychology floor and keeps Pasifas separate', async () => {
@@ -413,9 +624,9 @@ describe('ProgramPage', () => {
         expect(sourceLink.getAttribute('href')).toBe(
           `${sourceUrl}?utm_source=myway&utm_medium=referral`,
         );
-        expect(sourceLink.closest('p')!.textContent).toBe(
-          `עודכן לאחרונה: ${date} · מקור: אתר ${institution.name}`,
-        );
+        expect(sourceLink.closest('p')!.textContent).toBe(`מקור: אתר ${institution.name}`);
+        expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+        expect(screen.queryByText(date)).toBeNull();
         if (programId === 'colmgmt_cs') {
           expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
             'https://www.colman.ac.il/academics/ba/computer-science/?utm_source=myway&utm_medium=referral',
@@ -456,7 +667,9 @@ describe('ProgramPage', () => {
       expect(link.getAttribute('target')).toBe('_blank');
       expect(link.getAttribute('rel')).toBe('noopener noreferrer');
       const line = link.closest('p')!;
-      expect(line.textContent).toBe(`עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`);
+      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
+      expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+      expect(screen.queryByText('21.10.2026')).toBeNull();
       expect(line.getAttribute('dir')).toBe('rtl');
       expect(line.className).toBe(
         'mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]',
@@ -491,26 +704,28 @@ describe('ProgramPage', () => {
       );
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      expect(screen.getByText('עודכן לאחרונה: 21.10.2026').textContent).toBe(
-        'עודכן לאחרונה: 21.10.2026',
-      );
+      expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
+      expect(screen.queryByText('21.10.2026')).toBeNull();
       expect(screen.queryByText(/מקור:/)).toBeNull();
       expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
     });
 
-    it('uses the own program’s entry in a general psychology institution block', async () => {
+    it('links the BGU comparison row to its own programme and official cycle source', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: 'psychology' }) }));
 
-      const block = within(screen.getByRole('heading', { name: institution.name }).parentElement!);
-      expect(block.getByRole('link', { name: 'לפרטים המלאים' }).getAttribute('href')).toBe(
-        '/programs/bgu_psychology',
-      );
+      const row = within(screen.getByRole('table')).getByRole('rowheader', {
+        name: 'אוניברסיטת בן־גוריון בנגב',
+      }).parentElement!;
       expect(
-        block.getByRole('link', { name: `אתר ${institution.name}` }).getAttribute('href'),
-      ).toBe(trackedSource.href);
-      expect(block.getByText(/עודכן לאחרונה:/).textContent).toBe(
-        `עודכן לאחרונה: 21.10.2026 · מקור: אתר ${institution.name}`,
+        within(row).getByRole('link', { name: 'אוניברסיטת בן־גוריון בנגב' }).getAttribute('href'),
+      ).toBe('/programs/bgu_psychology');
+      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
+        psychologyComparisonRows.find((candidate) => candidate.programId === 'bgu_psychology')
+          ?.officialUrl,
       );
+      expect(row.textContent).not.toContain('14.11.2026');
+      expect(row.textContent).not.toMatch(/עודכן לאחרונה|נבדק בתאריך/);
+      expect(row.textContent).toContain('סכם 650 וגם פסיכומטרי 650');
     });
 
     it('keeps the line at the bottom when there is no link row', async () => {
@@ -524,7 +739,8 @@ describe('ProgramPage', () => {
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      const line = screen.getByText(/עודכן לאחרונה:/);
+      const line = screen.getByRole('link', { name: `אתר ${institution.name}` }).closest('p')!;
+      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
       expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
       expect(line.parentElement?.lastElementChild).toBe(line);
       expect(line.classList.contains('mt-2')).toBe(true);

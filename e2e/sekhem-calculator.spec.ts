@@ -7,12 +7,12 @@ import type {
   AdmissionsEvaluationResult,
 } from '../src/types/admissionsEvaluation';
 
-const title = 'מחשבון סכם לפי מוסד ותוכנית | MyWay';
+const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const canonical = 'https://findmyway.co.il/sekhem-calculator';
 const description =
   // Approved test update, Jorje 2026-10-29: meta no-overclaim
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-  'מחשבון סכם לפי ציוני הבגרות והפסיכומטרי שלכם. בחרו תוכנית לימודים ובדקו איך הציון שלכם משתווה לסף הקבלה שלה.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.';
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
@@ -293,10 +293,12 @@ for (const width of [1280, 390]) {
     page.on('pageerror', (error) => errors.push(error.message));
     const mocks = await installMocks(page, baseURL);
     await page.goto('/sekhem-calculator');
-    await expect(page.getByRole('heading', { name: 'מחשבון סכם', exact: true })).toBeVisible();
+    await expect(
+      page.getByRole('heading', { name: 'מחשבון סכם וממוצע בגרות לפי מוסד', exact: true }),
+    ).toBeVisible();
     const headingBox = (await page
       .getByRole('heading', {
-        name: 'מחשבון סכם',
+        name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
         exact: true,
       })
       .boundingBox())!;
@@ -618,7 +620,7 @@ test('public metadata and crawl links use the calculator URL; homepage hero has 
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toMatch(
-    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-05(?:T[^<]+)?<\/lastmod>/,
+    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-14(?:T[^<]+)?<\/lastmod>/,
   );
   const llms = await request.get('/llms.txt');
   expect(llms.ok()).toBe(true);

@@ -1079,7 +1079,8 @@ describe('evaluateAdmissionsForProgram', () => {
       decision: 'unknown',
     });
     expect(report.results[0].explanation).toContain('610');
-    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
+    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו למחזור');
+    expect(report.results[0].explanation).not.toMatch(/אומתו ב־/);
     expect(report.results[0].officialUrls?.[0]).toMatch(/^https:\/\//);
     expect(report.results[0].score).toBeUndefined();
   });
@@ -5085,7 +5086,7 @@ describe('Amit 07:33 full-bagrut assumption', () => {
         }
       }
       // The sourced college routes, complementary certificates and Hadassah add distinct pairs.
-      expect(pairs).toBe(464);
+      expect(pairs).toBe(465);
     },
   );
   it.each([

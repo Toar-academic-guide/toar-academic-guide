@@ -649,7 +649,8 @@ describe('dynamic Monday-derived programme inference', () => {
     const uncovered = programsWithLegacyAdmissionFacts.flatMap((program) => {
       if (
         program.institutionId === 'ariel' ||
-        ['ono_law', 'ono_nursing', 'haifa_psychology'].includes(program.id)
+        // Interview and alternative routes stay display-only until an evaluator owns them.
+        ['ono_law', 'ono_nursing', 'ono_psychology', 'haifa_psychology'].includes(program.id)
       ) {
         return [];
       }

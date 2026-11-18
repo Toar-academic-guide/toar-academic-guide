@@ -4,6 +4,7 @@ import type {
 } from '@/types/admissionsEvaluation';
 import { ENGINEERING_MATH_PROGRAM_IDS } from '@/data/admissions/engineeringMathRequirements';
 import { bagrutExamSubjects, overallBagrutAverage } from '@/lib/bagrutSubjectRecord';
+import { calculateHaifaBagrutAverage } from '@/data/admissions/haifaAdmissionFormula';
 import { HAIFA_ADMISSION_YEAR } from '@/lib/haifaAdmissionsInputs';
 import {
   calculateBguBagrutAverage,
@@ -17,6 +18,9 @@ import { medicineBagrutSubjects } from '@/data/admissions/medicineBagrutSubjects
 export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
   const extraInputs: AdmissionsExtraInputs = { ...input.extraInputs };
   let record = extraInputs.bagrutSubjectRecord;
+  const calculatedBagrutAverages: Partial<Record<string, number>> = {};
+  const haifaAverage = calculateHaifaBagrutAverage(record);
+  if (haifaAverage !== undefined) calculatedBagrutAverages.haifa = haifaAverage;
   const academicMedicine =
     usesMedicineAcademicStage(extraInputs) &&
     ['tau', 'huji', 'bgu'].some((id) => isMedicineAcademicPair(input.degreeId, id));
@@ -26,7 +30,10 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
       delete extraInputs[key];
     if (record) {
       const average = calculateHujiBagrutAverage(record);
-      if (average.state === 'calculated') extraInputs.hujiBagrutAverage = average.average;
+      if (average.state === 'calculated') {
+        extraInputs.hujiBagrutAverage = average.average;
+        calculatedBagrutAverages.huji = average.average;
+      }
     }
   }
   if (record && ENGINEERING_MATH_PROGRAM_IDS.has(input.degreeId)) {
@@ -54,7 +61,10 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
     if (extraInputs[key] !== undefined) continue;
     if (record) {
       const result = calculator?.(record);
-      if (result?.state === 'calculated') extraInputs[key] = result.average;
+      if (result?.state === 'calculated') {
+        extraInputs[key] = result.average;
+        calculatedBagrutAverages[institution] = result.average;
+      }
     } else if (
       bagrut !== undefined &&
       !(academicMedicine && ['tau', 'bgu'].includes(institution))
@@ -75,5 +85,11 @@ export function normalizeEvaluationInputs(input: AdmissionsEvaluationInput) {
       );
     }
   }
-  return { input: { ...input, bagrut, extraInputs }, reasons, overallReason, proxyInstitutions };
+  return {
+    input: { ...input, bagrut, extraInputs },
+    reasons,
+    overallReason,
+    proxyInstitutions,
+    calculatedBagrutAverages,
+  };
 }

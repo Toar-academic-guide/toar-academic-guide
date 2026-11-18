@@ -92,6 +92,7 @@ it('rejects malformed report rows and reports for removed offerings', () => {
         explanation: '',
         nextAction: '',
         score: 706,
+        calculatedBagrutAverage: 108.87,
       },
     ],
   };
@@ -100,11 +101,13 @@ it('rejects malformed report rows and reports for removed offerings', () => {
     JSON.stringify({ version: 1, ...snapshot(), reports: [report] }),
   );
   expect(readSekhemSession(offerings)?.reports).toHaveLength(1);
+  expect(readSekhemSession(offerings)?.reports[0].results[0].calculatedBagrutAverage).toBe(108.87);
   expect(readSekhemSession([{ ...offerings[0], institutionId: 'tau' }])).toBeNull();
   for (const results of [
     [{ ...report.results[0], requiredInputs: [null] }],
     [{ ...report.results[0], additionalConditions: [null] }],
     [{ ...report.results[0], score: '706' }],
+    [{ ...report.results[0], calculatedBagrutAverage: '108.87' }],
   ]) {
     sessionStorage.setItem(
       SEKHEM_SESSION_KEY,

@@ -68,9 +68,6 @@ export default function TransferPage() {
               במעבר בין מוסדות לימוד יש שתי החלטות נפרדות: קבלה לתוכנית במוסד החדש, והכרה בקורסים
               שכבר למדתם. הכינו לכל אחת מהן את המסמכים והבקשה המתאימים, כדי לתכנן את המשך הלימודים.
             </p>
-            <p className={styles.stamp}>
-              נבדק בתאריך <time dateTime="2026-11-08">8.11.2026</time>
-            </p>
           </header>
 
           <section aria-labelledby="admission" className={styles.section}>
