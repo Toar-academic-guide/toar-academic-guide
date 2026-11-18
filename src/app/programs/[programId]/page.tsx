@@ -35,8 +35,18 @@ interface ProgramPageProps {
   params: Promise<{ programId: string }>;
 }
 
+const onoLegacyPageTitle = 'הלימודים בקריה האקדמית אונו';
+
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'ono_medicine') {
+    return {
+      title: onoLegacyPageTitle,
+      description: 'מסלולי הלימוד בקריה האקדמית אונו מופיעים בעמוד המוסד.',
+      alternates: { canonical: '/programs/ono_medicine' },
+      robots: { index: false, follow: true },
+    };
+  }
   const metadata = await buildProgramMetadata(programId);
   if (programId === 'law') {
     const title = 'לימודי משפטים: תנאי קבלה וסיכויי קבלה';
@@ -88,6 +98,22 @@ function lawOutcomeSchema() {
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'ono_medicine') {
+    return (
+      <WayPageShell>
+        <main dir="rtl" className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6">
+          <h1 className="text-3xl font-bold">{onoLegacyPageTitle}</h1>
+          <p className="mt-3 text-[var(--text-body)]">העמוד הזה כבר לא מציג מסלול לימודים.</p>
+          <Link
+            href="/institutions/ono"
+            className="mt-4 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+          >
+            למסלולי הלימוד באונו
+          </Link>
+        </main>
+      </WayPageShell>
+    );
+  }
   const data = await getPublicProgramPageData(programId);
 
   if (!data) {
