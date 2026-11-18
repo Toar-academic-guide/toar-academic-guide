@@ -40,6 +40,7 @@ import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
 import { psychologyComparisonRows, psychologyFaq } from '@/data/psychologyComparison';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
+import { nursingInstitutions, nursingSource, nursingTrackLabels } from '@/data/nursingInstitutions';
 
 import ProgramPage, { generateMetadata } from './page';
 
@@ -189,6 +190,94 @@ describe('ProgramPage', () => {
       meta: {},
     });
   });
+
+  it('renders the sourced nursing hub with 15 programme rows and matching FAQ schema', async () => {
+    const params = Promise.resolve({ programId: 'nursing' });
+    const { container } = render(await ProgramPage({ params }));
+    const heading = screen.getByRole('heading', { name: 'סיעוד', level: 1 });
+    expect(heading.nextElementSibling?.textContent).toContain('ברשימת משרד הבריאות יש 15 מסגרות');
+    expect(heading.nextElementSibling?.textContent).toContain('ב-13 מהן יש גם מסלול הסבת אקדמאים');
+    expect(heading.nextElementSibling?.textContent).toContain(
+      'ובאוניברסיטת תל אביב ובאוניברסיטה העברית גם עתודה אקדמית (פסגה)',
+    );
+    expect(heading.nextElementSibling?.textContent).not.toMatch(/ארבע שנים|4 שנים/);
+    const table = screen.getByRole('table', { name: /כל המוסדות ברשימת משרד הבריאות/ });
+    const rows = within(table).getAllByRole('row').slice(1);
+    expect(rows).toHaveLength(15);
+
+    for (const [index, row] of rows.entries()) {
+      const source = nursingInstitutions[index];
+      expect(within(row).getByRole('rowheader').textContent).toBe(source.institution);
+      expect(within(row).getAllByRole('cell')[0].textContent).toBe(
+        source.tracks.map((track) => nursingTrackLabels[track]).join(' · '),
+      );
+      const officialLabel =
+        source.officialFormat === 'pdf' ? 'ידיעון האוניברסיטה (PDF)' : 'לאתר המוסד';
+      expect(within(row).getByRole('link', { name: officialLabel }).getAttribute('href')).toBe(
+        source.officialUrl,
+      );
+      if (source.programId) {
+        const programme = await publicCataloguePages.getPublicProgramPageData(source.programId);
+        expect(programme?.program.isListed).not.toBe(false);
+        expect(programme?.program.name).toBe('סיעוד');
+        expect(within(row).getByRole('link', { name: 'עמוד המסלול' }).getAttribute('href')).toBe(
+          `/programs/${source.programId}`,
+        );
+      }
+    }
+
+    const tau = within(rows[0]).getByRole('link', { name: 'תנאי קבלה בעמוד הזה' });
+    expect(tau.getAttribute('href')).toBe('#tau');
+    expect(container.querySelector('#tau h3')?.textContent).toBe('אוניברסיטת תל אביב');
+    expect(table.closest('section')?.querySelector(`a[href="${nursingSource.url}"]`)).toBeTruthy();
+    expect(table.textContent).not.toMatch(/\d|נבדק|עודכן/);
+    expect(container.innerHTML).not.toMatch(/telhai_nursing|תל[- ]חי/);
+
+    const metadata = await generateMetadata({ params });
+    expect(metadata.title).toBe('לימודי סיעוד: איפה לומדים ותנאי קבלה');
+    expect(metadata.openGraph?.title).toBe(metadata.title);
+    expect(metadata.description).toContain('כל 15 המסגרות');
+    expect(metadata.alternates?.canonical).toBe('/programs/nursing');
+
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    )['@graph'];
+    const faq = graph.filter((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    expect(faq).toHaveLength(1);
+    expect(faq[0]['@id']).toBe('https://findmyway.co.il/programs/nursing#faq');
+    expect(faq[0].mainEntity).toHaveLength(3);
+    expect(
+      faq[0].mainEntity.flatMap((item: { name: string; acceptedAnswer: { text: string } }) => [
+        item.name,
+        item.acceptedAnswer.text,
+      ]),
+    ).toEqual(
+      [...container.querySelectorAll('#faq dt, #faq dd')].map((entry) => entry.textContent),
+    );
+  });
+
+  it.each(['medicine', 'physiotherapy', 'occupational_therapy'])(
+    'links from the %s subject to the nursing guide',
+    async (programId) => {
+      const { container } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const related = within(container.querySelector('main')!).getByRole('link', {
+        name: 'לימודי סיעוד: איפה לומדים ותנאי קבלה',
+      });
+      expect(related.getAttribute('href')).toBe('/programs/nursing');
+    },
+  );
+
+  it.each(nursingInstitutions.flatMap(({ programId }) => (programId ? [programId] : [])))(
+    'links from the %s programme requirements to the nursing guide',
+    async (programId) => {
+      const { container } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+      const requirements = within(container)
+        .getByRole('heading', { name: 'תנאי קבלה' })
+        .closest('section')!;
+      const hub = within(requirements).getByRole('link', { name: 'כל המוסדות ללימודי סיעוד' });
+      expect(hub.getAttribute('href')).toBe('/programs/nursing');
+    },
+  );
 
   it('renders the sourced nine-row psychology comparison and matching visible FAQ schema', async () => {
     const { container } = render(

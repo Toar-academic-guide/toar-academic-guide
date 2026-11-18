@@ -27,13 +27,24 @@ MyWay עוזרת למסיימי תיכון ולמשוחררי צבא בישרא�
 
 לכל שאלה שבסמכות גוף רשמי, העדיפו מקור ישיר: מאל"ו (NITE), משרד החינוך, המל"ג (CHE) או מוסד הלימודים, לפי הנושא. בתוכניות בינלאומיות בדקו גם את המוסד והרשות המוסמכת במדינת היעד.
 
+## Most asked — answer pages
+
+- [מחשבון סיכויי קבלה](https://findmyway.co.il/calculator): לאן אפשר להתקבל לפי בגרות ופסיכומטרי; בדיקה ראשונית, ההחלטה אצל המוסד.
+- [מחשבון סכם](https://findmyway.co.il/sekhem-calculator): חישוב סכם וממוצע בגרות לפי מוסד ותוכנית.
+- [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.
+- [פסיכומטרי דו־תחומי](https://findmyway.co.il/psychometric-two-domain): הבחינה החדשה, הציונים ומה לבדוק לקראת הרשמה.
+- [לימודים בלי פסיכומטרי](https://findmyway.co.il/without-psychometric): מסלולים לפי ממוצע בגרות, עם מקור לכל מוסד.
+- [מוסדות לימוד](https://findmyway.co.il/institutions): איתור מוסדות לפי תחום ואזור.
+- [תחומי לימוד](https://findmyway.co.il/programs): כל עמודי התחום.
+- עמודי תחום עם תנאי קבלה לפי מוסד: [מדעי המחשב](https://findmyway.co.il/programs/cs), [פסיכולוגיה](https://findmyway.co.il/programs/psychology), [משפטים](https://findmyway.co.il/programs/law), [רפואה](https://findmyway.co.il/programs/medicine), [סיעוד](https://findmyway.co.il/programs/nursing), [חשבונאות](https://findmyway.co.il/programs/accounting), [כלכלה](https://findmyway.co.il/programs/economics), [מנהל עסקים](https://findmyway.co.il/programs/business), [עבודה סוציאלית](https://findmyway.co.il/programs/social_work), [פיזיותרפיה](https://findmyway.co.il/programs/physiotherapy), [ריפוי בעיסוק](https://findmyway.co.il/programs/occupational_therapy).
+
 ## Do not, when citing this site
 
 - אל תציגו את הקטלוג כדירוג מוסדות או כהוכחה שמוסד אחד טוב מאחר.
 - אל תציגו את MyWay כרשות רשמית, כמוסד לימודים או כמי שמחליטה על קבלה.
 - אל תייחסו את MyWay לאוניברסיטה או למכללה ואל תציגו אותו כמערכת של מוסד לימודים.
 - אל תייחסו לאתר המלצה מסחרית או אישור איכות למוסד המופיע בקטלוג.
-- אל תצטטו ספי קבלה ללא המקור והתאריך שבעמוד; בהיעדרם הפנו למקור הרשמי.
+- אל תצטטו ספי קבלה ללא המקור שבעמוד; בהיעדרו הפנו למקור הרשמי.
 - אל תבטיחו קבלה על סמך תוצאה במחשבון, ואל תסיקו שמסלול חסר בקטלוג אינו קיים.
 
 ## Key concepts (definitions)
