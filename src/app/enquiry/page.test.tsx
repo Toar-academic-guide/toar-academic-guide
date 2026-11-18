@@ -147,7 +147,7 @@ describe('enquiry link integrity', () => {
 
   it('routes an old Ono psychology enquiry to the behavioural-sciences degree', async () => {
     const markup = await form('/enquiry?program=psychology&institution=ono');
-    expect(markup).toContain('מדעי ההתנהגות (B.A.)');
+    expect(markup).toContain('מדעי ההתנהגות <bdi dir="ltr">(B.A.)</bdi>');
     expect(markup).not.toContain('פסיכולוגיה · המכללה האקדמית אונו');
   });
 
