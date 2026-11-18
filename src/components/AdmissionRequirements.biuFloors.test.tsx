@@ -20,13 +20,13 @@ describe('BIU per-floor presentation in the shared requirements component', () =
     const { container } = render(
       <AdmissionRequirements requirements={[]} floorChecks={floors} institutionId="biu" />,
     );
-    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     expect(table.closest('[dir="rtl"]')).toBeTruthy();
     expect(within(table).getByText('נדרש')).toBeTruthy();
-    expect(within(table).getByText('שלך')).toBeTruthy();
+    expect(within(table).getByText('שלכם')).toBeTruthy();
     for (const text of [
-      'עומד/ת',
-      'לא עומד/ת',
+      'עומדים',
+      'לא עומדים',
       'חסר נתון',
       'מקורות סותרים',
       'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',

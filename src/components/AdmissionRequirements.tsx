@@ -138,7 +138,7 @@ export default function AdmissionRequirements({
         <>
           <table
             className="w-full table-fixed border-collapse text-right text-xs leading-5"
-            aria-label="בדיקת תנאי הסף לפי הציונים שלך"
+            aria-label="בדיקת תנאי הסף לפי הציונים שלכם"
           >
             <thead>
               <tr className="border-b border-[var(--border)] text-[var(--text-muted)]">
@@ -163,7 +163,7 @@ export default function AdmissionRequirements({
                   נדרש
                 </th>
                 <th scope="col" className="w-[25%] py-2 pe-2 font-medium">
-                  שלך
+                  שלכם
                 </th>
                 <th scope="col" className="w-[30%] py-2 font-medium">
                   בדיקה
@@ -224,8 +224,8 @@ export default function AdmissionRequirements({
                             {
                               (
                                 {
-                                  pass: 'עומד/ת',
-                                  miss: 'לא עומד/ת',
+                                  pass: 'עומדים',
+                                  miss: 'לא עומדים',
                                   missing: 'חסר נתון',
                                   conflicting: 'מקורות סותרים',
                                   soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',

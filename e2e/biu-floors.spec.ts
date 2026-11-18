@@ -41,7 +41,7 @@ test('biu_cs student values wrap only between whole unit tokens at 375px', async
     response = await retry;
   }
   expect(response.status()).toBe(200);
-  const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+  const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
   await expect(table).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   const cells = table.getByRole('cell', { name: '4 יח״ל בציון 100', exact: true });
@@ -205,7 +205,7 @@ for (const width of [1280, 390])
       );
       expect(result.decision).toBe(profile.decision);
       expect(result.floorChecks.length).toBeGreaterThan(0);
-      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
       await expect(table).toBeVisible();
       await expect(table).toHaveCSS('text-align', 'right');
       const explanation = page.locator('.journey-result-explanation');
