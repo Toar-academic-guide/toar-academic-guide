@@ -6,6 +6,9 @@ const sources = {
   haifa: 'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   huji: 'https://info.huji.ac.il/registration-process/calendar',
   bgu: 'https://www.bgu.ac.il/events/registrastion-2027-2028/',
+  tauSpring: 'https://go.tau.ac.il/he/reg-dates',
+  bguSpring: 'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
+  openuSpring: 'https://www.openu.ac.il/registration/spring/pages/default.aspx',
 };
 
 function Source({ href, institution }: { href: string; institution: string }) {
@@ -30,7 +33,7 @@ export default function SemesterValidity() {
       </p>
       <table className={styles.semesterTable}>
         <caption>
-          סמסטר ב&apos; תשפ&quot;ז (מרץ <bdi dir="ltr">2027</bdi>)
+          סמסטר ב&apos; תשפ&quot;ז (פברואר–מרץ <bdi dir="ltr">2027</bdi>)
         </caption>
         <thead>
           <tr>
@@ -89,6 +92,54 @@ export default function SemesterValidity() {
             <td />
             <td data-label="מקור">
               <Source href={sources.huji} institution="האוניברסיטה העברית" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">אוניברסיטת תל אביב</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">1.11.2026</bdi>
+            </td>
+            <td data-label="סיום הרשמה רגילה">התוכניות רשאיות לסגור את ההרשמה ללא הודעה מוקדמת.</td>
+            <td />
+            <td />
+            <td data-label="מקור">
+              <Source href={sources.tauSpring} institution="אוניברסיטת תל אביב" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">אוניברסיטת בן־גוריון</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">3.1.2027</bdi>
+            </td>
+            <td />
+            <td />
+            <td data-label="תחילת הסמסטר">
+              <bdi dir="ltr">28.2.2027</bdi>
+            </td>
+            <td data-label="מקור">
+              <Source href={sources.bguSpring} institution="אוניברסיטת בן־גוריון" />
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">האוניברסיטה הפתוחה</th>
+            <td data-label="פתיחת הרשמה">
+              <bdi dir="ltr">1.11.2026</bdi>
+            </td>
+            <td data-label="סיום הרשמה רגילה">
+              <bdi dir="ltr">29.12.2026</bdi>
+              <small>
+                הרשמה מאוחרת: <bdi dir="ltr">30.12.2026–12.2.2027</bdi>
+              </small>
+              <small>
+                הרשמה עד <bdi dir="ltr">5.3.2027</bdi> תתאפשר על בסיס מקום פנוי בקבוצת הלימוד.
+              </small>
+            </td>
+            <td />
+            <td data-label="תחילת הסמסטר">
+              <bdi dir="ltr">7.3.2027</bdi>
+            </td>
+            <td data-label="מקור">
+              <Source href={sources.openuSpring} institution="האוניברסיטה הפתוחה" />
             </td>
           </tr>
         </tbody>
