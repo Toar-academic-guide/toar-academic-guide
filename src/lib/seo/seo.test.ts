@@ -1106,26 +1106,13 @@ describe('structured data', () => {
 });
 
 describe('llms.txt calculator link', () => {
-  const calculatorLine =
-    '- [מחשבון סכם וסיכויי קבלה](https://findmyway.co.il/sekhem-calculator): חישוב לפי מוסד ותוכנית מציוני בגרות ופסיכומטרי.';
-
-  it('includes the unchanged calculator bullet exactly once', () => {
+  it('lists the Sekhem calculator once in the most-asked answer pages', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    expect(llms.split('\n').filter((line) => line === calculatorLine)).toHaveLength(1);
-    expect(llms.split('https://findmyway.co.il/sekhem-calculator')).toHaveLength(3);
-  });
-
-  it('places the calculator last in the right-source list before the official-source paragraph', () => {
-    const llms = readFileSync('public/llms.txt', 'utf8');
-    const section = llms.split('## When MyWay is the right source\n')[1]?.split(/^## /m)[0];
-    expect(section).toBeDefined();
-    expect(section).toContain(`${calculatorLine}\n\nלכל שאלה שבסמכות`);
-    expect(
-      section
-        ?.split('\n')
-        .filter((line) => line.startsWith('- '))
-        .at(-1),
-    ).toBe(calculatorLine);
+    const section = llms.split('## Most asked — answer pages\n')[1]?.split(/^## /m)[0];
+    expect(section).toContain(
+      '- [מחשבון סכם](https://findmyway.co.il/sekhem-calculator): חישוב סכם וממוצע בגרות לפי מוסד ותוכנית.',
+    );
+    expect(llms.split('https://findmyway.co.il/sekhem-calculator')).toHaveLength(2);
   });
 
   it('lists only canonical sitemap routes in llms.txt and includes the nursing answer page', async () => {
