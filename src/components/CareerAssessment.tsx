@@ -312,8 +312,8 @@ export default function CareerAssessment({ initialDraft, onProgressChange, onCom
         {/* Not enough answers warning (on last screen) */}
         {isLastScreen && !hasEnough && (
           <div className="mb-4 rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-center text-sm text-amber-800">
-            ענית על {answeredCount} שאלות מתוך {MIN_ANSWERED_ITEMS} מינימום. חזור/חזרי אחורה
-            וענה/ענו על עוד שאלות כדי לקבל המלצות מדויקות.
+            עניתם על {answeredCount} שאלות. כדי לקבל המלצות, חזרו וענו על עוד שאלות עד שתגיעו ל־
+            {MIN_ANSWERED_ITEMS} תשובות לפחות.
           </div>
         )}
 
@@ -381,7 +381,7 @@ function MultiSelectScreen({
     <div>
       <h3 className="mb-2 text-lg font-semibold text-slate-800">{question.prompt}</h3>
       <p className="mb-5 text-sm text-slate-400">
-        {isSingleSelect ? 'בחר/י אפשרות אחת' : `בחר/י עד ${question.maxSelect} אפשרויות`}
+        {isSingleSelect ? 'בחרו אפשרות אחת' : `בחרו עד ${question.maxSelect} אפשרויות`}
       </p>
       <div className="flex flex-col gap-2.5">
         {question.options.map((option) => {
@@ -599,7 +599,7 @@ function ValueSliderScreen({
   return (
     <div className="py-8">
       <h3 className="mb-8 text-center text-lg font-semibold text-slate-800">
-        כשאת/ה חושב/ת על הקריירה שלך, מה מרגיש לך יותר חשוב?
+        כשאתם חושבים על הקריירה שלכם, מה מרגיש לכם יותר חשוב?
       </h3>
 
       <div className="flex items-stretch justify-between gap-4">

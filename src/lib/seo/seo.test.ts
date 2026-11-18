@@ -270,7 +270,9 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(448);
+    expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
+    expect(urls).toHaveLength(447);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -984,7 +986,6 @@ describe('structured data', () => {
     'bezalel_graphic_design',
     'afeka_cs',
     'haifa_nursing',
-    'cs',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
     const document = new DOMParser().parseFromString(

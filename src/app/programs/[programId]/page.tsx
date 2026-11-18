@@ -23,6 +23,13 @@ import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import { CsComparison, CsFaq, csFaqLd } from '@/components/seo/CsComparison';
+import {
+  csAnswer,
+  csComparedProgramIds,
+  csHubAdmissionSourceUrls,
+  csReichmanHubRequirements,
+} from '@/data/csComparison';
 import { PsychologyComparison, psychologyFaqLd } from '@/components/seo/PsychologyComparison';
 import { HaifaPsychologyOfek } from '@/components/seo/HaifaPsychologyOfek';
 import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
@@ -46,8 +53,18 @@ interface ProgramPageProps {
   params: Promise<{ programId: string }>;
 }
 
+const onoLegacyPageTitle = 'הלימודים בקריה האקדמית אונו';
+
 export async function generateMetadata({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'ono_medicine') {
+    return {
+      title: onoLegacyPageTitle,
+      description: 'מסלולי הלימוד בקריה האקדמית אונו מופיעים בעמוד המוסד.',
+      alternates: { canonical: '/programs/ono_medicine' },
+      robots: { index: false, follow: true },
+    };
+  }
   const metadata = await buildProgramMetadata(programId);
   if (programId === 'nursing') {
     const title = 'לימודי סיעוד: איפה לומדים ותנאי קבלה';
@@ -57,6 +74,15 @@ export async function generateMetadata({ params }: ProgramPageProps) {
       title,
       description,
       openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
+  if (programId === 'cs') {
+    const description =
+      'ספי הקבלה למדעי המחשב בטכניון, בתל אביב, בחיפה וברייכמן, כל סף בסולם של המוסד ועם קישור למקור. בדקו מסלולים נתמכים במחשבון MyWay.';
+    return {
+      ...metadata,
+      description,
+      openGraph: { ...metadata.openGraph, description },
     };
   }
   if (programId === 'law') {
@@ -109,6 +135,22 @@ function lawOutcomeSchema() {
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'ono_medicine') {
+    return (
+      <WayPageShell>
+        <main dir="rtl" className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6">
+          <h1 className="text-3xl font-bold">{onoLegacyPageTitle}</h1>
+          <p className="mt-3 text-[var(--text-body)]">העמוד הזה כבר לא מציג מסלול לימודים.</p>
+          <Link
+            href="/institutions/ono"
+            className="mt-4 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+          >
+            למסלולי הלימוד באונו
+          </Link>
+        </main>
+      </WayPageShell>
+    );
+  }
   const pageData = await getPublicProgramPageData(programId);
   const isNursingRelatedSubject = nursingRelatedSubjects.has(programId);
 
@@ -174,6 +216,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
+  const isCsHub = isGeneral && program.id === 'cs';
   const isPsychologyHub = isGeneral && program.id === 'psychology';
 
   return (
@@ -182,6 +225,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         data={[
           await programLd(data),
           programBreadcrumbLd(data),
+          ...(isCsHub ? [csFaqLd()] : []),
           ...(isPsychologyHub ? [psychologyFaqLd()] : []),
           ...(isNursingHub ? [nursingFaqLd()] : []),
           ...(programId === 'law' ? lawOutcomeSchema() : []),
@@ -194,7 +238,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         className="px-4 py-10 text-right text-slate-900 sm:px-6"
       >
         <section
-          className={`mx-auto flex flex-col gap-8 ${isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
+          className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
         >
           <Link
             href={ROUTES.home}
@@ -207,6 +251,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">
               <ProgramName name={program.name} />
             </h1>{' '}
+            {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
             <div className="mt-6 flex flex-wrap gap-3">
               {hasCalculator && (
@@ -217,7 +262,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
                   className="way-button-primary px-5 py-2.5 text-sm font-semibold transition"
                 >
-                  בדקו אם אתם מתקבלים{' '}
+                  {isCsHub ? 'בדקו מסלולים נתמכים' : 'בדקו אם אתם מתקבלים'}{' '}
                 </ProgramTrackedLink>
               )}
               {isGeneral && program.id !== 'medicine' && (
@@ -344,7 +389,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </div>
             </section>
           )}
-          {isGeneral && program.id === 'cs' && (
+          {isCsHub && <CsComparison />}
+          {isCsHub && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">מתלבטים בין מדעי המחשב למדעי הנתונים?</h2>
               <p className="mt-3 leading-7 text-slate-700">
@@ -436,15 +482,31 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     );
                   }
                   const source = institutionRequirementSources[institution.id];
-                  const officialLink = source.officialUrl && (
+                  const isCsReichman = isCsHub && institution.id === 'reichman';
+                  const displayRequirements = isCsReichman
+                    ? [...csReichmanHubRequirements]
+                    : source.requirements;
+                  const currentSourceUrl = isCsHub
+                    ? (csHubAdmissionSourceUrls[institution.id] ?? source.officialUrl)
+                    : source.officialUrl;
+                  const officialLinkHref =
+                    currentSourceUrl &&
+                    isCsHub &&
+                    ['tau', 'huji', 'technion'].includes(institution.id)
+                      ? `${currentSourceUrl}${currentSourceUrl.includes('?') ? '&' : '?'}utm_source=myway&utm_medium=referral`
+                      : currentSourceUrl;
+                  const checked = isCsReichman
+                    ? { date: '14.11.2026', sourceUrl: csHubAdmissionSourceUrls.reichman }
+                    : source.checked;
+                  const officialLink = officialLinkHref && (
                     <ProgramTrackedLink
                       event="institution_site_clicked"
                       programId={program.id}
                       institutionId={institution.id}
-                      href={source.officialUrl}
+                      href={officialLinkHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="font-semibold text-[#6554b8] underline"
+                      className={`font-semibold text-[#6554b8] underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
                     >
                       לאתר המוסד
                     </ProgramTrackedLink>
@@ -459,19 +521,19 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
                       )}
-                      {source.requirements.length === 0 && (
+                      {displayRequirements.length === 0 && (
                         <TechnionThresholdNotice
                           programId={program.id}
                           institutionId={institution.id}
                         />
                       )}
-                      {source.requirements.length > 0 ? (
+                      {displayRequirements.length > 0 ? (
                         <>
                           <RequirementTiles
                             program={source.program}
                             showCalculatorLink
                             institutionId={institution.id}
-                            requirements={source.requirements}
+                            requirements={displayRequirements}
                           />
                           {(source.fullDetailsPath ||
                             officialLink ||
@@ -527,7 +589,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {source.checked?.sourceUrl &&
+                      {checked?.sourceUrl &&
                         !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
                           <p
                             dir="rtl"
@@ -535,10 +597,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           >
                             {'מקור: '}
                             <a
-                              href={source.checked.sourceUrl}
+                              href={checked.sourceUrl}
                               target="_blank"
                               rel="noopener noreferrer"
-                              className="text-inherit no-underline hover:underline focus-visible:underline"
+                              className={`text-inherit no-underline hover:underline focus-visible:underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
                             >
                               אתר {institution.name}
                             </a>
@@ -555,6 +617,15 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               )}
             </section>
           )}{' '}
+          {csComparedProgramIds.has(program.id) && !isGeneral && (
+            <Link
+              href="/programs/cs#cs-thresholds"
+              className="inline-flex min-h-11 items-center self-start font-semibold text-[#6554b8] underline underline-offset-2"
+            >
+              השוו את ספי הקבלה למדעי המחשב בכל המוסדות
+            </Link>
+          )}{' '}
+          {isCsHub && <CsFaq />}
           {program.id === 'haifa_psychology' && <HaifaPsychologyOfek />}
           {lawBarOutcomes.rows.map((row) =>
             'programId' in row && row.programId === program.id ? (

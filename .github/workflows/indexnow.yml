@@ -26,21 +26,21 @@ jobs:
     env:
       INDEXNOW_KEY: ${{ secrets.INDEXNOW_KEY }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           sparse-checkout: scripts/indexnow.ts
           sparse-checkout-cone-mode: false
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: 24
-      - uses: actions/cache/restore@v4
+      - uses: actions/cache/restore@v6
         with:
           path: .indexnow
           key: indexnow-${{ github.run_id }}
           restore-keys: indexnow-
       - run: node scripts/indexnow.ts
       - if: success() && hashFiles('.indexnow/sitemap.json') != ''
-        uses: actions/cache/save@v4
+        uses: actions/cache/save@v6
         with:
           path: .indexnow
           key: indexnow-${{ github.run_id }}
