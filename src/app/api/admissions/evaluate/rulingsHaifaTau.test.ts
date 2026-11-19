@@ -111,7 +111,6 @@ const applicant = {
 it.each([
   ['tau_psychology', 'psychology', 685, 0],
   ['tau_law', 'law', 685, 0],
-  ['tau_ee', 'electrical_engineering', 695, 1],
   // Official getLastScore capture: hatama_nihul=688 at109.14/PET700,
   // 2026-10-29-bugs-first-official.json tauGraphqlCalls[2], captured2026-10-28T19:00:03.772687+00:00.
   // Accounting maps to hatama_nihul; the engineering-only reali10 flag does not select that field.
@@ -174,6 +173,28 @@ it.each([
     expect.soft(result.score).toBe(score);
   },
 );
+
+it('keeps the TAU EE result unknown even with a derived bagrut average and old captured source available', async () => {
+  expect(calculateTauBagrutAverage(record)).toMatchObject({
+    state: 'calculated',
+    average: 109.14,
+  });
+  const fetcher = vi.fn<typeof fetch>();
+  const { result } = await gapEvaluate(
+    gapPrograms.find((program) => program.id === 'tau_ee')!,
+    'tau',
+    applicant,
+    fetcher,
+  );
+  expect(result).toMatchObject({
+    kind: 'requirements_only',
+    capability: 'requirements_only',
+    decision: 'unknown',
+  });
+  expect(result.score).toBeUndefined();
+  expect(result.threshold).toBeUndefined();
+  expect(fetcher).not.toHaveBeenCalled();
+});
 
 function haifaAverageApplicants(haifaInformationSystemsTrack?: 'single_major') {
   const qualification = {

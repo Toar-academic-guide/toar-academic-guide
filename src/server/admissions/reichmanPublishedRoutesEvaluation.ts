@@ -14,14 +14,12 @@ import type {
 } from '@/types/admissionsEvaluation';
 import type { CatalogueInstitution } from '@/types/catalogue';
 
-// Last published thresholds: May 2026, captured 2026-05-19:
-// raw/official/runi_thresholds_tashpaz_18526.pdf (THRESHOLDS_URL below).
-// Checked 2026-10-25: PDF 404, raw/official/reichman/sweep38_thresholds-pdf-404_20261025T163004.txt.
-// Keep the table unchanged; expose the existing estimated mechanism and label.
+// Official תשפ״ז table, checked 2026-11-14. The CS bagrut-only math
+// requirement differs from the coordinated and psychometric routes.
 const programmes = {
   // https://www.runi.ac.il/schools/computer-science/undergraduate
   // raw/official/reichman/sweep38_school-computer-science_20261025T162855.txt: thresholds are dynamic.
-  reichman_cs: { coordinated: 705, bagrut: 108, psychometric: 720, coordinatedPsy: 660 },
+  reichman_cs: { coordinated: 705, bagrut: 104, psychometric: 720, coordinatedPsy: 660 },
   // https://www.runi.ac.il/schools/law/undergraduate
   // raw/official/reichman/sweep38_school-law_20261025T162857.txt: thresholds are dynamic.
   reichman_law: { coordinated: 650, bagrut: 100, psychometric: 700, coordinatedPsy: 610 },
@@ -36,7 +34,7 @@ const programmes = {
   reichman_psychology: { coordinated: 620, bagrut: 100, psychometric: 640, coordinatedPsy: 0 },
 } as const;
 
-const THRESHOLDS_URL = 'https://www.runi.ac.il/media/4tsb3m1v/ספי-קבלה-לתואר-ראשון-תשפז.pdf';
+const THRESHOLDS_URL = 'https://www.runi.ac.il/media/j1lp0sva/טבלת-ספים-לאתר-תשפז-281026.pdf';
 const CALCULATOR_URL = 'https://www.runi.ac.il/admissions/undergraduate/calculator';
 
 type Route = Gate & { label: string; score?: number; threshold: number; requirements: string };
@@ -172,10 +170,10 @@ export function evaluateReichmanPublishedRoutes({
       label: 'מסלול בגרות',
       score: input.bagrut,
       threshold: programme.bagrut,
-      requirements: `ממוצע בגרות ${programme.bagrut} לפחות${isCs ? ', מתמטיקה 5 יחידות בציון 85 לפחות, ו־5 יחידות בפיזיקה, כימיה, ביולוגיה או מדעי המחשב (לא תכנון מערכות) בציון 85 לפחות' : ''}`,
+      requirements: `ממוצע בגרות ${programme.bagrut} לפחות${isCs ? ', מתמטיקה 5 יחידות בציון 75 לפחות, ו־5 יחידות בפיזיקה, כימיה, ביולוגיה או מדעי המחשב (לא תכנון מערכות) בציון 85 לפחות' : ''}`,
       ...combine(
         minimum(input.bagrut, programme.bagrut, 'bagrut_average'),
-        isCs ? combine(math(85), science()) : routeGates(false),
+        isCs ? combine(math(75), science()) : routeGates(false),
       ),
     },
     {

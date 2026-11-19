@@ -1,4 +1,5 @@
 import * as contentRepair from '@/data/admissions/catalogueContentRepair';
+import { ISSUE_370_CORRECTIONS } from '@/data/admissions/issue370Corrections';
 import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringMathRequirements';
 import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
@@ -6,6 +7,7 @@ import { allPrograms } from '@/data/degrees';
 import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { vi } from 'vitest';
 
 vi.mock('server-only', () => ({}));
@@ -28,6 +30,68 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it.each(['tau_ee', 'ee', 'tau_datascience', 'datascience'])(
+    'keeps the reviewed TAU %s page and hub copy after loading stale database fields',
+    (id) => {
+      const seed = buildCatalogueSeed();
+      const stale = ['מתמטיקה: 5 יחידות בציון 80 לפחות, או 4 יחידות בציון 90 לפחות'];
+      const result = serializeProgramRow({
+        program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+        relations: seed.programInstitutions.filter(
+          (row) => row.programId === id,
+        ) as ProgramInstitutionRow[],
+        requirements: seed.admissionRequirements
+          .filter((row) => row.programId === id)
+          .map((row) =>
+            row.institutionId === 'tau'
+              ? { ...row, admissionRequirements: stale, specificAdmissionNotes: stale }
+              : row,
+          ) as AdmissionRequirementRow[],
+        thresholds: seed.admissionThresholds.filter(
+          (row) => row.programId === id,
+        ) as AdmissionThresholdRow[],
+        sourceUrls: [],
+        institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+      });
+      const detail = result.institutionDetails!.find(
+        (entry) => entry.institutionName === 'אוניברסיטת תל אביב',
+      )!;
+      const guidance = catalogueAdmissionRequirements(
+        detail.specificAdmissionNotes,
+        result.admissionRequirements,
+        id,
+      ).join(' ');
+      if (id === 'tau_ee' || id === 'ee') {
+        expect(guidance).toContain('5 יחידות בציון 90');
+        expect(guidance).toContain('4 יחידות בציון 95');
+        expect(guidance).not.toContain('5 יחידות בציון 80');
+        expect(guidance).not.toContain('4 יחידות בציון 90');
+      } else {
+        expect(guidance).toContain('5 יחידות בציון 80');
+        expect(guidance).not.toContain('4 יחידות בציון 85');
+      }
+    },
+  );
+
+  it('keeps a stored Ono legacy card unlisted without unlisting Ono nursing', () => {
+    const seed = buildCatalogueSeed();
+    for (const [id, isListed] of [
+      ['ono_medicine', false],
+      ['ono_nursing', true],
+    ] as const) {
+      const program = seed.programs.find((row) => row.id === id)!;
+      const result = serializeProgramRow({
+        program: { ...program, isListed: true } as ProgramRow,
+        relations: [{ programId: id, institutionId: 'ono' }] as ProgramInstitutionRow[],
+        requirements: [],
+        thresholds: [],
+        sourceUrls: [],
+        institutionsById: new Map(),
+      });
+      expect(result).toMatchObject({ id, isListed, linkedInstitutionIds: ['ono'] });
+    }
+  });
+
   it.each([
     'tau_me',
     'tau_ee',
@@ -73,9 +137,15 @@ describe('catalogue serializers', () => {
       institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
     });
     const detail = result.institutionDetails![0];
-    expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
     expect(detail.specificAdmissionNotes).not.toContain(staleNotes[0]);
-    expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    const issue370Row = ISSUE_370_CORRECTIONS.find((row) => row.programId === id);
+    if (issue370Row) {
+      expect(detail.specificAdmissionNotes).not.toContain(staleNotes[1]);
+      expect(detail.specificAdmissionNotes).toEqual(expect.arrayContaining(issue370Row.notes));
+    } else {
+      expect(detail.specificAdmissionNotes.join(' ')).toContain('4 יחידות');
+      expect(detail.specificAdmissionNotes).toContain(staleNotes[1]);
+    }
     expect(detail.admissionFacts).toContainEqual(
       expect.objectContaining({
         field: 'math_units',
@@ -365,6 +435,7 @@ describe('catalogue serializers', () => {
       specificAdmissionNotes: [
         'סכם 700 לפחות (תשפ״ז); ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.',
         'מתמטיקה: 4 יחידות בציון 90 לפחות או 5 יחידות בציון 75 לפחות.',
+        'מסלול אופק ללא פסיכומטרי, החל מתשפ״ז: ממוצע בגרות משוקלל 105 לפחות, מתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 75 לפחות, ועמידה בדרישות השפה. נדרשים קורות חיים; הקבלה מותנית בהחלטת ועדת החוג ואינה מובטחת.',
         'נדרשת אנגלית ברמת טרום בסיסי לפחות ועברית 120 ביעלנט או במבחן הסיווג של האוניברסיטה, או השלמת קורס עברית באקדמיה במכינה.',
       ],
       programUrl: 'https://admissions.haifa.ac.il/computer-information-science/program/3210/',

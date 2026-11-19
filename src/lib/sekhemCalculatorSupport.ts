@@ -10,6 +10,7 @@ import {
   getFormulaPairVerificationEntry,
 } from '@/data/admissions/formulaBackedVerificationLedger';
 import { isBiuPublishedRoutePair } from '@/data/admissions/biuPublishedRoutes';
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/issue370Corrections';
 import { isBatchBManualProgram } from '@/server/admissions/batchBManualPathEvaluation';
 import { loadPublicCatalogue } from './publicCataloguePages';
 import { listCataloguePrograms } from '@/server/catalogue/queries';
@@ -96,6 +97,8 @@ export function sekhemPairSupport(
     canonicalProgramId(program.id) !== program.id ||
     isBatchCUnsupportedProgramId(program.id, institutionId)
   )
+    return undefined;
+  if (ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${program.id}__${institutionId}`))
     return undefined;
   if (isBatchBManualProgram(program.id, institutionId)) return 'gate';
   if (isMedicineAcademicPair(program.id, institutionId)) return 'score';

@@ -146,7 +146,7 @@ describe.each([false, true])('TAU architecture requirements (maths entered: %s)'
     );
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
     render(<StudyJourney initialStep="detail" />);
-    const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     const section = table.closest('section')!;
     expect(within(section).getAllByRole('heading', { level: 2, name: 'תנאי קבלה' })).toHaveLength(
       1,

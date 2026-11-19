@@ -40,7 +40,6 @@ export const psychologyComparisonRows: readonly PsychologyComparisonRow[] = [
     scale: 'ציון התאמה של אוניברסיטת תל אביב',
     officialUrl: tau,
     checkedDate: '14.11.2026',
-    note: 'האתר הרשמי מציין שהמידע נכון ל־11.11.2026.',
   },
   {
     institution: 'האוניברסיטה העברית בירושלים',
@@ -55,7 +54,12 @@ export const psychologyComparisonRows: readonly PsychologyComparisonRow[] = [
         url: hujiAge30,
       },
     ],
-    bagrut: [],
+    bagrut: [
+      {
+        text: 'ללא פסיכומטרי: ממוצע בגרות 113 לפחות, או 109.5 לראויים לקידום. נדרשת עמידה גם בתנאי הקבלה הנוספים של החוג.',
+        url: 'https://info.huji.ac.il/reception-channels/KabalaYeshira_Bagrut',
+      },
+    ],
     scale: 'ציון פסיכומטרי',
     officialUrl: huji,
     checkedDate: '14.11.2026',
@@ -192,7 +196,7 @@ export const psychologyFaq = [
   {
     question: 'מה סף הקבלה לפסיכולוגיה באוניברסיטת תל אביב בתשפ״ז?',
     answer:
-      'לפי עמוד הקבלה של אוניברסיטת תל אביב לסמסטר א׳ תשפ״ז, בציון התאמה סף הקבלה הוא 660 וסף הדחייה הוא 659. האתר מציין שהמידע נכון ל־11.11.2026.',
+      'לפי עמוד הקבלה של אוניברסיטת תל אביב לסמסטר א׳ תשפ״ז, בציון התאמה סף הקבלה הוא 660 וסף הדחייה הוא 659.',
   },
   {
     question: 'האם תואר ראשון בפסיכולוגיה מסמיך לעסוק בפסיכולוגיה?',

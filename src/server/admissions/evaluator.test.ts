@@ -754,15 +754,16 @@ describe('evaluateAdmissionsForProgram', () => {
   );
 
   it.each(
-    routingOfficial.tau.flatMap((capture) => {
-      const id = capture.pair.split('__')[0];
-      const aliases: Record<string, string[]> = {
-        ee: ['ee', 'tau_ee'],
-        me: ['me', 'tau_me'],
-        occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
-      };
-      return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
-    }),
+    routingOfficial.tau
+      .filter((capture) => capture.pair !== 'ee__tau')
+      .flatMap((capture) => {
+        const id = capture.pair.split('__')[0];
+        const aliases: Record<string, string[]> = {
+          me: ['me', 'tau_me'],
+          occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
+        };
+        return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
+      }),
   )(
     'replays $degreeId through the evaluator against the captured official response',
     async ({ degreeId, capture }) => {
@@ -802,9 +803,50 @@ describe('evaluateAdmissionsForProgram', () => {
       expect(fetcher).toHaveBeenCalledTimes(2);
     },
   );
+  it.each(['ee', 'tau_ee', 'datascience', 'tau_datascience'])(
+    'withholds the unreviewed TAU %s evaluator route even for complete applicant scores',
+    async (degreeId) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((entry) => entry.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          psychometric: 730,
+          bagrut: 115,
+          extraInputs: {
+            psychometricEnglish: 110,
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 82 },
+                { subjectId: 'physics', units: 4, grade: 80 },
+              ],
+            },
+          },
+        },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+        freshnessStatesBySourceId: qualifiedFreshnessStates(program),
+      });
+      const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+      expect(tau).toMatchObject({
+        capability: 'requirements_only',
+        kind: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
+      });
+      expect(tau?.score).toBeUndefined();
+      expect(tau?.threshold).toBeUndefined();
+      expect(tau?.scoreAssessment).toBeUndefined();
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
   it.each([
-    'ee',
-    'tau_ee',
     'me',
     'tau_me',
     'occupational_therapy',
@@ -2074,49 +2116,15 @@ describe('evaluateAdmissionsForProgram', () => {
   });
 
   it('does not call the TAU adapter while required exact inputs are missing', async () => {
-    const fetcher = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              getLastScore: {
-                body: JSON.stringify({
-                  hatama_handasa: 712,
-                }),
-              },
-            },
-          }),
-          { status: 200 },
-        ),
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              getPrograms: {
-                total: 1,
-                results: [
-                  {
-                    field_plain_id_programs: ['056011050000'],
-                    field_this_year_receipt_threshol: 700,
-                    field_this_year_rejection_thresh: 670,
-                  },
-                ],
-              },
-            },
-          }),
-          { status: 200 },
-        ),
-      );
+    const fetcher = vi.fn<typeof fetch>();
 
     const report = await evaluateAdmissionsForProgram({
       input: {
-        degreeId: 'tau_datascience',
+        degreeId: 'nursing',
         psychometric: 700,
         bagrut: 110,
       },
-      program: tauDataScience,
+      program: tauNursing,
       institutions,
       fetcher,
     });
@@ -2127,12 +2135,12 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'tau',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+        requiredInputs: ['psychometric_english'],
       }),
     );
   });
 
-  it('returns the reviewed TAU score and verdict with current proof and complete inputs', async () => {
+  it('does not replay the old high-tech-plus proof for dedicated TAU data science', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -2193,23 +2201,18 @@ describe('evaluateAdmissionsForProgram', () => {
       now: new Date('2026-07-25T21:00:00Z'),
     });
 
-    expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
-      variables: { scoresData: { reali10: 1 } },
+    expect(fetcher).not.toHaveBeenCalled();
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({
+      kind: 'requirements_only',
+      capability: 'requirements_only',
+      decision: 'unknown',
     });
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'accepted',
-        score: 664,
-        threshold: 652,
-      }),
-    );
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
-  it('returns an exact below verdict for a failed TAU minimum gate without a live call', async () => {
+  it('does not reject dedicated TAU data science using the old high-tech-plus floor', async () => {
     const fetcher = vi.fn<typeof fetch>();
     const report = await evaluateAdmissionsForProgram({
       input: {
@@ -2233,15 +2236,14 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'below',
-        explanation: expect.stringContaining('פסיכומטרי כללי 620'),
-      }),
-    );
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({
+      kind: 'requirements_only',
+      capability: 'requirements_only',
+      decision: 'unknown',
+    });
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
   it('returns TAU Nursing eligibility for manual assessment, never final acceptance', async () => {
@@ -2461,7 +2463,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not spend live-call budget on a TAU pair with missing exact inputs', async () => {
+  it('does not spend live-call budget on a withheld TAU pair in a multi-institution request', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -2513,14 +2515,10 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        capability: 'needs_input',
-        decision: 'unknown',
-        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
-      }),
-    );
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({ capability: 'requirements_only', decision: 'unknown' });
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
   it('includes dynamic admissions criteria (interview, portfolio, no bagrut, no psychometric) from Monday evidence in evaluator Hebrew explanation', async () => {
@@ -5151,8 +5149,8 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
       // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
       expect(result).toMatchObject({ decision: 'unknown', kind: 'needs_input' });
     else {
-      expect(result.kind).toBe('manual_gate');
-      expect(result.explanation).toContain('ראיון');
+      expect(result.kind).toBe('requirements_only');
+      expect(result.explanation).not.toContain('ראיון');
     }
   },
 );

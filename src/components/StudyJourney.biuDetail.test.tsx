@@ -65,7 +65,7 @@ async function detail(psychometric = 649, programId = 'biu_ee', quantitative: nu
     }),
   );
   const rendered = render(<StudyJourney initialStep="detail" />);
-  const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+  const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
   return {
     ...rendered,
     table,
