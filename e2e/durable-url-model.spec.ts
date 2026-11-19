@@ -116,14 +116,12 @@ test.describe('durable URL model', () => {
         [2, '700 ומעלה; טווח המתנה 680–699'],
         [5, 'ממוצע בגרות 104 ומעלה'],
       ] as const) {
-        const link = page
-          .locator('#cs-thresholds tbody tr')
-          .nth(index)
-          .locator('td')
-          .nth(1)
-          .locator('a');
-        expect(await link.evaluate((element) => (element as HTMLElement).innerText)).toBe(value);
-        expect((await link.boundingBox())?.height).toBeGreaterThanOrEqual(44);
+        const cell = page.locator('#cs-thresholds tbody tr').nth(index).locator('td').nth(1);
+        const valueText = cell.locator('span').last();
+        expect(await valueText.evaluate((element) => (element as HTMLElement).innerText)).toBe(
+          value,
+        );
+        await expect(cell.locator('a')).toHaveCount(0);
       }
     });
   }

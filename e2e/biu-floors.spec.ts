@@ -107,7 +107,7 @@ const cases = [
     quantitative: 132,
     mathGrade: 90,
     decision: 'unknown',
-    verdict: 'מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי',
+    verdict: 'נתונים סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי',
   },
   {
     id: 'ee-below',
@@ -219,7 +219,7 @@ for (const width of [1280, 390])
       expect(summary).not.toMatch(/\n|\.\s+\S/);
       await expect(explanation).toHaveCSS('text-align', 'right');
       if (profile.id === 'ee-conflicting') {
-        await expect(table).toContainText('מקורות סותרים');
+        await expect(table).toContainText('נתונים סותרים');
         await expect(table).toContainText('בדף הפקולטה באנגלית ובדף מועמדי חו"ל מופיע 650');
         await expect(explanation).not.toContainText('אלא אם');
       }

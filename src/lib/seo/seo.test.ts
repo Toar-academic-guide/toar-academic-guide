@@ -1180,7 +1180,7 @@ describe('visible source labels', () => {
     '/programs': () => import('@/app/programs/page'),
   };
 
-  it('renders no מקור on any sitemap page', async () => {
+  it('renders no source labels or page citations on any sitemap page', async () => {
     const hits: string[] = [];
     for (const { url } of await sitemap()) {
       const path = new URL(url).pathname;
@@ -1218,9 +1218,11 @@ describe('visible source labels', () => {
             path === '/' ? createElement(AuthProvider, null, element) : element,
           )}`;
         }
-        const index = markup.indexOf('מקור');
-        if (index >= 0)
-          hits.push(`${path} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+        for (const needle of ['מקור', 'עמ׳ ', 'מידעון']) {
+          const index = markup.indexOf(needle);
+          if (index >= 0)
+            hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+        }
       } catch (error) {
         hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
       }
