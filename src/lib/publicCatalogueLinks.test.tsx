@@ -55,6 +55,25 @@ function paths(markup: string): string[] {
 }
 
 describe('server-rendered crawl paths', () => {
+  it('includes the prep answer and seven-row comparison in initial HTML', async () => {
+    const html = await ssr(await ProgramPage({ params: Promise.resolve({ programId: 'prep' }) }));
+    expect(html).toContain('מכינה קדם־אקדמית יכולה לפתוח דרך לתואר');
+    expect(html).toContain('<table');
+    expect(html.match(/<tr/g) ?? []).toHaveLength(8);
+    for (const id of [
+      'huji_prep',
+      'biu_prep',
+      'braude_prep',
+      'ruppin_prep',
+      'sapir_prep',
+      'telhai_prep',
+      'sce_prep',
+    ]) {
+      expect(html).toContain(`/programs/${id}`);
+    }
+    expect(html).not.toContain('sapir.ac.il/ba/law');
+  });
+
   it.each([
     ['achva', 'achva_psychology', 'psychology'],
     ['beit_berl', 'beit_berl_early_childhood', 'early_childhood'],

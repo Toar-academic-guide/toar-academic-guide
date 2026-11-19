@@ -272,7 +272,9 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
     for (const id of ['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork'])
       expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
-    expect(urls).toHaveLength(446);
+    expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
+    expect(urls).toHaveLength(445);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -501,6 +503,11 @@ describe('metadata', () => {
         await ProgramPage({ params: Promise.resolve({ programId: id }) }),
       );
       for (const institution of page.institutions) {
+        if (id === 'nursing' && institution.id === 'telhai') {
+          expect(markup).not.toContain('/programs/telhai_nursing');
+          expect(markup).not.toContain('/institutions/telhai');
+          continue;
+        }
         const specific = programs.find(
           (program) =>
             program.isListed !== false &&
@@ -980,8 +987,7 @@ describe('structured data', () => {
     'huji_engineering',
     'bezalel_graphic_design',
     'afeka_cs',
-    'nursing',
-    'cs',
+    'haifa_nursing',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
     const document = new DOMParser().parseFromString(
@@ -1103,26 +1109,34 @@ describe('structured data', () => {
 });
 
 describe('llms.txt calculator link', () => {
-  const calculatorLine =
-    '- [מחשבון סכם וסיכויי קבלה](https://findmyway.co.il/sekhem-calculator): חישוב לפי מוסד ותוכנית מציוני בגרות ופסיכומטרי.';
-
-  it('includes the unchanged calculator bullet exactly once', () => {
+  it('lists the Sekhem calculator once in the most-asked answer pages', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    expect(llms.split('\n').filter((line) => line === calculatorLine)).toHaveLength(1);
+    const section = llms.split('## Most asked — answer pages\n')[1]?.split(/^## /m)[0];
+    expect(section).toContain(
+      '- [מחשבון סכם](https://findmyway.co.il/sekhem-calculator): חישוב סכם וממוצע בגרות לפי מוסד ותוכנית.',
+    );
     expect(llms.split('https://findmyway.co.il/sekhem-calculator')).toHaveLength(2);
   });
 
-  it('places the calculator last in the right-source list before the official-source paragraph', () => {
+  it('lists only canonical sitemap routes in llms.txt and includes the nursing answer page', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const section = llms.split('## When MyWay is the right source\n')[1]?.split(/^## /m)[0];
-    expect(section).toBeDefined();
-    expect(section).toContain(`${calculatorLine}\n\nלכל שאלה שבסמכות`);
-    expect(
-      section
-        ?.split('\n')
-        .filter((line) => line.startsWith('- '))
-        .at(-1),
-    ).toBe(calculatorLine);
+    const mostAsked = llms.split('## Most asked — answer pages\n')[1]?.split(/^## /m)[0];
+    expect(mostAsked).toContain('https://findmyway.co.il/programs/nursing)');
+    expect(llms).not.toContain('המקור והתאריך');
+    const urls = [...llms.matchAll(/\((https:\/\/findmyway\.co\.il[^)\s]*)\)/g)].map(
+      ([, url]) => new URL(url),
+    );
+    expect(urls.length).toBeGreaterThan(18);
+    const sitemapUrls = new Set((await sitemap()).map(({ url }) => url));
+    for (const url of urls) {
+      expect(sitemapUrls.has(`${url.origin}${url.pathname}`), url.href).toBe(true);
+      if (url.pathname.startsWith('/programs/')) {
+        const id = url.pathname.slice('/programs/'.length);
+        expect(canonicalProgramId(id)).toBe(id);
+        expect(PROGRAM_RETIREMENT_REDIRECTS[id]).toBeUndefined();
+        expect(['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork']).not.toContain(id);
+      }
+    }
   });
 
   it('ends the business-model section without a last-updated stamp', () => {

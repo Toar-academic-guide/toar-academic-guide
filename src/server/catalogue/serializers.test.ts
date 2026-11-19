@@ -73,6 +73,25 @@ describe('catalogue serializers', () => {
     },
   );
 
+  it('keeps a stored Ono legacy card unlisted without unlisting Ono nursing', () => {
+    const seed = buildCatalogueSeed();
+    for (const [id, isListed] of [
+      ['ono_medicine', false],
+      ['ono_nursing', true],
+    ] as const) {
+      const program = seed.programs.find((row) => row.id === id)!;
+      const result = serializeProgramRow({
+        program: { ...program, isListed: true } as ProgramRow,
+        relations: [{ programId: id, institutionId: 'ono' }] as ProgramInstitutionRow[],
+        requirements: [],
+        thresholds: [],
+        sourceUrls: [],
+        institutionsById: new Map(),
+      });
+      expect(result).toMatchObject({ id, isListed, linkedInstitutionIds: ['ono'] });
+    }
+  });
+
   it.each([
     'tau_me',
     'tau_ee',

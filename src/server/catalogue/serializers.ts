@@ -246,7 +246,7 @@ export function serializeProgramRow(args: {
       (program.id === 'ruppin_marine_bio' ? staticProgram?.name : undefined) ??
       DANON_PROGRAM_NAMES[program.id] ??
       program.name,
-    isListed: program.isListed,
+    isListed: program.id === 'ono_medicine' ? false : program.isListed,
     institution: program.institutionName,
     institutionId: (program.institutionId
       ? canonicalInstitutionId(program.institutionId)
