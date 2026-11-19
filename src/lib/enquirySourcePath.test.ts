@@ -19,6 +19,7 @@ describe('enquiry source route guard', () => {
     ['/psychometric-accommodations?from=guide', '/psychometric-accommodations'],
     ['/calculator', '/calculator'],
     ['/app/calculator#inquiry', '/app/calculator'],
+    ['/bagrut-dates?ref=prep', '/bagrut-dates'],
     ['/#inquiry', '/'],
   ])('normalizes %s to %s', (input, expected) => {
     expect(enquirySourcePath(input)).toBe(expected);

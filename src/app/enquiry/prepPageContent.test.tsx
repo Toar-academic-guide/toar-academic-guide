@@ -72,12 +72,13 @@ describe('server-rendered preparation reading content', () => {
     const links = [...reading.querySelectorAll('a')];
     expect(links.map((link) => link.getAttribute('href'))).toEqual([
       '/psychometric-dates',
+      '/bagrut-dates',
       '/sekhem-calculator',
       'https://www.nite.org.il/two-domain-psychometric-entrance-test/format/',
       'https://campus.gov.il/course/mse-gov-psychometry-he/',
     ]);
-    for (const link of links.slice(0, 2)) expect(link.hasAttribute('target')).toBe(false);
-    for (const link of links.slice(2)) {
+    for (const link of links.slice(0, 3)) expect(link.hasAttribute('target')).toBe(false);
+    for (const link of links.slice(3)) {
       expect(link.target).toBe('_blank');
       expect(link.rel).toBe('noopener noreferrer');
       expect(link.querySelector('[data-prep-new-tab]')?.textContent).toBe(' (נפתח בכרטיסייה חדשה)');
