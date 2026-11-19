@@ -903,7 +903,7 @@ for (const record of mondayAdmissionsEvidence) {
                   : ('generic' as const),
               confidence: record.confidence,
               url: primarySourceUrl,
-              title: `מקור מוסדי עבור ${publicInstitutionName}`,
+              title: `אתר ${publicInstitutionName}`,
               notes: `Institutional evidence item ${record.itemId}. ${record.nextAction}`,
             },
           ]

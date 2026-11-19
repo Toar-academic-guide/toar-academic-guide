@@ -1,6 +1,6 @@
 import styles from './page.module.css';
 
-const sources = {
+export const semesterValiditySources = {
   technionDates: 'https://admissions.technion.ac.il/registeration-dates/',
   technionValidity: 'https://admissions.technion.ac.il/technion_psychometri/',
   haifa: 'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
@@ -11,25 +11,15 @@ const sources = {
   openuSpring: 'https://www.openu.ac.il/registration/spring/pages/default.aspx',
 };
 
-function Source({ href, institution }: { href: string; institution: string }) {
-  return (
-    <>
-      <a href={href} aria-label={`מידע באתר ${institution}`}>
-        באתר המוסד
-      </a>
-    </>
-  );
-}
-
 export default function SemesterValidity() {
   return (
     <section className={styles.semesters} aria-labelledby="semester-validity">
       <h2 id="semester-validity">איזה מועד פסיכומטרי נחשב לאיזה סמסטר</h2>
       <p>
         בחרתם מועד פסיכומטרי ורוצים לדעת איזה סמסטר הוא פותח? בטבלאות כאן תמצאו, מוסד אחרי מוסד, מתי
-        נפתחת ההרשמה ומה המועד האחרון התקף שפורסם, עם קישור למקור הרשמי בכל שורה. ציוני דצמבר{' '}
-        <bdi dir="ltr">2026</bdi> צפויים ב-<bdi dir="ltr">20.1.2027</bdi>, ובטכניון ההרשמה הרגילה
-        לסמסטר ב&apos; נסגרת ב-<bdi dir="ltr">28.1.2027</bdi>.
+        נפתחת ההרשמה ומה המועד האחרון התקף שפורסם. ציוני דצמבר <bdi dir="ltr">2026</bdi> צפויים ב-
+        <bdi dir="ltr">20.1.2027</bdi>, ובטכניון ההרשמה הרגילה לסמסטר ב&apos; נסגרת ב-
+        <bdi dir="ltr">28.1.2027</bdi>.
       </p>
       <table className={styles.semesterTable}>
         <caption>
@@ -42,7 +32,6 @@ export default function SemesterValidity() {
             <th scope="col">סיום הרשמה רגילה</th>
             <th scope="col">מועד פסיכומטרי אחרון תקף</th>
             <th scope="col">תחילת הסמסטר</th>
-            <th scope="col">מקור</th>
           </tr>
         </thead>
         <tbody>
@@ -66,9 +55,6 @@ export default function SemesterValidity() {
             <td data-label="תחילת הסמסטר">
               <bdi dir="ltr">24.3.2027</bdi>
             </td>
-            <td data-label="מקור">
-              <Source href={sources.technionDates} institution="הטכניון" />
-            </td>
           </tr>
           <tr>
             <th scope="row">אוניברסיטת חיפה</th>
@@ -78,9 +64,6 @@ export default function SemesterValidity() {
             <td />
             <td />
             <td />
-            <td data-label="מקור">
-              <Source href={sources.haifa} institution="אוניברסיטת חיפה" />
-            </td>
           </tr>
           <tr>
             <th scope="row">האוניברסיטה העברית</th>
@@ -90,9 +73,6 @@ export default function SemesterValidity() {
             <td />
             <td />
             <td />
-            <td data-label="מקור">
-              <Source href={sources.huji} institution="האוניברסיטה העברית" />
-            </td>
           </tr>
           <tr>
             <th scope="row">אוניברסיטת תל אביב</th>
@@ -102,9 +82,6 @@ export default function SemesterValidity() {
             <td data-label="סיום הרשמה רגילה">התוכניות רשאיות לסגור את ההרשמה ללא הודעה מוקדמת.</td>
             <td />
             <td />
-            <td data-label="מקור">
-              <Source href={sources.tauSpring} institution="אוניברסיטת תל אביב" />
-            </td>
           </tr>
           <tr>
             <th scope="row">אוניברסיטת בן־גוריון</th>
@@ -115,9 +92,6 @@ export default function SemesterValidity() {
             <td />
             <td data-label="תחילת הסמסטר">
               <bdi dir="ltr">28.2.2027</bdi>
-            </td>
-            <td data-label="מקור">
-              <Source href={sources.bguSpring} institution="אוניברסיטת בן־גוריון" />
             </td>
           </tr>
           <tr>
@@ -138,9 +112,6 @@ export default function SemesterValidity() {
             <td data-label="תחילת הסמסטר">
               <bdi dir="ltr">7.3.2027</bdi>
             </td>
-            <td data-label="מקור">
-              <Source href={sources.openuSpring} institution="האוניברסיטה הפתוחה" />
-            </td>
           </tr>
         </tbody>
       </table>
@@ -152,7 +123,6 @@ export default function SemesterValidity() {
           <tr>
             <th scope="col">מוסד</th>
             <th scope="col">המידע שפורסם</th>
-            <th scope="col">מקור</th>
           </tr>
         </thead>
         <tbody>
@@ -166,9 +136,6 @@ export default function SemesterValidity() {
                 <li>ספטמבר אינו תקף לסמסטר א&apos;.</li>
               </ul>
             </td>
-            <td data-label="מקור">
-              <Source href={sources.technionValidity} institution="הטכניון" />
-            </td>
           </tr>
           <tr>
             <th scope="row">אוניברסיטת בן־גוריון</th>
@@ -176,17 +143,11 @@ export default function SemesterValidity() {
               פתיחת הרשמה: <bdi dir="ltr">31.1.2027</bdi>. שנת הלימודים מתחילה באוקטובר{' '}
               <bdi dir="ltr">2027</bdi>.
             </td>
-            <td data-label="מקור">
-              <Source href={sources.bgu} institution="אוניברסיטת בן־גוריון" />
-            </td>
           </tr>
           <tr>
             <th scope="row">בית הספר לעיצוב, אוניברסיטת חיפה</th>
             <td data-label="המידע שפורסם">
               פתיחת הרשמה לשנת תשפ&quot;ח: <bdi dir="ltr">01.11.2026</bdi>.
-            </td>
-            <td data-label="מקור">
-              <Source href={sources.haifa} institution="אוניברסיטת חיפה" />
             </td>
           </tr>
         </tbody>

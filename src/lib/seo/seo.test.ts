@@ -3,9 +3,17 @@
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
-import type { ReactNode } from 'react';
-import InstitutionPage from '@/app/institutions/[institutionId]/page';
-import ProgramPage from '@/app/programs/[programId]/page';
+import { AuthProvider } from '@/context/AuthContext';
+import { createElement, type ReactNode } from 'react';
+import PrivacyPage from '@/app/privacy/page';
+import InstitutionPage, {
+  generateMetadata as generateInstitutionMetadata,
+} from '@/app/institutions/[institutionId]/page';
+import AcademicProfileForm from '@/components/AcademicProfileForm';
+import StudyJourney, { journeySteps } from '@/components/StudyJourney';
+import ProgramPage, {
+  generateMetadata as generateProgramMetadata,
+} from '@/app/programs/[programId]/page';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import robots from '@/app/robots';
@@ -45,6 +53,15 @@ import {
 } from './jsonLd';
 
 vi.mock('server-only', () => ({}));
+vi.mock('next/navigation', async () => {
+  const actual = await vi.importActual<typeof import('next/navigation')>('next/navigation');
+  return {
+    ...actual,
+    useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+    usePathname: () => '/',
+    useSearchParams: () => new URLSearchParams(),
+  };
+});
 vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: ReactNode }) => children,
 }));
@@ -949,16 +966,9 @@ describe('structured data', () => {
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
       }
-      const checkedText = source.checked?.sourceUrl
-        ? `מקור: אתר ${data.institutions[0].name}`
-        : undefined;
-      for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
-        for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
-          expect(visibleText).toContain(number);
-        }
-      }
-      if (checkedText) {
-        expect(visibleText).toContain(checkedText);
+      expect(visibleText).not.toContain('מקור');
+      for (const number of source.requirements.join(' ').match(/\d+(?:\.\d+)?/g) ?? []) {
+        expect(visibleText).toContain(number);
       }
     },
   );
@@ -975,7 +985,7 @@ describe('structured data', () => {
       );
       const text = document.querySelector('main')!.textContent!;
       expect(text).not.toMatch(/עודכן לאחרונה:/);
-      expect(text.match(/מקור: אתר/g) ?? []).toHaveLength(1);
+      expect(text).not.toContain('מקור');
     },
   );
 
@@ -1157,3 +1167,141 @@ describe('llms.txt calculator link', () => {
     expect(llms.trimEnd().endsWith(business)).toBe(true);
   });
 });
+
+const ALLOWED_EXTERNAL_LABELS = new Set([
+  'לאתר המוסד',
+  'למחשבון המכללה',
+  'לא זוכרים? למעבר לציונים',
+  'https://www.gov.il/he/departments/the_privacy_protection_authority',
+]);
+
+function isOwnHost(hostname: string) {
+  const host = hostname.replace(/^www\./, '');
+  return host === 'findmyway.co.il' || host.endsWith('.findmyway.co.il');
+}
+
+function contentHtml(markup: string) {
+  return markup
+    .replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '');
+}
+
+describe('visible source labels', () => {
+  const staticPages: Record<string, () => Promise<unknown>> = {
+    '/': () => import('@/app/page'),
+    '/about': () => import('@/app/about/page'),
+    '/sekhem-calculator': () => import('@/app/sekhem-calculator/page'),
+    '/calculator': () => import('@/app/calculator/page'),
+    '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
+    '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
+    '/amirnet': () => import('@/app/amirnet/page'),
+    '/psychometric-accommodations': () => import('@/app/psychometric-accommodations/page'),
+    '/open-days': () => import('@/app/open-days/page'),
+    '/transfer': () => import('@/app/transfer/page'),
+    '/without-psychometric': () => import('@/app/without-psychometric/page'),
+    '/institutions': () => import('@/app/institutions/page'),
+    '/programs': () => import('@/app/programs/page'),
+  };
+
+  it('renders no source labels or page citations on any sitemap page', async () => {
+    const hits: string[] = [];
+    for (const { url } of await sitemap()) {
+      const path = new URL(url).pathname;
+      try {
+        let html = '';
+        let markup = '';
+        if (path.startsWith('/programs/')) {
+          const programId = decodeURIComponent(path.slice('/programs/'.length));
+          const params = Promise.resolve({ programId });
+          html = renderToStaticMarkup(await ProgramPage({ params }));
+          markup = `${JSON.stringify(await generateProgramMetadata({ params }))}\n${html}`;
+        } else if (path.startsWith('/institutions/')) {
+          const institutionId = decodeURIComponent(
+            path.slice('/institutions/'.length),
+          ) as InstitutionId;
+          const params = Promise.resolve({ institutionId });
+          html = renderToStaticMarkup(await InstitutionPage({ params }));
+          markup = `${JSON.stringify(await generateInstitutionMetadata({ params }))}\n${html}`;
+        } else {
+          const load = staticPages[path];
+          if (!load) throw new Error('missing renderer');
+          const mod = (await load()) as {
+            default: (props?: {
+              searchParams: Promise<Record<string, never>>;
+            }) => ReactNode | Promise<ReactNode>;
+            metadata?: unknown;
+          };
+          const props =
+            path === '/open-days' || path === '/sekhem-calculator'
+              ? { searchParams: Promise.resolve({}) }
+              : undefined;
+          const element = await mod.default(props);
+          html = renderToStaticMarkup(
+            path === '/' ? createElement(AuthProvider, null, element) : element,
+          );
+          markup = `${JSON.stringify(mod.metadata ?? '')}\n${html}`;
+        }
+        recordVisibleSources(hits, path, html, markup);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    try {
+      const html = renderToStaticMarkup(createElement(PrivacyPage));
+      recordVisibleSources(hits, '/privacy', html, html);
+    } catch (error) {
+      hits.push(`/privacy ${error instanceof Error ? error.message : String(error)}`);
+    }
+    try {
+      const html = renderToStaticMarkup(
+        createElement(AcademicProfileForm, {
+          onComplete: async () => true,
+          onClearLocalProfileData: async () => {},
+          onSkip: () => {},
+        }),
+      );
+      recordVisibleSources(hits, '/app/calculator#missing', html, html);
+    } catch (error) {
+      hits.push(
+        `/app/calculator#missing ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    for (const step of journeySteps) {
+      const path = `/app/calculator#${step}`;
+      try {
+        const html = renderToStaticMarkup(
+          createElement(AuthProvider, null, createElement(StudyJourney, { initialStep: step })),
+        );
+        recordVisibleSources(hits, path, html, html);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    expect(hits).toEqual([]);
+  }, 180000);
+});
+
+function recordVisibleSources(hits: string[], path: string, html: string, markup: string) {
+  for (const needle of ['מקור', 'עמ׳ ', 'מידעון', 'קישור רשמי', 'נכון ל', 'האתר הרשמי מציין']) {
+    const index = markup.indexOf(needle);
+    if (index >= 0)
+      hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+  }
+  const content = contentHtml(html);
+  for (const match of content.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = match[1];
+    const text = match[2]
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (ALLOWED_EXTERNAL_LABELS.has(text)) continue;
+    let url: URL;
+    try {
+      url = new URL(href, 'https://findmyway.co.il');
+    } catch {
+      continue;
+    }
+    if (!/^https?:$/.test(url.protocol) || isOwnHost(url.hostname)) continue;
+    hits.push(`${path} ${text || href} -> ${href}`);
+  }
+}

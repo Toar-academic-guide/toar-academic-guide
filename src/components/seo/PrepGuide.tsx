@@ -1,10 +1,12 @@
 import Link from 'next/link';
-import { institutionLink } from '@/lib/institutionLinks';
-import { PREP_ROWS, type PrepRow } from '@/lib/prepGuide';
+import { PREP_ROWS } from '@/lib/prepGuide';
+
+export const prepFundingUrl =
+  'https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx';
 
 const prepQuestion = 'האם מכינה מחליפה בגרות או פסיכומטרי?';
 const prepAnswer =
-  'זה תלוי במכינה. בטבלה מופיע לכל מכינה מה התעודה שלה מחליפה והאם נדרש פסיכומטרי כדי להיכנס אליה, עם קישור לעמוד הרשמי.';
+  'זה תלוי במכינה. בטבלה מופיע לכל מכינה מה התעודה שלה מחליפה והאם נדרש פסיכומטרי כדי להיכנס אליה.';
 
 export const prepFaqLd = {
   '@type': 'FAQPage',
@@ -16,38 +18,6 @@ export const prepFaqLd = {
     },
   ],
 };
-
-function OfficialSources({ row }: { row: PrepRow }) {
-  if (row.sources) {
-    return (
-      <>
-        <div className="space-y-1">
-          {row.sources.map((source) => (
-            <a
-              key={source.url}
-              href={institutionLink(source.url, row.institutionId)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex min-h-11 min-w-11 items-center text-[#6554b8] underline underline-offset-2"
-            >
-              {source.label}
-            </a>
-          ))}
-        </div>
-      </>
-    );
-  }
-  return row.officialUrl ? (
-    <a
-      href={institutionLink(row.officialUrl, row.institutionId)}
-      target="_blank"
-      rel="noopener noreferrer"
-      className="inline-flex min-h-11 min-w-11 items-center text-[#6554b8] underline underline-offset-2"
-    >
-      אתר המוסד
-    </a>
-  ) : null;
-}
 
 export default function PrepGuide({ programIds }: { programIds: string[] }) {
   const listed = new Set(programIds);
@@ -79,7 +49,7 @@ export default function PrepGuide({ programIds }: { programIds: string[] }) {
           >
             <thead className="hidden bg-slate-50 text-slate-700 md:table-header-group">
               <tr>
-                {['מוסד', 'מה התעודה מחליפה', 'פסיכומטרי לכניסה', 'תחומים', 'משך', 'מקור רשמי'].map(
+                {['מוסד', 'מה התעודה מחליפה', 'פסיכומטרי לכניסה', 'תחומים', 'משך'].map(
                   (heading) => (
                     <th
                       key={heading}
@@ -124,9 +94,6 @@ export default function PrepGuide({ programIds }: { programIds: string[] }) {
                       )}
                     </td>
                   ))}
-                  <td className="block px-5 pb-5 pt-2 md:table-cell md:border-b md:border-slate-200 md:px-4 md:py-4">
-                    <OfficialSources row={row} />
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -163,14 +130,6 @@ export default function PrepGuide({ programIds }: { programIds: string[] }) {
             בנוסף לפיקדון האישי. אם לא נמצאתם זכאים לסיוע בשכר הלימוד, תוכלו לבדוק אם ניתן להשתמש
             ביתרת הפיקדון האישי לתשלום במכינה.
           </p>
-          <a
-            href="https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
-          >
-            תנאי הזכאות ואופן ההגשה באתר משרד הביטחון
-          </a>
         </div>
       </section>
       <section aria-labelledby="prep-faq">

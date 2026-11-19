@@ -13,39 +13,13 @@ import { buildInstitutionMetadata } from '@/lib/seo/metadata';
 import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { openUniversityTransferTracks } from '@/data/openUniversityTransferTracks';
 
 export const dynamic = 'force-dynamic';
 
 interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
 }
-
-const openUniversityTransferTracks = [
-  {
-    label: 'אוניברסיטת תל אביב',
-    href: 'https://www.openu.ac.il/transfertrack/tel-aviv/Pages/default.aspx',
-  },
-  {
-    label: 'האוניברסיטה העברית בירושלים',
-    href: 'https://www.openu.ac.il/transfertrack/hebrew/Pages/default.aspx',
-  },
-  {
-    label: 'הטכניון',
-    href: 'https://www.openu.ac.il/transfertrack/technion/Pages/default.aspx',
-  },
-  {
-    label: 'אפיק מעבר למשפטים באוניברסיטת בר-אילן',
-    href: 'https://www.openu.ac.il/transfertrack/bar-ilan/pages/default.aspx',
-  },
-  {
-    label: 'אוניברסיטת חיפה',
-    href: 'https://www.openu.ac.il/transfertrack/haifa/Pages/default.aspx',
-  },
-  {
-    label: 'אוניברסיטת בן-גוריון בנגב',
-    href: 'https://www.openu.ac.il/transfertrack/ben-gurion/Pages/default.aspx',
-  },
-] as const;
 
 function OpenUniversityTransferSection() {
   return (
@@ -58,30 +32,14 @@ function OpenUniversityTransferSection() {
       </p>{' '}
       <ul className="mt-5 grid gap-3 sm:grid-cols-2">
         {openUniversityTransferTracks.map((track) => (
-          <li key={track.href}>
-            <a
-              href={track.href}
-              className="block rounded-xl border border-slate-200 px-4 py-3 font-semibold text-cyan-800 transition hover:border-slate-900 hover:text-slate-900"
-            >
-              {track.label}
-            </a>
+          <li
+            key={track.href}
+            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-cyan-800"
+          >
+            {track.label}
           </li>
         ))}
       </ul>{' '}
-      <div className="mt-5 flex flex-wrap gap-x-5 gap-y-2 text-sm font-semibold">
-        <a
-          href="https://www.openu.ac.il/transfertrack/pages/faq.aspx"
-          className="text-cyan-800 underline underline-offset-4 hover:text-slate-900"
-        >
-          שאלות נפוצות על אפיקי מעבר
-        </a>{' '}
-        <a
-          href="https://www.openu.ac.il/transfertrack/pages/updates.aspx"
-          className="text-cyan-800 underline underline-offset-4 hover:text-slate-900"
-        >
-          עדכונים על אפיקי מעבר
-        </a>{' '}
-      </div>{' '}
       <p className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
         עוד לא התחלתם לימודים אקדמיים?{' '}
         <Link
@@ -189,13 +147,12 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               className="mt-4"
             />
             {officialProgrammes.map((programme) => (
-              <a
+              <p
                 key={programme.id}
-                href={programme.url}
-                className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 font-semibold hover:border-slate-900"
+                className="mt-4 rounded-xl border border-slate-200 px-4 py-3 font-semibold"
               >
-                {programme.name} <span className="text-sm font-normal">באתר המוסד</span>
-              </a>
+                {programme.name}
+              </p>
             ))}
             {programs.length > 12 && (
               <details className="mt-4 open:mt-3 [&[open]>summary]:hidden">

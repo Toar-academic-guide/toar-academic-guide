@@ -88,7 +88,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.photography,
     admissionType: 'requirements',
-    admissionRequirements: ['תיק עבודות – סדרת צילומים מקורית', 'מבחן כניסה', 'ראיון קבלה'],
+    admissionRequirements: ['תיק עבודות – סדרת צילומים עצמאית', 'מבחן כניסה', 'ראיון קבלה'],
   },
   {
     id: 'bezalel_fashion',
@@ -232,7 +232,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.photography,
     admissionType: 'requirements',
-    admissionRequirements: ['תיק עבודות – עבודות צילום מקוריות', 'ראיון קבלה'],
+    admissionRequirements: ['תיק עבודות – עבודות צילום עצמאיות', 'ראיון קבלה'],
   },
   {
     id: 'minshar_animation',
@@ -283,7 +283,7 @@ export const vocationalPrograms: Program[] = [
     category: 'אמנות ועיצוב',
     profileScore: P.screenwriting,
     admissionType: 'requirements',
-    admissionRequirements: ['תסריט קצר מקורי (עד 10 עמ׳)', 'ראיון קבלה'],
+    admissionRequirements: ['תסריט קצר עצמאי (עד 10 עמ׳)', 'ראיון קבלה'],
   },
 
   // ════════════════════════════════════════════════════════════════════════════

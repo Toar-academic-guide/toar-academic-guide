@@ -186,7 +186,7 @@ export const psychologyFaq = [
   {
     question: 'מה תנאי הקבלה לפסיכולוגיה באוניברסיטאות?',
     answer:
-      'התנאים משתנים בין המוסדות ובין מסלולי הקבלה. בטבלה מופיעים הסף, סוג הציון, מסלול בגרות בלבד כאשר פורסם, וקישור למקור הרשמי.',
+      'התנאים משתנים בין המוסדות ובין מסלולי הקבלה. בטבלה מופיעים הסף, סוג הציון, ומסלול בגרות בלבד כאשר פורסם.',
   },
   {
     question: 'מה ההבדל בין פסיכולוגיה למדעי ההתנהגות?',
@@ -204,3 +204,7 @@ export const psychologyFaq = [
       'לא. לרישום בפנקס הפסיכולוגים נדרש תואר שני בפסיכולוגיה ואישור לרישום. אבחון וטיפול מותרים למומחים ולמתמחים מאושרים בהתאם לתחום מומחיותם.',
   },
 ] as const;
+
+/** Health Ministry page on who may practise. Kept for review; not rendered. */
+export const psychologyProfessionUrl =
+  'https://me.health.gov.il/mental-health/information-and-updates/mental-health-care/who-can-offer-therapy/';

@@ -104,7 +104,7 @@ export const ICEBREAKER_QUESTIONS: MultiSelectQuestion[] = [
     options: [
       {
         id: 'Q1-A',
-        title: 'יצירה מקורית:',
+        title: 'יצירה עצמאית:',
         subtitle: 'ליצור משהו מאפס - רעיון, עיצוב, כתיבה או אמנות.',
         weights: { CR: 2 },
       },
@@ -130,7 +130,7 @@ export const ICEBREAKER_QUESTIONS: MultiSelectQuestion[] = [
       {
         id: 'Q1-E',
         title: 'חקר תרבויות, היסטוריה וטקסטים:',
-        subtitle: 'להתעמק במקורות, ללמוד שפות חדשות ולהבין חברות, תהליכים והגות מהעבר ומההווה.',
+        subtitle: 'להתעמק בטקסטים, ללמוד שפות חדשות ולהבין חברות, תהליכים והגות מהעבר ומההווה.',
         weights: { ER: 2 },
       },
       {

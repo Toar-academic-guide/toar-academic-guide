@@ -155,9 +155,9 @@ describe('account grades in the homepage journey', () => {
             return actual.origin === expected.origin && actual.pathname === expected.pathname;
           });
           expect(link, source).toBeTruthy();
+          expect(link!.textContent).not.toContain('מקור');
           expect(new URL(link!.getAttribute('href')!).searchParams.get('utm_source')).toBe('myway');
         }
-        expect(scope.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
       } else {
         expect(scope.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
           /^https:\/\//,
@@ -234,7 +234,7 @@ describe('account grades in the homepage journey', () => {
       const scope = within(
         container.querySelector(surface === 'results' ? '.journey-result-row' : '.journey-narrow')!,
       );
-      expect(scope.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      expect(scope.getByRole('link', { name: 'לאתר המוסד' })).toBeTruthy();
       if (hide) {
         expect.soft(container.querySelector('.journey-status')).toBeNull();
         expect.soft(scope.queryByText('הנתונים הרשמיים אינם זמינים')).toBeNull();

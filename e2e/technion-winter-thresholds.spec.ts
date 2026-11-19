@@ -11,22 +11,16 @@ for (const width of [390, 1280]) {
       await expect(page.getByRole('listitem').first()).toHaveText(
         `בחורף תשפ"ז: סכם ${id === 'ee' ? '91.5' : '87'}`,
       );
-      const notice = page.locator('div').filter({
-        has: page.locator('> p > a[href*="sechem-for-admission"]'),
-      });
-      await expect(notice).toBeVisible();
-      await expect(notice).not.toContainText('25.10.2026');
-      await expect(notice).not.toContainText('עודכן לאחרונה');
-      await expect(notice).toHaveCSS('text-align', 'right');
-      await expect(notice.getByRole('link', { name: 'הטכניון', exact: true })).toHaveAttribute(
-        'href',
-        /admissions\.technion\.ac\.il\/sechem-for-admission\//,
-      );
-      if (id === 'ee')
-        await expect(notice).toContainText(
+      await expect(page.locator('a[href*="sechem-for-admission"]')).toHaveCount(0);
+      await expect(page.getByText('עודכן לאחרונה', { exact: false })).toHaveCount(0);
+      await expect(page.getByText('25.10.2026')).toHaveCount(0);
+      if (id === 'ee') {
+        const notice = page.getByText(
           'באביב תשפ"ז, על בסיס מקום פנוי: סכם 94 — מספר המקומות מצומצם',
         );
-      else await expect(page.getByText(/באביב תשפ/)).toHaveCount(0);
+        await expect(notice).toBeVisible();
+        await expect(notice).toHaveCSS('text-align', 'right');
+      } else await expect(page.getByText(/באביב תשפ/)).toHaveCount(0);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );

@@ -4,10 +4,11 @@ import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: null }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/psychometric-dates' }));
 import Page, { dynamic, metadata } from './page';
+import { semesterValiditySources } from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר.';
 const canonical = 'https://findmyway.co.il/psychometric-dates';
 afterEach(() => vi.useRealTimers());
 
@@ -63,20 +64,16 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'פתיחת הרשמה: 31.1.2027. שנת הלימודים מתחילה באוקטובר 2027.',
   );
   expect(autumnRows[2].textContent).toContain('פתיחת הרשמה לשנת תשפ"ח: 01.11.2026.');
-  expect(
-    within(section)
-      .getAllByRole('link')
-      .map((link) => link.getAttribute('href')),
-  ).toEqual([
+  expect(within(section).queryAllByRole('link')).toHaveLength(0);
+  expect(Object.values(semesterValiditySources)).toEqual([
     'https://admissions.technion.ac.il/registeration-dates/',
+    'https://admissions.technion.ac.il/technion_psychometri/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
     'https://info.huji.ac.il/registration-process/calendar',
+    'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://go.tau.ac.il/he/reg-dates',
     'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
     'https://www.openu.ac.il/registration/spring/pages/default.aspx',
-    'https://admissions.technion.ac.il/technion_psychometri/',
-    'https://www.bgu.ac.il/events/registrastion-2027-2028/',
-    'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   ]);
   expect(section.querySelectorAll('time[datetime="2026-11-17"]')).toHaveLength(0);
   expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(0);
@@ -128,13 +125,8 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   const ctas = within(main).getAllByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
-  const stamp = within(main)
-    .getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })
-    .closest('p')!;
-  expect(stamp.textContent).not.toMatch(/נבדק|29\.10\.2026/);
-  expect(
-    within(stamp).getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' }).getAttribute('href'),
-  ).toBe('https://www.nite.org.il/test-dates-and-prices/');
+  expect(within(main).queryByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })).toBeNull();
+  expect(examTable.querySelectorAll('a')).toHaveLength(0);
   expect(examTable.querySelector('caption')?.textContent).toBe('מועדי פסיכומטרי');
   expect(main.textContent).not.toMatch(/נבדק בתאריך/);
   expect(main.textContent).not.toMatch(/סכם/);
@@ -241,17 +233,10 @@ it('exports exact indexable metadata and request-time rendering', () => {
   expect(metadata.robots).not.toEqual(expect.objectContaining({ index: false }));
 });
 
-it('keeps the source sentence and punctuation without the removed qualification', async () => {
+it('keeps the dates as text without a schedule citation', async () => {
   const { container } = render(await Page());
-  const link = screen.getByRole('link', { name: /לוח הבחינות הרשמי לשנת/ });
-  const sentence = link.closest('p')!;
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
-  expect(sentence.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'תאריכי 2027 ושפות הבחינה מופיעים גם בלוח הבחינות הרשמי לשנת 2027.',
-  );
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
-  expect(link.nextSibling?.textContent).toBe('.');
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
+  expect(screen.queryByRole('link', { name: /לוח הבחינות הרשמי/ })).toBeNull();
+  expect(container.textContent).not.toContain('לוח הבחינות הרשמי');
   expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
   expect(

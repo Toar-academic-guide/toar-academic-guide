@@ -1,8 +1,4 @@
 import type { TauPhysiotherapyInputs } from '@/lib/tauPhysiotherapyInputs';
-import {
-  TAU_PHYSIOTHERAPY_REGISTRATION_URL,
-  TAU_PHYSIOTHERAPY_SELECTION_URL,
-} from '@/lib/tauPhysiotherapyInputs';
 
 export type PhysiotherapyFormValues = Partial<Record<keyof TauPhysiotherapyInputs, string>>;
 export default function TauPhysiotherapyFields({
@@ -91,24 +87,6 @@ export default function TauPhysiotherapyFields({
         מכינה: ממוצע 85 לפחות במסלול טבע או מדעים מדויקים. לימודים אקדמיים חלקיים: 40 שעות לפחות
         בממוצע 80 ומעלה, עם 25 שעות בציון מספרי אם יש ציונים בינאריים. תואר קודם: ממוצע 80 לפחות.
         האוניברסיטה בוחרת את הסכם הגבוה מהאפיקים המתאימים; החישוב כאן מוגבל לאפיק הבגרות.
-      </p>
-      <p className="mt-2 flex gap-4 text-xs text-indigo-700">
-        <a
-          href={TAU_PHYSIOTHERAPY_REGISTRATION_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          תנאי הרישום
-        </a>
-        <a
-          href={TAU_PHYSIOTHERAPY_SELECTION_URL}
-          target="_blank"
-          rel="noreferrer"
-          className="underline"
-        >
-          הליך הקבלה והספים
-        </a>
       </p>
     </details>
   );

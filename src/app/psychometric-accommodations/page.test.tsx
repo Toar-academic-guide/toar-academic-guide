@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: null }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/psychometric-accommodations' }));
+import { psychometricAccommodationUrls } from '@/data/psychometricAccommodationUrls';
 import Page, { metadata } from './page';
 
 it('renders the approved answer and official-source policy in the page HTML', () => {
@@ -26,18 +27,16 @@ it('renders the approved answer and official-source policy in the page HTML', ()
   expect(main.textContent).toContain('אבחון שנערך אחרי גיל 16 ולא עברו 5 שנים מיום עריכתו.');
   expect(main.textContent).toContain('לצד האבחון מצרפים שאלון למאבחן ומסמכי רקע מגיל צעיר.');
   expect(main.textContent).toContain('לאבחון מת״ל עדכני אין צורך להוסיף שאלון למאבחן');
+  expect(main.textContent).toContain(
+    'רשימת המסמכים לכל אחת מהסיבות האלה מופיעה בטופס הבקשה להתאמות באתר מאל״ו.',
+  );
   expect(main.textContent).toContain('מאל״ו דורש בקשה נפרדת לכל בחינה');
   expect(main.textContent).not.toMatch(/מגיע לכם|מאושרות תמיד|תוקף.*קשב/);
   expect(main.querySelector('a[href="/amirnet"]')).toBeNull();
-  const sourceHosts = Array.from(main.querySelectorAll('a[href^="https://"]')).map(
-    (link) => new URL(link.getAttribute('href')!).hostname,
-  );
-  expect(new Set(sourceHosts)).toEqual(new Set(['www.nite.org.il', 'www.gov.il']));
-  for (const source of main.querySelectorAll('p[class*="source"]')) {
-    expect(source.querySelector('a')).not.toBeNull();
-    expect(source.textContent).not.toMatch(/\d{2}\.\d{2}\.\d{4}/);
-    expect(source.textContent).not.toContain('נבדק');
-  }
+  expect(main.querySelectorAll('a[href^="https://"]')).toHaveLength(0);
+  expect(psychometricAccommodationUrls.accommodations).toMatch(/nite\.org\.il/);
+  expect(psychometricAccommodationUrls.institutional).toMatch(/gov\.il/);
+  expect(main.textContent).not.toMatch(/נכון ל|קישור רשמי/);
   for (const number of main.querySelectorAll('bdi')) expect(number.getAttribute('dir')).toBe('ltr');
 });
 

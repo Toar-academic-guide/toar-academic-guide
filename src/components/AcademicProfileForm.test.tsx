@@ -3,6 +3,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import AcademicProfileForm from '@/components/AcademicProfileForm';
+import { academicProfileSourceUrls } from '@/data/academicProfileSourceUrls';
 
 vi.mock('next/image', () => ({
   default: () => <span data-next-image />,
@@ -474,8 +475,9 @@ describe('AcademicProfileForm', () => {
     expect(screen.getByLabelText('אישור תנאי הגשה לתל אביב')).toHaveProperty('value', 'false');
     expect(screen.getByLabelText('אישור דרישות שפה בבן־גוריון')).toHaveProperty('value', '');
     expect(
-      screen.getByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' }),
-    ).toHaveProperty('href', 'https://www.ims.tau.ac.il/md/ut/bagrut.aspx');
+      screen.queryByRole('link', { name: 'מחשבון ממוצע בגרות של אוניברסיטת תל אביב' }),
+    ).toBeNull();
+    expect(academicProfileSourceUrls.tauBagrut).toBe('https://www.ims.tau.ac.il/md/ut/bagrut.aspx');
 
     fireEvent.change(screen.getByLabelText('ממוצע בגרות או הנדסאי מוכר של בן־גוריון (50–130)'), {
       target: { value: '108.25' },

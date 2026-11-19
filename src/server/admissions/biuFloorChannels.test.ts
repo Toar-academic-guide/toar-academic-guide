@@ -92,8 +92,8 @@ describe('BIU final brief T1–T30 (25.10.2026)', () => {
     expect(resultLabel(result).label).toBe('לא עומד/ת בתנאי הסף');
     expect(result.explanation).toContain('ממוצע בגרות 112 (שלך 100)');
     expect(result.explanation).toContain('פסיכומטרי 660 (שלך 640)');
-    expect(result.explanation).toContain(noPsych);
-    expect(result.explanation).toContain(calculator);
+    expect(result.explanation).not.toContain('מקור');
+    expect(result.officialUrls).toEqual(expect.arrayContaining([noPsych, calculator]));
   });
   it('T2 social work misses psychometric, not the conditional Hebrew requirement', () => {
     const result = evaluate('biu_socialwork', { psychometric: 560, bagrut: 95 });
@@ -256,7 +256,10 @@ describe('BIU final brief T1–T30 (25.10.2026)', () => {
               expect(result.explanation.includes('לא עומד/ת בתנאי הסף')).toBe(
                 result.decision === 'below',
               );
-              if (result.decision === 'below') expect(result.explanation).toContain('https://');
+              if (result.decision === 'below') {
+                expect(result.explanation).not.toContain('מקור');
+                expect(result.officialUrls?.some((url) => url.startsWith('https://'))).toBe(true);
+              }
             }
   });
   it('T20 never requests the official calculator (or any network endpoint)', () => {

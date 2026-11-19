@@ -2,6 +2,7 @@
 import { fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { twoDomainNiteUrls } from '@/data/twoDomainNiteUrls';
 import { studyFields } from '@/lib/studyJourney';
 
 const state = vi.hoisted(() => ({
@@ -42,13 +43,14 @@ describe('UX P1 subject selection', () => {
     vi.spyOn(window, 'scrollTo').mockImplementation(() => {});
   });
 
-  it('links to the official NITE score guidance from score entry', async () => {
+  it('does not link the psychometric score step to NITE', async () => {
     render(<StudyJourney initialStep="psy-score" />);
-    const link = await screen.findByRole('link', { name: 'איך לצפות בציונים באתר מאל״ו' });
-    expect(link.getAttribute('href')).toBe(
+    expect(await screen.findByRole('spinbutton', { name: 'ציון כללי' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'איך לצפות בציונים באתר מאל״ו' })).toBeNull();
+    expect(screen.queryByText('איך לצפות בציונים באתר מאל״ו')).toBeNull();
+    expect(twoDomainNiteUrls.scoreReporting).toBe(
       'https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/',
     );
-    expect(link.getAttribute('target')).toBe('_blank');
   });
 
   it.each(['home', 'subjects'] as const)(

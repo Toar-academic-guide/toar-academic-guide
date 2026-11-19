@@ -36,9 +36,7 @@ export function CsComparison() {
       className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8"
     >
       <h2 className="text-xl font-bold">ספי הקבלה למדעי המחשב לפי מוסד</h2>
-      <p className="mt-3 leading-7 text-slate-700">
-        כל מספר מופיע בסולם של המוסד עצמו, עם קישור לעמוד הרשמי.
-      </p>
+      <p className="mt-3 leading-7 text-slate-700">כל מספר מופיע בסולם של המוסד עצמו.</p>
       <table className="mt-5 block w-full text-right text-sm leading-6 sm:table sm:table-fixed">
         <caption className="sr-only">ספי קבלה למדעי המחשב לפי מוסד ומסלול קבלה</caption>
         <thead className="hidden bg-slate-50 sm:table-header-group">
@@ -49,17 +47,14 @@ export function CsComparison() {
             <th scope="col" className="w-[17%] border border-slate-200 p-2">
               מסלול קבלה
             </th>
-            <th scope="col" className="w-[27%] border border-slate-200 p-2">
+            <th scope="col" className="w-[32%] border border-slate-200 p-2">
               הסף שפורסם
             </th>
-            <th scope="col" className="w-[16%] border border-slate-200 p-2">
+            <th scope="col" className="w-[18%] border border-slate-200 p-2">
               סולם הציון
             </th>
-            <th scope="col" className="w-[13%] border border-slate-200 p-2">
+            <th scope="col" className="w-[15%] border border-slate-200 p-2">
               מחזור
-            </th>
-            <th scope="col" className="w-[9%] border border-slate-200 p-2">
-              מקור
             </th>
           </tr>
         </thead>
@@ -88,16 +83,9 @@ export function CsComparison() {
                   הסף שפורסם
                 </span>
                 {row.numeric ? (
-                  <a
-                    href={row.sourceUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="inline-flex min-h-11 min-w-11 items-center text-slate-700 underline decoration-[#b8b0d7] underline-offset-2 hover:text-[#6554b8]"
-                  >
-                    <span>
-                      <BidiText text={row.value} />
-                    </span>
-                  </a>
+                  <span>
+                    <BidiText text={row.value} />
+                  </span>
                 ) : (
                   row.value
                 )}
@@ -118,19 +106,6 @@ export function CsComparison() {
                   מחזור
                 </span>
                 <BidiText text={row.cycle} />
-              </td>
-              <td className="block border-t border-slate-100 pt-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
-                <span className="mb-1 block text-xs font-semibold text-slate-500 sm:hidden">
-                  מקור
-                </span>
-                <a
-                  href={row.sourceUrl}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={linkClass}
-                >
-                  אתר המוסד
-                </a>
               </td>
             </tr>
           ))}
