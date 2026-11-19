@@ -2,20 +2,13 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import JsonLd from '@/components/seo/JsonLd';
-import {
-  atudaBooklet,
-  atudaElite,
-  atudaIdfPage,
-  atudaMajors,
-  atudaQuestions,
-  bookletPage,
-} from '@/data/atuda';
+import { atudaElite, atudaMajors, atudaQuestions } from '@/data/atuda';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
 
 const title = 'עתודה אקדמית 2027–2028: תנאי קבלה, 590 בפסיכומטרי ומועדים | MyWay';
 const description =
-  'עתודה אקדמית תשפ״ח: נרשמים עד 28.02.2027, ציון מינימום 590 בפסיכומטרי, מועד אפריל 2027 הוא האחרון. מענקים, תוכניות עילית ומגמות לפי מוסד, עם מקור לכל נתון.';
+  'עתודה אקדמית תשפ״ח: נרשמים עד 28.02.2027, ציון מינימום 590 בפסיכומטרי, מועד אפריל 2027 הוא האחרון. מענקים, תוכניות עילית ומגמות לפי מוסד.';
 const canonical = absoluteUrl('/atuda');
 
 export const dynamic = 'force-dynamic';
@@ -78,19 +71,6 @@ const timeline = [
   },
 ] as const;
 
-function PageSources({ pages }: { pages: readonly number[] }) {
-  return (
-    <span className={styles.pageSources}>
-      {pages.map((page, index) => (
-        <span key={page}>
-          {index > 0 && ' · '}
-          <a href={bookletPage(page)}>עמ׳ {page}</a>
-        </span>
-      ))}
-    </span>
-  );
-}
-
 function BidiRanges({ text }: { text: string }) {
   return text.split(/(2027–2028|35–36)/g).map((part, index) =>
     part === '2027–2028' || part === '35–36' ? (
@@ -135,14 +115,6 @@ export default function Page() {
               עתודה אקדמית <bdi dir="ltr">2027–2028</bdi> (תשפ״ח): איך נרשמים, עד מתי ומה הציון
               הנדרש
             </h1>
-            <p className={styles.source}>
-              מקור:{' '}
-              <a href={atudaBooklet}>
-                {'מידעון העתודה האקדמית של צה״ל לשנת\u00A0'}
-                <bdi dir="ltr">2027–2028</bdi>
-              </a>{' '}
-              ו<a href={atudaIdfPage}>אתר העתודה של צה״ל</a>
-            </p>
             {reviewDue && (
               <p className={styles.reviewDue}>
                 המידע לשנה זו בבדיקה מחדש. בדקו גם את המידעון העדכני של צה״ל.
@@ -154,9 +126,6 @@ export default function Page() {
               העתודה באתר ״מתגייסים״ עד <bdi dir="ltr">28.02.2027</bdi>. הרישום נפתח רק למי שעומד
               בנתוני קצונה. ציון המינימום בפסיכומטרי הוא <bdi dir="ltr">590</bdi>, והמועד האחרון
               להיבחן הוא אפריל <bdi dir="ltr">2027</bdi>.
-            </p>
-            <p className={styles.source}>
-              מידעון צה״ל <bdi dir="ltr">2027–2028</bdi>, <PageSources pages={[9, 10, 18]} />
             </p>
           </header>
 
@@ -170,19 +139,15 @@ export default function Page() {
                   <tr>
                     <th scope="col">מתי</th>
                     <th scope="col">מה עושים</th>
-                    <th scope="col">מקור</th>
                   </tr>
                 </thead>
                 <tbody>
-                  {timeline.map(({ when, action, pages }) => (
+                  {timeline.map(({ when, action }) => (
                     <tr key={when + action}>
                       <th scope="row">
                         <bdi dir="ltr">{when}</bdi>
                       </th>
                       <td>{action}</td>
-                      <td>
-                        <PageSources pages={pages} />
-                      </td>
                     </tr>
                   ))}
                 </tbody>
@@ -200,8 +165,7 @@ export default function Page() {
             <h2 id="score">מה הציון הנדרש?</h2>
             <p>
               <bdi dir="ltr">590</bdi> בציון הרב־תחומי הוא המינימום להמשך המיונים בעתודה, למעט
-              מסלולים חריגים שבהם הרף שונה. הציון נבחן מחדש כל שנה (<PageSources pages={[10]} />
-              ).
+              מסלולים חריגים שבהם הרף שונה. הציון נבחן מחדש כל שנה.
             </p>
             <p>
               זהו רף של צה״ל בלבד. כדי להתחיל ללמוד צריך להתקבל גם למוסד ולמגמה לפי תנאי הקבלה שלהם.{' '}
@@ -209,8 +173,8 @@ export default function Page() {
             </p>
             <p>
               קבלה ללא פסיכומטרי אפשרית רק במקרים חריגים: באוניברסיטאות בלבד, כשמתקבלים למסלול
-              מצטיינים על סמך ציוני בגרות, ובבקשה מסודרת למיטב (<PageSources pages={[10, 18]} />
-              ). <Link href="/without-psychometric">עוד על קבלה בלי פסיכומטרי</Link>.
+              מצטיינים על סמך ציוני בגרות, ובבקשה מסודרת למיטב.{' '}
+              <Link href="/without-psychometric">עוד על קבלה בלי פסיכומטרי</Link>.
             </p>
           </section>
 
@@ -240,10 +204,9 @@ export default function Page() {
                 </tbody>
               </table>
             </div>
-            <p className={styles.source}>
+            <p>
               דרישות סף בלבד, לא ציון קבלה. ״צמרת״ (רפואה) ו״בינה״ (רפואת שיניים) מופיעות בפרק
-              מקצועות הרפואה, ושתיהן בירושלים בלבד (<PageSources pages={[16, 35, 36]} />
-              ).
+              מקצועות הרפואה, ושתיהן בירושלים בלבד.
             </p>
           </section>
 
@@ -251,9 +214,7 @@ export default function Page() {
             <h2 id="majors">באילו מוסדות אפשר ללמוד? מגמות נבחרות</h2>
             <p>
               אלה מגמות מתוך רשימת צה״ל לשנת <bdi dir="ltr">2027–2028</bdi>. צה״ל מוסיף ומסיר מגמות
-              מדי פעם; הרשימה המלאה במידעון (<PageSources pages={[12, 13, 14, 15, 16]} />
-              ). בוחרים לפחות שתי מגמות ועד שלושה מוסדות לכל מגמה (<PageSources pages={[11]} />
-              ).
+              מדי פעם. בוחרים לפחות שתי מגמות ועד שלושה מוסדות לכל מגמה.
             </p>
             <div className={styles.tableWrap}>
               <table className={styles.majorsTable}>
@@ -261,7 +222,6 @@ export default function Page() {
                   <tr>
                     <th scope="col">מגמה</th>
                     <th scope="col">מוסדות לפי המידעון</th>
-                    <th scope="col">מקור</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -285,18 +245,12 @@ export default function Page() {
                         </ul>
                         {major.note && <p className={styles.majorNote}>{major.note}</p>}
                       </td>
-                      <td>
-                        <PageSources pages={[major.bookletPage]} />
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
-            <p className={styles.source}>
-              חלק מהמגמות לא נפתחות בכל שנה, ובחלקן מספר המקומות מצומצם. בדקו את{' '}
-              <a href={bookletPage(17)}>עמ׳ 17 במידעון</a>.
-            </p>
+            <p>חלק מהמגמות לא נפתחות בכל שנה, ובחלקן מספר המקומות מצומצם.</p>
           </section>
 
           <section className={styles.section} aria-labelledby="grants">
@@ -305,8 +259,7 @@ export default function Page() {
               מענק עידוד עתודה: <bdi dir="ltr">10,500 ש״ח</bdi> בכל שנת לימוד, כל עוד עומדים בקצב
               צבירת נקודות תקין ובממוצע <bdi dir="ltr">75</bdi> ומעלה. בחלק מהמסלולים נדרש ממוצע
               גבוה יותר. בנוסף, <bdi dir="ltr">2,500 ש״ח</bdi> לכיסוי עלויות הפסיכומטרי וההרשמה,
-              למתקבלים שהתגייסו בפועל, במהלך שנה א׳ (<PageSources pages={[28]} />
-              ).
+              למתקבלים שהתגייסו בפועל, במהלך שנה א׳.
             </p>
           </section>
 

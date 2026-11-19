@@ -73,11 +73,6 @@
   font-size: 1.15rem;
 }
 
-.source {
-  color: #56627b;
-  font-size: 14px;
-}
-
 .reviewDue {
   border-inline-start: 4px solid #b57724;
   padding: 8px 14px;
@@ -137,11 +132,7 @@
 }
 
 .timelineTable th:first-child {
-  width: 23%;
-}
-
-.timelineTable th:last-child {
-  width: 15%;
+  width: 28%;
 }
 
 .eliteTable {
@@ -165,10 +156,6 @@
   width: 22%;
 }
 
-.majorsTable th:last-child {
-  width: 10%;
-}
-
 .institutions {
   display: flex;
   flex-wrap: wrap;
@@ -189,10 +176,6 @@
 
 .majorNote {
   font-size: 14px;
-}
-
-.pageSources {
-  white-space: nowrap;
 }
 
 .question + .question {

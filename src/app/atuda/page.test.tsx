@@ -42,9 +42,10 @@ it('renders the 2027–2028 booklet values and complete selected-major tables', 
   expect(
     within(accountingRow).getByRole('link', { name: 'אוניברסיטת תל אביב' }).getAttribute('href'),
   ).toBe('/programs/tau_economics');
-  expect(
-    within(main).getByRole('link', { name: /מידעון העתודה האקדמית של צה״ל לשנת/ }).textContent,
-  ).toMatch(/לשנת\u00A02027–2028/);
+  expect(main.innerHTML).not.toContain('מקור');
+  expect(main.innerHTML).not.toContain('fliphtml5.com');
+  expect(main.innerHTML).not.toContain('go.idf.il');
+  expect(within(main).getByRole('link', { name: 'בדקו את הסיכוי שלכם במחשבון' })).toBeTruthy();
   for (const number of main.querySelectorAll('bdi')) expect(number.getAttribute('dir')).toBe('ltr');
 });
 
@@ -77,6 +78,7 @@ it('sets the exact metadata and self-canonical URL', () => {
     absolute: 'עתודה אקדמית 2027–2028: תנאי קבלה, 590 בפסיכומטרי ומועדים | MyWay',
   });
   expect(metadata.alternates?.canonical).toBe('https://findmyway.co.il/atuda');
+  expect(metadata.description).not.toContain('מקור');
 });
 
 it('marks the 2027–2028 booklet for review after nine months', () => {
