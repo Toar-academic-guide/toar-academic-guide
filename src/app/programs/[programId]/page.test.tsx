@@ -17,10 +17,14 @@ const hoisted = vi.hoisted(() => ({
 
 vi.mock('posthog-js', () => ({ default: { capture: hoisted.capture } }));
 
-vi.mock('next/navigation', () => ({
-  usePathname: () => '/',
-  notFound: hoisted.notFound,
-}));
+vi.mock('next/navigation', async () => {
+  const actual = await vi.importActual<typeof import('next/navigation')>('next/navigation');
+  return {
+    ...actual,
+    usePathname: () => '/',
+    notFound: hoisted.notFound,
+  };
+});
 
 vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null }),
@@ -46,6 +50,16 @@ import { nursingInstitutions, nursingSource, nursingTrackLabels } from '@/data/n
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it.each([
+    ['telhai_nursing', '/programs/nursing'],
+    ['ono_socialwork', '/programs/social_work'],
+    ['tlvyaffo_socialwork', '/programs/social_work'],
+  ] as const)('permanently redirects %s to %s', async (programId, destination) => {
+    await expect(ProgramPage({ params: Promise.resolve({ programId }) })).rejects.toMatchObject({
+      digest: `NEXT_REDIRECT;replace;${destination};308;`,
+    });
+  });
+
   it('keeps the legacy Ono URL open with a link to Ono and no programme claims', async () => {
     const params = Promise.resolve({ programId: 'ono_medicine' });
     const { container } = render(await ProgramPage({ params }));
@@ -313,7 +327,13 @@ describe('ProgramPage', () => {
       );
     }
     expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
+    const huji = rows.find((row) => row.textContent?.includes('האוניברסיטה העברית בירושלים'))!;
+    const hujiBagrut = huji.querySelectorAll('td')[1];
+    expect(hujiBagrut.textContent).toContain('113');
+    expect(hujiBagrut.textContent).toContain('109.5');
+    expect(hujiBagrut.textContent).not.toContain('—');
     expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
+    expect(container.textContent).not.toMatch(/נכון ל/);
     expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
     const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
     expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
@@ -554,11 +574,9 @@ describe('ProgramPage', () => {
         .getByRole('link', { name: 'מדע הנתונים — המסלול האקדמי המכללה למינהל' })
         .getAttribute('href'),
     ).toBe('https://www.colman.ac.il/academics/ba/data-science/');
-    const primaryCta = screen.getByRole('link', { name: 'בדקו אם אתם מתקבלים' });
+    expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'חשבו סכם לתוכנית הזו' })).toBeNull();
     const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' });
-    expect(
-      primaryCta.compareDocumentPosition(comparison) & Node.DOCUMENT_POSITION_FOLLOWING,
-    ).toBeTruthy();
     expect(
       comparison.compareDocumentPosition(institutions) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -571,6 +589,18 @@ describe('ProgramPage', () => {
         'השוו מסלולי לימוד במדעי הנתונים, הבינו את ההבדל ממדעי המחשב ובדקו את תנאי הקבלה של התוכניות שמעניינות אתכם.',
       alternates: { canonical: '/programs/datascience' },
     });
+  });
+
+  it('does not promise the old TAU calculator route from the electrical engineering hub', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'ee' }) }));
+    expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
+    expect(screen.queryByRole('link', { name: 'חשבו סכם לתוכנית הזו' })).toBeNull();
+    expect(
+      screen
+        .getAllByRole('listitem')
+        .map((item) => item.textContent)
+        .join(' '),
+    ).toContain('5 יחידות בציון 90 לפחות או 4 יחידות בציון 95');
   });
 
   it('renders the reciprocal comparison only on the CS hub', async () => {

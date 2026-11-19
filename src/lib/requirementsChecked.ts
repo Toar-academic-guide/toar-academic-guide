@@ -1,4 +1,5 @@
 import repair from '@/data/admissions/catalogueContentRepair.json';
+import { ISSUE_370_CORRECTIONS } from '@/data/admissions/issue370Corrections';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { institutionLink } from '@/lib/institutionLinks';
 import type { CatalogueInstitution } from '@/types/catalogue';
@@ -24,7 +25,7 @@ export function getRequirementsChecked(
   institution: Pick<CatalogueInstitution, 'id'>,
   sourceNotes?: readonly string[],
 ): RequirementsChecked | undefined {
-  const entry = repair.requirements.find(
+  const entry = [...ISSUE_370_CORRECTIONS, ...repair.requirements].find(
     (row) =>
       row.programId === sourceProgramId &&
       canonicalInstitutionId(row.institutionId) === canonicalInstitutionId(institution.id),

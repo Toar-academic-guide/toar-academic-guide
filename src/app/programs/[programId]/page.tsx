@@ -8,7 +8,7 @@ import {
 import SekhemCalculatorLink from '@/components/seo/SekhemCalculatorLink';
 import { getPublicRelatedPrograms, getPublicSubjectHub } from '@/lib/publicCatalogueLinks';
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
+import { notFound, permanentRedirect } from 'next/navigation';
 import WayPageShell from '@/components/WayPageShell';
 import AdmissionRequirements from '@/components/AdmissionRequirements';
 import TechnionThresholdNotice from '@/components/TechnionThresholdNotice';
@@ -23,6 +23,7 @@ import { ROUTES } from '@/lib/routes';
 import { buildProgramMetadata } from '@/lib/seo/metadata';
 import { programLd, programBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/issue370Corrections';
 import { CsComparison, CsFaq, csFaqLd } from '@/components/seo/CsComparison';
 import {
   csAnswer,
@@ -148,6 +149,9 @@ function lawOutcomeSchema() {
 
 export default async function ProgramPage({ params }: ProgramPageProps) {
   const { programId } = await params;
+  if (programId === 'telhai_nursing') permanentRedirect('/programs/nursing');
+  if (programId === 'ono_socialwork' || programId === 'tlvyaffo_socialwork')
+    permanentRedirect('/programs/social_work');
   if (programId === 'ono_medicine') {
     return (
       <WayPageShell>
@@ -240,6 +244,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const hasCalculator = possibleCalculatorInstitutions.some((institution) =>
     canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
   );
+  const hasUnreviewedHubRoute =
+    isGeneral &&
+    institutions.some((institution) =>
+      ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${program.id}__${institution.id}`),
+    );
   const isCsHub = isGeneral && program.id === 'cs';
   const isPsychologyHub = isGeneral && program.id === 'psychology';
 
@@ -278,7 +287,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
             <div className="mt-6 flex flex-wrap gap-3">
-              {hasCalculator && (
+              {hasCalculator && !hasUnreviewedHubRoute && (
                 <ProgramTrackedLink
                   event="program_calculator_cta_clicked"
                   programId={program.id}
@@ -475,11 +484,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           {!isPsychologyHub && program.isListed !== false && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
-              <SekhemCalculatorLink
-                data={data}
-                sources={institutionRequirementSources}
-                offerings={calculatorOfferings}
-              />{' '}
+              {!hasUnreviewedHubRoute && (
+                <SekhemCalculatorLink
+                  data={data}
+                  sources={institutionRequirementSources}
+                  offerings={calculatorOfferings}
+                />
+              )}{' '}
               <div className="mt-4 space-y-6">
                 {institutions.length === 0 && (
                   <AdmissionRequirements

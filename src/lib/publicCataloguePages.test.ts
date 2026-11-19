@@ -481,7 +481,6 @@ describe('public catalogue page data', () => {
       'bgu',
       'haifa',
       'ariel',
-      'telhai',
       'mta',
       'ono',
     ]);

@@ -256,7 +256,11 @@ export async function getPublicProgramRequirementSources({
       requirementsProgram.id,
     );
     const useSpecific =
-      isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
+      isGeneral &&
+      program.isListed !== false &&
+      !!specific &&
+      (!hasRequirements(requirements) ||
+        (program.id === 'psychology' && institution.id === 'huji'));
     const sourceProgram = useSpecific ? specific : requirementsProgram;
     const sourceDetail = useSpecific
       ? specific.institutionDetails?.find((entry) =>

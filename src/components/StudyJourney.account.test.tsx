@@ -478,7 +478,7 @@ describe('account grades in the homepage journey', () => {
     expect(screen.getByRole('button', { name: 'קבלו שיחה מהמוסד' })).toBeTruthy();
     expect(screen.getByRole('button', { name: 'שמירה לרשימה' })).toBeTruthy();
     expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-      'https://www.technion.ac.il/?utm_source=myway&utm_medium=referral',
+      'https://admissions.technion.ac.il/2026/09/07/mor-calculation-for-2026/?utm_source=myway&utm_medium=referral',
     );
     fireEvent.click(screen.getByRole('button', { name: 'חזרה' }));
     const listChip = await screen.findByText('קבלה דרך מבחני מו"ר');
@@ -868,6 +868,46 @@ describe('account grades in the homepage journey', () => {
     await screen.findByText('עומד/ת בסף שחושב');
     expect(state.evaluate).toHaveBeenCalledTimes(3);
   });
+
+  it.each(['tau_ee', 'ee', 'tau_datascience', 'datascience'] as const)(
+    'shows requirements only for the gated TAU %s detail, without an answer CTA',
+    async (programId) => {
+      const program = getStaticCataloguePrograms().find((entry) => entry.id === programId)!;
+      const institution = getStaticCatalogueInstitutions().find((entry) => entry.id === 'tau')!;
+      state.fetchPrograms.mockResolvedValue([program]);
+      state.fetchInstitutions.mockResolvedValue([institution]);
+      state.evaluate.mockResolvedValue({
+        reports: {
+          [programId]: {
+            results: [
+              {
+                linkedInstitutionId: 'tau',
+                capability: 'requirements_only',
+                kind: 'requirements_only',
+                decision: 'unknown',
+                confidence: 'low',
+                explanation: 'עדיין לא בדקנו את הציונים שלך מול תנאי הקבלה של המסלול הזה.',
+              },
+            ],
+          },
+        },
+        failedDegreeIds: [],
+      });
+      window.sessionStorage.setItem(
+        'myway_study_journey_v2',
+        JSON.stringify({
+          fields: [studyFields([program])[0].id],
+          locations: ['all'],
+          types: ['all'],
+          selectedRowId: `${programId}:tau`,
+          scores: { bagrut: { weightedAverage: 115 }, psychometric: { overall: 730 } },
+        }),
+      );
+      render(<StudyJourney initialStep="detail" />);
+      await screen.findByRole('heading', { name: 'תנאי קבלה' });
+      expect(screen.queryByRole('button', { name: 'השלימו וקבלו תשובה' })).toBeNull();
+    },
+  );
 
   it('keeps saved courses with unpublished conditions without suggesting grades will resolve them', async () => {
     savedCatalogue();

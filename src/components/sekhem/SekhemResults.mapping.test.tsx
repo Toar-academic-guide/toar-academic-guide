@@ -56,7 +56,6 @@ type ProfileCase = {
   };
 };
 
-const tauCapture = routingOfficial.tau[0];
 const technionCapture = routingOfficial.technion[0];
 const haifaCapture = haifaOfficial.records.find((record) => record.programId === 'cs')!;
 
@@ -64,7 +63,7 @@ const haifaCapture = haifaOfficial.records.find((record) => record.programId ===
 // never from a second formula or a mocked evaluator answer.
 const profiles: ProfileCase[] = [
   {
-    name: 'TAU official engineering score and cutoff',
+    name: 'TAU electrical engineering withholds the old semester-A score and cutoff',
     institutionId: 'tau',
     programId: 'tau_ee',
     input: {
@@ -82,9 +81,12 @@ const profiles: ProfileCase[] = [
         },
       },
     },
-    responses: tauCapture.responses.map((response) => response.body),
-    // Approved test update, Jorje 2026-10-31: preserve the independent TAU score and cutoff while updating Haifa legacy handling.
-    expected: { kind: 'exact', decision: 'accepted', score: 730, threshold: 710 },
+    expected: {
+      kind: 'requirements_only',
+      decision: 'unknown',
+      score: undefined,
+      threshold: undefined,
+    },
   },
   {
     name: 'HUJI raw evaluation is serialized to two decimals',
@@ -313,7 +315,11 @@ describe('real evaluator → batch POST → calculator result rows', () => {
       // Missing subject rows show the actionable Haifa grade-entry prompt.
       expect(
         within(row!).getByText(
-          profile.institutionId === 'haifa' ? result.explanation : expectedVerdict,
+          result.kind === 'requirements_only'
+            ? 'תל אביב: בדיקה אישית מול המוסד'
+            : profile.institutionId === 'haifa'
+              ? result.explanation
+              : expectedVerdict,
         ),
       ).toBeTruthy();
       expect(row!.textContent).not.toMatch(/נתונים|מתואם|סכם|מצרף/);

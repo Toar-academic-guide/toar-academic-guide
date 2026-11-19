@@ -30,6 +30,10 @@ import { evaluateColmanBagrutResult } from './colmanBagrutEvaluation';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
 import { isSourcedCollegeProgrammeId } from '@/data/degrees/collegeProgrammes';
 import catalogueContentRepair from '@/data/admissions/catalogueContentRepair.json';
+import {
+  ISSUE_370_LINK_ONLY_PROGRAM_IDS,
+  ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS,
+} from '@/data/admissions/issue370Corrections';
 import { isHujiMedicineProgram } from '@/lib/hujiMedicineInputs';
 import {
   applyHujiPsychologyDirectRoute,
@@ -370,6 +374,11 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(`${program.id}__${institution.id}`)) {
+      results[index] = unverifiedRequirementsResult(institution, []);
       continue;
     }
 
@@ -2218,9 +2227,10 @@ function evaluateNonExactResult(args: {
 
   // These route-specific records must not inherit broad institution claims about
   // grade gates or interviews when building the student-facing requirements copy.
-  const evidenceRecord = isSourcedCollegeProgrammeId(program.id)
-    ? undefined
-    : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
+  const evidenceRecord =
+    isSourcedCollegeProgrammeId(program.id) || ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
+      ? undefined
+      : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
 
   if (entry.capability === 'needs_input') {

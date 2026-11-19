@@ -270,9 +270,11 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
+    for (const id of ['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork'])
+      expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(445);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -468,7 +470,7 @@ describe('metadata', () => {
   });
 
   it.each([
-    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'mta', 'ono']],
     ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
   ])(
     'uses every provider for %s in metadata, JSON-LD and rendered links',
