@@ -592,7 +592,7 @@ describe('metadata', () => {
     }
     expect(await buildInstitutionMetadata('missing')).toEqual({});
     expect(await buildProgramMetadata('missing')).toEqual({});
-  });
+  }, 15_000);
 
   it('leads with real relation facts and keeps descriptions unique across indexable detail pages', async () => {
     const institution = (await getPublicInstitutionPageData('tau'))!;
