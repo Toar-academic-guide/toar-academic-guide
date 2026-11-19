@@ -348,20 +348,15 @@ export default function InstitutionsDirectory({
                         >
                           {institution.name}
                         </Link>
-                        {institution.sourceUrl && (
+                        {institution.sourceUrl && institution.id !== 'itc' && (
                           <a
                             href={institution.sourceUrl}
                             target="_blank"
                             rel="noreferrer"
-                            aria-label={
-                              institution.id === 'itc'
-                                ? `מידע על ${institution.name} באתר הסוכנות היהודית`
-                                : `אתר ${institution.name}`
-                            }
+                            aria-label={`אתר ${institution.name}`}
                             className={`mt-2 flex min-h-11 w-fit items-center gap-1 rounded text-xs font-normal text-[#647091] ${focusClass}`}
                           >
-                            {institution.id === 'itc' ? 'מידע באתר הסוכנות היהודית' : 'לאתר המוסד'}{' '}
-                            <ExternalLink size={12} aria-hidden="true" />
+                            לאתר המוסד <ExternalLink size={12} aria-hidden="true" />
                           </a>
                         )}
                       </div>

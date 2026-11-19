@@ -72,7 +72,7 @@ it('links to the transfer guide below the institution results', () => {
 const fieldGroup = () => screen.getByRole('group', { name: 'תחום לימודים' });
 const subjectGroup = () => screen.getByRole('group', { name: 'תכנית לימודים' });
 describe('institution subject pills', () => {
-  it('identifies the official operator when ITC links to the Jewish Agency', () => {
+  it('keeps the ITC name without a Jewish Agency link', () => {
     render(
       <InstitutionsDirectory
         institutions={[
@@ -87,11 +87,9 @@ describe('institution subject pills', () => {
         fields={fields}
       />,
     );
-    const link = screen.getByRole('link', {
-      name: 'מידע על Israel Tech Challenge (ITC) באתר הסוכנות היהודית',
-    });
-    expect(link.getAttribute('href')).toBe('https://www.jewishagency.org/israel-tech-challenge/');
-    expect(link.textContent).toContain('מידע באתר הסוכנות היהודית');
+    expect(screen.getByRole('link', { name: 'Israel Tech Challenge (ITC)' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /הסוכנות היהודית/ })).toBeNull();
+    expect(screen.queryByText('מידע באתר הסוכנות היהודית')).toBeNull();
   });
   it('starts with every institution and filters directly by a programme, then clears it', () => {
     open();

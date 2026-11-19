@@ -5,9 +5,12 @@ import type { InstitutionId } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
 import { AuthProvider } from '@/context/AuthContext';
 import { createElement, type ReactNode } from 'react';
+import PrivacyPage from '@/app/privacy/page';
 import InstitutionPage, {
   generateMetadata as generateInstitutionMetadata,
 } from '@/app/institutions/[institutionId]/page';
+import AcademicProfileForm from '@/components/AcademicProfileForm';
+import StudyJourney, { journeySteps } from '@/components/StudyJourney';
 import ProgramPage, {
   generateMetadata as generateProgramMetadata,
 } from '@/app/programs/[programId]/page';
@@ -1163,18 +1166,16 @@ describe('llms.txt calculator link', () => {
   });
 });
 
-const NEXT_STEP_LABELS = new Set(['לאתר המוסד', 'למחשבון המכללה']);
+const ALLOWED_EXTERNAL_LABELS = new Set([
+  'לאתר המוסד',
+  'למחשבון המכללה',
+  'לא זוכרים? למעבר לציונים',
+  'https://www.gov.il/he/departments/the_privacy_protection_authority',
+]);
 
-function isCitationHost(hostname: string) {
+function isOwnHost(hostname: string) {
   const host = hostname.replace(/^www\./, '');
-  return (
-    host === 'ac.il' ||
-    host.endsWith('.ac.il') ||
-    host === 'nite.org.il' ||
-    host.endsWith('.nite.org.il') ||
-    host === 'gov.il' ||
-    host.endsWith('.gov.il')
-  );
+  return host === 'findmyway.co.il' || host.endsWith('.findmyway.co.il');
 }
 
 function contentHtml(markup: string) {
@@ -1238,35 +1239,38 @@ describe('visible source labels', () => {
           );
           markup = `${JSON.stringify(mod.metadata ?? '')}\n${html}`;
         }
-        for (const needle of [
-          'מקור',
-          'עמ׳ ',
-          'מידעון',
-          'קישור רשמי',
-          'נכון ל',
-          'האתר הרשמי מציין',
-        ]) {
-          const index = markup.indexOf(needle);
-          if (index >= 0)
-            hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
-        }
-        const content = contentHtml(html);
-        for (const match of content.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
-          const href = match[1];
-          const text = match[2]
-            .replace(/<[^>]+>/g, '')
-            .replace(/\s+/g, ' ')
-            .trim();
-          if (NEXT_STEP_LABELS.has(text)) continue;
-          let url: URL;
-          try {
-            url = new URL(href, 'https://findmyway.co.il');
-          } catch {
-            continue;
-          }
-          if (!/^https?:$/.test(url.protocol) || !isCitationHost(url.hostname)) continue;
-          hits.push(`${path} ${text || href} -> ${href}`);
-        }
+        recordVisibleSources(hits, path, html, markup);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    try {
+      const html = renderToStaticMarkup(createElement(PrivacyPage));
+      recordVisibleSources(hits, '/privacy', html, html);
+    } catch (error) {
+      hits.push(`/privacy ${error instanceof Error ? error.message : String(error)}`);
+    }
+    try {
+      const html = renderToStaticMarkup(
+        createElement(AcademicProfileForm, {
+          onComplete: async () => true,
+          onClearLocalProfileData: async () => {},
+          onSkip: () => {},
+        }),
+      );
+      recordVisibleSources(hits, '/app/calculator#missing', html, html);
+    } catch (error) {
+      hits.push(
+        `/app/calculator#missing ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    for (const step of journeySteps) {
+      const path = `/app/calculator#${step}`;
+      try {
+        const html = renderToStaticMarkup(
+          createElement(AuthProvider, null, createElement(StudyJourney, { initialStep: step })),
+        );
+        recordVisibleSources(hits, path, html, html);
       } catch (error) {
         hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
       }
@@ -1274,3 +1278,28 @@ describe('visible source labels', () => {
     expect(hits).toEqual([]);
   }, 180000);
 });
+
+function recordVisibleSources(hits: string[], path: string, html: string, markup: string) {
+  for (const needle of ['מקור', 'עמ׳ ', 'מידעון', 'קישור רשמי', 'נכון ל', 'האתר הרשמי מציין']) {
+    const index = markup.indexOf(needle);
+    if (index >= 0)
+      hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+  }
+  const content = contentHtml(html);
+  for (const match of content.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = match[1];
+    const text = match[2]
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (ALLOWED_EXTERNAL_LABELS.has(text)) continue;
+    let url: URL;
+    try {
+      url = new URL(href, 'https://findmyway.co.il');
+    } catch {
+      continue;
+    }
+    if (!/^https?:$/.test(url.protocol) || isOwnHost(url.hostname)) continue;
+    hits.push(`${path} ${text || href} -> ${href}`);
+  }
+}
