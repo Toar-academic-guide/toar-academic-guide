@@ -14,6 +14,7 @@ import { institutionProgramName } from '@/lib/institutionProgramName';
 import { BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS } from '@/lib/admissionsEvaluationProgram';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
+import { prepRow } from '@/lib/prepGuide';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
@@ -279,6 +280,7 @@ export async function getPublicProgramRequirementSources({
       winterCutoff == null
         ? sourceRequirements
         : [`בחורף תשפ"ז: סכם ${winterCutoff}`, ...sourceRequirements];
+    const prep = prepRow(sourceProgram.id);
     institutionRequirementSources[institution.id] = {
       program: sourceProgram,
       sourceProgramId: sourceProgram.id,
@@ -286,7 +288,11 @@ export async function getPublicProgramRequirementSources({
         isGeneral && program.isListed !== false && !hasRequirements(displayRequirements)
           ? []
           : displayRequirements,
-      officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
+      officialUrl: prep
+        ? officialUrl(prep.officialUrl, institution.id, {
+            fallbackToWebsite: false,
+          })
+        : officialUrl(sourceDetail?.programUrl, institution.id),
       ...([
         'tlvyaffo_cs',
         'mta_cs',

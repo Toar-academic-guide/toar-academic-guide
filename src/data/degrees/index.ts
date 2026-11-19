@@ -112,7 +112,7 @@ const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
   // Official Braude pages read 2026-10-28; the broad programme IDs do not identify
   // a single department or preparatory route. Keep the admissions link specific.
   braude_engineering: 'https://w3.braude.ac.il/intrested/',
-  braude_prep: 'https://w3.braude.ac.il/department/mechina/?yeudit#section-id-2',
+  braude_prep: 'https://w3.braude.ac.il/department/mechina/',
   colman_law: 'https://www.colman.ac.il/academics/ba/law/',
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };

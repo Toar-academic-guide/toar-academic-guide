@@ -35,6 +35,19 @@ import { HaifaPsychologyOfek } from '@/components/seo/HaifaPsychologyOfek';
 import { LawBarOutcomeLine, LawBarOutcomesTable } from '@/components/seo/LawBarOutcomes';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { absoluteUrl } from '@/lib/site';
+import {
+  NursingAnswer,
+  NursingFaq,
+  nursingFaqLd,
+  NursingHubLink,
+  NursingInstitutionsTable,
+  NursingRelatedLink,
+} from '@/components/seo/NursingGuide';
+import { nursingInstitutionCount, nursingInstitutions } from '@/data/nursingInstitutions';
+import PrepGuide, { prepFaqLd } from '@/components/seo/PrepGuide';
+import { prepRow } from '@/lib/prepGuide';
+
+const nursingRelatedSubjects = new Set(['medicine', 'physiotherapy', 'occupational_therapy']);
 
 export const dynamic = 'force-dynamic';
 
@@ -55,6 +68,27 @@ export async function generateMetadata({ params }: ProgramPageProps) {
     };
   }
   const metadata = await buildProgramMetadata(programId);
+  if (programId === 'nursing') {
+    const title = 'לימודי סיעוד: איפה לומדים ותנאי קבלה';
+    const description = `איפה לומדים סיעוד? כל ${nursingInstitutionCount} המסגרות לתואר ראשון ברשימת משרד הבריאות, מסלולי הסבה ועתודה, ותנאי קבלה לפי מוסד עם קישור לאתר הרשמי.`;
+    return {
+      ...metadata,
+      title,
+      description,
+      openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
+  if (programId === 'prep') {
+    const title = 'מכינה קדם־אקדמית: מה היא מחליפה ומה נדרש להיכנס';
+    const description =
+      'השוואת מכינות קדם־אקדמיות: מה התעודה מחליפה, מה נדרש כדי להיכנס, לאילו תחומים היא מיועדת וכמה זמן היא נמשכת, עם קישורים למוסדות.';
+    return {
+      ...metadata,
+      title,
+      description,
+      openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
   if (programId === 'cs') {
     const description =
       'ספי הקבלה למדעי המחשב בטכניון, בתל אביב, בחיפה וברייכמן, כל סף בסולם של המוסד ועם קישור למקור. בדקו מסלולים נתמכים במחשבון MyWay.';
@@ -130,11 +164,22 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
       </WayPageShell>
     );
   }
-  const data = await getPublicProgramPageData(programId);
+  const pageData = await getPublicProgramPageData(programId);
+  const isNursingRelatedSubject = nursingRelatedSubjects.has(programId);
 
-  if (!data) {
+  if (!pageData) {
     const subject = await getPublicSubjectHub(programId);
     if (!subject) notFound();
+    if (programId === 'prep') {
+      return (
+        <WayPageShell>
+          <main dir="rtl" data-page-kind="subject">
+            <JsonLd data={prepFaqLd} />
+            <PrepGuide programIds={subject.hub.programs.map((program) => program.id)} />
+          </main>
+        </WayPageShell>
+      );
+    }
     return (
       <WayPageShell>
         <main
@@ -167,12 +212,23 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </li>
             ))}
           </ul>
+          {isNursingRelatedSubject && (
+            <div className="mt-8">
+              <NursingRelatedLink />
+            </div>
+          )}
         </main>
       </WayPageShell>
     );
   }
 
+  const isNursingHub = pageData.isGeneral && programId === 'nursing';
+  const data = isNursingHub
+    ? { ...pageData, institutions: pageData.institutions.filter(({ id }) => id !== 'telhai') }
+    : pageData;
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
+  const isNursingProgramme = nursingInstitutions.some((row) => row.programId === programId);
+  const prep = prepRow(program.id);
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
   const possibleCalculatorInstitutions = institutions.filter((institution) =>
@@ -195,6 +251,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           programBreadcrumbLd(data),
           ...(isCsHub ? [csFaqLd()] : []),
           ...(isPsychologyHub ? [psychologyFaqLd()] : []),
+          ...(isNursingHub ? [nursingFaqLd()] : []),
           ...(programId === 'law' ? lawOutcomeSchema() : []),
         ]}
       />
@@ -205,7 +262,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         className="px-4 py-10 text-right text-slate-900 sm:px-6"
       >
         <section
-          className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub ? 'max-w-6xl' : 'max-w-4xl'}`}
+          className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
         >
           <Link
             href={ROUTES.home}
@@ -219,6 +276,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               <ProgramName name={program.name} />
             </h1>{' '}
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
+            {isNursingHub && <NursingAnswer />}
             <div className="mt-6 flex flex-wrap gap-3">
               {hasCalculator && (
                 <ProgramTrackedLink
@@ -372,6 +430,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           )}
           {isPsychologyHub && <PsychologyComparison />}
+          {isNursingHub && (
+            <NursingInstitutionsTable
+              programmePaths={new Set(institutions.map(({ id }) => institutionProgramPaths[id]))}
+            />
+          )}
           {!isPsychologyHub && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">מוסדות לימוד</h2>{' '}
@@ -467,23 +530,49 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                       href={officialLinkHref}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className={`font-semibold text-[#6554b8] underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
+                      className={
+                        prep
+                          ? 'inline-flex min-h-11 min-w-11 items-center font-semibold text-[#6554b8] underline'
+                          : `font-semibold text-[#6554b8] underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`
+                      }
                     >
                       לאתר המוסד
                     </ProgramTrackedLink>
                   );
+                  const isTauNursing = isNursingHub && institution.id === 'tau';
                   return (
-                    <div key={institution.id}>
+                    <div
+                      key={institution.id}
+                      id={isTauNursing ? 'tau' : undefined}
+                      className={isTauNursing ? 'scroll-mt-24' : undefined}
+                    >
                       {institutions.length > 1 && (
                         <h3 className="font-semibold">{institution.name}</h3>
                       )}
-                      {displayRequirements.length === 0 && (
+                      {!prep && displayRequirements.length === 0 && (
                         <TechnionThresholdNotice
                           programId={program.id}
                           institutionId={institution.id}
                         />
                       )}
-                      {displayRequirements.length > 0 ? (
+                      {prep ? (
+                        <div className="mt-3 space-y-3 text-sm leading-6 text-[#35415b]">
+                          {prep.replaces && (
+                            <p>
+                              תעודת המכינה מחליפה את {prep.replaces}.{' '}
+                              {prep.entry && `מבחן מיון לכניסה למכינה: ${prep.entry}`}
+                            </p>
+                          )}
+                          {prep.afterCompletion && <p>{prep.afterCompletion}</p>}
+                          {officialLink && <p>{officialLink}</p>}
+                          <Link
+                            href="/programs/prep"
+                            className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline"
+                          >
+                            השוואת כל המכינות
+                          </Link>
+                        </div>
+                      ) : displayRequirements.length > 0 ? (
                         <>
                           <RequirementTiles
                             program={source.program}
@@ -545,7 +634,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {checked?.sourceUrl &&
+                      {!prep &&
+                        checked?.sourceUrl &&
                         !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
                           <p
                             dir="rtl"
@@ -566,6 +656,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   );
                 })}
               </div>
+              {isNursingProgramme && (
+                <div className="mt-4 text-sm">
+                  <NursingHubLink>כל המוסדות ללימודי סיעוד</NursingHubLink>
+                </div>
+              )}
             </section>
           )}{' '}
           {csComparedProgramIds.has(program.id) && !isGeneral && (
@@ -591,6 +686,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 : related.programs
             }
           />
+          {isNursingHub && <NursingFaq />}
+          {isNursingRelatedSubject && <NursingRelatedLink />}
         </section>
       </main>
     </WayPageShell>
