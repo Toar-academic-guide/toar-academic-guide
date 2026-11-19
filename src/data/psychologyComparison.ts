@@ -55,7 +55,12 @@ export const psychologyComparisonRows: readonly PsychologyComparisonRow[] = [
         url: hujiAge30,
       },
     ],
-    bagrut: [],
+    bagrut: [
+      {
+        text: 'ללא פסיכומטרי: ממוצע בגרות 113 לפחות, או 109.5 לראויים לקידום. נדרשת עמידה גם בתנאי הקבלה הנוספים של החוג.',
+        url: 'https://info.huji.ac.il/reception-channels/KabalaYeshira_Bagrut',
+      },
+    ],
     scale: 'ציון פסיכומטרי',
     officialUrl: huji,
     checkedDate: '14.11.2026',

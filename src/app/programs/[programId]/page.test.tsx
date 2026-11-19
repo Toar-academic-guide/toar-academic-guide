@@ -327,6 +327,11 @@ describe('ProgramPage', () => {
       );
     }
     expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
+    const huji = rows.find((row) => row.textContent?.includes('האוניברסיטה העברית בירושלים'))!;
+    const hujiBagrut = huji.querySelectorAll('td')[1];
+    expect(hujiBagrut.textContent).toContain('113');
+    expect(hujiBagrut.textContent).toContain('109.5');
+    expect(hujiBagrut.textContent).not.toContain('—');
     expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
     expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
     const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;

@@ -1,5 +1,6 @@
 'use client';
 
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/unreviewedCalculatorPairs';
 import { savedAcademicRevision } from '@/lib/sekhemProfile';
 import { resultCalculatorHref } from '@/lib/resultCalculatorLink';
 import HomeHero from './hero/HomeHero';
@@ -1809,9 +1810,10 @@ export default function StudyJourney({
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          {!activeShowsNoCalculationNote && (
-                            <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>
-                          )}
+                          {!activeShowsNoCalculationNote &&
+                            !ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(
+                              `${activeRow.program.id}__${activeRow.institution.id}`,
+                            ) && <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}

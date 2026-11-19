@@ -408,12 +408,7 @@ export const ISSUE_370_LINK_ONLY_PROGRAM_IDS = new Set([
 ]);
 
 // These pages now show a different TAU route from the calculator's reviewed one.
-export const ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS = new Set([
-  'tau_ee__tau',
-  'ee__tau',
-  'tau_datascience__tau',
-  'datascience__tau',
-]);
+export { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from './unreviewedCalculatorPairs';
 
 export const ISSUE_370_REPAIR_IDS = new Set([
   ...ISSUE_370_CORRECTIONS.map((row) => row.programId),
