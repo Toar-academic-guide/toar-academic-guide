@@ -1196,6 +1196,7 @@ describe('visible source labels', () => {
     '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
     '/amirnet': () => import('@/app/amirnet/page'),
     '/psychometric-accommodations': () => import('@/app/psychometric-accommodations/page'),
+    '/atuda': () => import('@/app/atuda/page'),
     '/open-days': () => import('@/app/open-days/page'),
     '/transfer': () => import('@/app/transfer/page'),
     '/without-psychometric': () => import('@/app/without-psychometric/page'),
