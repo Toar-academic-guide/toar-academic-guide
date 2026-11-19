@@ -328,9 +328,13 @@ function withVerifiedAdmissionInformation(
     return result;
 
   const verificationNote = `נתוני הבסיס אומתו למחזור ${contract.admissionCycle}.`;
+  const showVerificationNote = !(
+    result.linkedInstitutionId === 'bgu' &&
+    (input.degreeId === 'bgu_medicine' || input.degreeId === 'medicine')
+  );
 
   if (result.capability === 'exact') {
-    return result.scoreAssessment
+    return result.scoreAssessment || !showVerificationNote
       ? result
       : { ...result, explanation: `${result.explanation} ${verificationNote}` };
   }
@@ -343,7 +347,7 @@ function withVerifiedAdmissionInformation(
 
   return {
     ...result,
-    explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי. ${verificationNote}`,
+    explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי.${showVerificationNote ? ` ${verificationNote}` : ''}`,
     nextAction:
       result.kind === 'degraded' && isBguPsychologyProgram(input.degreeId)
         ? result.nextAction

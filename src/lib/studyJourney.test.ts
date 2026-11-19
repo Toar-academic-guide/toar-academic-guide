@@ -9,6 +9,9 @@ import {
   bagrutScoresForMode,
   resultLabel,
   resultExplanation,
+  medicineLaterStagesLine,
+  MEDICINE_SCREENING_LABEL,
+  MEDICINE_LATER_STAGES_LINE,
   showsOfficialNoCalculationNote,
   groupJourneyRows,
   studyFields,
@@ -213,6 +216,51 @@ it.each(['exact', 'estimated'] as const)(
     });
   },
 );
+
+describe('medicine screening labels', () => {
+  const result = {
+    institution: getStaticCatalogueInstitutions().find((item) => item.id === 'huji')!,
+    linkedInstitutionId: 'huji',
+    stage: 'academic' as const,
+    kind: 'exact' as const,
+    capability: 'exact' as const,
+    decision: 'eligible_to_apply' as const,
+    confidence: 'high' as const,
+    score: 26,
+    threshold: 25.186,
+    scoreAssessment: 'meets_threshold' as const,
+    sourceLabel: 'השלב האקדמי ברפואה',
+    explanation: MEDICINE_LATER_STAGES_LINE,
+    nextAction: 'בהמשך: מיון אישיותי ודירוג המועמדים. העמידה בסף אינה מבטיחה זימון או קבלה.',
+  };
+
+  it('labels a medicine pass or gap as the first screening stage', () => {
+    expect(resultLabel(result, false, false, 'huji_medicine')).toEqual({
+      label: MEDICINE_SCREENING_LABEL,
+      group: 'match',
+    });
+    expect(
+      resultLabel(
+        {
+          ...result,
+          linkedInstitutionId: 'tau',
+          scoreAssessment: 'below_threshold',
+          decision: 'below',
+          score: 700,
+          threshold: 726.44,
+        },
+        false,
+        false,
+        'tau_medicine',
+      ),
+    ).toEqual({ label: MEDICINE_SCREENING_LABEL, group: 'improve' });
+    expect(medicineLaterStagesLine(result, 'huji_medicine')).toBe(MEDICINE_LATER_STAGES_LINE);
+    expect(resultLabel({ ...result, stage: undefined }, false, false, 'tau_cs')).toEqual({
+      label: 'עוברים את הסף ✓',
+      group: 'match',
+    });
+  });
+});
 
 describe('subject search synonyms', () => {
   it.each(['הנדסה', 'הנדסת', '  הנדסה  '])('matches engineering forms for %s', (query) => {

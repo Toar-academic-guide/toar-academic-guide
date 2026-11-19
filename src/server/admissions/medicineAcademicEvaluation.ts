@@ -233,7 +233,7 @@ export async function evaluateMedicineAcademicStage({
       requiredInputs,
       scoreAssessment: score >= threshold ? 'meets_threshold' : 'below_threshold',
       decision: score >= threshold ? 'eligible_to_apply' : 'below',
-      explanation: 'בדיקת השלב האקדמי לתשפ״ז (2026–2027).',
+      explanation: 'הקבלה נקבעת בהמשך, במו״ר או בראיונות.',
     },
     conditions,
   );
