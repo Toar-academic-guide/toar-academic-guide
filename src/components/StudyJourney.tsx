@@ -124,7 +124,7 @@ function journeyAdmissionRequirements(
   ];
 }
 
-const STEPS = [
+export const journeySteps = [
   'home',
   'intent',
   'subjects',
@@ -150,7 +150,7 @@ const STEPS = [
   'quiz-result',
   'account',
 ] as const;
-type Step = (typeof STEPS)[number];
+type Step = (typeof journeySteps)[number];
 const DRAFT_KEY = 'myway_study_journey_v2';
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 interface JourneyCatalogue {
@@ -400,7 +400,7 @@ export default function StudyJourney({
     const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
       focusHeadingOnNavigation.current = !!event;
-      setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
+      setStep(journeySteps.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
     window.addEventListener('hashchange', readStep);
@@ -1491,16 +1491,6 @@ export default function StudyJourney({
                   </label>
                 ))}
               </div>
-            )}
-            {step === 'psy-score' && (
-              <a
-                className="journey-pill journey-grade-link journey-psy-score-link"
-                href="https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/"
-                target="_blank"
-                rel="noopener noreferrer"
-              >
-                איך לצפות בציונים באתר מאל״ו
-              </a>
             )}
             {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">

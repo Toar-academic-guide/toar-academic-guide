@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { psychologyComparisonRows } from './psychologyComparison';
+import { psychologyComparisonRows, psychologyProfessionUrl } from './psychologyComparison';
 
 describe('psychology comparison sources', () => {
   it('covers the nine issue-specified programme routes with a dated official source for every figure', () => {
@@ -39,5 +39,6 @@ describe('psychology comparison sources', () => {
     expect(row('ariel_psychology').scale).toBe('לא אומת');
     expect(row('ariel_psychology').note).toContain('תנאי הקבלה לא אומתו');
     expect(row('ariel_psychology').note).not.toContain('21.10.2026');
+    expect(psychologyProfessionUrl).toMatch(/^https:\/\/me\.health\.gov\.il\//);
   });
 });

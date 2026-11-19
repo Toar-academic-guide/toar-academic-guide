@@ -3,8 +3,8 @@ import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import ProfileSekhemCalculator from '@/components/sekhem/ProfileSekhemCalculator';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
-import { HAIFA_CALCULATOR_URL, HAIFA_PROGRAM_URLS } from '@/data/admissions/haifaOfficialUrls';
 import JsonLd from '@/components/seo/JsonLd';
+import { sekhemAverageSources } from '@/data/sekhemAverageSources';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
@@ -14,35 +14,8 @@ import { isMedicineAcademicPair } from '@/lib/medicineAcademicInputs';
 
 const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const description =
-  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה.';
 const canonical = absoluteUrl('/sekhem-calculator');
-
-const averageSources = [
-  {
-    id: 'tau',
-    name: 'אוניברסיטת תל אביב',
-    url: 'https://ims.tau.ac.il/Md/calc/Bagrut.aspx',
-    label: 'מחשבון הבגרות הרשמי',
-  },
-  {
-    id: 'bgu',
-    name: 'אוניברסיטת בן־גוריון בנגב',
-    url: 'https://bgu4u.bgu.ac.il/html/average_calc/index.php',
-    label: 'מחשבון הבגרות והסכם',
-  },
-  {
-    id: 'haifa',
-    name: 'אוניברסיטת חיפה',
-    url: 'https://applicants.haifa.ac.il/enrollmentChances/index.html',
-    label: 'מחשבון הבגרות והסכם',
-  },
-  {
-    id: 'huji',
-    name: 'האוניברסיטה העברית',
-    url: 'https://info.huji.ac.il/reception-components/Bagrut',
-    label: 'הנחיות הבגרות באתר העברית',
-  },
-];
 
 const faq = [
   {
@@ -99,7 +72,7 @@ export default async function Page({
   searchParams: Promise<{ program?: string; from?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
-  const coveredAverageSources = averageSources.filter((source) =>
+  const coveredAverageSources = sekhemAverageSources.filter((source) =>
     offerings.some(
       (offering) =>
         offering.institutionId === source.id &&
@@ -176,8 +149,7 @@ export default async function Page({
           <p className="text-(--text-body)">
             ממוצע הבגרות מחושב לפי משקל היחידות, וכל מוסד מוסיף בונוסים לפי הכללים שלו. לכן אותן
             בגרויות יכולות לתת ממוצע שונה ממוסד למוסד. כאן מוצג הממוצע לפי המוסד של התוכנית שבחרתם,
-            ורק במוסדות שהמחשבון באמת מכסה. בטבלה מופיע קישור למחשבון הרשמי או להנחיות הבגרות של כל
-            מוסד כזה. אין כאן הבטחת קבלה, ואין נוסחה אחת לכולם.
+            ורק במוסדות שהמחשבון באמת מכסה. אין כאן הבטחת קבלה, ואין נוסחה אחת לכולם.
           </p>
           <table
             className="w-full table-fixed text-right text-sm leading-6"
@@ -185,11 +157,8 @@ export default async function Page({
           >
             <thead>
               <tr className="border-b border-(--border)">
-                <th scope="col" className="w-[35%] py-3 pe-2">
+                <th scope="col" className="py-3 pe-2">
                   מוסד
-                </th>
-                <th scope="col" className="py-3">
-                  קישור רשמי
                 </th>
               </tr>
             </thead>
@@ -202,14 +171,6 @@ export default async function Page({
                       <span className="block font-normal">במסלול הרפואה הנתמך</span>
                     )}
                   </th>
-                  <td className="py-3 pe-2 align-top">
-                    <a
-                      href={source.url}
-                      className="inline-flex min-h-11 items-center underline underline-offset-4"
-                    >
-                      {source.label}
-                    </a>
-                  </td>
                 </tr>
               ))}
             </tbody>
@@ -294,14 +255,6 @@ export default async function Page({
               מתקבל <strong>סכם של 718</strong> — 18 נקודות מעל הסף של 700 לשנת תשפ״ז. הציון
               במתמטיקה עומד גם בדרישת החוג לחמש יחידות. עדיין צריך לבדוק את דרישות העברית והאנגלית.
             </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-              <a className="underline underline-offset-4" href={HAIFA_CALCULATOR_URL}>
-                איך אוניברסיטת חיפה מחשבת סכם
-              </a>
-              <a className="underline underline-offset-4" href={HAIFA_PROGRAM_URLS.haifa_cs}>
-                תנאי הקבלה למדעי המחשב בחיפה
-              </a>
-            </div>
           </section>
         )}
       </main>

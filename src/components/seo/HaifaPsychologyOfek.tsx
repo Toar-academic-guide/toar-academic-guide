@@ -1,4 +1,5 @@
-const sourceUrl = 'https://admissions.haifa.ac.il/social-sciences/program/3268/';
+export const haifaPsychologyOfekUrl =
+  'https://admissions.haifa.ac.il/social-sciences/program/3268/';
 
 export function HaifaPsychologyOfek() {
   return (
@@ -15,14 +16,6 @@ export function HaifaPsychologyOfek() {
         לומדים על תנאי וצריך לעבור <bdi dir="ltr">2–3</bdi> קורסים בציון 75 לפחות. רק לאחר עמידה בכל
         תנאי המסלול עוברים למעמד מן המניין בסמסטר ב׳; אי־עמידה בתנאים מובילה להפסקת הלימודים.
       </p>
-      <a
-        href={sourceUrl}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="mt-3 inline-flex min-h-11 items-center text-[#6554b8] underline underline-offset-2"
-      >
-        תנאי מסלול אופק באתר אוניברסיטת חיפה
-      </a>
     </section>
   );
 }

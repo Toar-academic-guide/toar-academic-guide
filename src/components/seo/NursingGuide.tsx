@@ -6,7 +6,6 @@ import {
   nursingInstitutions,
   nursingPisgaInstitutions,
   nursingRetrainingCount,
-  nursingSource,
   nursingTrackLabels,
 } from '@/data/nursingInstitutions';
 import { absoluteUrl } from '@/lib/site';
@@ -48,14 +47,11 @@ export function NursingInstitutionsTable({
             <th scope="col" className="w-[25%] border border-slate-200 px-3 py-2 text-right">
               מוסד
             </th>
-            <th scope="col" className="w-[43%] border border-slate-200 px-3 py-2 text-right">
+            <th scope="col" className="w-[50%] border border-slate-200 px-3 py-2 text-right">
               מסלולים ברשימת משרד הבריאות
             </th>
-            <th scope="col" className="w-[17%] border border-slate-200 px-3 py-2 text-right">
+            <th scope="col" className="w-[25%] border border-slate-200 px-3 py-2 text-right">
               ב-MyWay
-            </th>
-            <th scope="col" className="w-[15%] border border-slate-200 px-3 py-2 text-right">
-              אתר המוסד
             </th>
           </tr>
         </thead>
@@ -81,9 +77,7 @@ export function NursingInstitutionsTable({
                 <td className={`col-span-2 block pt-1 text-slate-700 ${cellClass}`}>
                   {row.tracks.map((track) => nursingTrackLabels[track]).join(' · ')}
                 </td>
-                <td
-                  className={`${mywayHref ? 'col-start-1 row-start-3 block' : 'hidden'} ${cellClass}`}
-                >
+                <td className={`${mywayHref ? 'block' : 'hidden'} ${cellClass}`}>
                   {row.hubAnchor ? (
                     <a href={`#${row.hubAnchor}`} className={linkClass}>
                       תנאי קבלה בעמוד הזה
@@ -96,29 +90,13 @@ export function NursingInstitutionsTable({
                     '—'
                   )}
                 </td>
-                <td
-                  className={`${mywayHref ? 'col-start-2' : 'col-start-1'} row-start-3 block ${cellClass}`}
-                >
-                  <a
-                    href={row.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={linkClass}
-                  >
-                    {row.officialFormat === 'pdf' ? 'ידיעון האוניברסיטה (PDF)' : 'לאתר המוסד'}
-                  </a>
-                </td>
               </tr>
             );
           })}
         </tbody>
       </table>
       <p className="mt-3 text-sm leading-6 text-slate-700">
-        {'מקור: '}
-        <a href={nursingSource.url} target="_blank" rel="noopener noreferrer" className={linkClass}>
-          משרד הבריאות, אגף הסיעוד — מוסדות להשכלה גבוהה לתואר ראשון בסיעוד
-        </a>
-        . תנאי הקבלה המחייבים מופיעים באתר כל מוסד.
+        תנאי הקבלה המחייבים מופיעים באתר כל מוסד.
       </p>
     </section>
   );

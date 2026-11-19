@@ -32,9 +32,8 @@ it('renders official sourced routes in numeric order, preserving cycle and condi
   expect(numbers).toEqual([...numbers].sort((a, b) => a - b));
   expect(rows.length).toBeGreaterThan(15);
   for (const row of rows) {
-    expect(
-      within(row).getByRole('link', { name: 'תנאי הקבלה באתר המוסד' }).getAttribute('href'),
-    ).toMatch(/^https:\/\//);
+    expect(within(row).queryByRole('link', { name: 'תנאי הקבלה באתר המוסד' })).toBeNull();
+    expect(row.textContent).not.toContain('מקור');
     expect(within(row).queryByText('10.11.2026')).toBeNull();
     expect(row.textContent).not.toMatch(/נבדק/);
   }
@@ -58,7 +57,7 @@ it('keeps source-only identities off internal programme and calculator links', a
   render(await Page());
   for (const name of ['סטטיסטיקה ומדע הנתונים', 'מדעי התזונה', 'רוקחות', 'הנדסת הסביבה']) {
     const row = screen.getByRole('heading', { name }).closest('tr')!;
-    expect(within(row).getAllByRole('link')).toHaveLength(1);
+    expect(within(row).queryAllByRole('link')).toHaveLength(0);
     expect(row.textContent).not.toContain('10.11.2026');
   }
   const business = screen

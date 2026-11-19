@@ -9,16 +9,6 @@ const title = 'התאמות לפסיכומטרי: אבחון, תוקף ובקש�
 const description =
   'מי זכאי לבחינה פסיכומטרית בתנאים מותאמים, מתי אבחון נחשב עדכני, ולמה אישור למאל״ו לא עובר אוטומטית לאמירנט או למוסד הלימודים. לפי הכללים הרשמיים של מאל״ו.';
 const canonical = absoluteUrl('/psychometric-accommodations');
-const nite = {
-  accommodations: 'https://www.nite.org.il/special-test-accommodations/',
-  learning:
-    'https://www.nite.org.il/special-test-accommodations/learning-disablity-accommodations/',
-  faq: 'https://www.nite.org.il/special-test-accommodations/faq/',
-  amirnet: 'https://www.nite.org.il/other-tests/amirnet/',
-};
-const institutionalAccommodations =
-  'https://www.gov.il/BlobFolder/guide/higher_education_rights/en/sitedocs_higher_education_rights.pdf';
-
 const questions = [
   {
     question: 'איזה אבחון מתאים לבקשת התאמות לפסיכומטרי?',
@@ -28,7 +18,7 @@ const questions = [
   {
     question: 'מתי האבחון נחשב עדכני?',
     answer:
-      'ללקות למידה, לפי מאל״ו: אבחון שנערך אחרי גיל 18, או אבחון שנערך אחרי גיל 16 ולא עברו 5 שנים מיום עריכתו. לכל סיבה אחרת יש לבדוק את רשימת המסמכים בעמוד הרשמי של אותה סיבה.',
+      'ללקות למידה, לפי מאל״ו: אבחון שנערך אחרי גיל 18, או אבחון שנערך אחרי גיל 16 ולא עברו 5 שנים מיום עריכתו. לכל סיבה אחרת רשימת המסמכים מופיעה בטופס הבקשה להתאמות באתר מאל״ו.',
   },
   {
     question: 'האם אותו מסמך תופס גם באמירנט וגם במוסד הלימודים?',
@@ -82,10 +72,6 @@ export default function Page() {
               אישור לבחינה הפסיכומטרית אינו עובר אוטומטית לאמירנט ולא למוסד הלימודים. לכל בחינה ולכל
               מוסד מגישים בקשה נפרדת.
             </p>
-            <p className={styles.source}>
-              הכללים ללקות למידה ולאופן הגשת הבקשה: <a href={nite.learning}>מאל״ו</a>. לכל סיבת בקשה
-              אחרת יש רשימת מסמכים נפרדת <a href={nite.accommodations}>בעמוד הרשמי</a>.
-            </p>
           </header>
 
           <section aria-labelledby="documents" className={styles.section}>
@@ -93,9 +79,6 @@ export default function Page() {
             <p>
               אפשר לבקש בחינה בתנאים מותאמים בשל לקות למידה, הפרעת קשב ופעלתנות יתר, הפרעה על הרצף
               האוטיסטי, מגבלה גופנית או מגבלה נפשית. אפשר לציין יותר מסיבה אחת.
-            </p>
-            <p className={styles.source}>
-              <a href={nite.accommodations}>בחינה בתנאים מותאמים באתר מאל״ו</a>
             </p>
             <h3>בקשה בשל לקות למידה</h3>
             <p>
@@ -119,17 +102,12 @@ export default function Page() {
               ללקות כתיבה בלבד מאל״ו מפרסם כלל נפרד: הערכה אחרי גיל <bdi dir="ltr">12</bdi> שלא עברו{' '}
               <bdi dir="ltr">5</bdi> שנים מיום עריכתה, עם חריג להערכה שנעשתה אחרי גיל{' '}
               <bdi dir="ltr">18</bdi>. אין להחיל את כלל גיל <bdi dir="ltr">16/18</bdi> על קשב,
-              אוטיזם או מגבלה גופנית או נפשית; בדקו את רשימת המסמכים לסיבת הבקשה שלכם באתר מאל״ו.
-            </p>
-            <p className={styles.source}>
-              <a href={nite.learning}>בקשה בשל לקות למידה באתר מאל״ו</a>
+              אוטיזם או מגבלה גופנית או נפשית. רשימת המסמכים לכל אחת מהסיבות האלה מופיעה בטופס הבקשה
+              להתאמות באתר מאל״ו.
             </p>
             <p>
               המלצות המאבחן אינן מאושרות אוטומטית. מאל״ו קובע את התנאים לפי מאפייני הבחינה והחומר
               שהוגש.
-            </p>
-            <p className={styles.source}>
-              <a href={nite.faq}>שאלות ותשובות באתר מאל״ו</a>
             </p>
           </section>
 
@@ -146,13 +124,6 @@ export default function Page() {
             <p>
               המסמך שמוגש למאל״ו אינו מחליף בקשה למוסד הלימודים. את ההתאמות בלימודים ובבחינות
               האקדמיות קובע המוסד לפי הכללים שלו.
-            </p>
-            <p className={styles.source}>
-              <a href={nite.faq}>בקשות נפרדות לפי מאל״ו</a>
-              {' · '}
-              <a href={institutionalAccommodations}>
-                התאמות במוסד הלימודים לפי נציבות שוויון זכויות לאנשים עם מוגבלות
-              </a>
             </p>
           </section>
 
@@ -171,7 +142,6 @@ export default function Page() {
             <Link href="/psychometric-two-domain">הפסיכומטרי הדו־תחומי</Link>
             <Link href="/sekhem-calculator">מחשבון סכם</Link>
             <Link href="/calculator">מחשבון סיכויי קבלה</Link>
-            <a href={nite.amirnet}>מידע רשמי על אמירנט</a>
           </nav>
         </article>
       </main>

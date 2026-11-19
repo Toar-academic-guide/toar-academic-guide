@@ -15,6 +15,7 @@ vi.mock('@/server/catalogue/queries', async () => {
   };
 });
 
+import { transferReferenceUrls } from '@/data/transferReferenceUrls';
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
 
@@ -24,16 +25,11 @@ it('renders the two separate decisions and concrete official-source next steps',
   expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('שתי בדיקות נפרדות');
   expect(screen.getByRole('heading', { name: 'קבלה לתוכנית החדשה' })).toBeTruthy();
   expect(screen.getByRole('heading', { name: 'הכרה בקורסים שכבר למדתם' })).toBeTruthy();
+  expect(screen.queryByRole('link', { name: 'מסמכי ההרשמה לבעלי השכלה אקדמית' })).toBeNull();
   expect(
-    screen.getByRole('link', { name: 'מסמכי ההרשמה לבעלי השכלה אקדמית' }).getAttribute('href'),
-  ).toBe('https://go.tau.ac.il/he/ba/process-doc');
-  expect(
-    screen
-      .getByRole('link', { name: 'נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז' })
-      .getAttribute('href'),
-  ).toBe(
-    'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
-  );
+    screen.queryByRole('link', { name: 'נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז' }),
+  ).toBeNull();
+  expect(document.querySelector('a[href^="https://"]')).toBeNull();
   expect(
     screen.getByRole('link', { name: 'האוניברסיטה הפתוחה ב־MyWay' }).getAttribute('href'),
   ).toBe('/institutions/open_university');
@@ -45,6 +41,15 @@ it('renders the two separate decisions and concrete official-source next steps',
   expect(text).not.toMatch(/\b(?:30|40|44|50|700|800)\b/);
   expect(text).not.toContain('ההרשמה פתוחה');
   expect(text).not.toContain('חיסכון');
+  expect(text).not.toContain('מקור');
+  expect(transferReferenceUrls.map((source) => source.href)).toEqual([
+    'https://go.tau.ac.il/he/ba/partial-studies',
+    'https://go.tau.ac.il/he/ba/process-doc',
+    'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
+    'https://www.openu.ac.il/transfertrack/pages/default.aspx',
+    'https://www.openu.ac.il/transfertrack/pages/faq.aspx',
+    'https://stuad.biu.ac.il/node/52',
+  ]);
 });
 
 it('publishes matching absolute canonical and social metadata and a dated sitemap entry', async () => {

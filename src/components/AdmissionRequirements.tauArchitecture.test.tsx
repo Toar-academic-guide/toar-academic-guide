@@ -89,21 +89,10 @@ function assertTable(table: HTMLElement) {
     expect(within(row).getAllByRole('cell')[0].textContent?.trim()).not.toBe('');
     expect(row.classList.contains('border-b')).toBe(true);
   }
-  const links = within(table).getAllByRole('link');
-  expect(links.map((link) => [link.textContent, link.getAttribute('href')])).toEqual([
-    [
-      'פסיכומטרי',
-      'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements&utm_source=myway&utm_medium=referral',
-    ],
-    [
-      'מתמטיקה',
-      'https://go.tau.ac.il/he/arts/ba/arch?v=admission-requirements&utm_source=myway&utm_medium=referral',
-    ],
-    [
-      'אנגלית בפסיכומטרי',
-      'https://go.tau.ac.il/he/ba/admissions?utm_source=myway&utm_medium=referral',
-    ],
-  ]);
+  expect(
+    [...table.querySelectorAll('th[scope="row"]')].map((header) => header.textContent?.trim()),
+  ).toEqual(['פסיכומטרי', 'מתמטיקה', 'אנגלית בפסיכומטרי']);
+  expect(within(table).queryAllByRole('link')).toHaveLength(0);
 }
 
 describe.each([false, true])('TAU architecture requirements (maths entered: %s)', (withMaths) => {
@@ -124,7 +113,7 @@ describe.each([false, true])('TAU architecture requirements (maths entered: %s)'
     assertTable(screen.getByRole('table'));
     expect(container.textContent).not.toContain('תנאי קבלה');
     expect(container.querySelectorAll('p')).toHaveLength(0);
-    expect(screen.getAllByRole('link')).toHaveLength(3);
+    expect(screen.queryAllByRole('link')).toHaveLength(0);
   });
 
   it('renders exactly one admission heading in the real StudyJourney section', async () => {

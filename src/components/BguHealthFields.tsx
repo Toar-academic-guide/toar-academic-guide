@@ -86,15 +86,7 @@ export default function BguHealthFields({
       <p className="mt-3 text-xs leading-relaxed text-slate-600">
         בוגרי תואר ראשון בכל תחום בממוצע 85 ומעלה יכולים לעבור לדיון במחלקת ריפוי בעיסוק ללא
         פסיכומטרי; אין הבטחת ראיון. בריפוי בעיסוק נדרשים לראיון הצהרת בריאות ואישור מרופא משפחה.
-        בפיזיותרפיה יוזמנו בעלי הסכם והפסיכומטרי הגבוהים ביותר לאחר תוצאות אפריל.{' '}
-        <a
-          href="https://www.bgu.ac.il/welcome/contents/admissions-forms/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className="underline"
-        >
-          טפסי הראיון הרשמיים
-        </a>
+        בפיזיותרפיה יוזמנו בעלי הסכם והפסיכומטרי הגבוהים ביותר לאחר תוצאות אפריל.
       </p>
     </details>
   );

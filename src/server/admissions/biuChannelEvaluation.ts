@@ -3,7 +3,6 @@ import {
   BIU_CHANNELS,
   BIU_ENGINEERING_URL,
   BIU_EE_PSYCH_NOTE,
-  BIU_LAW_URL,
   BIU_SOCIAL_WORK_URL,
   BIU_PSYCH_ROUTE_LINES,
   BIU_SPECIAL_CHANNELS,
@@ -151,10 +150,6 @@ function checkFloor(input: AdmissionsEvaluationInput, channel: BiuChannel, floor
   return { row, missing: floor.informational || floor.soft ? [] : missing };
 }
 
-function sourceReference(url: string) {
-  return `\u2066${url}\u2069`;
-}
-
 function missedFloors(rows: FloorCheckRow[]) {
   return rows
     .filter((row) => row.status === 'miss')
@@ -163,7 +158,7 @@ function missedFloors(rows: FloorCheckRow[]) {
         row.note === BIU_EE_PSYCH_NOTE
           ? `נדרש ${row.displayValue} במחשבון; ${row.note}`
           : `${row.verdictThreshold}`;
-      return `${row.channel}: ${row.label} ${threshold} (שלך ${row.studentValue}) · מקור: ${sourceReference(row.sourceUrl)}`;
+      return `${row.channel}: ${row.label} ${threshold} (שלך ${row.studentValue})`;
     })
     .join('. ');
 }
@@ -191,7 +186,7 @@ function annotateBelow(
     ].includes(programme) && {
       floorCaveats: [{ kind: 'reservist' as const }],
     }),
-    explanation: `לא עומד/ת בתנאי הסף — ${result.explanation} ${missedFloors(result.floorChecks ?? [])}${psychLine ? `. ${psychLine} · מקור: ${sourceReference(BIU_CALCULATOR_URL)}${programme === 'law' ? `; ${sourceReference(BIU_LAW_URL)}` : ''}` : ''}. ${special.map(({ text, url }) => `${text} · מקור: ${sourceReference(url)}`).join('. ')}${special.length ? '. ' : ''}ייתכנו גם מסלולי קבלה מיוחדים ברמת האוניברסיטה (תוכנית 30+, בני 40 ומעלה, הערכה חלופית לעד 10% מהסטודנטים בכל תוכנית) · מקורות: ${sourceReference(BIU_PUBLISHED_ROUTES_URL)} ; ${sourceReference(BIU_GENERAL_REQUIREMENTS_URL)}`,
+    explanation: `לא עומד/ת בתנאי הסף — ${result.explanation} ${missedFloors(result.floorChecks ?? [])}${psychLine ? `. ${psychLine}` : ''}. ${special.map(({ text }) => text).join('. ')}${special.length ? '. ' : ''}ייתכנו גם מסלולי קבלה מיוחדים ברמת האוניברסיטה (תוכנית 30+, בני 40 ומעלה, הערכה חלופית לעד 10% מהסטודנטים בכל תוכנית).`,
     officialUrls: [
       ...new Set([
         ...(result.officialUrls ?? []),

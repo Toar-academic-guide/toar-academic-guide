@@ -165,14 +165,6 @@ export function BguEngineeringFields({
           הזנתי את כל מקצועות המדעים והטכנולוגיה ואת כל ציוני המכינה או ההנדסאי הרלוונטיים. שדות
           ריקים אינם רלוונטיים לי.
         </label>
-        <a
-          className="underline"
-          href="https://bgu4u.bgu.ac.il/pls/rgwp/!rg.acc_CalcMain?type=3"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          מחשבון ההנדסה הרשמי של בן־גוריון
-        </a>
       </div>
     </details>
   );

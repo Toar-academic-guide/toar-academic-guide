@@ -6,6 +6,7 @@ vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+import { amirnetSourceUrls } from '@/data/amirnetSourceUrls';
 import Page, { metadata } from './page';
 
 it('renders eight sourced institution rows with the distinct admission and post-exemption rules', () => {
@@ -14,9 +15,8 @@ it('renders eight sourced institution rows with the distinct admission and post-
   const rows = within(table).getAllByRole('row').slice(1);
   expect(rows).toHaveLength(8);
   for (const row of rows) {
-    expect(
-      within(row).getByRole('link', { name: 'עמוד המוסד הרשמי' }).getAttribute('href'),
-    ).toMatch(/^https:\/\//);
+    expect(within(row).queryByRole('link', { name: 'עמוד המוסד הרשמי' })).toBeNull();
+    expect(row.textContent).not.toContain('מקור');
     expect(row.querySelector('time')).toBeNull();
     expect(row.textContent).not.toContain('14.11.2026');
     expect(row.querySelectorAll('td:nth-child(-n+4) bdi[dir="ltr"]')).toHaveLength(3);
@@ -54,4 +54,8 @@ it('publishes matching visible FAQ answers, exact metadata and live internal lin
   const related = screen.getByRole('navigation', { name: 'מדריכים קשורים' });
   expect(within(related).getAllByRole('link')).toHaveLength(6);
   expect(related.querySelector('a[href="/psychometric-accommodations"]')).toBeNull();
+  expect(main.querySelector('a[href^="https://"]')).toBeNull();
+  expect(
+    Object.values(amirnetSourceUrls).every((href) => href.startsWith('https://www.nite.org.il/')),
+  ).toBe(true);
 });

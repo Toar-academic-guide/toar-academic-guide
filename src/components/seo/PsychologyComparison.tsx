@@ -5,8 +5,6 @@ import {
   type PsychologySourceText,
 } from '@/data/psychologyComparison';
 
-const sourceLinkClass =
-  'inline-flex min-h-11 items-center text-slate-700 underline decoration-[#b8b0d7] underline-offset-2 hover:text-[#6554b8]';
 const primaryLinkClass =
   'inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2';
 
@@ -24,13 +22,11 @@ function BidiText({ text }: { text: string }) {
     );
 }
 
-function SourceText({ text, url }: PsychologySourceText) {
+function SourceText({ text }: PsychologySourceText) {
   return (
-    <a href={url} target="_blank" rel="noopener noreferrer" className={sourceLinkClass}>
-      <span>
-        <BidiText text={text} />
-      </span>
-    </a>
+    <span>
+      <BidiText text={text} />
+    </span>
   );
 }
 
@@ -52,8 +48,8 @@ export function PsychologyComparison() {
         <h2 className="text-xl font-bold">השוואת תנאי קבלה לפסיכולוגיה</h2>
         <p className="mt-3 leading-7 text-slate-700">
           כל מוסד מחשב תנאי קבלה בסולם משלו — ציון התאמה, סכם או ממוצע בגרות — ולכן צריך לקרוא את
-          המספר יחד עם סוג הציון. בטבלה מופיעים המסלול הראשי, מסלול בגרות בלבד אם פורסם, והמקור.
-          תואר ראשון בפסיכולוגיה אינו רישיון; תואר שני הוא שלב נפרד. באונו התואר הוא במדעי ההתנהגות.
+          המספר יחד עם סוג הציון. בטבלה מופיעים המסלול הראשי ומסלול בגרות בלבד אם פורסם. תואר ראשון
+          בפסיכולוגיה אינו רישיון; תואר שני הוא שלב נפרד. באונו התואר הוא במדעי ההתנהגות.
         </p>
         <table
           aria-label="תנאי קבלה לתואר ראשון לפי מוסד"
@@ -64,17 +60,14 @@ export function PsychologyComparison() {
               <th scope="col" className="w-[17%] border border-slate-200 p-2">
                 מוסד
               </th>
-              <th scope="col" className="w-[25%] border border-slate-200 p-2">
+              <th scope="col" className="w-[34%] border border-slate-200 p-2">
                 מסלול קבלה
               </th>
-              <th scope="col" className="w-[24%] border border-slate-200 p-2">
+              <th scope="col" className="w-[28%] border border-slate-200 p-2">
                 בגרות בלבד
               </th>
-              <th scope="col" className="w-[17%] border border-slate-200 p-2">
+              <th scope="col" className="w-[21%] border border-slate-200 p-2">
                 סולם הציון
-              </th>
-              <th scope="col" className="w-[17%] border border-slate-200 p-2">
-                מקור
               </th>
             </tr>
           </thead>
@@ -141,19 +134,6 @@ export function PsychologyComparison() {
                   </span>
                   {row.scale}
                 </td>
-                <td className="block border-t border-slate-100 py-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
-                  <span className="mb-1 block text-xs font-semibold text-slate-500 sm:hidden">
-                    מקור
-                  </span>
-                  <a
-                    href={row.officialUrl}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className={primaryLinkClass}
-                  >
-                    לאתר המוסד
-                  </a>
-                </td>
               </tr>
             ))}
           </tbody>
@@ -167,14 +147,6 @@ export function PsychologyComparison() {
           ומתמחים מאושרים רשאים לאבחן ולטפל בהתאם לתחום מומחיותם. קבלה לתואר שני בפסיכולוגיה קלינית
           היא שלב נפרד, ותנאי הקבלה אליה משתנים בין התוכניות.
         </p>
-        <a
-          href="https://me.health.gov.il/mental-health/information-and-updates/mental-health-care/who-can-offer-therapy/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={primaryLinkClass}
-        >
-          על מקצוע הפסיכולוגיה — משרד הבריאות
-        </a>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

@@ -10,7 +10,7 @@ import SemesterValidity from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר.';
 const canonical = absoluteUrl('/psychometric-dates');
 
 export const dynamic = 'force-dynamic';
@@ -37,8 +37,7 @@ function ReformNote() {
       מדצמבר <bdi dir="ltr">{year}</bdi> הבחינה דו־תחומית:{' '}
       {psychometricFacts.reform.domains.join(' ו')}. תחזית הציונים למועד דצמבר{' '}
       <bdi dir="ltr">{year}</bdi>:{' '}
-      <bdi dir="ltr">{forecast && formatPsychometricDate(forecast)}</bdi> (
-      <a href={psychometricFacts.reform.sourceUrl}>מאל״ו</a>).
+      <bdi dir="ltr">{forecast && formatPsychometricDate(forecast)}</bdi>.
     </>
   );
 }
@@ -79,11 +78,6 @@ export default async function Page() {
               <bdi dir="ltr">{formatPsychometricDate(next.registrationDeadline)}</bdi>.
             </p>
           )}
-          <p className={styles.stamp}>
-            <a href={psychometricFacts.ordinaryRegistration.sourceUrl}>
-              לוח הבחינות הרשמי באתר מאל״ו
-            </a>
-          </p>
         </div>
         <section className={styles.tool} aria-label="מועדי הבחינה הקרובים">
           <table>
@@ -98,12 +92,7 @@ export default async function Page() {
               {statuses.map(({ sitting, registrationOpen, isNextOpen }) => (
                 <tr key={sitting.id} className={isNextOpen ? styles.next : undefined}>
                   <th scope="row">
-                    <a
-                      href={sitting.sourceUrl}
-                      aria-label={`מועד ${sitting.displayLabel} — מקור מאל״ו`}
-                    >
-                      <bdi dir="ltr">{sitting.displayLabel}</bdi>
-                    </a>
+                    <bdi dir="ltr">{sitting.displayLabel}</bdi>
                     {isNextOpen && <small>המועד הקרוב</small>}
                   </th>
                   <td>
@@ -158,13 +147,6 @@ export default async function Page() {
             <p>
               <ReformNote /> מחיר הרשמה רגילה המוצג באתר מאל״ו:{' '}
               <bdi dir="ltr">{psychometricFacts.ordinaryRegistration.price} ₪</bdi>.
-            </p>
-            <p>
-              תאריכי <bdi dir="ltr">2027</bdi> ושפות הבחינה מופיעים גם ב
-              <a href={psychometricDates[1].sourceUrl}>
-                לוח הבחינות הרשמי לשנת <bdi dir="ltr">2027</bdi>
-              </a>
-              .
             </p>
             <Link href="/institutions" prefetch={false}>
               מוסדות לימוד

@@ -6,7 +6,7 @@ import styles from './page.module.css';
 
 const title = 'מעבר בין מוסדות לימוד אקדמיים: קבלה והכרה בקורסים | MyWay';
 const description =
-  'איך מתכננים מעבר בין מוסדות לימוד אקדמיים: קבלה לתוכנית על סמך לימודים קודמים, הכנת מסמכים ובקשת הכרה בקורסים, עם קישורים למקורות הרשמיים.';
+  'איך מתכננים מעבר בין מוסדות לימוד אקדמיים: קבלה לתוכנית על סמך לימודים קודמים, הכנת מסמכים ובקשת הכרה בקורסים.';
 const canonical = absoluteUrl('/transfer');
 
 export const metadata: Metadata = {
@@ -23,39 +23,6 @@ export const metadata: Metadata = {
   },
   twitter: { card: 'summary', title, description },
 };
-
-const sources = [
-  {
-    href: 'https://go.tau.ac.il/he/ba/partial-studies',
-    label: 'קבלה לתואר ראשון על סמך השכלה אקדמית חלקית או מלאה — אוניברסיטת תל אביב',
-    detail: 'מסלול הקבלה ותנאי התוכנית המבוקשת.',
-  },
-  {
-    href: 'https://go.tau.ac.il/he/ba/process-doc',
-    label: 'מסמכי הרשמה לתואר ראשון — אוניברסיטת תל אביב',
-    detail: 'הנחיות לבעלי השכלה אקדמית קודמת.',
-  },
-  {
-    href: 'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
-    label: 'נוהל פטור מקורסים בחוג לניהול — אוניברסיטת תל אביב, תשפ״ז',
-    detail: 'דוגמה לנוהל של חוג מסוים.',
-  },
-  {
-    href: 'https://www.openu.ac.il/transfertrack/pages/default.aspx',
-    label: 'אפיקי מעבר — האוניברסיטה הפתוחה',
-    detail: 'מסלולים לפי מוסד ותוכנית יעד.',
-  },
-  {
-    href: 'https://www.openu.ac.il/transfertrack/pages/faq.aspx',
-    label: 'שאלות נפוצות על אפיקי מעבר — האוניברסיטה הפתוחה',
-    detail: 'מבנה האפיק והקורסים הנדרשים בו.',
-  },
-  {
-    href: 'https://stuad.biu.ac.il/node/52',
-    label: 'פטור והכרה בלימודים קודמים — אוניברסיטת בר־אילן',
-    detail: 'הגורם המאשר והנהלים באוניברסיטה.',
-  },
-];
 
 export default function TransferPage() {
   return (
@@ -84,13 +51,6 @@ export default function TransferPage() {
                 התוכנית.
               </li>
             </ol>
-            <p className={styles.source}>
-              <a href="https://go.tau.ac.il/he/ba/partial-studies">
-                מסלול קבלה על סמך השכלה אקדמית קודמת בתל אביב
-              </a>
-              {' · '}
-              <a href="https://go.tau.ac.il/he/ba/process-doc">מסמכי ההרשמה לבעלי השכלה אקדמית</a>
-            </p>
           </section>
 
           <section aria-labelledby="recognition" className={styles.section}>
@@ -106,13 +66,6 @@ export default function TransferPage() {
               </li>
               <li>תכננו את המשך הקורסים לאחר קבלת ההחלטה בבקשה.</li>
             </ol>
-            <p className={styles.source}>
-              <a href="https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption">
-                נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז
-              </a>
-              {' · '}
-              <a href="https://stuad.biu.ac.il/node/52">הכרה בלימודים קודמים בבר־אילן</a>
-            </p>
           </section>
 
           <section aria-labelledby="open-university" className={styles.section}>
@@ -121,28 +74,9 @@ export default function TransferPage() {
               אפיק מעבר מפרט את הקורסים וההישגים הנדרשים לקבלה לתוכנית היעד, ולעיתים גם את הפטורים
               הניתנים עבורם. התחילו ברשימת האפיקים ובדקו את התנאים של התוכנית שאליה תרצו לעבור.
             </p>
-            <p className={styles.source}>
-              <a href="https://www.openu.ac.il/transfertrack/pages/default.aspx">
-                רשימת אפיקי המעבר הרשמית
-              </a>
-              {' · '}
-              <a href="https://www.openu.ac.il/transfertrack/pages/faq.aspx">
-                שאלות נפוצות על אפיקי מעבר
-              </a>
-              {' · '}
+            <p>
               <Link href="/institutions/open_university">האוניברסיטה הפתוחה ב־MyWay</Link>
             </p>
-          </section>
-
-          <section aria-labelledby="sources" className={styles.section}>
-            <h2 id="sources">מקורות רשמיים</h2>
-            <ul>
-              {sources.map((source) => (
-                <li key={source.href}>
-                  <a href={source.href}>{source.label}</a> — {source.detail}
-                </li>
-              ))}
-            </ul>
           </section>
 
           <section aria-labelledby="myway" className={styles.cta}>
