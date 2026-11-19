@@ -110,7 +110,7 @@ it('renders an indexable public calculator with absolute title and canonical met
   expect(metadata.description).toBe(
     // Approved test update, Jorje 2026-10-29: meta no-overclaim
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-    'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.',
+    'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה.',
   );
 });
 it('uses the same estimate description without formula claims in metadata and Open Graph', () => {
@@ -492,9 +492,9 @@ it('shows only active computed-average institutions and matches the visible new 
   expect(within(table).queryByText('אוניברסיטת רייכמן')).toBeNull();
   expect(within(table).queryByText('14.11.2026')).toBeNull();
   expect(table.textContent).not.toContain('נבדק בתאריך');
-  expect(
-    within(table).getByRole('link', { name: 'הנחיות הבגרות באתר העברית' }).getAttribute('href'),
-  ).toBe('https://info.huji.ac.il/reception-components/Bagrut');
+  expect(table.textContent).not.toContain('קישור רשמי');
+  expect(within(table).queryByRole('link')).toBeNull();
+  expect(screen.queryByRole('link', { name: 'איך אוניברסיטת חיפה מחשבת סכם' })).toBeNull();
   expect(screen.getByRole('link', { name: 'מסלולי קבלה ללא פסיכומטרי' }).getAttribute('href')).toBe(
     '/without-psychometric',
   );

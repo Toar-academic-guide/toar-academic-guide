@@ -39,6 +39,7 @@ describe('CS comparison source ledger', () => {
       cycle: 'סמסטר ב׳ תשפ״ז (מרץ 2027)',
     });
     expect(csComparisonRows[1].sourceUrl).toBe(csOfficialUrls.tau);
+    expect(csComparisonRows[1].note ?? '').not.toMatch(/נכון ל|האתר הרשמי מציין/);
     expect(csComparisonRows[2].value).toContain('680–699');
     expect(csComparisonRows[2].cycle).toBe('תשפ״ז');
     expect(csComparisonRows[3].note).toContain('ועדת החוג');

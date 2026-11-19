@@ -125,13 +125,8 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   const ctas = within(main).getAllByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
-  const stamp = within(main)
-    .getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })
-    .closest('p')!;
-  expect(stamp.textContent).not.toMatch(/נבדק|29\.10\.2026/);
-  expect(
-    within(stamp).getByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' }).getAttribute('href'),
-  ).toBe('https://www.nite.org.il/test-dates-and-prices/');
+  expect(within(main).queryByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })).toBeNull();
+  expect(examTable.querySelectorAll('a')).toHaveLength(0);
   expect(examTable.querySelector('caption')?.textContent).toBe('מועדי פסיכומטרי');
   expect(main.textContent).not.toMatch(/נבדק בתאריך/);
   expect(main.textContent).not.toMatch(/סכם/);
@@ -238,17 +233,10 @@ it('exports exact indexable metadata and request-time rendering', () => {
   expect(metadata.robots).not.toEqual(expect.objectContaining({ index: false }));
 });
 
-it('keeps the source sentence and punctuation without the removed qualification', async () => {
+it('keeps the dates as text without a schedule citation', async () => {
   const { container } = render(await Page());
-  const link = screen.getByRole('link', { name: /לוח הבחינות הרשמי לשנת/ });
-  const sentence = link.closest('p')!;
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
-  expect(sentence.textContent?.replace(/\s+/g, ' ').trim()).toBe(
-    'תאריכי 2027 ושפות הבחינה מופיעים גם בלוח הבחינות הרשמי לשנת 2027.',
-  );
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
-  expect(link.nextSibling?.textContent).toBe('.');
-  // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 42)
+  expect(screen.queryByRole('link', { name: /לוח הבחינות הרשמי/ })).toBeNull();
+  expect(container.textContent).not.toContain('לוח הבחינות הרשמי');
   expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
   expect(

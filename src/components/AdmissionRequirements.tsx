@@ -1,7 +1,5 @@
 import { Fragment } from 'react';
 import type { FloorCheckRow } from '@/types/admissionsEvaluation';
-import { BIU_CALCULATOR_URL, BIU_ENGINEERING_URL } from '@/data/admissions/biuChannels';
-import { institutionLink } from '@/lib/institutionLinks';
 
 interface AdmissionRequirementsProps {
   requirements: string[];
@@ -194,14 +192,7 @@ export default function AdmissionRequirements({
                         className="border-b border-[var(--border)] align-top"
                       >
                         <th scope="row" className="py-2 pe-2 font-normal">
-                          <a
-                            href={institutionLink(row.sourceUrl, institutionId)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
-                          >
-                            {row.label}
-                          </a>
+                          {row.label}
                         </th>
                         <td className="py-2 pe-2 tabular-nums">
                           {requirementLines
@@ -243,31 +234,6 @@ export default function AdmissionRequirements({
               </tbody>
             ))}
           </table>
-          {institutionId !== 'tau' && (
-            <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              <a
-                href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                המחשבון הרשמי של בר-אילן
-              </a>
-              {programId === 'biu_ee' && (
-                <>
-                  {'; '}
-                  <a
-                    href={institutionLink(BIU_ENGINEERING_URL, 'biu')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    תנאי הקבלה בפקולטה להנדסה
-                  </a>
-                </>
-              )}
-            </p>
-          )}
         </>
       )}
       {routes && (

@@ -10,13 +10,6 @@ const description =
   'מה אומר הציון באמירנט, מאיזו רמה מתחיל הפטור, והאם רמת האנגלית יכולה לחסום קבלה. טבלה לפי מוסד.';
 const canonical = absoluteUrl('/amirnet');
 
-const nite = {
-  significance: 'https://www.nite.org.il/other-tests/amirnet/scores/significance/',
-  faq: 'https://www.nite.org.il/other-tests/amirnet/faq/?lang=en',
-  registration:
-    'https://www.nite.org.il/other-tests/amirnet/registration-procedures/online-registration/?lang=en',
-};
-
 const institutions = [
   {
     name: 'אוניברסיטת תל אביב',
@@ -170,10 +163,6 @@ export default function Page() {
               לעולים. בכל שמונת המוסדות שבדקנו הפטור מתחיל ב־<bdi dir="ltr">134</bdi>, אבל הרמות
               שמתחתיו והחובות אחרי הפטור אינן זהות.
             </p>
-            <p className={styles.stamp}>
-              <a href={nite.significance}>הסולם ומדיניות המוסדות: מאל״ו</a>; ספי המוסדות: העמודים
-              הרשמיים בטבלה.
-            </p>
           </header>
 
           <section className={styles.section} aria-labelledby="nite">
@@ -188,11 +177,6 @@ export default function Page() {
               מאל״ו מציין שהציון תקף לפחות שבע שנים, לפי מדיניות המוסד, ושבדרך כלל מובא בחשבון הציון
               הגבוה; בדקו זאת במוסד שלכם. בין בחינות אמירנט נדרשים <bdi dir="ltr">35</bdi> ימים:
               הספירה מתחילה ביום שאחרי הבחינה, ואפשר להיבחן שוב ביום ה־<bdi dir="ltr">35</bdi>.
-            </p>
-            <p className={styles.sourceLinks}>
-              <a href={nite.significance}>משמעות הציון במאל״ו</a>
-              <a href={nite.faq}>שאלות ותשובות במאל״ו</a>
-              <a href={nite.registration}>תוקף הציון והרשמה חוזרת במאל״ו</a>
             </p>
           </section>
 

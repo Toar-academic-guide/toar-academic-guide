@@ -1163,6 +1163,26 @@ describe('llms.txt calculator link', () => {
   });
 });
 
+const NEXT_STEP_LABELS = new Set(['לאתר המוסד', 'למחשבון המכללה']);
+
+function isCitationHost(hostname: string) {
+  const host = hostname.replace(/^www\./, '');
+  return (
+    host === 'ac.il' ||
+    host.endsWith('.ac.il') ||
+    host === 'nite.org.il' ||
+    host.endsWith('.nite.org.il') ||
+    host === 'gov.il' ||
+    host.endsWith('.gov.il')
+  );
+}
+
+function contentHtml(markup: string) {
+  return markup
+    .replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '');
+}
+
 describe('visible source labels', () => {
   const staticPages: Record<string, () => Promise<unknown>> = {
     '/': () => import('@/app/page'),
@@ -1185,21 +1205,20 @@ describe('visible source labels', () => {
     for (const { url } of await sitemap()) {
       const path = new URL(url).pathname;
       try {
+        let html = '';
         let markup = '';
         if (path.startsWith('/programs/')) {
           const programId = decodeURIComponent(path.slice('/programs/'.length));
           const params = Promise.resolve({ programId });
-          markup = `${JSON.stringify(await generateProgramMetadata({ params }))}\n${renderToStaticMarkup(
-            await ProgramPage({ params }),
-          )}`;
+          html = renderToStaticMarkup(await ProgramPage({ params }));
+          markup = `${JSON.stringify(await generateProgramMetadata({ params }))}\n${html}`;
         } else if (path.startsWith('/institutions/')) {
           const institutionId = decodeURIComponent(
             path.slice('/institutions/'.length),
           ) as InstitutionId;
           const params = Promise.resolve({ institutionId });
-          markup = `${JSON.stringify(await generateInstitutionMetadata({ params }))}\n${renderToStaticMarkup(
-            await InstitutionPage({ params }),
-          )}`;
+          html = renderToStaticMarkup(await InstitutionPage({ params }));
+          markup = `${JSON.stringify(await generateInstitutionMetadata({ params }))}\n${html}`;
         } else {
           const load = staticPages[path];
           if (!load) throw new Error('missing renderer');
@@ -1214,14 +1233,39 @@ describe('visible source labels', () => {
               ? { searchParams: Promise.resolve({}) }
               : undefined;
           const element = await mod.default(props);
-          markup = `${JSON.stringify(mod.metadata ?? '')}\n${renderToStaticMarkup(
+          html = renderToStaticMarkup(
             path === '/' ? createElement(AuthProvider, null, element) : element,
-          )}`;
+          );
+          markup = `${JSON.stringify(mod.metadata ?? '')}\n${html}`;
         }
-        for (const needle of ['מקור', 'עמ׳ ', 'מידעון']) {
+        for (const needle of [
+          'מקור',
+          'עמ׳ ',
+          'מידעון',
+          'קישור רשמי',
+          'נכון ל',
+          'האתר הרשמי מציין',
+        ]) {
           const index = markup.indexOf(needle);
           if (index >= 0)
             hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+        }
+        const content = contentHtml(html);
+        for (const match of content.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+          const href = match[1];
+          const text = match[2]
+            .replace(/<[^>]+>/g, '')
+            .replace(/\s+/g, ' ')
+            .trim();
+          if (NEXT_STEP_LABELS.has(text)) continue;
+          let url: URL;
+          try {
+            url = new URL(href, 'https://findmyway.co.il');
+          } catch {
+            continue;
+          }
+          if (!/^https?:$/.test(url.protocol) || !isCitationHost(url.hostname)) continue;
+          hits.push(`${path} ${text || href} -> ${href}`);
         }
       } catch (error) {
         hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);

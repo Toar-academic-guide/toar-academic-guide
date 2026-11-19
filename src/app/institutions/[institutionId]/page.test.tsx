@@ -21,6 +21,10 @@ vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null }),
 }));
 
+import {
+  openUniversityTransferReferenceUrls,
+  openUniversityTransferTracks,
+} from '@/data/openUniversityTransferTracks';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 
@@ -61,43 +65,14 @@ describe('InstitutionPage', () => {
       .getByRole('heading', { name: 'אפיקי מעבר מהאוניברסיטה הפתוחה' })
       .closest('section')!;
     expect(section.textContent).toContain('8 בנובמבר 2026');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/tel-aviv/Pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('אוניברסיטת תל אביב');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/hebrew/Pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('האוניברסיטה העברית');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/technion/Pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('הטכניון');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/bar-ilan/pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('משפטים');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/haifa/Pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('אוניברסיטת חיפה');
-    expect(
-      section.querySelector(
-        'a[href="https://www.openu.ac.il/transfertrack/ben-gurion/Pages/default.aspx"]',
-      )?.textContent,
-    ).toContain('בן-גוריון');
+    for (const track of openUniversityTransferTracks) {
+      expect(section.textContent).toContain(track.label);
+      expect(section.querySelector(`a[href="${track.href}"]`)).toBeNull();
+    }
     expect(section.textContent).not.toContain('סיעוד');
-    expect(
-      section.querySelector('a[href="https://www.openu.ac.il/transfertrack/pages/faq.aspx"]'),
-    ).not.toBeNull();
-    expect(
-      section.querySelector('a[href="https://www.openu.ac.il/transfertrack/pages/updates.aspx"]'),
-    ).not.toBeNull();
+    expect(section.querySelector('a[href^="https://"]')).toBeNull();
+    expect(openUniversityTransferReferenceUrls.faq).toMatch(/^https:\/\/www\.openu\.ac\.il\//);
+    expect(openUniversityTransferReferenceUrls.updates).toMatch(/^https:\/\/www\.openu\.ac\.il\//);
     expect(section.querySelector('a[href="/sekhem-calculator"]')?.textContent).toContain(
       'למחשבון הסכם',
     );

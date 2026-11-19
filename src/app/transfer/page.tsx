@@ -51,13 +51,6 @@ export default function TransferPage() {
                 התוכנית.
               </li>
             </ol>
-            <p className={styles.source}>
-              <a href="https://go.tau.ac.il/he/ba/partial-studies">
-                מסלול קבלה על סמך השכלה אקדמית קודמת בתל אביב
-              </a>
-              {' · '}
-              <a href="https://go.tau.ac.il/he/ba/process-doc">מסמכי ההרשמה לבעלי השכלה אקדמית</a>
-            </p>
           </section>
 
           <section aria-labelledby="recognition" className={styles.section}>
@@ -73,13 +66,6 @@ export default function TransferPage() {
               </li>
               <li>תכננו את המשך הקורסים לאחר קבלת ההחלטה בבקשה.</li>
             </ol>
-            <p className={styles.source}>
-              <a href="https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption">
-                נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז
-              </a>
-              {' · '}
-              <a href="https://stuad.biu.ac.il/node/52">הכרה בלימודים קודמים בבר־אילן</a>
-            </p>
           </section>
 
           <section aria-labelledby="open-university" className={styles.section}>
@@ -88,15 +74,7 @@ export default function TransferPage() {
               אפיק מעבר מפרט את הקורסים וההישגים הנדרשים לקבלה לתוכנית היעד, ולעיתים גם את הפטורים
               הניתנים עבורם. התחילו ברשימת האפיקים ובדקו את התנאים של התוכנית שאליה תרצו לעבור.
             </p>
-            <p className={styles.source}>
-              <a href="https://www.openu.ac.il/transfertrack/pages/default.aspx">
-                רשימת אפיקי המעבר הרשמית
-              </a>
-              {' · '}
-              <a href="https://www.openu.ac.il/transfertrack/pages/faq.aspx">
-                שאלות נפוצות על אפיקי מעבר
-              </a>
-              {' · '}
+            <p>
               <Link href="/institutions/open_university">האוניברסיטה הפתוחה ב־MyWay</Link>
             </p>
           </section>

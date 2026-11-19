@@ -25,16 +25,11 @@ it('renders the two separate decisions and concrete official-source next steps',
   expect(screen.getByRole('heading', { level: 1 }).textContent).toContain('שתי בדיקות נפרדות');
   expect(screen.getByRole('heading', { name: 'קבלה לתוכנית החדשה' })).toBeTruthy();
   expect(screen.getByRole('heading', { name: 'הכרה בקורסים שכבר למדתם' })).toBeTruthy();
+  expect(screen.queryByRole('link', { name: 'מסמכי ההרשמה לבעלי השכלה אקדמית' })).toBeNull();
   expect(
-    screen.getByRole('link', { name: 'מסמכי ההרשמה לבעלי השכלה אקדמית' }).getAttribute('href'),
-  ).toBe('https://go.tau.ac.il/he/ba/process-doc');
-  expect(
-    screen
-      .getByRole('link', { name: 'נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז' })
-      .getAttribute('href'),
-  ).toBe(
-    'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
-  );
+    screen.queryByRole('link', { name: 'נוהל הפטורים בחוג לניהול בתל אביב — תשפ״ז' }),
+  ).toBeNull();
+  expect(document.querySelector('a[href^="https://"]')).toBeNull();
   expect(
     screen.getByRole('link', { name: 'האוניברסיטה הפתוחה ב־MyWay' }).getAttribute('href'),
   ).toBe('/institutions/open_university');

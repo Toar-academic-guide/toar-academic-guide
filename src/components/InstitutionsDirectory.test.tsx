@@ -124,9 +124,7 @@ describe('institution subject pills', () => {
     fireEvent.click(within(fieldGroup()).getByRole('button', { name: 'הנדסה' }));
     const row = screen.getByRole('row', { name: /מוסד ג׳/ });
     expect(within(row).getByText('—')).toBeTruthy();
-    expect(within(row).getByRole('link', { name: 'מסלולים באתר המוסד' }).getAttribute('href')).toBe(
-      'https://example.edu/engineering',
-    );
+    expect(within(row).queryByRole('link', { name: 'מסלולים באתר המוסד' })).toBeNull();
     fireEvent.click(within(subjectGroup()).getByRole('button', { name: 'הנדסת תוכנה' }));
     expect(screen.queryByRole('link', { name: 'מוסד ג׳' })).toBeNull();
   });

@@ -51,7 +51,6 @@ export const csComparisonRows: readonly CsComparisonRow[] = [
     cycle: 'סמסטר ב׳ תשפ״ז (מרץ 2027)',
     sourceUrl: csOfficialUrls.tau,
     checkedDate,
-    note: 'האתר הרשמי מציין שהמידע נכון ל־11.11.2026.',
     numeric: true,
   },
   {

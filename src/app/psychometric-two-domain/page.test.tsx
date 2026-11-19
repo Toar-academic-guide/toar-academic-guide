@@ -2,6 +2,7 @@
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
+import { twoDomainNiteUrls } from '@/data/twoDomainNiteUrls';
 import { twoDomainPolicyUrls } from '@/data/twoDomainPolicyUrls';
 import Page, { metadata } from './page';
 
@@ -61,5 +62,7 @@ describe('psychometric score choice guide', () => {
     expect(twoDomainPolicyUrls.huji).toMatch(/^https:\/\/info\.huji\.ac\.il\//);
     expect(twoDomainPolicyUrls.haifa).toMatch(/^https:\/\/admissions\.haifa\.ac\.il\//);
     expect(root.textContent).toContain('אפשר להיבחן בפסיכומטרי במועדים רצופים?');
+    expect(root.querySelector('a[href^="https://"]')).toBeNull();
+    expect(twoDomainNiteUrls.announcement).toMatch(/nite\.org\.il/);
   });
 });

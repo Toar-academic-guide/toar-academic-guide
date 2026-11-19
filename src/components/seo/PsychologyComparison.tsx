@@ -147,14 +147,6 @@ export function PsychologyComparison() {
           ומתמחים מאושרים רשאים לאבחן ולטפל בהתאם לתחום מומחיותם. קבלה לתואר שני בפסיכולוגיה קלינית
           היא שלב נפרד, ותנאי הקבלה אליה משתנים בין התוכניות.
         </p>
-        <a
-          href="https://me.health.gov.il/mental-health/information-and-updates/mental-health-care/who-can-offer-therapy/"
-          target="_blank"
-          rel="noopener noreferrer"
-          className={primaryLinkClass}
-        >
-          על מקצוע הפסיכולוגיה — משרד הבריאות
-        </a>
       </section>
 
       <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">

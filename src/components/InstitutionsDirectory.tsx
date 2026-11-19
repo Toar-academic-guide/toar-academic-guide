@@ -131,18 +131,21 @@ function PillGroup({
 
 function ProgrammeLinks({ programmes }: { programmes: DirectoryProgramme[] }) {
   const links = (items: DirectoryProgramme[]) =>
-    items.map((programme) => (
-      <Link
-        key={programme.id}
-        href={programme.href}
-        className={`w-fit rounded text-sm text-[#5262d9] underline decoration-[#bbc3ed] underline-offset-4 hover:decoration-current ${focusClass}`}
-      >
-        {programme.name}
-        {programme.href.startsWith('https://') && (
-          <ExternalLink aria-hidden="true" size={12} className="ms-1 inline" />
-        )}
-      </Link>
-    ));
+    items.map((programme) =>
+      programme.href.startsWith('https://') ? (
+        <span key={programme.id} className="w-fit text-sm text-[#5262d9]">
+          {programme.name}
+        </span>
+      ) : (
+        <Link
+          key={programme.id}
+          href={programme.href}
+          className={`w-fit rounded text-sm text-[#5262d9] underline decoration-[#bbc3ed] underline-offset-4 hover:decoration-current ${focusClass}`}
+        >
+          {programme.name}
+        </Link>
+      ),
+    );
   return (
     <div className="flex flex-col gap-2">
       {links(programmes.slice(0, 3))}
@@ -379,19 +382,6 @@ export default function InstitutionsDirectory({
                           : '—'}
                     </div>
                     <ProgrammeLinks programmes={institution.matching} />
-                    {field &&
-                      !subject &&
-                      !institution.matching.length &&
-                      institution.fieldSources[field] && (
-                        <a
-                          href={institution.fieldSources[field]}
-                          target="_blank"
-                          rel="noreferrer"
-                          className={`inline-flex min-h-11 items-center text-sm text-[#5262d9] underline ${focusClass}`}
-                        >
-                          מסלולים באתר המוסד
-                        </a>
-                      )}
                   </td>
                 </tr>
               ))}

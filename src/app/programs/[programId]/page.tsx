@@ -402,24 +402,6 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               >
                 בדקו את הציונים שלכם במחשבון הסכם
               </Link>
-              <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-600">
-                <a
-                  href="https://wgalil.ac.il/blog/computer-science-vs-data-science/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline underline-offset-2"
-                >
-                  על ההבדל בין התחומים — האקדמית גליל מערבי
-                </a>
-                <a
-                  href="https://www.colman.ac.il/academics/ba/data-science/"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="underline underline-offset-2"
-                >
-                  מדע הנתונים — המסלול האקדמי המכללה למינהל
-                </a>
-              </div>
             </section>
           )}
           {isCsHub && <CsComparison />}

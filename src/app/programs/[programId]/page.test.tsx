@@ -43,7 +43,10 @@ import { DANON_BEGINNER_REQUIREMENT } from '@/data/admissions/danon';
 import { csAnswer, csComparisonRows, csFaq, csOfficialUrls } from '@/data/csComparison';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 import * as institutionLinks from '@/lib/institutionLinks';
+import { datascienceReferences } from '@/data/datascienceReferences';
 import { psychologyComparisonRows, psychologyFaq } from '@/data/psychologyComparison';
+import { haifaPsychologyOfekUrl } from '@/components/seo/HaifaPsychologyOfek';
+import { prepFundingUrl } from '@/components/seo/PrepGuide';
 import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { nursingInstitutions, nursingSource, nursingTrackLabels } from '@/data/nursingInstitutions';
 
@@ -378,13 +381,10 @@ describe('ProgramPage', () => {
     expect(ofek.textContent).toContain('לומדים על תנאי');
     expect(ofek.textContent).toContain('2–3 קורסים בציון 75 לפחות');
     expect(ofek.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2–3');
+    expect(ofek.querySelector('a')).toBeNull();
+    expect(haifaPsychologyOfekUrl).toMatch(/^https:\/\/admissions\.haifa\.ac\.il\//);
     const related = screen.getByRole('heading', { name: 'מסלולים נוספים' }).closest('section')!;
     expect(within(related).queryByRole('link', { name: /אונו/ })).toBeNull();
-    expect(
-      within(ofek)
-        .getByRole('link', { name: 'תנאי מסלול אופק באתר אוניברסיטת חיפה' })
-        .getAttribute('href'),
-    ).toBe('https://admissions.haifa.ac.il/social-sciences/program/3268/');
   });
 
   it('serves the sourced Ono page through the existing static route fallback when the active catalogue lacks it', async () => {
@@ -450,12 +450,9 @@ describe('ProgramPage', () => {
     expect(screen.queryByText(/נבדק|עודכן לאחרונה/)).toBeNull();
     expect(screen.getByRole('heading', { name: 'סיוע במימון המכינה' })).toBeTruthy();
     expect(
-      screen
-        .getByRole('link', { name: 'תנאי הזכאות ואופן ההגשה באתר משרד הביטחון' })
-        .getAttribute('href'),
-    ).toBe(
-      'https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx',
-    );
+      screen.queryByRole('link', { name: 'תנאי הזכאות ואופן ההגשה באתר משרד הביטחון' }),
+    ).toBeNull();
+    expect(prepFundingUrl).toMatch(/mod\.gov\.il/);
     expect(container.textContent).toContain('80%');
     const faq = JSON.parse(
       container.querySelector('script[type="application/ld+json"]')!.textContent!,
@@ -559,15 +556,15 @@ describe('ProgramPage', () => {
         .getAttribute('href'),
     ).toBe('/sekhem-calculator');
     expect(
-      within(comparison)
-        .getByRole('link', { name: 'על ההבדל בין התחומים — האקדמית גליל מערבי' })
-        .getAttribute('href'),
-    ).toBe('https://wgalil.ac.il/blog/computer-science-vs-data-science/');
+      within(comparison).queryByRole('link', { name: 'על ההבדל בין התחומים — האקדמית גליל מערבי' }),
+    ).toBeNull();
     expect(
-      within(comparison)
-        .getByRole('link', { name: 'מדע הנתונים — המסלול האקדמי המכללה למינהל' })
-        .getAttribute('href'),
-    ).toBe('https://www.colman.ac.il/academics/ba/data-science/');
+      within(comparison).queryByRole('link', {
+        name: 'מדע הנתונים — המסלול האקדמי המכללה למינהל',
+      }),
+    ).toBeNull();
+    expect(datascienceReferences.galilee).toMatch(/wgalil\.ac\.il/);
+    expect(datascienceReferences.colman).toMatch(/colman\.ac\.il/);
     expect(screen.queryByRole('link', { name: 'בדקו אם אתם מתקבלים' })).toBeNull();
     expect(screen.queryByRole('link', { name: 'חשבו סכם לתוכנית הזו' })).toBeNull();
     const institutions = screen.getByRole('heading', { name: 'מוסדות לימוד' });

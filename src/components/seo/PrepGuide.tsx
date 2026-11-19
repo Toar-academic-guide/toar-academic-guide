@@ -1,6 +1,9 @@
 import Link from 'next/link';
 import { PREP_ROWS } from '@/lib/prepGuide';
 
+export const prepFundingUrl =
+  'https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx';
+
 const prepQuestion = 'האם מכינה מחליפה בגרות או פסיכומטרי?';
 const prepAnswer =
   'זה תלוי במכינה. בטבלה מופיע לכל מכינה מה התעודה שלה מחליפה והאם נדרש פסיכומטרי כדי להיכנס אליה.';
@@ -127,14 +130,6 @@ export default function PrepGuide({ programIds }: { programIds: string[] }) {
             בנוסף לפיקדון האישי. אם לא נמצאתם זכאים לסיוע בשכר הלימוד, תוכלו לבדוק אם ניתן להשתמש
             ביתרת הפיקדון האישי לתשלום במכינה.
           </p>
-          <a
-            href="https://www.hachvana.mod.gov.il/MainEducation/TwelveYearsStudies/Pages/PreAcademic.aspx"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
-          >
-            תנאי הזכאות ואופן ההגשה באתר משרד הביטחון
-          </a>
         </div>
       </section>
       <section aria-labelledby="prep-faq">

@@ -20,46 +20,8 @@ const programIds = [
   'biu_criminology',
 ];
 
-// Captured from origin/main 1962d1f before changing AdmissionRequirements.
-const baseline = {
-  noPrefix: {
-    text: 'המחשבון הרשמי של בר-אילן',
-    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]"><a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a></p>',
-    links: [
-      {
-        text: 'המחשבון הרשמי של בר-אילן',
-        href: 'https://shoham.biu.ac.il/kabala/?utm_source=myway&utm_medium=referral',
-      },
-    ],
-  },
-  standard: {
-    text: 'המחשבון הרשמי של בר-אילן',
-    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]"><a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a></p>',
-    links: [
-      {
-        text: 'המחשבון הרשמי של בר-אילן',
-        href: 'https://shoham.biu.ac.il/kabala/?utm_source=myway&utm_medium=referral',
-      },
-    ],
-  },
-  engineering: {
-    text: 'המחשבון הרשמי של בר-אילן; תנאי הקבלה בפקולטה להנדסה',
-    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]"><a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a>; <a href="https://engineering.biu.ac.il/prerequisites?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">תנאי הקבלה בפקולטה להנדסה</a></p>',
-    links: [
-      {
-        text: 'המחשבון הרשמי של בר-אילן',
-        href: 'https://shoham.biu.ac.il/kabala/?utm_source=myway&utm_medium=referral',
-      },
-      {
-        text: 'תנאי הקבלה בפקולטה להנדסה',
-        href: 'https://engineering.biu.ac.il/prerequisites?utm_source=myway&utm_medium=referral',
-      },
-    ],
-  },
-};
-
 it.each(programIds)(
-  'preserves the origin/main footer and column classes for %s__biu',
+  'keeps floor columns and drops official calculator links for %s__biu',
   async (programId) => {
     const report = await evaluateAdmissionsForProgram({
       program: getStaticCataloguePrograms().find((row) => row.id === programId)!,
@@ -78,23 +40,9 @@ it.each(programIds)(
         floorChecks={floors}
       />,
     );
-    const footer = container.querySelector('p')!;
-    const expected =
-      programId === 'biu_ee'
-        ? baseline.engineering
-        : ['law', 'biu_law'].includes(programId)
-          ? baseline.noPrefix
-          : baseline.standard;
-    expect(footer.textContent).toBe(expected.text);
-    expect(
-      within(footer)
-        .getAllByRole('link')
-        .map((link) => ({
-          text: link.textContent,
-          href: link.getAttribute('href'),
-        })),
-    ).toEqual(expected.links);
-    expect(footer.outerHTML).toBe(expected.html);
+    expect(container.querySelector('a')).toBeNull();
+    expect(container.textContent).not.toContain('המחשבון הרשמי של בר-אילן');
+    expect(container.textContent).not.toContain('תנאי הקבלה בפקולטה להנדסה');
     expect(
       within(screen.getByRole('table'))
         .getAllByRole('columnheader')

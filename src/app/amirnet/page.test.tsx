@@ -6,6 +6,7 @@ vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: React.ReactNode }) => <div>{children}</div>,
 }));
 
+import { amirnetSourceUrls } from '@/data/amirnetSourceUrls';
 import Page, { metadata } from './page';
 
 it('renders eight sourced institution rows with the distinct admission and post-exemption rules', () => {
@@ -53,4 +54,8 @@ it('publishes matching visible FAQ answers, exact metadata and live internal lin
   const related = screen.getByRole('navigation', { name: 'מדריכים קשורים' });
   expect(within(related).getAllByRole('link')).toHaveLength(6);
   expect(related.querySelector('a[href="/psychometric-accommodations"]')).toBeNull();
+  expect(main.querySelector('a[href^="https://"]')).toBeNull();
+  expect(
+    Object.values(amirnetSourceUrls).every((href) => href.startsWith('https://www.nite.org.il/')),
+  ).toBe(true);
 });
