@@ -8,6 +8,31 @@ import repair from './catalogueContentRepair.json';
 import { BGU_QUANTITATIVE_PROGRAMMES } from '@/server/admissions/bguQuantitativeRoutesPolicy';
 
 describe('verified catalogue content repair', () => {
+  it('keeps the Hadassah computer science route under the current institution', () => {
+    const program = allPrograms.find((row) => row.id === 'mon_12220685569_cs')!;
+    const reviewed = repair.requirements.find((row) => row.programId === program.id)!;
+    const seed = buildCatalogueSeed();
+
+    expect(reviewed.institutionId).toBe('hadassah');
+    expect(program.institutionId).toBe('hadassah');
+    expect(program.name).toBe('מדעי המחשב - המרכז האקדמי הרב תחומי ירושלים');
+    expect(program.institutionDetails?.[0]?.specificAdmissionNotes).toEqual(reviewed.notes);
+    expect(program.institutionDetails?.[0]?.admissionFacts).toEqual([]);
+    expect(program.institutionDetails?.[0]?.admissionsSourceCandidates ?? []).toEqual([]);
+    expect(program.institutionDetails?.[0]?.calculatorUrl).toBe(
+      'https://www.jmc.ac.il/ללמוד-אצלנו/הרשמה-ללימודים/מחשבון-מתאם/',
+    );
+    expect(getRequirementsChecked(program.id, { id: 'hadassah' }, reviewed.notes)).toBeDefined();
+    expect(seed.institutions.some((row) => row.id === 'mon_12220685569')).toBe(false);
+    expect(seed.programInstitutions).toContainEqual({
+      programId: program.id,
+      institutionId: 'hadassah',
+    });
+    expect(seed.admissionRequirements.some((row) => row.id === `${program.id}:hadassah`)).toBe(
+      true,
+    );
+  });
+
   it('matches BGU business administration copy to the reviewed quantitative routes', () => {
     const row = repair.requirements.find(
       (entry) => entry.programId === 'bgu_business' && entry.institutionId === 'bgu',

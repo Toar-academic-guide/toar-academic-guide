@@ -1,5 +1,11 @@
 'use client';
 
+import {
+  resultCalculatorHref,
+  resultCalculatorProgram,
+  type ResultCalculatorProgram,
+} from '@/lib/resultCalculatorLink';
+import Link from 'next/link';
 import AdmissionRequirements from './AdmissionRequirements';
 import { institutionLink } from '@/lib/institutionLinks';
 
@@ -59,7 +65,34 @@ import {
 } from '@/lib/catalogueDisplayText';
 import { getTopDimensions } from '@/utils/scoringEngine';
 
+type CalculatorPrograms = readonly ResultCalculatorProgram[];
+
+function ResultCalculatorLink({
+  officialUrl,
+  programId,
+}: {
+  officialUrl?: string;
+  programId?: string;
+}) {
+  const className =
+    'flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95';
+  if (programId) {
+    return (
+      <Link className={className} href={resultCalculatorHref(programId)}>
+        חשבו סכם לתוכנית הזו
+      </Link>
+    );
+  }
+  if (!officialUrl) return null;
+  return (
+    <a className={className} href={officialUrl} target="_blank" rel="noopener noreferrer">
+      בדיקת סיכויי קבלה ומחשבון סכם ↗
+    </a>
+  );
+}
+
 interface Props {
+  calculatorPrograms?: CalculatorPrograms;
   programs: Program[];
   recommendations: RecommendedField[];
   onSelectDegree: (degreeId: string) => void;
@@ -341,6 +374,7 @@ function SubTabPanel({ programs, suggestedPrograms, onSelectProgram }: SubTabPan
 // ── Level 2: Program Detail View ─────────────────────────────────────────────
 
 interface DetailProps {
+  calculatorPrograms: CalculatorPrograms;
   programs: Program[];
   program: Program;
   onBack: () => void;
@@ -351,6 +385,7 @@ interface DetailProps {
 }
 
 function ProgramDetailView({
+  calculatorPrograms,
   programs,
   program,
   onBack,
@@ -496,6 +531,11 @@ function ProgramDetailView({
                   instRecord?.id,
                   { fallbackToWebsite: false },
                 );
+                const calculatorProgram = resultCalculatorProgram(
+                  calculatorPrograms,
+                  p.id,
+                  instRecord?.id,
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -527,7 +567,9 @@ function ProgramDetailView({
                             {detail.durationYears !== null && (
                               <span>{detail.durationYears} שנות לימוד</span>
                             )}
-                            <span>{detail.estimatedStudentsPerYear}</span>
+                            {detail.estimatedStudentsPerYear && (
+                              <span>{detail.estimatedStudentsPerYear}</span>
+                            )}
                           </div>
                         )}
                         <button
@@ -593,15 +635,11 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          {calculatorUrl && (
-                            <a
-                              href={calculatorUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                            >
-                              בדיקת סיכויי קבלה ומחשבון סכם ↗
-                            </a>
+                          {(calculatorUrl || calculatorProgram) && (
+                            <ResultCalculatorLink
+                              officialUrl={calculatorUrl ?? undefined}
+                              programId={calculatorProgram}
+                            />
                           )}
                         </div>
                       </>
@@ -649,6 +687,11 @@ function ProgramDetailView({
                   instRecord?.id,
                   { fallbackToWebsite: false },
                 );
+                const calculatorProgram = resultCalculatorProgram(
+                  calculatorPrograms,
+                  p.id,
+                  instRecord?.id,
+                );
                 const region = instRecord?.region ?? INSTITUTION_REGIONS[p.institution];
                 const isPreferred =
                   geographicPreference &&
@@ -684,7 +727,9 @@ function ProgramDetailView({
                             {detail.durationYears !== null && (
                               <span>{detail.durationYears} שנות לימוד</span>
                             )}
-                            <span>{detail.estimatedStudentsPerYear}</span>
+                            {detail.estimatedStudentsPerYear && (
+                              <span>{detail.estimatedStudentsPerYear}</span>
+                            )}
                           </div>
                         )}
                         <button
@@ -734,15 +779,11 @@ function ProgramDetailView({
                               מידע על המסלול ↗
                             </a>
                           )}
-                          {calculatorUrl && (
-                            <a
-                              href={calculatorUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="flex flex-1 items-center justify-center gap-1.5 rounded-xl bg-[#4f46e5] px-4 py-2.5 text-xs font-semibold text-white transition hover:bg-[#4338ca] active:scale-95"
-                            >
-                              בדיקת סיכויי קבלה ומחשבון סכם ↗
-                            </a>
+                          {(calculatorUrl || calculatorProgram) && (
+                            <ResultCalculatorLink
+                              officialUrl={calculatorUrl ?? undefined}
+                              programId={calculatorProgram}
+                            />
                           )}
                         </div>
                       </>
@@ -772,6 +813,7 @@ function ProgramDetailView({
 // ── Level 1: Category Overview ────────────────────────────────────────────────
 
 export default function RecommendationResults({
+  calculatorPrograms = [],
   programs,
   recommendations,
   onSelectDegree,
@@ -795,6 +837,7 @@ export default function RecommendationResults({
       return (
         <div className="flex flex-col gap-6">
           <ProgramDetailView
+            calculatorPrograms={calculatorPrograms}
             programs={programs}
             program={program}
             onBack={() => setSelectedProgramId(null)}

@@ -9,21 +9,35 @@ import BagrutSubjectRows, {
 } from '@/components/BagrutSubjectRows';
 import { defaultUnitsFor } from '@/components/bagrutUnitOptions';
 import EnquiryForm from '@/components/EnquiryForm';
-import { subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
+import { buildBagrutSubjectRecord, subjectIdForWizardLabel } from '@/utils/bagrutSubjectRecord';
 import { institutionShortName, type ResultInputTarget } from '@/lib/sekhemResultPresentation';
 import { readSekhemSession, writeSekhemSession } from '@/lib/sekhemCalculatorSession';
+import { profileInputsChanged } from '@/lib/sekhemProfile';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
+  captureCalculatorOutcome,
+  createCalculatorRun,
+  type CalculatorRun,
+} from '@/lib/calculatorAnalytics';
+import {
   haifaProfileInputsSchema,
+  HAIFA_PROFILE_KEYS,
   HAIFA_NUMERIC_QUALIFICATION_KEYS,
 } from '@/lib/haifaAdmissionsInputs';
-import { buildSekhemInput, type CalculatorOffering } from '@/lib/sekhemCalculator';
+import {
+  buildSekhemInput,
+  type CalculatorOffering,
+  type CalculatorProfile,
+} from '@/lib/sekhemCalculator';
 import type { BagrutCertificateType } from '@/types';
 import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 import type { HaifaQualificationValues } from '@/components/HaifaQualificationFields';
 import RequiredAdmissionsInputs, { requestedHaifaKeys } from './RequiredAdmissionsInputs';
 import SekhemResults from './SekhemResults';
+import MedicineAcademicFields, { type MedicineAcademicValues } from './MedicineAcademicFields';
+import { medicineAcademicInputsSchema } from '@/lib/medicineAcademicInputs';
+import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 import './sekhem.css';
 
 const subjectNames = ['מתמטיקה', 'אנגלית', 'פיזיקה', 'מדעי המחשב'];
@@ -59,6 +73,10 @@ const booleanHaifaKeys = new Set([
   'haifaOtUnjustifiedAbsence',
   'haifaInformationSystemsPartnerRequirementsConfirmed',
 ]);
+const haifaAnswerDependencies = {
+  bagrut: ['haifaBagrutAverage', 'haifaScienceUnits'],
+  psychometric: ['haifaPsychometricMonth', 'haifaPsychometricYear'],
+} as const;
 
 function numericRowErrors(rows: BagrutSubjectRow[]): BagrutFieldErrors {
   return rows.map((row) => {
@@ -78,10 +96,21 @@ function numericRowErrors(rows: BagrutSubjectRow[]): BagrutFieldErrors {
 export default function SekhemCalculator({
   offerings,
   initialProgramId,
+  profileEntry,
 }: {
   offerings: CalculatorOffering[];
   initialProgramId?: string;
+  profileEntry?: {
+    id: string;
+    saved: CalculatorProfile;
+    save: (form: CalculatorProfile) => Promise<void>;
+  };
 }) {
+  const [entry] = useState(
+    () => profileEntry && { id: profileEntry.id, initial: profileEntry.saved },
+  );
+  const [saving, setSaving] = useState(false);
+  const [saveMessage, setSaveMessage] = useState('');
   const [rows, setRows] = useState(() => emptyRows());
   const [psychometric, setPsychometric] = useState('');
   const [verbal, setVerbal] = useState('');
@@ -92,6 +121,8 @@ export default function SekhemCalculator({
   const [programId, setProgramId] = useState(initialProgramId ?? '');
   const [reports, setReports] = useState<AdmissionsEvaluationReport[]>([]);
   const [haifaValues, setHaifaValues] = useState<HaifaQualificationValues>({});
+  const [medicineValues, setMedicineValues] = useState<MedicineAcademicValues>({});
+  const [medicineRequired, setMedicineRequired] = useState<AdmissionsRequiredInput[]>([]);
   const [requiredKeys, setRequiredKeys] = useState<ReturnType<typeof requestedHaifaKeys>>([]);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState('');
@@ -150,7 +181,25 @@ export default function SekhemCalculator({
     }
   }
   const generation = useRef(0);
+  const analyticsRun = useRef<CalculatorRun | null>(null);
+  const [settledGeneration, setSettledGeneration] = useState<number | null>(null);
   const chosen = offerings.filter((row) => !programId || row.programId === programId);
+  useEffect(() => {
+    if (busy || settledGeneration !== generation.current || !analyticsRun.current) return;
+    const options = chosen
+      .filter((offering) => offering.institutionId !== 'ariel')
+      .map((offering) => ({
+        result: reports
+          .find(
+            (report) =>
+              report.input.degreeId === offering.programId ||
+              report.program.id === offering.programId,
+          )
+          ?.results.find((result) => result.linkedInstitutionId === offering.institutionId),
+        failed: failedIds.includes(offering.programId),
+      }));
+    captureCalculatorOutcome(analyticsRun.current, 'sekhem_calculator', options);
+  }, [busy, settledGeneration, chosen, reports, failedIds]);
   const programs = [
     ...new Map(
       offerings.map((row) => [
@@ -161,37 +210,49 @@ export default function SekhemCalculator({
   ];
 
   useEffect(() => {
-    const saved = readSekhemSession(offerings);
+    const saved = readSekhemSession(offerings, entry?.id);
     const explicit = offerings.some((row) => row.programId === initialProgramId)
       ? initialProgramId
       : undefined;
+    const inputs = saved ?? entry?.initial;
+    if (inputs) {
+      setRows(
+        inputs.rows.length || saved
+          ? inputs.rows
+          : [{ label: '', units: '', grade: '', assessmentKind: 'exam' }],
+      );
+      setPsychometric(inputs.psychometric);
+      setVerbal(inputs.verbal);
+      setQuantitative(inputs.quantitative);
+      setEnglish(inputs.english);
+      setSector(inputs.sector);
+      setCertificate(inputs.certificate);
+    }
     if (saved) {
-      setRows(saved.rows);
-      setPsychometric(saved.psychometric);
-      setVerbal(saved.verbal);
-      setQuantitative(saved.quantitative);
-      setEnglish(saved.english);
-      setSector(saved.sector);
-      setCertificate(saved.certificate);
-      const compatible = !explicit || explicit === saved.programId;
-      setProgramId(explicit ?? saved.programId);
+      const compatible = !!entry || !explicit || explicit === saved.programId;
+      setProgramId(entry ? saved.programId : (explicit ?? saved.programId));
       setReports(compatible ? saved.reports : []);
       setRequiredKeys(compatible ? saved.requiredKeys : []);
       setHaifaValues(compatible ? saved.haifaValues : {});
+      setMedicineValues(compatible ? (saved.medicineValues ?? {}) : {});
+      setMedicineRequired(compatible ? (saved.medicineRequired ?? []) : []);
       setFailedIds(compatible ? saved.failedIds : []);
     } else if (explicit) {
       setProgramId(explicit);
       setReports([]);
       setRequiredKeys([]);
       setHaifaValues({});
+      setMedicineValues({});
+      setMedicineRequired([]);
       setFailedIds([]);
     }
     generation.current++;
+    analyticsRun.current = null;
     setBusy(false);
     setError('');
     setEnquiry(null);
     setRestoredFor({ offerings, initialProgramId });
-  }, [offerings, initialProgramId]);
+  }, [offerings, initialProgramId, entry]);
 
   useEffect(() => {
     if (restoredFor?.offerings !== offerings || restoredFor.initialProgramId !== initialProgramId)
@@ -208,13 +269,16 @@ export default function SekhemCalculator({
       reports,
       requiredKeys,
       haifaValues,
+      medicineValues,
+      medicineRequired,
       failedIds,
     };
-    const save = () => writeSekhemSession(snapshot);
+    const save = () => writeSekhemSession(snapshot, entry?.id);
     save();
     window.addEventListener('pagehide', save);
     return () => window.removeEventListener('pagehide', save);
   }, [
+    entry,
     restoredFor,
     offerings,
     initialProgramId,
@@ -229,15 +293,23 @@ export default function SekhemCalculator({
     reports,
     requiredKeys,
     haifaValues,
+    medicineValues,
+    medicineRequired,
     failedIds,
   ]);
 
-  function invalidate(keepRequired = false) {
+  function invalidate(dependencies: (keyof typeof haifaAnswerDependencies)[] = []) {
+    setSaveMessage('');
     generation.current++;
+    analyticsRun.current = null;
     setReports([]);
-    if (!keepRequired) {
-      setRequiredKeys([]);
-      setHaifaValues({});
+    if (dependencies.length) {
+      setHaifaValues((current) => {
+        const next = { ...current };
+        for (const dependency of dependencies)
+          for (const key of haifaAnswerDependencies[dependency]) delete next[key];
+        return next;
+      });
     }
     setFailedIds([]);
     setError('');
@@ -268,18 +340,32 @@ export default function SekhemCalculator({
         certificate,
       });
       const extras = Object.fromEntries(
-        requiredKeys
-          .filter((key) => haifaValues[key]?.trim())
-          .map((key) => {
-            const value = haifaValues[key];
-            if (numericHaifaKeys.has(key)) return [key, Number(value)];
-            if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
-            return [key, value];
-          }),
+        HAIFA_PROFILE_KEYS.filter(
+          (key) => key !== 'haifaBagrutAverage' && haifaValues[key]?.trim(),
+        ).map((key) => {
+          const value = haifaValues[key];
+          if (numericHaifaKeys.has(key)) return [key, Number(value)];
+          if (booleanHaifaKeys.has(key)) return [key, value === 'true'];
+          return [key, value];
+        }),
       );
       applicant.extraInputs = {
         ...applicant.extraInputs,
         ...haifaProfileInputsSchema.parse(extras),
+        ...medicineAcademicInputsSchema.parse(
+          Object.fromEntries(
+            Object.entries(medicineValues)
+              .filter(([, value]) => value?.trim())
+              .map(([key, value]) => [
+                key,
+                key === 'medicineHebrewScore'
+                  ? Number(value)
+                  : key === 'medicineEnglishExempt'
+                    ? value === 'true'
+                    : value,
+              ]),
+          ),
+        ),
       };
     } catch (cause) {
       setError(
@@ -294,6 +380,7 @@ export default function SekhemCalculator({
       setError('לא נמצאו תוכניות לחישוב.');
       return;
     }
+    if (!retryIds) analyticsRun.current = createCalculatorRun('evaluation');
     setBusy(true);
     const completed = retryIds ? [...reports] : [];
     const failed: string[] = [];
@@ -318,12 +405,18 @@ export default function SekhemCalculator({
             .flatMap((result) => result.requiredInputs ?? []),
         ),
       );
-      setRequiredKeys(keys);
-      setHaifaValues((current) =>
-        Object.fromEntries(
-          keys.filter((key) => current[key] !== undefined).map((key) => [key, current[key]]),
+      setRequiredKeys((current) => [
+        ...new Set([...current.filter((key) => haifaValues[key]?.trim()), ...keys]),
+      ]);
+      setMedicineRequired([
+        ...new Set(
+          completed.flatMap((report) =>
+            report.results
+              .filter((result) => result.stage === 'academic')
+              .flatMap((result) => result.requiredInputs ?? []),
+          ),
         ),
-      );
+      ]);
       setFailedIds(failed);
       if (failed.length) setError('חלק מהתוכניות לא חושבו. אפשר לנסות שוב.');
     } catch {
@@ -332,7 +425,33 @@ export default function SekhemCalculator({
         setFailedIds(ids.filter((id) => !completed.some((report) => report.input.degreeId === id)));
       }
     } finally {
-      if (generation.current === version) setBusy(false);
+      if (generation.current === version) {
+        setBusy(false);
+        setSettledGeneration(version);
+      }
+    }
+  }
+
+  const formInputs = {
+    rows: subjectRowValues(rows),
+    sector,
+    certificate,
+    psychometric,
+    verbal,
+    quantitative,
+    english,
+  };
+  async function saveProfile() {
+    if (!profileEntry || saving) return;
+    setSaving(true);
+    setSaveMessage('');
+    try {
+      await profileEntry.save(formInputs);
+      setSaveMessage('הציונים נשמרו בפרופיל.');
+    } catch (error) {
+      setSaveMessage(error instanceof Error ? error.message : 'שמירת הציונים נכשלה. נסו שוב.');
+    } finally {
+      setSaving(false);
     }
   }
 
@@ -352,7 +471,15 @@ export default function SekhemCalculator({
             type="button"
             className="min-h-11 text-sm underline"
             onClick={() => {
-              invalidate();
+              invalidate([
+                'bagrut',
+                ...(psychometric !== '700' ||
+                verbal !== '130' ||
+                quantitative !== '140' ||
+                english !== '135'
+                  ? ['psychometric' as const]
+                  : []),
+              ]);
               setRows(exampleRows());
               setFieldErrors([]);
               setPsychometric('700');
@@ -365,12 +492,15 @@ export default function SekhemCalculator({
           </button>
         </div>
         <div ref={subjectFields} id="sekhem-bagrut-subjects" tabIndex={-1}>
+          <p className="mb-3 text-sm text-(--text-body)">
+            הזינו את הציונים שמופיעים בתעודת הבגרות, לפני בונוסים.
+          </p>
           <BagrutSubjectRows
             sector={sector}
             rows={rows}
             fieldErrors={fieldErrors}
             onChange={(next) => {
-              invalidate();
+              invalidate(['bagrut']);
               setRows(next);
               if (fieldErrors.length) setFieldErrors(numericRowErrors(next));
             }}
@@ -385,8 +515,12 @@ export default function SekhemCalculator({
                 className="sekhem-input"
                 value={sector}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['bagrut']);
                   setSector(event.target.value);
+                  setMedicineValues((current) => ({
+                    ...current,
+                    medicineCertificateLanguage: undefined,
+                  }));
                   setRows(rowsForSector(rows, event.target.value));
                 }}
               >
@@ -401,7 +535,7 @@ export default function SekhemCalculator({
                 className="sekhem-input"
                 value={certificate}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['bagrut']);
                   setCertificate(event.target.value as BagrutCertificateType);
                 }}
               >
@@ -411,6 +545,41 @@ export default function SekhemCalculator({
               </select>
             </label>
           </div>
+          {(!programId || programId.endsWith('_medicine') || programId === 'medicine') && (
+            <details className="mt-3 text-right text-sm">
+              <summary className="cursor-pointer py-2">עבודות גמר וציונים משולבים</summary>
+              <div className="grid gap-3 sm:grid-cols-2">
+                {rows.map(
+                  (row, index) =>
+                    row.label && (
+                      <label key={index}>
+                        סוג הציון — {row.label}
+                        <select
+                          aria-label={`סוג ציון ${index + 1}`}
+                          className="sekhem-input text-right"
+                          value={row.assessmentKind ?? 'exam'}
+                          disabled={busy}
+                          onChange={(event) => {
+                            invalidate(['bagrut']);
+                            const assessmentKind = event.target.value as
+                              'exam' | 'final_project' | 'combined';
+                            setRows((current) =>
+                              current.map((entry, i) =>
+                                i === index ? { ...entry, assessmentKind } : entry,
+                              ),
+                            );
+                          }}
+                        >
+                          <option value="exam">בחינת בגרות</option>
+                          <option value="final_project">עבודת גמר</option>
+                          <option value="combined">ציון משולב</option>
+                        </select>
+                      </label>
+                    ),
+                )}
+              </div>
+            </details>
+          )}
         </details>
         <label className="block text-sm font-medium" htmlFor="psychometric-total">
           פסיכומטרי — ציון כללי{' '}
@@ -429,7 +598,7 @@ export default function SekhemCalculator({
           required
           value={psychometric}
           onChange={(event) => {
-            invalidate();
+            invalidate(['psychometric']);
             setPsychometric(event.target.value);
           }}
         />
@@ -455,7 +624,7 @@ export default function SekhemCalculator({
                 step={1}
                 value={field.value}
                 onChange={(event) => {
-                  invalidate();
+                  invalidate(['psychometric']);
                   field.set(event.target.value);
                 }}
               />
@@ -472,6 +641,8 @@ export default function SekhemCalculator({
               onChange={(event) => {
                 invalidate();
                 setProgramId(event.target.value);
+                setMedicineValues({});
+                setMedicineRequired([]);
               }}
             >
               <option value="">כל התוכניות</option>
@@ -483,11 +654,27 @@ export default function SekhemCalculator({
             </select>
           </label>
         </details>
+        <MedicineAcademicFields
+          required={medicineRequired}
+          values={medicineValues}
+          disabled={busy}
+          onChange={(key, value) => {
+            invalidate();
+            setMedicineValues((current) => ({ ...current, [key]: value }));
+          }}
+        />
         <RequiredAdmissionsInputs
           keys={requiredKeys}
           values={haifaValues}
+          bagrutSubjectRecord={buildBagrutSubjectRecord({
+            sectorLabel: sector,
+            certificateType: certificate,
+            complete: true,
+            subjects: subjectRowValues(rows),
+          })}
+          onBagrutFocus={() => focusResultInput({ inputId: 'sekhem-bagrut-subjects' })}
           onChange={(key, value) => {
-            invalidate(true);
+            invalidate();
             setHaifaValues((current) => ({ ...current, [key]: value }));
           }}
           disabled={busy}
@@ -504,6 +691,19 @@ export default function SekhemCalculator({
         >
           {busy ? 'מחשבים…' : 'חשבו את הסכם שלי'}
         </button>
+        {profileEntry &&
+          restoredFor &&
+          (saving || profileInputsChanged(formInputs, profileEntry.saved)) && (
+            <button
+              type="button"
+              disabled={saving}
+              className="journey-text-button mt-2"
+              onClick={saveProfile}
+            >
+              עדכון הפרופיל
+            </button>
+          )}
+        {saveMessage && <p role="status">{saveMessage}</p>}
         {busy && (
           <p role="status" className="sr-only">
             החישוב מתבצע

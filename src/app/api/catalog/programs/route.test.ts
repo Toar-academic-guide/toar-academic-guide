@@ -54,7 +54,7 @@ describe('catalogue programs route', () => {
       },
     });
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/catalog/programs'));
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -81,7 +81,7 @@ describe('catalogue programs route', () => {
       meta: { catalogueSourceMode: 'database', catalogueSource: 'database', programCount: 1 },
     });
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/catalog/programs'));
     const body = await response.json();
     const programs = body.data as CatalogueProgram[];
 
@@ -112,7 +112,7 @@ describe('catalogue programs route', () => {
       meta: { catalogueSourceMode: 'database', catalogueSource: 'database' },
     });
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/catalog/programs'));
     const body = await response.json();
 
     expect(response.status).toBe(200);
@@ -135,7 +135,7 @@ describe('catalogue programs route', () => {
       }),
     );
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/catalog/programs'));
     const body = await response.json();
 
     expect(response.status).toBe(503);
@@ -154,7 +154,7 @@ describe('catalogue programs route', () => {
   it('preserves unexpected errors without returning fallback data', async () => {
     hoistedMocks.listCataloguePrograms.mockRejectedValue(new Error('Unexpected failure'));
 
-    const response = await GET();
+    const response = await GET(new Request('https://example.test/api/catalog/programs'));
     const body = await response.json();
 
     expect(response.status).toBe(503);

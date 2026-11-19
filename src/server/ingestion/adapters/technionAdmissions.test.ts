@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 import { architectureInputs, architectureSourceResponse } from '@/test/technionArchitecture';
+import { technionWinterThresholdsHtml } from '@/test/technionWinterThresholds';
 
 import {
   hasTechnionRequiredSubjectRecord,
@@ -23,6 +24,94 @@ const record = {
 };
 
 describe('runTechnionAdmissionsProof', () => {
+  it('fails Architecture when the calculator index returns HTTP 404', async () => {
+    const proof = await runTechnionAdmissionsProof({
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response('missing', { status: 404 })),
+      program: { id: 'architecture', name: 'Architecture' },
+      applicant: { bagrutAverage: 100, psychometric: 730, extraInputs: architectureInputs },
+    });
+    expect(proof).toMatchObject({ status: 'failed', capability: 'blocked' });
+    expect(proof.publicationCutoff).toBeUndefined();
+  });
+  it.each([
+    ['HTTP 404', new Response('missing', { status: 404 })],
+    ['empty body', new Response('')],
+    [
+      'malformed row',
+      new Response(
+        '<h2>חורף תשפ״ז</h2><table id="tablepress-485"><tr><td class="column-1">הנדסה אזרחית</td><td class="column-2"></td></tr><tr><td class="column-1">הנדסת חשמל</td><td class="column-2">87</td></tr></table>',
+      ),
+    ],
+    ['calculator only', new Response('הסכם לדיוני הקבלה הוא:87')],
+  ])('does not publish civil from %s threshold proof', async (_case, thresholdResponse) => {
+    const fetcher = vi
+      .fn<typeof fetch>()
+      .mockResolvedValueOnce(new Response('הסכם לדיוני הקבלה הוא:92.3'))
+      .mockResolvedValueOnce(thresholdResponse);
+    const proof = await runTechnionAdmissionsProof({
+      fetcher,
+      applicant: { bagrutAverage: 110, bagrutSubjectRecord: record, psychometric: 700 },
+      program: {
+        id: 'technion_civil',
+        name: 'Civil Engineering',
+        targetId: 'technion-technion_civil-live',
+      },
+    });
+    expect(proof.publicationCutoff).toBeUndefined();
+    expect(proof.capability).not.toBe('decision_capable');
+  });
+
+  it('keeps an unreviewed civil table number out of publication but accepts reviewed winter EE', async () => {
+    const civil = await runTechnionAdmissionsProof({
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response('הסכם לדיוני הקבלה הוא:92.3'))
+        .mockResolvedValueOnce(
+          new Response(
+            technionWinterThresholdsHtml.replace(
+              /<\/tbody><\/table>\s*$/,
+              '<tr><td class="column-1">הנדסה אזרחית</td><td class="column-2">87</td></tr></tbody></table>',
+            ),
+          ),
+        ),
+      applicant: { bagrutAverage: 110, bagrutSubjectRecord: record, psychometric: 700 },
+      program: { id: 'technion_civil', name: 'Civil Engineering' },
+    });
+    expect(civil.capability).toBe('decision_capable');
+    expect(civil.publicationCutoff).toBeUndefined();
+
+    const ee = await runTechnionAdmissionsProof({
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response('הסכם לדיוני הקבלה הוא:92.3'))
+        .mockResolvedValueOnce(new Response(technionWinterThresholdsHtml)),
+      applicant: { bagrutAverage: 110, bagrutSubjectRecord: record, psychometric: 700 },
+      program: { id: 'ee', name: 'Electrical Engineering' },
+    });
+    expect(ee.publicationCutoff).toMatchObject({
+      value: 91.5,
+      cycle: '2027',
+      route: 'main',
+      metric: 'sekhem',
+    });
+  });
+  it('does not publish a numerically unchanged winter row with added route conditions', async () => {
+    const proof = await runTechnionAdmissionsProof({
+      fetcher: vi
+        .fn<typeof fetch>()
+        .mockResolvedValueOnce(new Response('הסכם לדיוני הקבלה הוא:92.3'))
+        .mockResolvedValueOnce(
+          new Response(
+            technionWinterThresholdsHtml.replace('>91.5</td>', '>91.5 על בסיס ראיון</td>'),
+          ),
+        ),
+      applicant: { bagrutAverage: 110, bagrutSubjectRecord: record, psychometric: 700 },
+      program: { id: 'ee', name: 'Electrical Engineering' },
+    });
+    expect(proof.publicationCutoff).toBeUndefined();
+  });
   it.each([
     ['/calculator/', '0.3*', '0.4*'],
     ['/calculator/', '"rounding":"1"', '"rounding":"2"'],

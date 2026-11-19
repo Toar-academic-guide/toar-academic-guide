@@ -73,6 +73,7 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       expect(admissionsInputValue(extra, HUJI_MEDICINE_REQUIRED_INPUTS[key])).toBe(extra?.[key]);
   });
   it('forwards the saved Haifa average and real years without rounding or substituting them', () => {
+    // Approved test update, Jorje 2026-10-31: omit stored Haifa average overrides while preserving real exam years.
     const admissions = {
       haifaBagrutAverage: 102.25,
       haifaBagrutYear: 2015,
@@ -90,8 +91,13 @@ describe('admissionsExtraInputsFromAcademicScores', () => {
       haifaInformationSystemsPartnerRequirementsConfirmed: false,
     };
     const input = admissionsExtraInputsFromAcademicScores({ admissions });
-    expect(input).toMatchObject(admissions);
-    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBe(102.25);
+    expect(input).toMatchObject(
+      Object.fromEntries(
+        Object.entries(admissions).filter(([key]) => key !== 'haifaBagrutAverage'),
+      ),
+    );
+    expect(input).not.toHaveProperty('haifaBagrutAverage');
+    expect(admissionsInputValue(input, 'haifa_bagrut_average')).toBeUndefined();
     expect(admissionsInputValue(input, 'haifa_bagrut_year')).toBe(2015);
     expect(admissionsInputValue(input, 'haifa_psychometric_year')).toBe(2026);
     expect(admissionsInputValue(input, 'haifa_information_systems_track')).toBe('computer_science');
@@ -295,4 +301,16 @@ it('forwards all health profile inputs while preserving decimals and false', () 
   expect(admissionsExtraInputsFromAcademicScores({ admissions })).toEqual(admissions);
   expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_completed')).toBe(false);
   expect(admissionsInputValue(admissions, 'bgu_bachelors_degree_average')).toBe(85.25);
+});
+
+it('omits a stored Haifa average from client evaluation inputs while keeping the real years', () => {
+  const extra = admissionsExtraInputsFromAcademicScores({
+    admissions: {
+      haifaBagrutAverage: 102.25,
+      haifaBagrutYear: 2015,
+      haifaPsychometricYear: 2025,
+    },
+  });
+  expect(extra).not.toHaveProperty('haifaBagrutAverage');
+  expect(extra).toMatchObject({ haifaBagrutYear: 2015, haifaPsychometricYear: 2025 });
 });

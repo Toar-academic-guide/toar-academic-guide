@@ -1,6 +1,6 @@
 'use client';
 
-import type { HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
+import { HAIFA_ADMISSION_YEAR, type HaifaAdmissionsInputs } from '@/lib/haifaAdmissionsInputs';
 import HaifaInformationSystemsTrackFields from './HaifaInformationSystemsTrackFields';
 
 export type HaifaQualificationValues = Partial<Record<keyof HaifaAdmissionsInputs, string>>;
@@ -20,6 +20,12 @@ const fields: Field[] = [
     min: 1,
     max: 12,
     help: 'של אותה בחינה שאת שנתה ואת ציוניה הזנתם. לחלק מהחוגים יש מועד בחינה אחרון מוכר.',
+  },
+  {
+    key: 'haifaPsychometricYear',
+    label: 'שנת הפסיכומטרי',
+    min: 1948,
+    max: HAIFA_ADMISSION_YEAR,
   },
   {
     key: 'haifaEnglishLevel',
@@ -112,8 +118,9 @@ export default function HaifaQualificationFields(props: {
         .filter((field) =>
           props.visibleKeys
             ? props.visibleKeys.includes(field.key)
-            : !['haifaHebrewScore', 'haifaHebrewExamDate'].includes(field.key) ||
-              ['exam', 'university_exam'].includes(props.values.haifaHebrewQualification ?? ''),
+            : field.key !== 'haifaPsychometricYear' &&
+              (!['haifaHebrewScore', 'haifaHebrewExamDate'].includes(field.key) ||
+                ['exam', 'university_exam'].includes(props.values.haifaHebrewQualification ?? '')),
         )
         .map((field) => (
           <div key={field.key} className="flex min-w-0 flex-col gap-1.5">

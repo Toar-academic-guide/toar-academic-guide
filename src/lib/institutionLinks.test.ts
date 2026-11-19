@@ -55,6 +55,7 @@ describe('official institution links', () => {
     expect(institutionWebsite('12341148655')).toBe('https://www.openu.ac.il/tafnit/');
     expect(institutionWebsite('12341168193')).toBe('https://www.ruppin-tech.co.il/');
     expect(institutionWebsite('12220708946')).toBe('https://www.ruppin.ac.il/');
+    expect(institutionWebsite('12341203959')).toBe('https://fdcollege.co.il/');
     expect(new URL(institutionLink(undefined, 'kinneret')!).hostname).toBe('do.kinneret.ac.il');
     expect(new URL(institutionLink(undefined, 'mon_12341101391')!).hostname).toBe('www.ktec.co.il');
     expect(new URL(institutionLink(undefined, 'tiltan')!).hostname).toBe('tiltan.co.il');

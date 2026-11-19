@@ -2,6 +2,7 @@ import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupporte
 import { HAIFA_NO_CALCULATION_NOTE } from '@/data/admissions/haifaNoCalculationNote';
 import evidence from '@/data/admissions/haifaProgrammePolicies.json';
 import { getHaifaInformationSystemsTrack } from '@/lib/haifaAdmissionsInputs';
+import { calculateHaifaBagrutAverage } from '@/data/admissions/haifaAdmissionFormula';
 import type {
   AdmissionsEvaluationInput,
   AdmissionsEvaluationResult,
@@ -22,7 +23,7 @@ export function haifaMissingRuleResult(
 ): AdmissionsEvaluationResult | undefined {
   if (isBatchCUnsupportedProgramId(programId, institution.id)) return undefined;
   const averageKnown =
-    context.averageIsProxy || context.input.extraInputs?.haifaBagrutAverage !== undefined;
+    calculateHaifaBagrutAverage(context.input.extraInputs?.bagrutSubjectRecord) !== undefined;
   if (averageKnown) {
     const policy = getHaifaProgrammePolicy(
       programId,
@@ -288,7 +289,6 @@ export function evaluateHaifaProgrammePolicy(args: {
     (args.score >= 600 ||
       ((args.input.psychometric ?? 0) >= 660 &&
         (args.input.bagrut !== undefined ||
-          extra.haifaBagrutAverage !== undefined ||
           (extra.bagrutSubjectRecord?.subjects.length ?? 0) > 0 ||
           extra.mathGrade !== undefined ||
           extra.englishGrade !== undefined ||

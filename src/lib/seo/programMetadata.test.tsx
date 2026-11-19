@@ -16,13 +16,12 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Metadata captured from main (a4d84ae). JSON-LD hashes include provider
-// catalogues, with duplicate aliases removed from MTA and Colman, and the
-// intentional slashed homepage breadcrumb identity from the indexing brief.
+// Metadata identities and JSON-LD hashes are preserved from main (a4d84ae).
+// Unsupported calculator descriptions now state the available admissions information.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
-    structuredDataSha256: '2aabea44e74869b576a140ec5fac1e2714435596aa38f936bbc52a7350f73099',
+    structuredDataSha256: '8da45c4094e25d7c3965d957c7d9c187084cf16921806ed05f2c63728972546c',
     name: 'פסיכולוגיה',
     title: 'פסיכולוגיה – אוניברסיטת בן-גוריון בנגב: תנאי קבלה',
     description:
@@ -37,7 +36,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tau_cs',
-    structuredDataSha256: '8158c55cfa799653bed1d042df8d973be1a1b48de29937f194b455239cda3449',
+    structuredDataSha256: 'e40fc11a2728422de1c86b3e6b737e05990cd6c113ed0757bc740ff07f74e4d1',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה',
     description:
@@ -52,7 +51,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '2649cc67211782576c40ebdabfe960a98f7cdef762255bcc6290662a3006bbcd',
+    structuredDataSha256: '148113e959aa38bc398ef2d1ec930372b627b85ad2756e1554419fccef9382ad',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
@@ -99,7 +98,7 @@ const unchangedPrograms = [
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה',
     description:
-      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'mta',
@@ -114,7 +113,7 @@ const unchangedPrograms = [
     name: 'מנהל עסקים',
     title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -129,7 +128,7 @@ const unchangedPrograms = [
     name: 'משפטים',
     title: 'משפטים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -176,6 +175,15 @@ describe('program institution attribution', () => {
     if (expected.id === 'nursing') {
       expect(page.isGeneral).toBe(true);
       expect(page.program.institutionId).toBeUndefined();
+      const ono = ld.provider.find((provider) => provider.name === 'המכללה האקדמית אונו');
+      expect(ono?.hasOfferCatalog.itemListElement).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'מדעי ההתנהגות (B.A.)',
+            url: 'https://findmyway.co.il/programs/ono_psychology',
+          }),
+        ]),
+      );
     }
   });
 
@@ -203,7 +211,7 @@ describe('program institution attribution', () => {
     async ({ id, institution, location, token }) => {
       const page = (await getPublicProgramPageData(id))!;
       const title = `הנדסה וטכנולוגיה – ${institution}${id === 'haifa_engineering' ? ': תנאי קבלה' : ''}`;
-      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.`;
+      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.`;
       const metadata = await buildProgramMetadata(id);
       expect(metadata).toMatchObject({
         title,

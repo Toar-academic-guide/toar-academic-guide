@@ -14,7 +14,7 @@ export const HUJI_MEDICINE_POLICY = {
   minimumPsychometric: 700,
   screeningCutoff: 25.186,
   minimumAssessment: 175,
-  finalCutoff: 25.783,
+  finalCutoff: 25.708,
   psychometricDeadline: '2026-04-30',
   registrationDeadline: '2026-05-12',
   minimumEnglish: 120,
@@ -250,7 +250,7 @@ export function resolveHujiMedicineAdmission(
       );
       result.threshold = p.finalCutoff;
       if (extra.hujiMedicineAffirmativeAction === 'standard' && result.score < p.finalCutoff)
-        return fail('הציון הסופי נמוך מסף תשפ״ז הנוכחי, 25.783.');
+        return fail(`הציון הסופי נמוך מסף תשפ״ז הנוכחי, ${p.finalCutoff}.`);
     }
   }
   if (result.missing.length) return result;

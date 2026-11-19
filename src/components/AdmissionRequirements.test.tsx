@@ -55,6 +55,19 @@ describe('AdmissionRequirements', () => {
     expect(container.querySelector('details')?.textContent).toContain('ריאיון אישי');
   });
 
+  it('keeps the Haifa CS waiting range left-to-right within the Hebrew requirement', () => {
+    const note = 'סכם 700 לפחות; ציונים 680–699 נמצאים בטווח ההמתנה ונבחנים בוועדת הקבלה החוגית.';
+    const { container } = render(
+      <AdmissionRequirements requirements={[note]} programId="haifa_cs" institutionId="haifa" />,
+    );
+    const item = container.querySelector('li')!;
+
+    expect(item.textContent).toBe(note);
+    expect(item.querySelector('[dir="ltr"]')?.textContent).toBe('680–699');
+    expect(container.firstElementChild?.getAttribute('dir')).toBe('rtl');
+    expect(container.firstElementChild?.classList.contains('text-right')).toBe(true);
+  });
+
   const psychologyNotes = getStaticCataloguePrograms().find(
     (program) => program.id === 'bgu_psychology',
   )!.institutionDetails![0].specificAdmissionNotes;

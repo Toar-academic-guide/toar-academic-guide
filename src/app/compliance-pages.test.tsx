@@ -89,13 +89,27 @@ describe('compliance pages', () => {
       for (const email of emails) expect(email.textContent).toBe('info@findmyway.co.il');
       expect(container.textContent).not.toMatch(/\d{9}/);
       expect(container.textContent).toContain(
-        path === '/accessibility' ? 'עמית מליחי' : 'עמית מליחי (עוסק פטור)',
+        path === '/contact'
+          ? 'MyWay'
+          : path === '/accessibility'
+            ? 'עמית מליחי'
+            : 'עמית מליחי (עוסק פטור)',
       );
       expect(metadata.title).toBeTruthy();
       expect(metadata.alternates?.canonical).toBe(path);
       expect(container.querySelector('form')).toBeNull();
     });
   }
+
+  it('presents MyWay as the contact identity while keeping the exact email link', () => {
+    const container = markup(<ContactPage />);
+    const main = container.querySelector('main')!;
+    expect(main.querySelector('p')?.textContent).toBe('MyWay');
+    expect(main.textContent).not.toContain('עוסק פטור');
+    expect(
+      main.querySelector('a[href="mailto:info@findmyway.co.il"] bdi[dir="ltr"]')?.textContent,
+    ).toBe('info@findmyway.co.il');
+  });
 
   for (const { Page, path } of pages.filter(({ path }) => path !== '/contact')) {
     it(`${path} preserves the entire approved copy`, () => {
@@ -197,10 +211,26 @@ describe('compliance pages', () => {
     expect(governmentLink?.getAttribute('rel')).toBe('noopener noreferrer');
   });
 
-  it('contact contains only its approved body strings', () => {
+  it('contact preserves its approved identity and email copy', () => {
     const contact = markup(<ContactPage />);
-    expect(pageText(contact)).toBe('יצירת קשר עמית מליחי (עוסק פטור) info@findmyway.co.il');
+    expect(pageText(contact)).toBe('יצירת קשר MyWay info@findmyway.co.il');
     expect(contact.querySelector('a bdi')?.getAttribute('dir')).toBe('ltr');
+  });
+
+  it.each([
+    ['contact', ContactPage],
+    ['footer', SiteFooter],
+  ])('%s links to the approved social profiles', (_, Component) => {
+    const content = markup(<Component />);
+    for (const [name, href] of [
+      ['אינסטגרם של MyWay', 'https://www.instagram.com/findmyway_il/'],
+      ['טיקטוק של MyWay', 'https://www.tiktok.com/@myway_study'],
+    ]) {
+      const link = content.querySelector(`a[aria-label="${name}"]`);
+      expect(link?.getAttribute('href')).toBe(href);
+      expect(link?.getAttribute('target')).toBe('_blank');
+      expect(link?.getAttribute('rel')).toBe('noopener noreferrer');
+    }
   });
 
   it('accessibility renders the approved statement with a list and email contact', () => {

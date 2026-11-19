@@ -140,9 +140,6 @@ export default function AcademicProfileForm({
   const [bguBagrutAverage, setBguBagrutAverage] = useState(
     initialScores?.admissions?.bguBagrutAverage?.toString() ?? '',
   );
-  const [haifaBagrutAverage, setHaifaBagrutAverage] = useState(
-    initialScores?.admissions?.haifaBagrutAverage?.toString() ?? '',
-  );
   const [haifaBagrutYear, setHaifaBagrutYear] = useState(
     initialScores?.admissions?.haifaBagrutYear?.toString() ?? '',
   );
@@ -256,7 +253,6 @@ export default function AcademicProfileForm({
     setHealthValues({});
     setSocialScienceValues({});
     setBguBagrutAverage('');
-    setHaifaBagrutAverage('');
     setHaifaBagrutYear('');
     setHaifaPsychometricYear('');
     setTauApplicationRequirements('');
@@ -455,10 +451,8 @@ export default function AcademicProfileForm({
     }
     if (colmanAverage !== undefined) admissions.colmanBagrutAverage = colmanAverage;
     if (bguAverage !== undefined) admissions.bguBagrutAverage = bguAverage;
-    const haifaAverage = optionalNumber(haifaBagrutAverage);
     const certificateYear = optionalNumber(haifaBagrutYear);
     const examYear = optionalNumber(haifaPsychometricYear);
-    if (haifaAverage !== undefined) admissions.haifaBagrutAverage = haifaAverage;
     if (certificateYear !== undefined) admissions.haifaBagrutYear = certificateYear;
     if (examYear !== undefined) admissions.haifaPsychometricYear = examYear;
     const haifaQualificationInputs = Object.fromEntries(
@@ -483,7 +477,7 @@ export default function AcademicProfileForm({
     });
     if (!parsedHaifa.success) {
       setError(
-        `בדקו את נתוני חיפה: ממוצע 50–130, שנים שלמות עד ${HAIFA_ADMISSION_YEAR}, חודש 1–12 וציון עברית 50–150. יחידות וניסיונות מיון צריכים להיות מספרים שלמים.`,
+        `בדקו את נתוני חיפה: שנים שלמות עד ${HAIFA_ADMISSION_YEAR}, חודש 1–12 וציון עברית 50–150. יחידות וניסיונות מיון צריכים להיות מספרים שלמים.`,
       );
       setIsSaving(false);
       return;
@@ -1017,34 +1011,6 @@ export default function AcademicProfileForm({
                   disabled={isSaving}
                   className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
                 />
-              </div>
-              <div className="flex flex-col gap-1.5">
-                <label
-                  htmlFor="haifa-bagrut-average"
-                  className="text-xs font-medium text-slate-600"
-                >
-                  ממוצע בגרות רשמי של אוניברסיטת חיפה (50–130)
-                </label>
-                <input
-                  id="haifa-bagrut-average"
-                  type="number"
-                  min={50}
-                  max={130}
-                  step={0.01}
-                  placeholder="לא ידוע"
-                  value={haifaBagrutAverage}
-                  onChange={(event) => setHaifaBagrutAverage(event.target.value)}
-                  disabled={isSaving}
-                  className={inputBase + ' disabled:cursor-not-allowed disabled:opacity-50'}
-                />
-                <a
-                  href="https://applicants.haifa.ac.il/enrollmentChances/index.html"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-600 underline"
-                >
-                  למחשבון הבגרות הרשמי של חיפה
-                </a>
               </div>
               <div className="flex flex-col gap-1.5">
                 <label htmlFor="haifa-bagrut-year" className="text-xs font-medium text-slate-600">

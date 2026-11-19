@@ -3,14 +3,20 @@ import { renderToStaticMarkup } from 'react-dom/server';
 import { prerender } from 'react-dom/static';
 import { describe, expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import Home from '@/app/page';
 import SubjectIndexPage, { metadata as subjectIndexMetadata } from '@/app/programs/page';
 import ProgramPage, { generateMetadata } from '@/app/programs/[programId]/page';
 import { institutionProgramName } from '@/lib/institutionProgramName';
 import { canonicalProgramId } from '@/lib/seo/programAliases';
-import { CatalogueBrowse, RelatedPrograms } from '@/components/seo/CatalogueLinks';
+import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
 import SiteFooter from '@/components/SiteFooter';
-import { getPublicBrowseLinks, getPublicRelatedPrograms } from './publicCatalogueLinks';
+import {
+  getPublicBrowseLinks,
+  getPublicRelatedPrograms,
+  getPublicSubjectHub,
+} from './publicCatalogueLinks';
+import { getPublicInstitutionPageData, getPublicProgramPageData } from './publicCataloguePages';
 
 vi.mock('server-only', () => ({}));
 vi.mock('@/components/WayPageShell', () => ({
@@ -49,24 +55,93 @@ function paths(markup: string): string[] {
 }
 
 describe('server-rendered crawl paths', () => {
-  // PM trim spec: 12 subjects + 8 institutions, collapsed by default, all in the server HTML.
-  it('renders 12 subject and 8 institution anchors inside a collapsed details on the homepage', async () => {
-    const links = await getPublicBrowseLinks();
-    const html = await ssr(<Home />);
-    const browse = html.slice(html.indexOf('aria-labelledby="browse-title"'));
-    const details = browse.slice(browse.indexOf('<details'), browse.indexOf('</details>'));
-    expect(details.startsWith('<details>')).toBe(true);
-    expect(details).not.toMatch(/<details[^>]*\bopen\b/);
-    const hrefs = paths(details);
-    const hubs = hrefs.filter((href) => /^\/programs\/[^/]+$/.test(href));
-    const institutions = hrefs.filter((href) => /^\/institutions\/[^/]+$/.test(href));
-    expect(hubs).toEqual(links.hubs.slice(0, 12).map((hub) => `/programs/${hub.id}`));
-    expect(institutions).toEqual(links.institutions.map((i) => `/institutions/${i.id}`));
-    expect(institutions).toHaveLength(8);
-    expect(hrefs).toContain('/programs');
-    expect(hrefs).toContain('/institutions');
-    expect(html).toContain('בדקו לאן אתם מתקבלים');
-    expect(renderToStaticMarkup(<CatalogueBrowse {...links} />)).toContain('dir="rtl"');
+  it('includes the prep answer and seven-row comparison in initial HTML', async () => {
+    const html = await ssr(await ProgramPage({ params: Promise.resolve({ programId: 'prep' }) }));
+    expect(html).toContain('מכינה קדם־אקדמית יכולה לפתוח דרך לתואר');
+    expect(html).toContain('<table');
+    expect(html.match(/<tr/g) ?? []).toHaveLength(8);
+    for (const id of [
+      'huji_prep',
+      'biu_prep',
+      'braude_prep',
+      'ruppin_prep',
+      'sapir_prep',
+      'telhai_prep',
+      'sce_prep',
+    ]) {
+      expect(html).toContain(`/programs/${id}`);
+    }
+    expect(html).not.toContain('sapir.ac.il/ba/law');
+  });
+
+  it.each([
+    ['achva', 'achva_psychology', 'psychology'],
+    ['beit_berl', 'beit_berl_early_childhood', 'early_childhood'],
+    ['david_yellin', 'david_yellin_early_childhood', 'early_childhood'],
+  ])(
+    'connects %s to a specific programme and its subject hub',
+    async (institutionId, programId, hubId) => {
+      const institution = await getPublicInstitutionPageData(institutionId);
+      expect(institution?.programs.map((program) => program.id)).toContain(programId);
+      const related = await getPublicRelatedPrograms(programId);
+      expect(related.hub?.id).toBe(hubId);
+      expect(related.hub?.programs.map((program) => program.id)).toContain(programId);
+    },
+  );
+
+  it('lists Achva psychology on the existing psychology subject page', async () => {
+    const subject = await getPublicProgramPageData('psychology');
+    expect(subject?.institutionProgramPaths.achva).toBe('/programs/achva_psychology');
+  });
+
+  it('connects every new college programme to a published subject page', async () => {
+    for (const program of collegeProgrammes) {
+      const { hub } = await getPublicRelatedPrograms(program.id);
+      expect(
+        hub?.programs.map((entry) => entry.id),
+        program.id,
+      ).toContain(program.id);
+      const general = hub && (await getPublicProgramPageData(hub.id));
+      if (general?.isGeneral) {
+        expect(general.institutionProgramPaths[program.institutionId!], program.id).toBe(
+          `/programs/${program.id}`,
+        );
+      } else {
+        expect(
+          (await getPublicSubjectHub(hub!.id))?.hub.programs.map((entry) => entry.id),
+          program.id,
+        ).toContain(program.id);
+      }
+    }
+  });
+
+  it.each([
+    ['achva', 'achva_general_academic'],
+    ['beit_berl', 'beit_berl_general_academic'],
+    ['beit_berl', 'beit_berl_graphic_design'],
+    ['david_yellin', 'david_yellin_education'],
+  ])(
+    'keeps the replaced %s placeholder URL but unlists %s',
+    async (institutionId, placeholderId) => {
+      expect(
+        getStaticCataloguePrograms().find((program) => program.id === placeholderId)?.isListed,
+      ).toBe(false);
+      expect(
+        (await getPublicInstitutionPageData(institutionId))?.programs.map((program) => program.id),
+      ).not.toContain(placeholderId);
+    },
+  );
+
+  // Approved test update, Jorje 2026-10-31: replaces deleted test "keeps subject hubs in collapsed homepage and browse HTML without institution links".
+  it('homepage has no browse section or study-field links', async () => {
+    const home = await ssr(<Home />);
+    expect(home).not.toContain('browse-title');
+    expect(home).not.toContain('מה ואיפה ללמוד');
+    expect(home).not.toContain('<details');
+    expect(paths(home).filter((href) => /^\/programs\/[^/]+$/.test(href))).toHaveLength(0);
+    expect(paths(home).filter((href) => /^\/institutions\/[^/]+$/.test(href))).toHaveLength(0);
+    expect(home).not.toContain('כל התחומים');
+    expect(home).toContain('בדקו לאן אתם מתקבלים');
   });
 
   it('links SiteFooter to home, email, catalogue, saved programs and legal pages', () => {
@@ -74,8 +149,11 @@ describe('server-rendered crawl paths', () => {
     expect(hrefs).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
+      '/calculator',
       '/about',
       '/app/saved-programs',
       '/privacy',
@@ -85,17 +163,19 @@ describe('server-rendered crawl paths', () => {
     ]);
   });
 
-  it('keeps the homepage CTA and SiteFooter links when the catalogue read fails', async () => {
-    const failure = () => Promise.reject(new Error('database unavailable'));
-    queries.listCataloguePrograms.mockImplementationOnce(failure);
+  // Approved test update, Jorje 2026-10-31
+  it('renders the homepage CTA and SiteFooter links with no browse section', async () => {
     const home = await ssr(<Home />);
     expect(home).toContain('בדקו לאן אתם מתקבלים');
     expect(home).not.toContain('browse-title');
     expect(paths(renderToStaticMarkup(<SiteFooter />))).toEqual([
       '/',
       'mailto:info@findmyway.co.il',
+      'https://www.instagram.com/findmyway_il/',
+      'https://www.tiktok.com/@myway_study',
       '/programs',
       '/institutions',
+      '/calculator',
       '/about',
       '/app/saved-programs',
       '/privacy',
@@ -118,7 +198,8 @@ describe('server-rendered crawl paths', () => {
     const html = renderToStaticMarkup(await SubjectIndexPage());
     expect(html).toContain('<h1');
     expect(html).toContain('תחומי לימוד');
-    const hrefs = paths(html);
+    const hrefs = paths(html).filter((href) => href.startsWith('/programs/'));
+    expect(paths(html)).toContain('/calculator');
     expect(hrefs).toHaveLength(links.hubs.length);
     expect(new Set(hrefs)).toEqual(new Set(links.hubs.map((hub) => `/programs/${hub.id}`)));
     expect(hrefs).toContain('/programs/engineering');
@@ -160,15 +241,35 @@ describe('server-rendered crawl paths', () => {
   const UNPUBLISHED_SUBJECT_PROGRAMS = [
     'bezalel_graphic_design',
     'beit_berl_graphic_design',
-    'minshar_graphic_design',
     'tiltan_graphic_design',
     'danon_culinary',
     'hackeru_cs',
     'jerusalem_academy_dance',
     'reichman_infosystems',
-    'colmgmt_infosystems',
-    'reidman_medicine',
   ];
+
+  it('links Reidman to the complementary-medicine hub and its new school siblings', async () => {
+    const related = await getPublicRelatedPrograms('reidman_medicine');
+    expect(related.hub?.id).toBe('complementary_medicine');
+    expect(related.programs.map((program) => program.id)).toEqual([
+      'mon_12341128804_medicine',
+      'mon_12341137918_medicine',
+    ]);
+  });
+
+  it('links the verified Colman degree from the information-systems hub', async () => {
+    const informationSystems = await getPublicRelatedPrograms('colmgmt_infosystems');
+    expect(informationSystems.hub?.id).toBe('infosystems');
+    const informationSystemsPage = renderToStaticMarkup(
+      await ProgramPage({ params: Promise.resolve({ programId: 'infosystems' }) }),
+    );
+    expect(paths(informationSystemsPage)).toContain('/programs/colmgmt_infosystems');
+    expect(paths(informationSystemsPage)).not.toContain('/programs/reichman_infosystems');
+  });
+
+  it('links Minshar visual communication to the matching published hub', async () => {
+    expect((await getPublicRelatedPrograms('minshar_graphic_design')).hub?.id).toBe('visual_comm');
+  });
 
   it('gives no hub or related block to programmes whose subject slug is taken', async () => {
     for (const id of UNPUBLISHED_SUBJECT_PROGRAMS) {
@@ -251,58 +352,4 @@ describe('server-rendered crawl paths', () => {
       expect(related.hub?.id).toBe(hubId);
     },
   );
-});
-
-describe('homepage degree institution ranking', () => {
-  it('derives the eight universities from published institution programme pages', async () => {
-    const links = await getPublicBrowseLinks();
-    // Current published page counts: 20, 16, 15, 14, 13, 13, 9, 7.
-    expect(links.institutions.map((i) => i.id)).toEqual([
-      'ariel',
-      'haifa',
-      'tau',
-      'bgu',
-      'biu',
-      'huji',
-      'technion',
-      'reichman',
-    ]);
-  });
-
-  it('puts universities before larger colleges, excludes non-degrees, and breaks ties by ID', async () => {
-    const { rankDegreeInstitutions } = await import('./publicCatalogueLinks');
-    const institutions = getStaticCatalogueInstitutions().filter((i) =>
-      ['tau', 'huji', 'hit', 'danon', 'shenkar'].includes(i.id),
-    );
-    const template = getStaticCataloguePrograms().find((p) => p.institutionId === 'tau')!;
-    const programs = [
-      ...Array.from({ length: 8 }, (_, i) => ({
-        ...template,
-        id: `college_${i}`,
-        institutionId: 'hit' as const,
-        linkedInstitutionIds: ['hit'],
-      })),
-      ...Array.from({ length: 9 }, (_, i) => ({
-        ...template,
-        id: `school_${i}`,
-        institutionId: 'danon' as const,
-        linkedInstitutionIds: ['danon'],
-      })),
-      ...['tau', 'huji', 'shenkar'].map((id) => ({
-        ...template,
-        id: `${id}_degree`,
-        institutionId: id as typeof template.institutionId,
-        linkedInstitutionIds: [id],
-      })),
-      { ...template, id: 'hidden_tau', isListed: false, linkedInstitutionIds: ['tau'] },
-      { ...template, id: 'subject_tau', linkedInstitutionIds: ['tau'] },
-    ];
-    expect(
-      rankDegreeInstitutions({
-        institutions,
-        programs,
-        generalProgramIds: new Set(['subject_tau']),
-      }).map((i) => i.id),
-    ).toEqual(['huji', 'tau', 'hit', 'shenkar']);
-  });
 });

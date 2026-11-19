@@ -18,13 +18,12 @@ export default function SekhemCalculatorLink({
 }) {
   if (!hasPublishedCompositeThresholds(data, sources, offerings)) return null;
   const programId = canonicalProgramId(data.program.id);
-  const href = offerings?.some((row) => row.programId === programId)
-    ? `/sekhem-calculator?program=${encodeURIComponent(programId)}`
-    : '/sekhem-calculator';
+  if (!offerings?.some((row) => row.programId === programId)) return null;
+  const href = `/sekhem-calculator?program=${encodeURIComponent(programId)}`;
   return (
     <p className="mt-3 text-sm">
       <Link href={href} className="text-[var(--way-primary)] underline underline-offset-4">
-        מחשבון סכם וסיכויי קבלה
+        חשבו סכם לתוכנית הזו
       </Link>
     </p>
   );

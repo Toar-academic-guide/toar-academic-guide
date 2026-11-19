@@ -9,7 +9,7 @@ import { resolve } from 'node:path';
 import { promisify } from 'node:util';
 import { NextRequest } from 'next/server';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import type { JsonTestResults } from 'vitest/reporters';
+import type { JsonTestResults } from 'vitest/node';
 
 const COOKIE_NAME = 'sb-kfxcdbjeidczltkrjazk-auth-token';
 const DERIVED_CUSTOM_NAME = 'sb-auth-auth-token';

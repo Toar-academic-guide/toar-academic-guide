@@ -49,7 +49,7 @@ for (const width of [375, 390, 1280]) {
         'The served catalogue has no architecture:tau row (the static catalogue links architecture only to Technion).',
       );
 
-      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
       await expect(table).toBeVisible({ timeout: 30_000 });
       await page.evaluate(() => document.fonts.ready);
       const section = table.locator('xpath=ancestor::section[1]');

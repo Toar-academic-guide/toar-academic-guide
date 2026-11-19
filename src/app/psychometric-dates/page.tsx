@@ -1,18 +1,16 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
-import {
-  psychometricDates,
-  psychometricDatesCheckedOn,
-  psychometricFacts,
-} from '@/data/psychometricDates';
+import JsonLd from '@/components/seo/JsonLd';
+import { psychometricDates, psychometricFacts } from '@/data/psychometricDates';
 import { formatPsychometricDate, getSittingStatuses } from '@/lib/psychometricDates';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
+import SemesterValidity from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, עם תאריך בדיקה וקישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
 const canonical = absoluteUrl('/psychometric-dates');
 
 export const dynamic = 'force-dynamic';
@@ -48,11 +46,29 @@ function ReformNote() {
 export default async function Page() {
   const statuses = getSittingStatuses(psychometricDates, new Date());
   const next = statuses.find(({ isNextOpen }) => isNextOpen)?.sitting;
-  const checkedDate = formatPsychometricDate(psychometricDatesCheckedOn);
   const years = `${psychometricDates[0].testDays[0].slice(0, 4)}–${psychometricDates.at(-1)!.testDays[0].slice(0, 4)}`;
+  const examDates = statuses.flatMap(({ sitting }) =>
+    sitting.testDays.map((startDate) => ({
+      '@type': 'ListItem',
+      item: {
+        '@type': 'Event',
+        name: `הבחינה הפסיכומטרית — ${formatPsychometricDate(startDate)}`,
+        startDate,
+        url: sitting.sourceUrl,
+      },
+    })),
+  );
   return (
     <WayPageShell className={styles.shell}>
       <main id="main-content" dir="rtl" className={styles.main}>
+        <JsonLd
+          data={{
+            '@type': 'ItemList',
+            '@id': `${canonical}#exam-dates`,
+            name: 'מועדי הבחינה הפסיכומטרית',
+            itemListElement: examDates.map((item, index) => ({ ...item, position: index + 1 })),
+          }}
+        />
         <div className={styles.intro}>
           <h1>
             מועדי פסיכומטרי <bdi dir="ltr">{years}</bdi>
@@ -64,7 +80,6 @@ export default async function Page() {
             </p>
           )}
           <p className={styles.stamp}>
-            נבדק בתאריך <bdi dir="ltr">{checkedDate}</bdi> ·{' '}
             <a href={psychometricFacts.ordinaryRegistration.sourceUrl}>
               לוח הבחינות הרשמי באתר מאל״ו
             </a>
@@ -72,9 +87,7 @@ export default async function Page() {
         </div>
         <section className={styles.tool} aria-label="מועדי הבחינה הקרובים">
           <table>
-            <caption className={styles.srOnly}>
-              מועדי פסיכומטרי מ־<bdi dir="ltr">{checkedDate}</bdi> ואילך
-            </caption>
+            <caption className={styles.srOnly}>מועדי פסיכומטרי</caption>
             <thead>
               <tr>
                 <th scope="col">מועד הבחינה</th>
@@ -103,26 +116,33 @@ export default async function Page() {
               ))}
             </tbody>
           </table>
-          <div className={styles.ctaArea}>
-            <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>
-              יש לכם ציון? בדקו לאן אתם מתקבלים
-              <svg
-                data-icon="iconoir-arrow-left"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                aria-hidden="true"
-              >
-                <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
-              </svg>
-            </Link>
-          </div>
         </section>
+        <SemesterValidity />
+        <div className={styles.ctaArea}>
+          <Link className={styles.primary} href="/sekhem-calculator" prefetch={false}>
+            יש לכם ציון? בדקו לאן אתם מתקבלים
+            <svg
+              data-icon="iconoir-arrow-left"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M19 12H5m0 0 6 6m-6-6 6-6" />
+            </svg>
+          </Link>
+          <Link href="/calculator" className="mt-2 inline-flex min-h-11 items-center font-semibold">
+            איך מחשבון סיכויי הקבלה עובד
+          </Link>
+        </div>
         <p className={styles.reformNote}>
-          <ReformNote />
+          <ReformNote />{' '}
+          <Link href="/psychometric-two-domain" prefetch={false}>
+            מה משתנה בפסיכומטרי הדו־תחומי?
+          </Link>
         </p>
         <details className={styles.extra}>
           <summary>שפות הבחינה, מחיר ומידע נוסף</summary>

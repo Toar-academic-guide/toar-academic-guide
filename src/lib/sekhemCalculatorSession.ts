@@ -1,4 +1,7 @@
 import { z } from 'zod';
+import type { MedicineAcademicValues } from '@/components/sekhem/MedicineAcademicFields';
+import { MEDICINE_REQUIRED_INPUTS } from './medicineAcademicInputs';
+import type { AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { MAX_BAGRUT_SUBJECTS } from './bagrutSubjectLimits';
 import { HAIFA_PROFILE_KEYS, type HaifaAdmissionsInputs } from './haifaAdmissionsInputs';
@@ -14,10 +17,15 @@ export interface SekhemCalculatorSnapshot extends CalculatorProfile {
   haifaValues: HaifaQualificationValues;
   reports: AdmissionsEvaluationReport[];
   failedIds: string[];
+  medicineValues?: MedicineAcademicValues;
+  medicineRequired?: AdmissionsRequiredInput[];
 }
 
 // Store only the report fields used by result presentation and enquiry attribution.
 const resultSchema = z.object({
+  stage: z.literal('academic').optional(),
+  admissionCycle: z.string().optional(),
+  registrationStatus: z.enum(['closed', 'open', 'unknown']).optional(),
   institution: z.object({ id: z.string(), name: z.string(), region: z.string() }),
   linkedInstitutionId: z.string(),
   kind: z.enum([
@@ -53,6 +61,7 @@ const resultSchema = z.object({
   explanation: z.string(),
   nextAction: z.string(),
   score: z.number().optional(),
+  calculatedBagrutAverage: z.number().optional(),
   threshold: z.number().nullable().optional(),
   scoreAssessment: z.enum(['meets_threshold', 'below_threshold']).optional(),
   requiredInputs: z.array(z.string()).optional(),
@@ -100,15 +109,28 @@ const snapshotSchema = z.object({
     }),
   ),
   failedIds: z.array(z.string()),
+  medicineValues: z
+    .object(
+      Object.fromEntries(
+        Object.keys(MEDICINE_REQUIRED_INPUTS).map((key) => [key, z.string().optional()]),
+      ),
+    )
+    .optional(),
+  medicineRequired: z.array(z.string()).optional(),
 });
 
 export function readSekhemSession(
   offerings: CalculatorOffering[],
+  entryId?: string,
 ): SekhemCalculatorSnapshot | null {
   try {
-    const raw = window.sessionStorage.getItem(SEKHEM_SESSION_KEY);
+    const raw = window.sessionStorage.getItem(
+      entryId ? SEKHEM_SESSION_KEY + ':results' : SEKHEM_SESSION_KEY,
+    );
     if (!raw) return null;
-    const parsed = snapshotSchema.safeParse(JSON.parse(raw));
+    const stored = JSON.parse(raw);
+    if (entryId && stored?.entryId !== entryId) return null;
+    const parsed = snapshotSchema.safeParse(stored);
     if (!parsed.success) return null;
     const { version: _version, ...snapshot } = parsed.data;
     const offered = (id: string) => offerings.some((row) => row.programId === id);
@@ -136,11 +158,14 @@ export function readSekhemSession(
   }
 }
 
-export function writeSekhemSession(snapshot: SekhemCalculatorSnapshot): void {
+export function writeSekhemSession(snapshot: SekhemCalculatorSnapshot, entryId?: string): void {
   try {
     const parsed = snapshotSchema.safeParse({ ...snapshot, version: 1 });
     if (parsed.success)
-      window.sessionStorage.setItem(SEKHEM_SESSION_KEY, JSON.stringify(parsed.data));
+      window.sessionStorage.setItem(
+        entryId ? SEKHEM_SESSION_KEY + ':results' : SEKHEM_SESSION_KEY,
+        JSON.stringify({ ...parsed.data, entryId }),
+      );
   } catch {
     // Privacy settings and storage limits must never prevent calculation.
   }

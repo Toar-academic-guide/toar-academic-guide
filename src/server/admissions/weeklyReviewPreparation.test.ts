@@ -46,7 +46,7 @@ describe('admissions weekly review preparation', () => {
     entry.pairId === 'tau_datascience__tau' ? { ...entry, state: 'exact' as const } : entry,
   );
 
-  it('loads the existing reviewed manifest into the weekly run output before the workflow overwrites it', async () => {
+  it('retains reviewed winter entries while excluding an unsupported civil candidate', async () => {
     const civilProof = {
       ...proof,
       id: 'technion-technion_civil-live',
@@ -79,14 +79,11 @@ describe('admissions weekly review preparation', () => {
       checkedAt: new Date('2026-10-25T03:00:00.000Z'),
     });
 
-    expect(result.run.manifest.changes).toHaveLength(5);
-    expect(result.run.manifest.changes.slice(0, 4)).toEqual(technionWinterManifest.changes);
-    expect(result.run.manifest.changes[4]).toMatchObject({
-      target: { institutionId: 'technion', programId: 'technion_civil', cycle: '2027' },
-      before: 88,
-      after: 87,
-    });
-    expect(result.run.summary).toMatchObject({ status: 'reviewable', candidateCount: 1 });
+    expect(result.run.manifest.changes).toEqual(technionWinterManifest.changes);
+    expect(result.run.excluded).toMatchObject([
+      { sourceProofId: 'technion-technion_civil-live', reason: 'route_evidence_missing' },
+    ]);
+    expect(result.run.summary).toMatchObject({ status: 'no_changes', candidateCount: 0 });
   });
 
   it('persists source freshness first, then compares only against published reviewed rules', async () => {

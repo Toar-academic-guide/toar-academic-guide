@@ -62,8 +62,13 @@ export const ACADEMIC_PROGRAMS: Program[] = [
     category: 'מדעי הבריאות',
     profileScore: { AN: 5, TE: 2, CR: 0, SO: 4, LE: 1, OR: 2, DI: 0, ER: 5 },
     admissionType: 'sekhem',
-    admissionRequirements: [],
-    thresholds: { tau: 770, huji: 775, technion: 94, bgu: null, biu: 740 },
+    admissionRequirements: ['בטכניון: 92 — סף זימון משוער למבחן מו״ר.'],
+    // TAU preliminary floor: https://go.tau.ac.il/graphql (acceptanceThreshold).
+    // https://go.tau.ac.il/he/med/ba/med-doc?v=new-info
+    // HUJI and BIU publish conditions on different scales; keep these keys NULL.
+    // Technion invitation estimate: see TECHNION_THRESHOLD_URL in admissions/technionThresholds.ts.
+    thresholds: { tau: 726.44, huji: null, technion: 92, biu: null },
+    nullThresholdLinks: ['huji', 'biu'],
     isTauEngineering: false,
   },
   {

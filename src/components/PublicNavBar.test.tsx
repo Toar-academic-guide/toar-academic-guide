@@ -25,7 +25,7 @@ describe('shared current navigation', () => {
       within(nav)
         .getAllByRole('link')
         .map((link) => link.getAttribute('href')),
-    ).toEqual(['/app/calculator', '/app/saved-programs', '/login?next=%2Finstitutions']);
+    ).toEqual(['/calculator', '/app/saved-programs', '/login?next=%2Finstitutions']);
     expect(within(nav).queryByRole('link', { name: 'מי אנחנו' })).toBeNull();
     const group = within(nav).getByRole('link', { name: 'מה הסיכויים שלי?' }).parentElement!;
     expect(
@@ -81,7 +81,7 @@ describe('shared current navigation', () => {
       'מחשבונים',
       [
         ['מחשבון סכם', '/sekhem-calculator'],
-        ['בדיקת סיכויי קבלה', '/app/calculator'],
+        ['בדיקת סיכויי קבלה', '/calculator'],
       ],
     ],
     [
@@ -89,10 +89,17 @@ describe('shared current navigation', () => {
       [
         ['תחומי לימוד', '/programs'],
         ['שאלון ״מה מתאים לי?״', '/app/assessment'],
+        ['ימים פתוחים', '/open-days'],
       ],
     ],
     ['איפה ללמוד?', [['מוסדות לימוד', '/institutions']]],
-    ['הכנה וקבלה', [['עזרה בהכנה לפסיכומטרי', '/enquiry?program=psychometric-preparation']]],
+    [
+      'הכנה וקבלה',
+      [
+        ['עזרה בהכנה לפסיכומטרי', '/enquiry?program=psychometric-preparation'],
+        ['התאמות לפסיכומטרי', '/psychometric-accommodations'],
+      ],
+    ],
   ] as const)('discloses the ordered %s links with matching ARIA state', (label, links) => {
     render(<PublicNavBar />);
     const trigger = screen.getByRole('button', { name: label });
@@ -219,6 +226,44 @@ describe('shared current navigation', () => {
     expect(
       screen.getByRole('link', { name: 'מחשבון סכם' }).getAttribute('aria-current'),
     ).toBeNull();
+  });
+
+  it('marks the top and menu chances links as current on /calculator', () => {
+    state.pathname = '/calculator';
+    render(<PublicNavBar />);
+    expect(
+      screen.getByRole('link', { name: 'מה הסיכויים שלי?' }).getAttribute('aria-current'),
+    ).toBe('page');
+    fireEvent.click(screen.getByRole('button', { name: 'מחשבונים' }));
+    expect(
+      screen.getByRole('link', { name: 'בדיקת סיכויי קבלה' }).getAttribute('aria-current'),
+    ).toBe('page');
+  });
+
+  it.each(['/', '/institutions', '/app/calculator'])(
+    'does not mark the top calculator link as current on %s',
+    (pathname) => {
+      state.pathname = pathname;
+      render(<PublicNavBar />);
+      expect(
+        screen.getByRole('link', { name: 'מה הסיכויים שלי?' }).getAttribute('aria-current'),
+      ).toBeNull();
+    },
+  );
+
+  it('has no app calculator links, including in closed dropdowns', () => {
+    render(<PublicNavBar />);
+    const nav = screen.getByRole('navigation', { name: 'ניווט ראשי' });
+    expect(nav.querySelectorAll('a[href="/app/calculator"]')).toHaveLength(0);
+  });
+
+  it('renders calculator menu items without duplicate-key warnings', () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<PublicNavBar />);
+    fireEvent.click(screen.getByRole('button', { name: 'מחשבונים' }));
+    expect(
+      consoleError.mock.calls.filter((args) => /same key|unique.*key/i.test(args.join(' '))),
+    ).toEqual([]);
   });
 
   it('starts closed in server HTML', () => {

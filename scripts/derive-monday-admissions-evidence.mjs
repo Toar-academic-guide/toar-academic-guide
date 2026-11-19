@@ -87,7 +87,7 @@ const KNOWN_CATALOGUE_INSTITUTION_ALIASES = new Map([
   ['דיפלומה \\- ביה"ס ללימודי תעודה והסמכה', 'open_university'],
   ["'אדמה'\\- בית הספר לרפואה משלימה ותרפיות בגבעת ושינגטון", 'givat_washington'],
   ['המכללה האקדמית רמת גן', 'israel_academic'],
-  ['המכללה למינהל\\- רשת מכללות הנדסאים', 'tech_management'],
+  ['המכללה למינהל - רשת מכללות הנדסאים', 'tech_management'],
   ['האקדמיה לפיננסים מבית BDO', 'bdo_academy'],
   ['BDO Academy', 'bdo_academy'],
   ['אורין-שפלטר השכלה פיננסית', 'orin_shpalter'],
@@ -368,7 +368,9 @@ function deriveRecord(
   const capabilityCandidate = evidence.capabilityCandidate ?? 'unknown';
   const columnValue = columnReader(item.columns ?? []);
   const itemNumber = extractItemNumber(item.name);
-  const displayName = stripItemNumber(item.name);
+  const displayName = item.id === '12341091743'
+    ? stripItemNumber(item.name).replace(/\\-\s*/g, ' - ')
+    : stripItemNumber(item.name);
   const catalogueInstitutionId = inferCatalogueInstitutionId(
     item.name,
     displayName,

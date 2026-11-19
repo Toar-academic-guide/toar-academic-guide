@@ -1,5 +1,7 @@
 'use client';
 
+import { savedAcademicRevision } from '@/lib/sekhemProfile';
+import { resultCalculatorHref } from '@/lib/resultCalculatorLink';
 import HomeHero from './hero/HomeHero';
 
 import AdmissionEstimate from './AdmissionEstimate';
@@ -34,6 +36,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
+import {
+  captureCalculatorOutcome,
+  createCalculatorRun,
+  type CalculatorRun,
+} from '@/lib/calculatorAnalytics';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
   bagrutScoresForMode,
@@ -79,6 +86,7 @@ import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import TechnionMedicineComparison from './TechnionMedicineComparison';
+import SocialFollowLinks from './SocialFollowLinks';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -152,6 +160,7 @@ let cachedCatalogue: JourneyCatalogue | null = null;
 const EMPTY_PROGRAMS: CatalogueProgram[] = [];
 
 interface Draft {
+  academicRevision?: string;
   fields: string[];
   fieldLabels?: Record<string, string>;
   locations: JourneyLocation[];
@@ -208,6 +217,7 @@ function readDraft(): Draft | null {
       gradeMode = 'quick';
     return {
       ...EMPTY,
+      academicRevision: typeof raw.academicRevision === 'string' ? raw.academicRevision : undefined,
       fields: raw.fields,
       fieldLabels: Object.fromEntries(
         Object.entries(
@@ -287,11 +297,9 @@ function Chips<T extends string>({
 
 export default function StudyJourney({
   initialStep = 'home',
-  browse,
   initialProgramId,
 }: {
   initialStep?: Step;
-  browse?: ReactNode;
   initialProgramId?: string;
 }) {
   if (initialStep === 'subjects') preloadJourneyExactGrades();
@@ -335,6 +343,14 @@ export default function StudyJourney({
   const [failedReports, setFailedReports] = useState<string[]>([]);
   const [calculating, setCalculating] = useState(false);
   const calculation = useRef(0);
+  const [settledCalculation, setSettledCalculation] = useState<number | null>(null);
+  const [analyticsIntent, setAnalyticsIntent] = useState<CalculatorRun | null>(null);
+  const analyticsBoundary = useRef<{
+    run: CalculatorRun;
+    signature: string;
+    version: number;
+    active: boolean;
+  } | null>(null);
   const [groupBy, setGroupBy] = useState<'field' | 'institution'>('field');
   const [resultFilter, setResultFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -365,6 +381,14 @@ export default function StudyJourney({
     setUrlProgramId(
       initialStep === 'subjects' && queryPrograms.length === 1 ? queryPrograms[0] : undefined,
     );
+    const view = window.history.state?.journeyResultView;
+    if (view) {
+      setQuery(view.query);
+      setFiltersOpen(view.filtersOpen);
+      setGroupBy(view.groupBy);
+      setResultFilter(view.resultFilter);
+      setResultLimit(view.resultLimit);
+    }
     const stored = readDraft();
     hadStoredDraft.current = !!stored;
     if (stored) {
@@ -388,6 +412,15 @@ export default function StudyJourney({
   const importedProfile = useRef<string | null>(null);
   const profileIdentity = auth.user?.id ?? 'guest';
   useEffect(() => {
+    function refreshRestoredPage(event: PageTransitionEvent) {
+      const revision = savedAcademicRevision(profileIdentity);
+      if (event.persisted && revision && revision !== draft.academicRevision)
+        window.location.reload();
+    }
+    window.addEventListener('pageshow', refreshRestoredPage);
+    return () => window.removeEventListener('pageshow', refreshRestoredPage);
+  }, [profileIdentity, draft.academicRevision]);
+  useEffect(() => {
     if (
       !ready ||
       !hydrated ||
@@ -396,7 +429,9 @@ export default function StudyJourney({
     )
       return;
     importedProfile.current = profileIdentity;
-    if (auth.user || !hadStoredDraft.current) {
+    const revision = savedAcademicRevision(profileIdentity);
+    const calculatorSaved = !!revision && revision !== draft.academicRevision;
+    if (auth.user || !hadStoredDraft.current || calculatorSaved) {
       const scores = profile.academicScores ?? {};
       const profileGradeMode =
         scores.admissions?.activeBagrutPath ??
@@ -406,9 +441,14 @@ export default function StudyJourney({
             ? 'quick'
             : 'none');
       setDraft((current) => {
-        const keepBagrutInput = current.bagrutInputIdentity === profileIdentity;
+        const keepBagrutInput = !calculatorSaved && current.bagrutInputIdentity === profileIdentity;
         return {
           ...current,
+          ...(calculatorSaved && {
+            academicRevision: revision,
+            quickInProgress: undefined,
+            exactInProgress: undefined,
+          }),
           scores: keepBagrutInput
             ? { ...scores, bagrut: bagrutScoresForMode(current.scores, current.gradeMode).bagrut }
             : scores,
@@ -422,7 +462,15 @@ export default function StudyJourney({
         };
       });
     }
-  }, [ready, hydrated, initialProfileStatus, profile.academicScores, profileIdentity, auth.user]);
+  }, [
+    ready,
+    hydrated,
+    initialProfileStatus,
+    profile.academicScores,
+    profileIdentity,
+    auth.user,
+    draft.academicRevision,
+  ]);
   useIsomorphicLayoutEffect(() => {
     if (!ready) return;
     try {
@@ -445,7 +493,7 @@ export default function StudyJourney({
     setCatalogueError('');
     try {
       const [nextPrograms, nextInstitutions] = await Promise.all([
-        fetchCataloguePrograms(),
+        fetchCataloguePrograms({ includeCalculatorLinks: true }),
         fetchCatalogueInstitutions(),
       ]);
       cachedCatalogue = { programs: nextPrograms, institutions: nextInstitutions };
@@ -630,7 +678,10 @@ export default function StudyJourney({
           setFailedReports([...failed]);
         }
       }
-      if (calculation.current === version) setCalculating(false);
+      if (calculation.current === version) {
+        setCalculating(false);
+        setSettledCalculation(version);
+      }
     },
     [],
   );
@@ -686,6 +737,28 @@ export default function StudyJourney({
     evaluationTarget,
   ]);
   const lastEvaluation = useRef('');
+  useEffect(() => {
+    if (evaluationScope !== 'results') {
+      if (analyticsBoundary.current) analyticsBoundary.current.active = false;
+      return;
+    }
+    if (!analyticsIntent || analyticsBoundary.current?.run === analyticsIntent) return;
+    if (!ready || catalogueRefreshing || catalogueError) return;
+    analyticsBoundary.current = {
+      run: analyticsIntent,
+      signature: resultSignature,
+      active: true,
+      version:
+        lastEvaluation.current === resultSignature ? calculation.current : calculation.current + 1,
+    };
+  }, [
+    analyticsIntent,
+    ready,
+    catalogueRefreshing,
+    catalogueError,
+    evaluationScope,
+    resultSignature,
+  ]);
   const viewedResults = useRef('');
   useEffect(() => {
     if (!['results', 'plan'].includes(step)) {
@@ -750,6 +823,44 @@ export default function StudyJourney({
     draft.fields.length,
     evaluate,
   ]);
+  useEffect(() => {
+    const boundary = analyticsBoundary.current;
+    if (
+      !boundary?.active ||
+      boundary.run !== analyticsIntent ||
+      boundary.signature !== resultSignature
+    )
+      return;
+    if (
+      !ready ||
+      catalogueRefreshing ||
+      catalogueError ||
+      calculating ||
+      evaluationScope !== 'results'
+    )
+      return;
+    if (boundary.version !== calculation.current) return;
+    if (!draft.fields.length || !selectedFieldIds.length) return;
+    const empty = !rows.length;
+    if (
+      !empty &&
+      (settledCalculation !== calculation.current || lastEvaluation.current !== resultSignature)
+    )
+      return;
+    captureCalculatorOutcome(boundary.run, 'journey_calculator', rows, empty);
+  }, [
+    analyticsIntent,
+    ready,
+    catalogueRefreshing,
+    catalogueError,
+    calculating,
+    evaluationScope,
+    resultSignature,
+    rows,
+    settledCalculation,
+    draft.fields.length,
+    selectedFieldIds.length,
+  ]);
   useEffect(
     () => () => {
       calculation.current++;
@@ -805,9 +916,10 @@ export default function StudyJourney({
   const save = async (programId: string) => {
     await toggleSavedProgram(programId);
   };
-  const startResults = () => {
+  const startResults = async () => {
     setSimulation(undefined);
-    void saveScores();
+    await saveScores();
+    setAnalyticsIntent(createCalculatorRun('evaluation'));
     go('results');
   };
   const afterGrades = () => go('psy-mode');
@@ -905,6 +1017,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const calculatorId = row.program.calculatorProgramIds?.[row.institution.id];
     const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
       <article className="journey-result-row" key={row.id}>
@@ -922,6 +1035,23 @@ export default function StudyJourney({
             >
               {status.label}
             </span>
+          )}
+          {calculatorId && (step === 'results' || step === 'plan') && (
+            <a
+              className="journey-text-button"
+              href={resultCalculatorHref(calculatorId)}
+              onClick={() =>
+                window.history.replaceState(
+                  {
+                    ...window.history.state,
+                    journeyResultView: { query, filtersOpen, groupBy, resultFilter, resultLimit },
+                  },
+                  '',
+                )
+              }
+            >
+              חשבו סכם לתוכנית הזו
+            </a>
           )}
           {sourceLinks && (
             <>
@@ -1299,8 +1429,10 @@ export default function StudyJourney({
             className="journey-narrow"
             onSubmit={(event) => {
               event.preventDefault();
-              if (step === 'improve') go('plan');
-              else go('review');
+              if (step === 'improve') {
+                setAnalyticsIntent(createCalculatorRun('simulation'));
+                go('plan');
+              } else go('review');
             }}
           >
             <label className="journey-number-label">
@@ -1358,6 +1490,16 @@ export default function StudyJourney({
                   </label>
                 ))}
               </div>
+            )}
+            {step === 'psy-score' && (
+              <a
+                className="journey-pill journey-grade-link journey-psy-score-link"
+                href="https://www.nite.org.il/two-domain-psychometric-entrance-test/scores/reporting-to-examinees/"
+                target="_blank"
+                rel="noopener noreferrer"
+              >
+                איך לצפות בציונים באתר מאל״ו
+              </a>
             )}
             {step !== 'psy-score' && <p className="journey-helper">בדקו מה ציון היעד פותח לכם.</p>}
             <div className="journey-actions">
@@ -1478,14 +1620,18 @@ export default function StudyJourney({
                 חלק מהחישובים לא נטענו.{' '}
                 <button
                   className="journey-text-button"
-                  onClick={() =>
+                  onClick={() => {
+                    if (analyticsBoundary.current?.signature === resultSignature) {
+                      analyticsBoundary.current.version = calculation.current + 1;
+                      analyticsBoundary.current.active = true;
+                    }
                     void evaluate(
                       selectedRows.filter((row) => failedReports.includes(row.program.id)),
                       journeyScores,
                       simulation ?? draft.target,
                       true,
-                    )
-                  }
+                    );
+                  }}
                 >
                   לנסות שוב
                 </button>
@@ -1511,7 +1657,9 @@ export default function StudyJourney({
                 <summary>
                   <span>
                     {group.name}
-                    <small>{group.rows.length} אפשרויות</small>
+                    <small>
+                      {group.rows.length === 1 ? 'אפשרות אחת' : `${group.rows.length} אפשרויות`}
+                    </small>
                   </span>
                   <ChevronDown size={20} />
                 </summary>
@@ -1536,6 +1684,12 @@ export default function StudyJourney({
                     עזרה בהכנה לפסיכומטרי
                   </button>
                 )}
+              </div>
+            )}
+            {step === 'results' && !catalogueLoading && !catalogueError && (
+              <div dir="rtl" className="mt-10 border-t border-slate-200 pt-4 text-right">
+                <p className="text-sm text-slate-500">עקבו אחרינו</p>
+                <SocialFollowLinks />
               </div>
             )}
           </section>
@@ -1867,6 +2021,7 @@ export default function StudyJourney({
               if (!(await updateProfile({ academicScores: scores }))) return false;
               patch({ scores });
               lastEvaluation.current = '';
+              setAnalyticsIntent(createCalculatorRun('evaluation'));
               go('results');
               return true;
             }}
@@ -1960,7 +2115,6 @@ export default function StudyJourney({
             )}
           </section>
         )}
-        {step === 'home' && browse}
       </main>
     </WayPageShell>
   );

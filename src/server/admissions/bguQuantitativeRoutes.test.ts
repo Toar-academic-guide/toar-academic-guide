@@ -460,3 +460,29 @@ it.each([
     );
   },
 );
+
+it.each(['accounting', 'bgu_accounting'])(
+  'keeps %s main cutoff separate from the 660 alternative in the dated official capture',
+  async (id) => {
+    const ctx = context(id);
+    ctx.applicant.psychometric = 580;
+    ctx.fetcher
+      .mockReset()
+      .mockResolvedValueOnce(Response.json(accountingLive))
+      .mockResolvedValueOnce(
+        new Response(
+          '<script>parent.main.document.getElementById("on_c_val").innerHTML = 879;</script>',
+        ),
+      );
+    const proof = await runBguQuantitativeRoutesProof(ctx);
+    expect(proof.normalizedPayload.acceptanceThreshold).toBe(660);
+    expect(proof.publicationCutoff).toMatchObject({
+      value: 620,
+      metric: 'quantitative_sekhem',
+      route: 'main',
+      cycle: '2027',
+      registrationStatus: 'סגורה',
+      sourceExcerpt: 'סכם כמותי 620',
+    });
+  },
+);

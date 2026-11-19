@@ -15,6 +15,7 @@ import { canonicalProgramId } from '@/lib/seo/programAliases';
 import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
 import { saveEnquiryBackup } from '@/server/enquiries/repository';
 import { sendEnquiryToMonday } from '@/server/enquiries/monday';
+import { enquiryFailureReason } from '@/server/enquiries/failureReason';
 import { notifyEnquiry } from '@/server/enquiries/notifications';
 import { getPostHogClient } from '@/lib/posthog-server';
 import { getEnquiryTarget } from '@/lib/enquiryTarget';
@@ -138,10 +139,16 @@ export async function POST(request: Request) {
       saveEnquiryBackup(enquiry),
     ]);
     if (monday.status === 'rejected') {
-      console.error('[enquiries] monday write failed', { requestId: input.requestId });
+      console.error('[enquiries] monday write failed', {
+        requestId: input.requestId,
+        reason: enquiryFailureReason(monday.reason),
+      });
     }
     if (database.status === 'rejected') {
-      console.error('[enquiries] database write failed', { requestId: input.requestId });
+      console.error('[enquiries] database write failed', {
+        requestId: input.requestId,
+        reason: enquiryFailureReason(database.reason),
+      });
     }
     if (monday.status === 'rejected' && database.status === 'rejected') {
       return process.env.MONDAY_API_TOKEN?.trim()

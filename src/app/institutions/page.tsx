@@ -1,15 +1,17 @@
 import InstitutionsDirectory from '@/components/InstitutionsDirectory';
-import { getInstitutionDirectoryItems } from '@/data/institutionDirectory';
+import { getPublicInstitutionDirectoryData } from '@/lib/institutionDirectoryData';
 import JsonLd from '@/components/seo/JsonLd';
 import { institutionDirectoryLd } from '@/lib/seo/jsonLd';
 
+export const dynamic = 'force-dynamic';
+
 export const metadata = {
-  title: 'מוסדות לימוד',
-  description: 'קטלוג מוסדות לימוד בישראל לפי אזור, סוג מוסד, תעודה ומימון.',
+  title: 'מוסדות לימוד בישראל – השוואה לפי תחום לימודים',
+  description: 'מצאו מוסדות לימוד לפי תחום ותכנית לימודים, מיקום וסוג מוסד.',
   alternates: { canonical: '/institutions' },
   openGraph: {
-    title: 'מוסדות לימוד',
-    description: 'קטלוג מוסדות לימוד בישראל לפי אזור, סוג מוסד, תעודה ומימון.',
+    title: 'מוסדות לימוד בישראל – השוואה לפי תחום לימודים',
+    description: 'מצאו מוסדות לימוד לפי תחום ותכנית לימודים, מיקום וסוג מוסד.',
     url: '/institutions',
     type: 'website',
     locale: 'he_IL',
@@ -17,12 +19,12 @@ export const metadata = {
   },
 };
 
-export default function InstitutionsPage() {
-  const institutions = getInstitutionDirectoryItems();
+export default async function InstitutionsPage() {
+  const data = await getPublicInstitutionDirectoryData();
   return (
     <>
-      <JsonLd data={institutionDirectoryLd(institutions)} />
-      <InstitutionsDirectory institutions={institutions} />
+      <JsonLd data={institutionDirectoryLd(data.institutions)} />
+      <InstitutionsDirectory {...data} />
     </>
   );
 }

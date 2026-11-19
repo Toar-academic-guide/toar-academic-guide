@@ -58,7 +58,9 @@ describe('runHujiAdmissionsProof', () => {
     expect(proof.normalizedPayload).toMatchObject({
       selectedScore: 26.612,
       cognitiveScore: 27.921,
-      acceptanceThreshold: 25.783,
+      acceptanceThreshold: 25.708,
+      medicineThreshold: 25.708,
+      publicationMetric: 'formula_score',
       derivedVerdict: 'eligible_to_apply',
       medicineStage: 'final',
     });

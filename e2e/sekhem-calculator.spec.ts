@@ -7,12 +7,12 @@ import type {
   AdmissionsEvaluationResult,
 } from '../src/types/admissionsEvaluation';
 
-const title = 'מחשבון סכם וסיכויי קבלה לפי מוסד ותוכנית | MyWay';
+const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const canonical = 'https://findmyway.co.il/sekhem-calculator';
 const description =
   // Approved test update, Jorje 2026-10-29: meta no-overclaim
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-  'מחשבון סכם וסיכויי קבלה בחינם: מזינים ציוני בגרות ופסיכומטרי, בוחרים תוכנית נתמכת, עם קישור לתנאי הקבלה של התוכנית.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה ועיינו בקישורים למחשבונים הרשמיים.';
 const noScoreLine = 'בחלק מהמוסדות נבדקים תנאי קבלה בלי חישוב סכם.';
 const kidumText = 'מסלול ראויים לקידום';
 const compositeInput = /סכם|מתואם|מצרף|ציון משוקלל|sekhem|sekem|composite|weighted.?score/i;
@@ -161,9 +161,11 @@ async function installMocks(
         inputDigest: 'browser-response-contract',
         input: { ...input, degreeId },
         program: { id: degreeId, name: degreeId },
-        results: apiResults(degreeId, requestHaifa && !batch.extraInputs?.haifaBagrutAverage).map(
-          (row) => (decorate ? decorate(row) : row),
-        ),
+        // Approved test update, Jorje 2026-10-31: resolve Haifa follow-ups from the Hebrew answer instead of the removed average.
+        results: apiResults(
+          degreeId,
+          requestHaifa && !batch.extraInputs?.haifaHebrewQualification,
+        ).map((row) => (decorate ? decorate(row) : row)),
       };
       response[degreeId] = report;
       reports.set(degreeId, report);
@@ -292,11 +294,11 @@ for (const width of [1280, 390]) {
     const mocks = await installMocks(page, baseURL);
     await page.goto('/sekhem-calculator');
     await expect(
-      page.getByRole('heading', { name: 'מחשבון סכם וסיכויי קבלה', exact: true }),
+      page.getByRole('heading', { name: 'מחשבון סכם וממוצע בגרות לפי מוסד', exact: true }),
     ).toBeVisible();
     const headingBox = (await page
       .getByRole('heading', {
-        name: 'מחשבון סכם וסיכויי קבלה',
+        name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
         exact: true,
       })
       .boundingBox())!;
@@ -559,12 +561,13 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   await fillProfile(page);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the Haifa average field is removed, including its fill and required-field check.
+  await expect(average).toHaveCount(0);
   await expect(hebrew).toBeVisible();
-  await expect(average).not.toHaveAttribute('required', '');
   await expect(page.getByTestId('institution-haifa').locator('[data-result-reason]')).toHaveText([
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   ]);
   await expect(page.locator('main')).not.toContainText('ממוצע בגרות רשמי של חיפה');
   const haifa = page.getByTestId('institution-haifa');
@@ -574,22 +577,31 @@ test('Haifa supplementary inputs follow the latest evaluator response', async ({
   ).toHaveAttribute('href', `/programs/${selectedProgram}`);
   await expect(page.getByTestId('institution-haifa')).toContainText(
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 24)
-    'חיפה: בדיקה אישית מול המוסד',
+    // Approved test update, Jorje 2026-10-31: show the real returned Haifa reason.
+    'הציונים עומדים בתנאי הקבלה.',
   );
-  await average.fill('104');
   await hebrew.selectOption('hebrew_school');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
   await expect(average).toHaveCount(0);
-  await expect(hebrew).toHaveCount(0);
+  // Approved test update, Jorje 2026-10-31: retain the answered Hebrew qualification across recalculation.
+  await expect(hebrew).toHaveValue('hebrew_school');
   await expect(page.getByTestId('institution-haifa')).toContainText('706');
-  expect(mocks.batches.some((batch) => batch.extraInputs?.haifaBagrutAverage === 104)).toBe(true);
+  // Approved test update, Jorje 2026-10-31: never forward a removed Haifa average override.
+  expect(mocks.batches.every((batch) => batch.extraInputs?.haifaBagrutAverage === undefined)).toBe(
+    true,
+  );
   await page.getByLabel('פסיכומטרי — ציון כללי').fill('701');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
-  await expect(average).toBeVisible();
+  // Approved test update, Jorje 2026-10-31: the removed Haifa average field stays absent after editing a score.
+  await expect(average).toHaveCount(0);
   expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaBagrutAverage');
-  expect(mocks.batches.at(-1)!.extraInputs).not.toHaveProperty('haifaHebrewQualification');
+  // Approved test update, Jorje 2026-10-31: a psychometric edit preserves the independent Hebrew qualification.
+  expect(mocks.batches.at(-1)!.extraInputs).toHaveProperty(
+    'haifaHebrewQualification',
+    'hebrew_school',
+  );
   expect(mocks.submissions).toHaveLength(0);
 });
 
@@ -608,7 +620,7 @@ test('public metadata and crawl links use the calculator URL; homepage hero has 
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toMatch(
-    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-10-28(?:T[^<]+)?<\/lastmod>/,
+    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-14(?:T[^<]+)?<\/lastmod>/,
   );
   const llms = await request.get('/llms.txt');
   expect(llms.ok()).toBe(true);
@@ -1121,5 +1133,35 @@ for (const width of [1280, 390]) {
     expect((await appearance(valid)).borders).toEqual(normal);
     expect(mocks.batches).toHaveLength(0);
     expect(mocks.submissions).toHaveLength(0);
+  });
+}
+
+for (const width of [1280, 390]) {
+  test(`medicine academic HUJI result and missing-details correction at ${width}px`, async ({
+    page,
+  }) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/sekhem-calculator?program=huji_medicine');
+    await page.getByRole('button', { name: 'ערכים לדוגמה', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 9', exact: true }).click();
+    await page.getByRole('button', { name: 'הסרת מקצוע 8', exact: true }).click();
+    for (let row = 1; row <= 7; row++)
+      await page.getByRole('textbox', { name: `ציון ${row}`, exact: true }).fill('90');
+    await page.getByRole('spinbutton', { name: 'פסיכומטרי — ציון כללי', exact: true }).fill('750');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    const results = page.getByRole('region', { name: 'הסכם לפי מוסד ותוכנית', exact: true });
+    await expect(results).toContainText('24.366');
+    await expect(results).toContainText('25.186');
+    await expect(results).toContainText('חסר מידע: פסיכומטרי');
+    await page.locator('#medicinePsychometricDate').fill('2025-12-01');
+    await page.locator('#medicineHebrewBasis').selectOption('hebrew_school');
+    await page.getByRole('button', { name: 'חשבו את הסכם שלי', exact: true }).click();
+    await expect(results).toContainText('24.366');
+    await expect(results).not.toContainText('חסר מידע');
+    await expect(results).toContainText('ההרשמה סגורה');
+    await expect(page.getByLabel(/מו״ר|מרק״ם|ממוצע הבגרות הרשמי/)).toHaveCount(0);
+    await page.reload();
+    await expect(page.locator('#medicinePsychometricDate')).toHaveValue('2025-12-01');
+    await expect(results).toContainText('24.366');
   });
 }

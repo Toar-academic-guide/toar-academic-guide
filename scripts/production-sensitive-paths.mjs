@@ -48,16 +48,31 @@ export function isDocsOnlyChange(filePaths) {
   );
 }
 
+// Inputs to /internal/data-health, its access check, and the CI browser harness.
+const dataHealthSmokePaths = [
+  /^src\/app\/(?:internal\/|auth\/|api\/_lib\/auth\.|layout\.|globals\.css$|not-found\.)/,
+  /^src\/(?:db\/|data\/|server\/(?:data-health|internal|admissions|admission-alerts|catalogue|ingestion|cache)\/)/,
+  /^src\/(?:proxy\.|env\.|context\/AuthContext\.|lib\/(?:supabase\/|routes\.|site\.|footerLinks\.))/,
+  /^src\/components\/(?:WayPageShell|WayBackdrop|PublicNavBar|SiteFooter|SkipLink)\./,
+  /^(?:package(?:-lock)?\.json|next\.config\.[^/]+|tsconfig\.json|postcss\.config\.[^/]+|playwright\.config\.[^/]+|vercel\.json)$/,
+  /^e2e\/(?:internal-data-health\.spec|fixtures)\./,
+  /^(?:\.github\/workflows\/ci\.yml|scripts\/production-sensitive-paths\.mjs)$/,
+];
+
 function main() {
   if (process.argv.includes('--all')) {
-    process.stdout.write('applicable=true\ndocs_only=false\n');
+    process.stdout.write('applicable=true\ndocs_only=false\ndata_health_required=true\n');
     return;
   }
 
-  const changedPaths = readFileSync(0, 'utf8').split(/\r?\n/);
+  const changedPaths = readFileSync(0, 'utf8').split(/\r?\n/).filter(Boolean);
   const applicablePaths = findProductionSensitivePaths(changedPaths);
   process.stdout.write(`applicable=${applicablePaths.length > 0}\n`);
   process.stdout.write(`docs_only=${isDocsOnlyChange(changedPaths)}\n`);
+  const dataHealthRequired =
+    !changedPaths.length ||
+    changedPaths.some((path) => dataHealthSmokePaths.some((pattern) => pattern.test(path)));
+  process.stdout.write(`data_health_required=${dataHealthRequired}\n`);
   if (applicablePaths.length > 0) {
     process.stderr.write(
       `Production-sensitive paths:\n${applicablePaths.map((filePath) => `  - ${filePath}`).join('\n')}\n`,

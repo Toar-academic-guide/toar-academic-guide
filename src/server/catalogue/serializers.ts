@@ -245,7 +245,7 @@ export function serializeProgramRow(args: {
       (program.id === 'ruppin_marine_bio' ? staticProgram?.name : undefined) ??
       DANON_PROGRAM_NAMES[program.id] ??
       program.name,
-    isListed: program.isListed,
+    isListed: program.id === 'ono_medicine' ? false : program.isListed,
     institution: program.institutionName,
     institutionId: (program.institutionId
       ? canonicalInstitutionId(program.institutionId)
@@ -295,6 +295,11 @@ export function serializeProgramRow(args: {
     'afeka_cs',
     'afeka_biomedical',
     'ruppin_marine_bio',
+    'mon_12341092879_graphic_design',
+    'mon_12341101957_graphic_design',
+    'minshar_graphic_design',
+    'mon_12341138289_cs',
+    'johnbryce_cs',
     'jerusalem_academy_graphic_design',
     'jerusalem_academy_dance',
     'rubin_classical',

@@ -110,8 +110,23 @@ export async function runBguQuantitativeRoutesProof(context: {
       if (!Number.isFinite(score)) throw new Error('BGU returned an invalid quantitative score.');
     }
     const derivedVerdict = score >= resolution.threshold ? 'eligible_to_apply' : 'below';
+    const mainCutoff = rule.comments.includes(`סכם כמותי ${rule.psychometric}`)
+      ? {
+          value: rule.psychometric,
+          metric: 'quantitative_sekhem' as const,
+          route: 'main' as const,
+          cycle: String(rule.mapping.year),
+          programPath: config.officialProgramId,
+          registrationStatus: rule.registrationStatus,
+          prerequisites: `psychometric minimum ${config.minimumPsychometric}; ${rule.requirements}`,
+          sourceUrl: config.sourceUrl,
+          sourceStatus: response.status,
+          sourceExcerpt: `סכם כמותי ${rule.psychometric}`,
+        }
+      : undefined;
     return {
       ...base,
+      ...(mainCutoff && { publicationCutoff: mainCutoff }),
       capability: context.assessment === 'scores' ? 'score_only' : 'decision_capable',
       proofLevel: 'exact_official',
       status: 'succeeded',

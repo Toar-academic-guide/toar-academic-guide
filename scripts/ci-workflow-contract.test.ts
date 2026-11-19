@@ -40,14 +40,7 @@ const fullGuard =
   "github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.docs_only != 'true'";
 const skipGuard =
   "github.event_name == 'pull_request' && needs.production-sensitive-paths.outputs.docs_only == 'true'";
-const guardedJobs = [
-  'test',
-  'db-migrations-and-seed',
-  'admissions-verify',
-  'build',
-  'e2e-pr',
-  'internal-data-health-smoke',
-];
+const guardedJobs = ['test', 'db-migrations-and-seed', 'admissions-verify', 'build', 'e2e-pr'];
 
 describe('rename-safe docs-only classification', () => {
   const workflows = ['ci', 'playwright-preview'].map((name) => ({
@@ -176,7 +169,20 @@ describe('CI minutes and gate contracts', () => {
     expect(ci.jobs.quality.steps.every((step) => step.if === undefined)).toBe(true);
   });
 
-  it('blocks a failed classifier, skipped build, or either unsuccessful smoke', () => {
+  it('runs the data-health smoke on main, manual runs, and PRs unless explicitly unnecessary', () => {
+    expect(ci.jobs['production-sensitive-paths'].outputs?.data_health_required).toBe(
+      '${{ steps.classify.outputs.data_health_required }}',
+    );
+    const job = ci.jobs['internal-data-health-smoke'];
+    expect(job.if?.replace(/\s+/g, ' ')).toBe(
+      "${{ !cancelled() && needs.build.result == 'success' && (github.event_name != 'pull_request' || needs.production-sensitive-paths.outputs.data_health_required != 'false') }}",
+    );
+    expect(job.steps.find((step) => step.name === 'Run internal data-health smoke')?.run).toContain(
+      'e2e/internal-data-health.spec.ts',
+    );
+  });
+
+  it('accepts only a successful PR gate or an explicitly optional data-health skip', () => {
     const gate = ci.jobs['pr-gate-integrity'];
     expect(gate.if).toBe("${{ always() && github.event_name == 'pull_request' }}");
     expect(gate.needs).toEqual([
@@ -191,10 +197,22 @@ describe('CI minutes and gate contracts', () => {
       BUILD_RESULT: '${{ needs.build.result }}',
       PLAYWRIGHT_RESULT: '${{ needs.e2e-pr.result }}',
       DATA_HEALTH_RESULT: '${{ needs.internal-data-health-smoke.result }}',
+      DATA_HEALTH_REQUIRED: '${{ needs.production-sensitive-paths.outputs.data_health_required }}',
     });
-    const success = Object.fromEntries(Object.keys(step.env!).map((key) => [key, 'success']));
+    const success = {
+      CLASSIFY_RESULT: 'success',
+      BUILD_RESULT: 'success',
+      PLAYWRIGHT_RESULT: 'success',
+      DATA_HEALTH_RESULT: 'success',
+      DATA_HEALTH_REQUIRED: 'true',
+    };
     execFileSync('bash', ['-c', step.run!], { env: { ...process.env, ...success } });
-    for (const key of Object.keys(success)) {
+    for (const key of [
+      'CLASSIFY_RESULT',
+      'BUILD_RESULT',
+      'PLAYWRIGHT_RESULT',
+      'DATA_HEALTH_RESULT',
+    ]) {
       for (const result of ['failure', 'skipped', 'cancelled', '']) {
         expect(() =>
           execFileSync('bash', ['-c', step.run!], {
@@ -203,6 +221,21 @@ describe('CI minutes and gate contracts', () => {
           }),
         ).toThrow();
       }
+    }
+    const runOptional = (required: string, result: string) =>
+      execFileSync('bash', ['-c', step.run!], {
+        env: {
+          ...process.env,
+          ...success,
+          DATA_HEALTH_REQUIRED: required,
+          DATA_HEALTH_RESULT: result,
+        },
+        stdio: 'pipe',
+      });
+    expect(() => runOptional('false', 'skipped')).not.toThrow();
+    expect(() => runOptional('', 'skipped')).toThrow();
+    for (const result of ['failure', 'cancelled', '']) {
+      expect(() => runOptional('false', result)).toThrow();
     }
   });
 });
@@ -250,7 +283,9 @@ describe('Preview minutes contracts', () => {
     expect(classify.if).toBe("${{ steps.superseded.outputs.already_tested != 'true' }}");
     expect(classify.id).toBe('classify');
     expect(classify.run).toContain('git show origin/main:scripts/production-sensitive-paths.mjs');
-    expect(classify.run).toContain('git diff --name-only --no-renames "origin/main...$DEPLOYED_SHA"');
+    expect(classify.run).toContain(
+      'git diff --name-only --no-renames "origin/main...$DEPLOYED_SHA"',
+    );
     expect(job.steps[3].if).toBe("${{ steps.classify.outputs.docs_only == 'true' }}");
     for (const step of job.steps.slice(4)) {
       expect(step.if).toBe(

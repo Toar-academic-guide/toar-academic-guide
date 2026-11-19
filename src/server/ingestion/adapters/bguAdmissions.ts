@@ -158,6 +158,12 @@ export async function runBguAdmissionsProof(
         programName: program.name,
         source: 'bgu_rdp_and_SubmitSekem',
         selectedScore: weightedScore,
+        ...(medicineRequiresBoth && {
+          psychometricFloor,
+          medicineRequiresBoth,
+          meetsPsychometricFloor,
+          registrationStatus: sourceItem.reg_status,
+        }),
         acceptanceThreshold,
         rejectionThreshold: acceptanceThreshold,
         derivedVerdict,

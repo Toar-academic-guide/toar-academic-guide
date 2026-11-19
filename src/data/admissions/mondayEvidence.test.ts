@@ -9,6 +9,12 @@ import {
 } from './mondayEvidence';
 
 describe('monday admissions evidence', () => {
+  it('shows the college network name without a stray escape character', () => {
+    expect(getMondayAdmissionEvidenceByItemId('12341091743')?.displayName).toBe(
+      'המכללה למינהל - רשת מכללות הנדסאים',
+    );
+  });
+
   it('contains one clean derived record for every exported Monday item', () => {
     expect(mondayAdmissionsEvidence).toHaveLength(212);
   });
@@ -270,7 +276,7 @@ describe('monday admissions evidence', () => {
     expect(getMondayAdmissionEvidenceByItemId('12341091743')).toMatchObject({
       catalogueInstitutionId: 'tech_management',
       catalogueVisibility: 'catalogue_mapped',
-      displayName: 'המכללה למינהל\\- רשת מכללות הנדסאים',
+      displayName: 'המכללה למינהל - רשת מכללות הנדסאים',
     });
 
     expect(getMondayAdmissionEvidenceByItemId('12341122528')).toMatchObject({

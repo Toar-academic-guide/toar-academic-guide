@@ -3,7 +3,17 @@ import { applyEngineeringMathRequirements } from '@/data/admissions/engineeringM
 import { applyJamdCurriculum } from '@/data/degrees/jamdCurriculum';
 import { serializeInstitutionRow, serializeProgramRow } from '@/server/catalogue/serializers';
 import { allPrograms } from '@/data/degrees';
+import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import { buildCatalogueSeed } from '@/db/seeds/catalogueSeed';
+import { evaluateAdmissionsForProgram } from '@/server/admissions/evaluator';
+import { vi } from 'vitest';
+
+vi.mock('server-only', () => ({}));
+vi.mock('@/db/client', () => ({
+  getDb: () => {
+    throw new Error('College serialization test must not access a database');
+  },
+}));
 import type {
   AdmissionAlternativePathRow,
   AdmissionFactRow,
@@ -18,6 +28,25 @@ import type {
 } from '@/db/types';
 
 describe('catalogue serializers', () => {
+  it('keeps a stored Ono legacy card unlisted without unlisting Ono nursing', () => {
+    const seed = buildCatalogueSeed();
+    for (const [id, isListed] of [
+      ['ono_medicine', false],
+      ['ono_nursing', true],
+    ] as const) {
+      const program = seed.programs.find((row) => row.id === id)!;
+      const result = serializeProgramRow({
+        program: { ...program, isListed: true } as ProgramRow,
+        relations: [{ programId: id, institutionId: 'ono' }] as ProgramInstitutionRow[],
+        requirements: [],
+        thresholds: [],
+        sourceUrls: [],
+        institutionsById: new Map(),
+      });
+      expect(result).toMatchObject({ id, isListed, linkedInstitutionIds: ['ono'] });
+    }
+  });
+
   it.each([
     'tau_me',
     'tau_ee',
@@ -364,6 +393,35 @@ describe('catalogue serializers', () => {
     expect(result.thresholds).toEqual({ haifa: 700 });
     expect(result.id).toBe(id);
     expect(result.linkedInstitutionIds).toEqual(['haifa']);
+  });
+
+  it('serializes the reviewed Reichman information-systems next action without old gates', () => {
+    const seed = buildCatalogueSeed();
+    const id = 'reichman_infosystems';
+    const requirement = seed.admissionRequirements.find((row) => row.programId === id)!;
+    const result = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: [requirement] as AdmissionRequirementRow[],
+      thresholds: seed.admissionThresholds.filter(
+        (row) => row.programId === id,
+      ) as AdmissionThresholdRow[],
+      sourceUrls: seed.sourceUrls.filter(
+        (row) => row.admissionRequirementId === requirement.id,
+      ) as SourceUrlRow[],
+      institutionsById: new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow])),
+    });
+
+    expect(result.admissionRequirements).toEqual(['בדקו את תנאי המסלול באתר רייכמן']);
+    expect(result.institutionDetails?.[0]).toMatchObject({
+      durationYears: null,
+      estimatedStudentsPerYear: '',
+      specificAdmissionNotes: [],
+      programUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+      calculatorUrl: 'https://www.runi.ac.il/admissions/undergraduate/',
+    });
   });
 
   it('repairs persisted Haifa psychology floors without turning Pasifas into a main gate', () => {
@@ -887,4 +945,62 @@ it('D already serves the canonical name for the shortened legacy Braude institut
     name: 'המכללה האקדמית להנדסה אורט בראודה',
   });
   expect(row.name).toBe('המכללה האקדמית להנדסה בראודה');
+});
+
+it('keeps all 25 college routes unknown after database row serialization', async () => {
+  const seed = buildCatalogueSeed();
+  const institutionsById = new Map(seed.institutions.map((row) => [row.id, row as InstitutionRow]));
+  const institutions = ['achva', 'beit_berl', 'david_yellin'].map((id) =>
+    serializeInstitutionRow(institutionsById.get(id)!),
+  );
+  const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected fetch'));
+
+  expect(collegeProgrammes).toHaveLength(25);
+  for (const source of collegeProgrammes) {
+    const id = source.id;
+    const program = serializeProgramRow({
+      program: seed.programs.find((row) => row.id === id)! as ProgramRow,
+      relations: seed.programInstitutions.filter(
+        (row) => row.programId === id,
+      ) as ProgramInstitutionRow[],
+      requirements: seed.admissionRequirements.filter(
+        (row) => row.programId === id,
+      ) as AdmissionRequirementRow[],
+      thresholds: [],
+      sourceUrls: seed.sourceUrls.filter((row) => row.programId === id) as SourceUrlRow[],
+      admissionsSourceCandidates: seed.admissionsSourceCandidates.filter(
+        (row) => row.programId === id,
+      ) as AdmissionsSourceCandidateRow[],
+      admissionFacts: [],
+      admissionAlternativePaths: [],
+      institutionsById,
+    });
+    expect(program.admissionType, id).toBe('requirements');
+    expect(program.institutionDetails?.[0].specificAdmissionNotes, id).toEqual(
+      source.institutionDetails?.[0].specificAdmissionNotes,
+    );
+    const result = await evaluateAdmissionsForProgram({
+      input: { degreeId: id, bagrut: 110, psychometric: 700 },
+      program,
+      institutions,
+      freshnessStatesBySourceId: new Map(),
+      fetcher,
+    });
+    expect(result.results, id).toHaveLength(1);
+    expect(result.results[0], id).toMatchObject({
+      capability: 'requirements_only',
+      kind: 'requirements_only',
+      decision: 'unknown',
+      confidence: 'low',
+    });
+    for (const falseClaim of [
+      'אין צורך בבגרות',
+      'אין צורך בפסיכומטרי',
+      'ראיון קבלה חובה',
+      'הגשת תיק עבודות חובה',
+    ]) {
+      expect(result.results[0].explanation, id).not.toContain(falseClaim);
+    }
+  }
+  expect(fetcher).not.toHaveBeenCalled();
 });
