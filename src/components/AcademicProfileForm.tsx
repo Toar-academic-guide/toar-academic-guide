@@ -1218,7 +1218,7 @@ export default function AcademicProfileForm({
               לארכיטקטורה, שבו אין כפל משקל במתמטיקה, ואת תוצאת בחינת הכניסה לארכיטקטורה. גם עמידה
               בסף אינה מבטיחה קבלה: הקבלה תלויה במקום פנוי.
             </p>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="technion-architecture-average"

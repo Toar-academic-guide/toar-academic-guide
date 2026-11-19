@@ -27,6 +27,9 @@ it('renders the approved answer and official-source policy in the page HTML', ()
   expect(main.textContent).toContain('אבחון שנערך אחרי גיל 16 ולא עברו 5 שנים מיום עריכתו.');
   expect(main.textContent).toContain('לצד האבחון מצרפים שאלון למאבחן ומסמכי רקע מגיל צעיר.');
   expect(main.textContent).toContain('לאבחון מת״ל עדכני אין צורך להוסיף שאלון למאבחן');
+  expect(main.textContent).toContain(
+    'רשימת המסמכים לכל אחת מהסיבות האלה מופיעה בטופס הבקשה להתאמות באתר מאל״ו.',
+  );
   expect(main.textContent).toContain('מאל״ו דורש בקשה נפרדת לכל בחינה');
   expect(main.textContent).not.toMatch(/מגיע לכם|מאושרות תמיד|תוקף.*קשב/);
   expect(main.querySelector('a[href="/amirnet"]')).toBeNull();
