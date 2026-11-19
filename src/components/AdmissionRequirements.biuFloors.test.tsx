@@ -20,24 +20,22 @@ describe('BIU per-floor presentation in the shared requirements component', () =
     const { container } = render(
       <AdmissionRequirements requirements={[]} floorChecks={floors} institutionId="biu" />,
     );
-    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+    const table = screen.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
     expect(table.closest('[dir="rtl"]')).toBeTruthy();
     expect(within(table).getByText('נדרש')).toBeTruthy();
-    expect(within(table).getByText('שלך')).toBeTruthy();
+    expect(within(table).getByText('שלכם')).toBeTruthy();
     for (const text of [
-      'עומד/ת',
-      'לא עומד/ת',
+      'עומדים',
+      'לא עומדים',
       'חסר נתון',
-      'מקורות סותרים',
+      'נתונים סותרים',
       'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
     ])
       expect(within(table).getByText(text)).toBeTruthy();
     expect(within(table).getByText('בדף הפקולטה באנגלית ובדף מועמדי חו"ל מופיע 650')).toBeTruthy();
-    const link = screen.getByRole('link', { name: 'המחשבון הרשמי של בר-אילן' });
-    const url = new URL(link.getAttribute('href')!);
-    expect(url.origin + url.pathname).toBe('https://shoham.biu.ac.il/kabala/');
-    expect(url.searchParams.get('utm_source')).toBe('myway');
-    expect(url.searchParams.get('utm_medium')).toBe('referral');
+    expect(screen.queryByRole('link', { name: 'המחשבון הרשמי של בר-אילן' })).toBeNull();
+    expect(within(table).queryByRole('link')).toBeNull();
+    expect(within(table).getByText('תנאי 0')).toBeTruthy();
     expect(container.textContent).not.toMatch(/soft_miss|conflicting|accepted|נדחה/);
   });
   it('does not add a floor table or BIU calculator to existing non-floor requirements', () => {

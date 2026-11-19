@@ -4,16 +4,54 @@ import WayPageShell from '@/components/WayPageShell';
 
 import { getPublicInstitutionPageData } from '@/lib/publicCataloguePages';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import {
+  canLinkToSekhemCalculator,
+  loadSekhemCalculatorOfferings,
+} from '@/lib/sekhemCalculatorSupport';
 import { ROUTES } from '@/lib/routes';
 import { buildInstitutionMetadata } from '@/lib/seo/metadata';
 import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { openUniversityTransferTracks } from '@/data/openUniversityTransferTracks';
 
 export const dynamic = 'force-dynamic';
 
 interface InstitutionPageProps {
   params: Promise<{ institutionId: string }>;
+}
+
+function OpenUniversityTransferSection() {
+  return (
+    <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+      <h2 className="text-xl font-bold">אפיקי מעבר מהאוניברסיטה הפתוחה</h2>{' '}
+      <p className="mt-3 leading-7 text-slate-700">
+        האוניברסיטה הפתוחה מפרסמת אפיקי מעבר למסלולי לימוד באוניברסיטאות אחרות. בכל אפיק מפורטים
+        הקורסים, דרישות הציונים ותנאים נוספים של המסלול. התחילו בבחירת מוסד ומסלול בעמוד אפיקי המעבר
+        הרשמי, ופתחו את תיאור האפיק ואת העדכונים לפני תכנון הקורסים.
+      </p>{' '}
+      <ul className="mt-5 grid gap-3 sm:grid-cols-2">
+        {openUniversityTransferTracks.map((track) => (
+          <li
+            key={track.href}
+            className="rounded-xl border border-slate-200 px-4 py-3 font-semibold text-cyan-800"
+          >
+            {track.label}
+          </li>
+        ))}
+      </ul>{' '}
+      <p className="mt-5 border-t border-slate-100 pt-4 text-sm text-slate-600">
+        עוד לא התחלתם לימודים אקדמיים?{' '}
+        <Link
+          href="/sekhem-calculator"
+          className="font-semibold text-cyan-800 underline underline-offset-4 hover:text-slate-900"
+        >
+          למחשבון הסכם
+        </Link>
+      </p>{' '}
+      <p className="mt-3 text-xs text-slate-500">בדיקת הקישורים: 8 בנובמבר 2026</p>
+    </section>
+  );
 }
 
 function ProgramCards({
@@ -58,6 +96,15 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
   }
 
   const { institution, programs, officialProgrammes = [], categoryPages = [] } = data;
+  const possibleCalculatorPrograms = programs.filter((program) =>
+    canLinkToSekhemCalculator(program, institution.id),
+  );
+  const calculatorOfferings = possibleCalculatorPrograms.length
+    ? await loadSekhemCalculatorOfferings()
+    : [];
+  const hasCalculator = possibleCalculatorPrograms.some((program) =>
+    canLinkToSekhemCalculator(program, institution.id, calculatorOfferings),
+  );
 
   return (
     <WayPageShell>
@@ -81,12 +128,14 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               >
                 שאלון התאמה{' '}
               </Link>
-              <Link
-                href={ROUTES.calculator}
-                className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
-              >
-                מחשבון קבלה{' '}
-              </Link>
+              {hasCalculator && (
+                <Link
+                  href={ROUTES.calculator}
+                  className="rounded-full border border-slate-300 px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:border-slate-900 hover:text-slate-900"
+                >
+                  מחשבון קבלה{' '}
+                </Link>
+              )}
             </div>
           </div>
 
@@ -98,13 +147,12 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               className="mt-4"
             />
             {officialProgrammes.map((programme) => (
-              <a
+              <p
                 key={programme.id}
-                href={programme.url}
-                className="mt-4 block rounded-xl border border-slate-200 px-4 py-3 font-semibold hover:border-slate-900"
+                className="mt-4 rounded-xl border border-slate-200 px-4 py-3 font-semibold"
               >
-                {programme.name} <span className="text-sm font-normal">באתר המוסד</span>
-              </a>
+                {programme.name}
+              </p>
             ))}
             {programs.length > 12 && (
               <details className="mt-4 open:mt-3 [&[open]>summary]:hidden">
@@ -123,6 +171,7 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
               <ProgramCards institution={institution} programs={categoryPages} className="mt-4" />
             </section>
           )}
+          {institution.id === 'open_university' && <OpenUniversityTransferSection />}
         </section>
       </main>
     </WayPageShell>

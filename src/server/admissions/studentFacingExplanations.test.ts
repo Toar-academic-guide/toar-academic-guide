@@ -158,7 +158,7 @@ describe('student-facing evaluator explanations', () => {
         capability: 'blocked',
         kind: 'unsupported',
         decision: 'unknown',
-        explanation: 'המקור הרשמי דורש בדיקה ידנית באתר המוסד.',
+        explanation: 'צריך לבדוק את התנאים ידנית באתר המוסד.',
         nextAction: 'בדקו ישירות באתר המוסד.',
       });
     },

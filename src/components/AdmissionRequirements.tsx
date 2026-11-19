@@ -1,7 +1,5 @@
 import { Fragment } from 'react';
 import type { FloorCheckRow } from '@/types/admissionsEvaluation';
-import { BIU_CALCULATOR_URL, BIU_ENGINEERING_URL } from '@/data/admissions/biuChannels';
-import { institutionLink } from '@/lib/institutionLinks';
 
 interface AdmissionRequirementsProps {
   requirements: string[];
@@ -25,15 +23,21 @@ function communicationOverview(requirements: string[]): string[] | undefined {
 }
 
 function highlightedNumbers(text: string) {
-  return text.split(/(\d+(?:[.,]\d+)?)/).map((part, index) =>
-    index % 2 ? (
+  return text.split(/(\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*|\d+(?:[.,]\d+)?)/).map((part, index) => {
+    if (!(index % 2)) return <Fragment key={index}>{part}</Fragment>;
+    if (/^\d+(?:[.,]\d+)*[–-]\d+(?:[.,]\d+)*$/.test(part)) {
+      return (
+        <bdi key={index} dir="ltr" className="font-bold text-[#19233d]">
+          {part}
+        </bdi>
+      );
+    }
+    return (
       <strong key={index} className="font-bold text-[#19233d]">
         {part}
       </strong>
-    ) : (
-      <Fragment key={index}>{part}</Fragment>
-    ),
-  );
+    );
+  });
 }
 
 function RequirementText({
@@ -132,7 +136,7 @@ export default function AdmissionRequirements({
         <>
           <table
             className="w-full table-fixed border-collapse text-right text-xs leading-5"
-            aria-label="בדיקת תנאי הסף לפי הציונים שלך"
+            aria-label="בדיקת תנאי הסף לפי הציונים שלכם"
           >
             <thead>
               <tr className="border-b border-[var(--border)] text-[var(--text-muted)]">
@@ -157,7 +161,7 @@ export default function AdmissionRequirements({
                   נדרש
                 </th>
                 <th scope="col" className="w-[25%] py-2 pe-2 font-medium">
-                  שלך
+                  שלכם
                 </th>
                 <th scope="col" className="w-[30%] py-2 font-medium">
                   בדיקה
@@ -188,14 +192,7 @@ export default function AdmissionRequirements({
                         className="border-b border-[var(--border)] align-top"
                       >
                         <th scope="row" className="py-2 pe-2 font-normal">
-                          <a
-                            href={institutionLink(row.sourceUrl, institutionId)}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="underline decoration-[#c9c2e4] underline-offset-4 hover:text-[#6554b8] focus-visible:outline-2 focus-visible:outline-offset-2"
-                          >
-                            {row.label}
-                          </a>
+                          {row.label}
                         </th>
                         <td className="py-2 pe-2 tabular-nums">
                           {requirementLines
@@ -218,10 +215,10 @@ export default function AdmissionRequirements({
                             {
                               (
                                 {
-                                  pass: 'עומד/ת',
-                                  miss: 'לא עומד/ת',
+                                  pass: 'עומדים',
+                                  miss: 'לא עומדים',
                                   missing: 'חסר נתון',
-                                  conflicting: 'מקורות סותרים',
+                                  conflicting: 'נתונים סותרים',
                                   soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
                                 } as const
                               )[row.status]
@@ -237,34 +234,6 @@ export default function AdmissionRequirements({
               </tbody>
             ))}
           </table>
-          {institutionId !== 'tau' && (
-            <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              {programId !== 'biu_law' &&
-                programId !== 'law' &&
-                'עודכן לאחרונה: 25.10.2026 · מקור: אתר אוניברסיטת בר-אילן — '}
-              <a
-                href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-              >
-                המחשבון הרשמי של בר-אילן
-              </a>
-              {programId === 'biu_ee' && (
-                <>
-                  {'; '}
-                  <a
-                    href={institutionLink(BIU_ENGINEERING_URL, 'biu')}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2"
-                  >
-                    תנאי הקבלה בפקולטה להנדסה
-                  </a>
-                </>
-              )}
-            </p>
-          )}
         </>
       )}
       {routes && (

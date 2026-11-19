@@ -16,6 +16,11 @@ import { profileInputsChanged } from '@/lib/sekhemProfile';
 import { SECTORS } from '@/data/bagrutSubjects';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
 import {
+  captureCalculatorOutcome,
+  createCalculatorRun,
+  type CalculatorRun,
+} from '@/lib/calculatorAnalytics';
+import {
   haifaProfileInputsSchema,
   HAIFA_PROFILE_KEYS,
   HAIFA_NUMERIC_QUALIFICATION_KEYS,
@@ -176,7 +181,25 @@ export default function SekhemCalculator({
     }
   }
   const generation = useRef(0);
+  const analyticsRun = useRef<CalculatorRun | null>(null);
+  const [settledGeneration, setSettledGeneration] = useState<number | null>(null);
   const chosen = offerings.filter((row) => !programId || row.programId === programId);
+  useEffect(() => {
+    if (busy || settledGeneration !== generation.current || !analyticsRun.current) return;
+    const options = chosen
+      .filter((offering) => offering.institutionId !== 'ariel')
+      .map((offering) => ({
+        result: reports
+          .find(
+            (report) =>
+              report.input.degreeId === offering.programId ||
+              report.program.id === offering.programId,
+          )
+          ?.results.find((result) => result.linkedInstitutionId === offering.institutionId),
+        failed: failedIds.includes(offering.programId),
+      }));
+    captureCalculatorOutcome(analyticsRun.current, 'sekhem_calculator', options);
+  }, [busy, settledGeneration, chosen, reports, failedIds]);
   const programs = [
     ...new Map(
       offerings.map((row) => [
@@ -224,6 +247,7 @@ export default function SekhemCalculator({
       setFailedIds([]);
     }
     generation.current++;
+    analyticsRun.current = null;
     setBusy(false);
     setError('');
     setEnquiry(null);
@@ -277,6 +301,7 @@ export default function SekhemCalculator({
   function invalidate(dependencies: (keyof typeof haifaAnswerDependencies)[] = []) {
     setSaveMessage('');
     generation.current++;
+    analyticsRun.current = null;
     setReports([]);
     if (dependencies.length) {
       setHaifaValues((current) => {
@@ -355,6 +380,7 @@ export default function SekhemCalculator({
       setError('לא נמצאו תוכניות לחישוב.');
       return;
     }
+    if (!retryIds) analyticsRun.current = createCalculatorRun('evaluation');
     setBusy(true);
     const completed = retryIds ? [...reports] : [];
     const failed: string[] = [];
@@ -399,7 +425,10 @@ export default function SekhemCalculator({
         setFailedIds(ids.filter((id) => !completed.some((report) => report.input.degreeId === id)));
       }
     } finally {
-      if (generation.current === version) setBusy(false);
+      if (generation.current === version) {
+        setBusy(false);
+        setSettledGeneration(version);
+      }
     }
   }
 

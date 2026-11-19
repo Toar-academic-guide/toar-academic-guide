@@ -4,6 +4,7 @@ import { absoluteUrl, SITE_ALT_NAMES, SITE_NAME } from '@/lib/site';
 import type { InstitutionDirectoryItem } from '@/data/institutionDirectory';
 import { canonicalProgramPath } from './programAliases';
 import { institutionProgramName } from '@/lib/institutionProgramName';
+import { ABOUT_INDEPENDENCE_DESCRIPTION } from '@/lib/aboutIndependence';
 
 const ORGANIZATION_ID = absoluteUrl('/#organization');
 const WEBSITE_ID = absoluteUrl('/#website');
@@ -16,6 +17,7 @@ export function organizationLd() {
     alternateName: SITE_ALT_NAMES,
     url: absoluteUrl(),
     logo: absoluteUrl('/brand/myway-wordmark-1200.png'),
+    description: ABOUT_INDEPENDENCE_DESCRIPTION,
     areaServed: 'IL',
     knowsLanguage: 'he',
   };
@@ -174,14 +176,19 @@ export function sekhemCalculatorLd() {
   return {
     '@type': 'WebApplication',
     '@id': absoluteUrl('/sekhem-calculator#webapp'),
-    name: 'מחשבון סכם',
+    name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
     url: absoluteUrl('/sekhem-calculator'),
     applicationCategory: 'EducationalApplication',
     operatingSystem: 'Web',
     inLanguage: 'he',
     isAccessibleForFree: true,
     offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
-    featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
+    featureList: [
+      'חישוב ממוצע בגרות במוסדות הנתמכים',
+      'חישוב סכם לפי תוכנית',
+      'השוואה לסף הקבלה',
+      'קישור לתנאי הקבלה של התוכנית',
+    ],
     publisher: { '@id': ORGANIZATION_ID },
     isPartOf: { '@id': WEBSITE_ID },
   };

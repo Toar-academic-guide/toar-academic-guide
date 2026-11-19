@@ -131,7 +131,7 @@ describe('admissions evaluate route', () => {
     { batch: true, missingInstitution: false },
     { batch: true, missingInstitution: true },
   ])(
-    'returns numberless unsupported with the real evaluator for missing haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
+    'requests Haifa subject rows with the real evaluator for haifa_engineering (batch=$batch, missingInstitution=$missingInstitution)',
     async ({ batch, missingInstitution }) => {
       const program = getStaticCataloguePrograms().find((row) => row.id === 'haifa_engineering')!;
       const institution = getStaticCatalogueInstitutions().find((row) => row.id === 'haifa')!;
@@ -163,11 +163,12 @@ describe('admissions evaluate route', () => {
         expect(report.results).toHaveLength(1);
         expect(report.results[0]).toMatchObject({
           linkedInstitutionId: 'haifa',
-          capability: 'unsupported',
-          kind: 'unsupported',
+          capability: 'needs_input',
+          kind: 'needs_input',
           decision: 'unknown',
+          requiredInputs: ['haifa_bagrut_average'],
         });
-        for (const key of ['score', 'threshold', 'requiredInputs', 'scoreAssessment']) {
+        for (const key of ['score', 'threshold', 'scoreAssessment']) {
           expect(report.results[0]).not.toHaveProperty(key);
         }
         expect(hoistedMocks.evaluateAdmissionsForProgram).toHaveBeenLastCalledWith({

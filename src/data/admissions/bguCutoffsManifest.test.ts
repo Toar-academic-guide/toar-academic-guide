@@ -2,6 +2,7 @@ import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 import { describe, expect, it, vi } from 'vitest';
 import manifest from '@/server/admissions/__fixtures__/reviewedManifest-2026-10-29-bgu.json';
+import { bguQuantitativeProgramme } from '@/server/admissions/bguQuantitativeRoutesPolicy';
 
 vi.mock('server-only', () => ({}));
 
@@ -16,7 +17,6 @@ import {
 
 const approved = [
   ['bgu_accounting', 610, 620, 'accounting', 'p_dep1=142&p_pat1=1&p_spe1=6'],
-  ['bgu_biology', 610, 585, 'biology', 'p_dep1=205&p_pat1=15'],
   ['business', 590, 620, 'business', 'p_dep1=142&p_pat1=1&p_spe1=1'],
   ['bgu_business', 590, 620, 'business', 'p_dep1=142&p_pat1=1&p_spe1=1'],
   ['economics', 615, 620, 'economics', 'p_dep1=142&p_pat1=3'],
@@ -24,12 +24,57 @@ const approved = [
   ['communication', 590, 520, 'communication', 'p_dep1=183&p_pat1=2'],
 ] as const;
 
+const supportedManifest = {
+  ...manifest,
+  changes: manifest.changes
+    .filter(({ target }) => target.programId !== 'bgu_biology')
+    .map((change) => {
+      if (change.target.programId === 'communication') return change;
+      const config = bguQuantitativeProgramme(change.target.programId)!;
+      const sourceDir = 'docs/admissions-verification/evidence/2026-10-29-bgu-cutoffs-business';
+      const source = JSON.parse(
+        readFileSync(`${sourceDir}/official-${config.family}.json`, 'utf8'),
+      );
+      const item = source.items[0];
+      const headers = readFileSync(`${sourceDir}/official-${config.family}.headers`, 'utf8');
+      const status = Number(headers.match(/^HTTP\/1\.1 (\d{3})/m)?.[1]);
+      const mainExcerpt = `סכם כמותי ${change.after}`;
+      if (!item.comments.includes(mainExcerpt) || status !== 200) {
+        throw new Error(`Archived ${config.family} source lacks the main cutoff or HTTP 200`);
+      }
+      return {
+        ...change,
+        sourceProofs: change.sourceProofs.map((proof) => ({
+          ...proof,
+          cutoffEvidence: {
+            value: change.after,
+            metric: 'quantitative_sekhem',
+            route: 'main',
+            cycle: change.target.cycle,
+            programPath: config.officialProgramId,
+            registrationStatus: item.reg_status,
+            prerequisites: `psychometric minimum ${item.psycho_value}; ${item.psycho_info}`,
+            sourceUrl: proof.url,
+            sourceStatus: status,
+            sourceExcerpt: mainExcerpt,
+          },
+        })),
+      };
+    }),
+};
+
 describe('2026-10-29 BGU canonical cutoff release', () => {
-  it('contains exactly the seven approved changes with reproducible exact official proofs', () => {
-    const parsed = parseReviewedAdmissionsManifest(manifest);
+  it('rejects the archived biology psychometric sekem as a quantitative cutoff', () => {
+    expect(() => parseReviewedAdmissionsManifest(manifest)).toThrow(
+      'Canonical cutoff needs matching main-route',
+    );
+  });
+
+  it('contains the six supported changes with reproducible exact official proofs', () => {
+    const parsed = parseReviewedAdmissionsManifest(supportedManifest);
     expect(parsed.releaseKind).toBe('canonical_change');
-    expect(Object.keys(manifest).sort()).toEqual(['changes', 'releaseKind', 'version']);
-    expect(parsed.changes).toHaveLength(7);
+    expect(Object.keys(supportedManifest).sort()).toEqual(['changes', 'releaseKind', 'version']);
+    expect(parsed.changes).toHaveLength(6);
     expect(
       parsed.changes.map(({ target, before, after }) => [target.programId, before, after]),
     ).toEqual(approved.map(([programId, before, after]) => [programId, before, after]));
@@ -55,13 +100,25 @@ describe('2026-10-29 BGU canonical cutoff release', () => {
             excerpt: expect.stringContaining(String(after)),
             url: `https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1&p_institution=0&${params}&p_degree_level=1`,
             proofType: 'exact_official',
+            ...(family === 'communication'
+              ? {}
+              : {
+                  cutoffEvidence: expect.objectContaining({
+                    value: after,
+                    metric: 'quantitative_sekhem',
+                    route: 'main',
+                    cycle: '2027',
+                    sourceStatus: 200,
+                    sourceExcerpt: `סכם כמותי ${after}`,
+                  }),
+                }),
           },
         ],
       });
     }
   });
 
-  it('publishes seven cutoff rows and release items once in memory', async () => {
+  it('publishes six supported cutoff rows and release items once in memory', async () => {
     const cutoffs = new Map<string, number>(approved.map(([id, before]) => [`bgu:${id}`, before]));
     const releases: AdmissionReleaseRecord[] = [];
     const transitions: AdmissionTargetTransitionRecord[] = [];
@@ -102,15 +159,15 @@ describe('2026-10-29 BGU canonical cutoff release', () => {
     const publisher = createAdmissionsReleasePublisher({
       transaction: async (callback) => callback(writer),
     });
-    const input = { manifest, repositoryCommit: 'bgu-cutoffs-2026-10-29' };
+    const input = { manifest: supportedManifest, repositoryCommit: 'bgu-cutoffs-2026-10-29' };
     await expect(publisher.publish(input)).resolves.toMatchObject({
       status: 'published',
       alreadyApplied: [],
     });
     await expect(publisher.publish(input)).resolves.toMatchObject({ status: 'already_published' });
     expect(releases).toHaveLength(1);
-    expect(transitions).toHaveLength(7);
-    expect(items).toHaveLength(7);
+    expect(transitions).toHaveLength(6);
+    expect(items).toHaveLength(6);
     for (const [programId, before, after] of approved) {
       expect(cutoffs.get(`bgu:${programId}`)).toBe(after);
       const transition = transitions.find((row) => row.programId === programId)!;

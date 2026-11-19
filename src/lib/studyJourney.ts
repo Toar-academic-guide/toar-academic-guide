@@ -282,6 +282,34 @@ export function isTechnionMedicineScore(
   );
 }
 
+const MEDICINE_SCREENING_PROGRAMS = new Set([
+  'medicine',
+  'huji_medicine',
+  'tau_medicine',
+  'bgu_medicine',
+  'biu_medicine',
+]);
+
+export const MEDICINE_SCREENING_LABEL = 'שלב א׳: סינון ראשוני לפי ציונים';
+export const MEDICINE_LATER_STAGES_LINE = 'הקבלה נקבעת בהמשך, במו״ר או בראיונות.';
+
+function isMedicineScreeningCard(
+  result: AdmissionsEvaluationResult | undefined,
+  programId?: string,
+): boolean {
+  return result?.stage === 'academic' || MEDICINE_SCREENING_PROGRAMS.has(programId ?? '');
+}
+
+function isPassOrGapLabel(label: string): boolean {
+  return (
+    label === 'עוברים את הסף ✓' ||
+    label === 'עומד/ת בסף שחושב' ||
+    label === 'מתקבלים' ||
+    label === 'עוד לא בסף' ||
+    label.startsWith('חסרות לכם ')
+  );
+}
+
 export function formatJourneyScore(score: number): string {
   return score.toLocaleString('he-IL', { maximumFractionDigits: 2 });
 }
@@ -303,6 +331,10 @@ export function resultLabel(
   if (loading) return { label: 'החישוב מתבצע…', group: 'explore' };
   if (isTechnionMedicineScore(result, programId))
     return { label: 'קבלה דרך מבחני מו"ר', group: 'explore' };
+  const asScreening = (status: { label: string; group: JourneyResultGroup }) =>
+    isMedicineScreeningCard(result, programId) && isPassOrGapLabel(status.label)
+      ? { ...status, label: MEDICINE_SCREENING_LABEL }
+      : status;
   if (result?.degradationReason === 'incomplete_published_requirements')
     return { label: 'עדיין לא ניתן לקבוע התאמה', group: 'explore' };
   if (result?.linkedInstitutionId === 'danon' && result.kind === 'requirements_only')
@@ -319,28 +351,30 @@ export function resultLabel(
     result.kind === 'manual_gate' &&
     result.scoreAssessment === 'meets_threshold'
   )
-    return { label: 'מתקבלים', group: 'match' };
+    return asScreening({ label: 'מתקבלים', group: 'match' });
   if (result?.scoreAssessment)
-    return result.scoreAssessment === 'meets_threshold'
-      ? {
-          label: 'עוברים את הסף ✓',
-          group: result.additionalConditions?.some((condition) => condition.status === 'unmet')
-            ? 'explore'
-            : 'match',
-        }
-      : { label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף', group: 'improve' };
+    return asScreening(
+      result.scoreAssessment === 'meets_threshold'
+        ? {
+            label: 'עוברים את הסף ✓',
+            group: result.additionalConditions?.some((condition) => condition.status === 'unmet')
+              ? 'explore'
+              : 'match',
+          }
+        : { label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף', group: 'improve' },
+    );
   if (result?.kind === 'open_admission') return { label: 'הרשמה פתוחה', group: 'match' };
   if (['exact', 'estimated'].includes(result?.kind ?? '') && result?.decision === 'accepted') {
-    return {
+    return asScreening({
       label: result.kind === 'exact' ? 'עומד/ת בסף שחושב' : 'עוברים את הסף ✓',
       group: 'match',
-    };
+    });
   }
   if (result?.decision === 'below')
-    return {
+    return asScreening({
       label: admissionScoreGap(result, formatScore) ?? 'עוד לא בסף',
       group: 'improve',
-    };
+    });
   if (result?.decision === 'eligible_to_apply')
     return { label: 'אפשר להגיש מועמדות', group: 'match' };
   const scoreLabel = Number.isFinite(result?.threshold)
@@ -363,6 +397,15 @@ export function resultLabel(
     label: result ? (labels[result.kind] ?? 'טרם חושבה התאמה') : 'טרם חושבה התאמה',
     group: 'explore',
   };
+}
+
+export function medicineLaterStagesLine(
+  result?: AdmissionsEvaluationResult,
+  programId?: string,
+): string | undefined {
+  return resultLabel(result, false, false, programId).label === MEDICINE_SCREENING_LABEL
+    ? MEDICINE_LATER_STAGES_LINE
+    : undefined;
 }
 
 export function resultExplanation(
@@ -460,7 +503,7 @@ export function resultSourceLinks(result?: AdmissionsEvaluationResult, fallbackU
   return (hasSources ? result.officialUrls! : [fallbackUrl]).flatMap((source, index) => {
     const href = institutionLink(source, result.linkedInstitutionId);
     return href
-      ? [{ href, label: hasSources ? (index === 0 ? 'למקור הרשמי' : 'למקור נוסף') : 'לאתר המוסד' }]
+      ? [{ href, label: hasSources && index > 0 ? 'עמוד נוסף באתר המוסד' : 'לאתר המוסד' }]
       : [];
   });
 }

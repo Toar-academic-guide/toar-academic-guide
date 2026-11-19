@@ -36,6 +36,9 @@ export default function HomeHero({ heading }: { heading: Ref<HTMLHeadingElement>
               {'\n'}
             </svg>
           </Link>
+          <Link href="/calculator" className="hero-explainer">
+            איך מחשבון סיכויי הקבלה עובד
+          </Link>
           <Link href="/app/assessment" className="hero-secondary">
             לא בטוחים מה ללמוד? לשאלון
           </Link>

@@ -65,7 +65,7 @@ export default function HujiMedicineFields({ values, onChange, disabled, inputCl
       </summary>
       <p className="mt-3 text-xs leading-relaxed text-slate-600">
         הציון הקוגניטיבי קובע מעבר למיון; הציון הסופי כולל מו״ר/מרק״ם. הזינו רק נתונים ידועים. ללא
-        נתוני המיון ותנאי הקבלה לא ניתן לקבוע זכאות סופית. ממוצע הבגרות נדרש לפי חישוב העברית. לאפיק
+        נתוני המיון ותנאי הקבלה לא ניתן לקבוע זכאות סופית. ציון הבגרות מחושב ממקצועות התעודה. לאפיק
         לימודים אקדמיים יש להזין ציון קוגניטיבי שנמסר ממדור הקבלה.
       </p>
       <p className="mt-2 text-xs text-slate-600">
@@ -84,8 +84,6 @@ export default function HujiMedicineFields({ values, onChange, disabled, inputCl
           ['other_preparatory', 'מכינה אחרת מוכרת'],
           ['official_cognitive', 'ציון קוגניטיבי רשמי ממדור הקבלה'],
         ])}
-        {route === 'bagrut' &&
-          number('hujiBagrutAverage', 'ממוצע בגרות רשמי של העברית (60–127)', 60, 127)}
         {route === 'official_cognitive' &&
           number('hujiMedicineCognitiveScore', 'ציון קוגניטיבי רשמי לרפואה (16–30)', 16, 30)}
         {(route === 'huji_preparatory' || route === 'other_preparatory') && (
@@ -128,7 +126,8 @@ export default function HujiMedicineFields({ values, onChange, disabled, inputCl
             value={values.hujiMedicinePsychometricDate ?? ''}
             onChange={(e) => onChange('hujiMedicinePsychometricDate', e.target.value)}
             disabled={disabled}
-            className={inputClassName}
+            className={`${inputClassName} text-right [&::-webkit-datetime-edit]:flex [&::-webkit-datetime-edit]:justify-end [&::-webkit-date-and-time-value]:text-right`}
+            dir="ltr"
           />
         </label>
         {select('hujiMedicineEnglishBasis', 'הוכחת אנגלית לרפואה בעברית', [

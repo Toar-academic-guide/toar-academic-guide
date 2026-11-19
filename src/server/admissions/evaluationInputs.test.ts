@@ -48,6 +48,22 @@ describe('evaluation input derivation and provenance', () => {
     expect(missing.input.extraInputs.tauBagrutAverage).toBeUndefined();
     expect(missing.input.extraInputs.bguBagrutAverage).toBeUndefined();
   });
+  it('defaults saved medicine evaluations to the academic stage and ignores entered averages', () => {
+    const normalized = normalizeEvaluationInputs({
+      degreeId: 'huji_medicine',
+      psychometric: 750,
+      extraInputs: { bagrutSubjectRecord: bguRecord, hujiBagrutAverage: 120 },
+    });
+    expect(normalized.input.extraInputs.medicineStage).toBe('academic');
+    expect(normalized.input.extraInputs.hujiBagrutAverage).not.toBe(120);
+    const noSubjects = normalizeEvaluationInputs({
+      degreeId: 'tau_medicine',
+      bagrut: 118,
+      psychometric: 750,
+      extraInputs: { tauBagrutAverage: 117 },
+    });
+    expect(noSubjects.input.extraInputs.tauBagrutAverage).toBeUndefined();
+  });
   it.each(['other', 'external_1977_or_later'] as const)(
     'derives the BGU average from a non-internal %s certificate',
     (certificateType) => {
@@ -67,6 +83,7 @@ describe('evaluation input derivation and provenance', () => {
     const normalized = normalizeEvaluationInputs(source);
     expect(normalized.input.bagrut).toBe(100);
     expect(normalized.input.extraInputs.bguBagrutAverage).toBe(111.9);
+    expect(normalized.calculatedBagrutAverages.bgu).toBe(111.9);
     expect(normalized.reasons.bgu).toBeUndefined();
     expect(normalized.overallReason).toBeTruthy();
     expect(source).toEqual(before);
@@ -79,6 +96,7 @@ describe('evaluation input derivation and provenance', () => {
     });
     expect(normalized.input.bagrut).toBe(110);
     expect(normalized.input.extraInputs.tauBagrutAverage).toBe(108.39);
+    expect(normalized.calculatedBagrutAverages.tau).toBe(108.39);
     expect(normalized.reasons.tau).toBeUndefined();
   });
   it('keeps explicit institutional averages and historical exam years unchanged', () => {
@@ -104,6 +122,8 @@ describe('evaluation input derivation and provenance', () => {
       haifaPsychometricYear: 2020,
     });
     expect(normalized.reasons).toEqual({});
+    expect(normalized.calculatedBagrutAverages.tau).toBeUndefined();
+    expect(normalized.calculatedBagrutAverages.bgu).toBeUndefined();
   });
   it('marks every average-only institutional proxy and the assumed Haifa cycle', () => {
     const normalized = normalizeEvaluationInputs({
@@ -111,6 +131,7 @@ describe('evaluation input derivation and provenance', () => {
       bagrut: 105,
       psychometric: 650,
     });
+    expect(normalized.calculatedBagrutAverages).toEqual({});
     // Approved test update, Jorje 2026-10-31: never manufacture a Haifa average proxy; retain both cycle defaults.
     expect(normalized.input.extraInputs).toMatchObject({
       bguBagrutAverage: 105,

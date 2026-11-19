@@ -10,6 +10,7 @@ import {
 } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { evaluateAdmissionsForProgram } from './evaluator';
 import { resultExplanation, resultLabel } from '@/lib/studyJourney';
+import { haifaQaApplicant } from './haifaLegacyAverage.fixture';
 
 const programs = getStaticCataloguePrograms();
 const institutions = getStaticCatalogueInstitutions();
@@ -63,14 +64,23 @@ describe('Batch C unsupported admission paths', () => {
           fetcher: vi.fn().mockRejectedValue(new Error('No network permitted')),
         });
         const result = report.results[0];
-        // Ruling 3: Jorje 2026-10-29; no engineering calculator mapping exists, so all inputs reach unsupported.
+        // Without Haifa subject rows, the evaluator asks for them before deciding whether the path is supported.
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(result).toMatchObject({
-          kind: 'unsupported',
-          capability: 'unsupported',
-          decision: 'unknown',
-        });
-        expect(result.requiredInputs).toBeUndefined();
+        if (config.institutionId === 'haifa') {
+          expect(result).toMatchObject({
+            kind: 'needs_input',
+            capability: 'needs_input',
+            decision: 'unknown',
+            requiredInputs: ['haifa_bagrut_average'],
+          });
+        } else {
+          expect(result).toMatchObject({
+            kind: 'unsupported',
+            capability: 'unsupported',
+            decision: 'unknown',
+          });
+          expect(result.requiredInputs).toBeUndefined();
+        }
         expect(result.scoreAssessment).toBeUndefined();
         expect(result.score).toBeUndefined();
         expect(result.threshold).toBeUndefined();
@@ -78,8 +88,14 @@ describe('Batch C unsupported admission paths', () => {
         expect(result.explanation).not.toMatch(/מתואם|סכם|מצרף|[a-zA-Z]|מוחרג|פרויקט אימות/);
         // Approved test update, Jorje 2026-10-28
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(result.nextAction).toBe(config.nextActionHe);
-        if (['itc_data_science', 'mon_12220696299_certificate'].includes(degreeId)) {
+        expect(result.nextAction).toBe(
+          config.institutionId === 'haifa'
+            ? 'השלימו את מקצועות הבגרות כדי להמשיך.'
+            : config.nextActionHe,
+        );
+        if (config.institutionId === 'haifa') {
+          expect(result.officialUrls).toBeUndefined();
+        } else if (['itc_data_science', 'mon_12220696299_certificate'].includes(degreeId)) {
           expect(result.officialUrls).toBeUndefined();
           expect(result.nextAction).toContain('פנו למוסד');
         } else {
@@ -88,8 +104,27 @@ describe('Batch C unsupported admission paths', () => {
         for (const url of result.officialUrls ?? []) expect(url).not.toMatch(/yoram|walla/);
         // Approved test update, Jorje 2026-10-28
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
-        expect(resultExplanation(result, degreeId)).toBe(config.explanationHe);
+        expect(resultExplanation(result, degreeId)).toBe(
+          config.institutionId === 'haifa'
+            ? 'כדי לחשב סיכויי קבלה בחיפה צריך להזין מקצועות בגרות.'
+            : config.explanationHe,
+        );
         expect(resultLabel(result).group).toBe('explore');
+      }
+      if (config.institutionId === 'haifa') {
+        const report = await evaluateAdmissionsForProgram({
+          input: { ...haifaQaApplicant, degreeId },
+          program,
+          institutions: institutions.filter((i) => i.id === config.institutionId),
+          freshnessStatesBySourceId: new Map(),
+          fetcher: vi.fn().mockRejectedValue(new Error('No network permitted')),
+        });
+        expect(report.results[0]).toMatchObject({
+          kind: 'unsupported',
+          capability: 'unsupported',
+          decision: 'unknown',
+        });
+        expect(report.results[0].requiredInputs).toBeUndefined();
       }
     },
   );

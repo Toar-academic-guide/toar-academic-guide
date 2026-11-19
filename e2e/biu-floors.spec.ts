@@ -41,7 +41,7 @@ test('biu_cs student values wrap only between whole unit tokens at 375px', async
     response = await retry;
   }
   expect(response.status()).toBe(200);
-  const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+  const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
   await expect(table).toBeVisible();
   await page.evaluate(() => document.fonts.ready);
   const cells = table.getByRole('cell', { name: '4 יח״ל בציון 100', exact: true });
@@ -107,7 +107,7 @@ const cases = [
     quantitative: 132,
     mathGrade: 90,
     decision: 'unknown',
-    verdict: 'מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי',
+    verdict: 'נתונים סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי',
   },
   {
     id: 'ee-below',
@@ -205,7 +205,7 @@ for (const width of [1280, 390])
       );
       expect(result.decision).toBe(profile.decision);
       expect(result.floorChecks.length).toBeGreaterThan(0);
-      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+      const table = page.getByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
       await expect(table).toBeVisible();
       await expect(table).toHaveCSS('text-align', 'right');
       const explanation = page.locator('.journey-result-explanation');
@@ -219,7 +219,7 @@ for (const width of [1280, 390])
       expect(summary).not.toMatch(/\n|\.\s+\S/);
       await expect(explanation).toHaveCSS('text-align', 'right');
       if (profile.id === 'ee-conflicting') {
-        await expect(table).toContainText('מקורות סותרים');
+        await expect(table).toContainText('נתונים סותרים');
         await expect(table).toContainText('בדף הפקולטה באנגלית ובדף מועמדי חו"ל מופיע 650');
         await expect(explanation).not.toContainText('אלא אם');
       }
@@ -257,11 +257,9 @@ for (const width of [1280, 390])
           ),
         ).toBe(true);
       }
-      const link = page.getByRole('link', { name: 'המחשבון הרשמי של בר-אילן', exact: true });
-      await expect(link).toHaveAttribute(
-        'href',
-        'https://shoham.biu.ac.il/kabala/?utm_source=myway&utm_medium=referral',
-      );
+      await expect(
+        page.getByRole('link', { name: 'המחשבון הרשמי של בר-אילן', exact: true }),
+      ).toHaveCount(0);
       await expect(
         // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
         page.getByRole('main').getByRole('button', { name: 'קבלו שיחה מהמוסד', exact: true }),

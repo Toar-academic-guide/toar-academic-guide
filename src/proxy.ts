@@ -6,6 +6,7 @@ import {
   isSupabaseConfigured,
   SUPABASE_AUTH_COOKIE_NAME,
 } from '@/lib/supabase/env';
+import { getSocialShortLinkDestination } from '@/lib/socialShortLinks';
 
 const socialShortLinks: Record<string, string> = {
   '/tt': 'tiktok',
@@ -15,11 +16,46 @@ const socialShortLinks: Record<string, string> = {
 };
 
 export async function proxy(request: NextRequest) {
+  const indexNowKey = process.env.INDEXNOW_KEY;
+  if (
+    indexNowKey &&
+    /^[A-Za-z0-9-]{8,128}$/.test(indexNowKey) &&
+    request.method === 'GET' &&
+    request.nextUrl.pathname === `/${indexNowKey}.txt`
+  ) {
+    return new NextResponse(indexNowKey, {
+      status: 200,
+      headers: {
+        'content-type': 'text/plain; charset=utf-8',
+        'cache-control': 'public, max-age=3600',
+      },
+    });
+  }
+
   if (process.env.VERCEL_ENV === 'production' && request.nextUrl.hostname.endsWith('.vercel.app')) {
     return NextResponse.redirect(
       `https://findmyway.co.il${request.nextUrl.pathname}${request.nextUrl.search}`,
       308,
     );
+  }
+
+  if (request.nextUrl.pathname === '/go' || request.nextUrl.pathname.startsWith('/go/')) {
+    const slug = request.nextUrl.pathname.slice('/go/'.length);
+    const destination = getSocialShortLinkDestination(slug);
+    if (!destination) {
+      return new NextResponse(null, {
+        status: 404,
+        headers: {
+          'Cache-Control': 'no-store, max-age=0',
+          'Vercel-CDN-Cache-Control': 'no-store',
+        },
+      });
+    }
+
+    const response = NextResponse.redirect(destination, 307);
+    response.headers.set('Cache-Control', 'no-store, max-age=0');
+    response.headers.set('Vercel-CDN-Cache-Control', 'no-store');
+    return response;
   }
 
   const source = socialShortLinks[request.nextUrl.pathname.replace(/\/$/, '')];

@@ -43,10 +43,23 @@ describe('item 6 engineering mathematics alternatives', () => {
       expect(detail).toBeDefined();
       const copy = detail.specificAdmissionNotes.join(' ');
       expect(copy).not.toMatch(/5 יח"ל מתמטיקה — חובה/);
-      expect(copy).toContain(`5 יחידות בציון ${fiveGrade}`);
-      expect(copy).toContain(fourGrade ? `4 יחידות בציון ${fourGrade}` : '4 יחידות');
-      expect(copy).toContain('סיווג');
-      if (institutionId === 'technion') expect(copy).toMatch(/סיווג(?: במתמטיקה)? בציון 70/);
+      if (['tau_ee', 'ee'].includes(id) && institutionId === 'tau') {
+        // The displayed semester-B requirements differ from this reviewed semester-A fact policy.
+        expect(copy).toContain('5 יחידות בציון 90');
+        expect(copy).toContain('4 יחידות בציון 95');
+        expect(copy).toContain('סיווג');
+      } else if (['tau_datascience', 'datascience'].includes(id) && institutionId === 'tau') {
+        // The published data-science page is not the old high-tech-plus evaluator source.
+        expect(copy).toContain('5 יחידות בציון 80');
+      } else if (id === 'technion_civil' && institutionId === 'technion') {
+        expect(copy).toContain('5 יחידות בציון 95');
+        expect(copy).toContain('סמסטר א׳ תשפ״ז בלבד');
+      } else {
+        expect(copy).toContain(`5 יחידות בציון ${fiveGrade}`);
+        expect(copy).toContain(fourGrade ? `4 יחידות בציון ${fourGrade}` : '4 יחידות');
+        expect(copy).toContain('סיווג');
+        if (institutionId === 'technion') expect(copy).toMatch(/סיווג(?: במתמטיקה)? בציון 70/);
+      }
       const math = (detail.admissionFacts ?? []).filter(
         (f) => f.field === 'math_units' || f.field === 'math_grade',
       );

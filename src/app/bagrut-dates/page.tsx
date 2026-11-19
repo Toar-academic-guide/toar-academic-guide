@@ -1,13 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
-import {
-  bagrutDatesCheckedOn,
-  bagrutDatesSources,
-  bagrutExamCalendars,
-  simulationOpenings,
-  spokenLanguageExams,
-} from '@/data/bagrutDates';
+import { bagrutExamCalendars, simulationOpenings, spokenLanguageExams } from '@/data/bagrutDates';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
 
@@ -60,10 +54,6 @@ export default function BagrutDatesPage() {
       <main id="main-content" dir="rtl" className={styles.main}>
         <header className={styles.header}>
           <h1>מועדי בחינות הבגרות תשפ״ז</h1>
-          <p>
-            נבדק בתאריך <bdi dir="ltr">{fullDate(bagrutDatesCheckedOn)}</bdi> ·{' '}
-            <a href={bagrutDatesSources.portal}>לוח הבחינות באתר משרד החינוך</a>
-          </p>
         </header>
 
         <div className={styles.calendars}>
@@ -79,9 +69,6 @@ export default function BagrutDatesPage() {
                 </h2>
                 <span className={styles.status}>{calendar.status}</span>
               </div>
-              <a className={styles.source} href={calendar.sourceUrl}>
-                לוח הבחינות המלא
-              </a>
               <div className={styles.months}>
                 {calendar.months.map((month) => (
                   <section key={month.label} aria-label={month.label} className={styles.month}>
@@ -120,9 +107,6 @@ export default function BagrutDatesPage() {
               )}
             </tbody>
           </table>
-          <a className={styles.source} href={bagrutDatesSources.spokenAndSimulations}>
-            לוח מועדי השפה הדבורה באתר משרד החינוך
-          </a>
         </details>
 
         <details className={styles.more}>
@@ -144,9 +128,6 @@ export default function BagrutDatesPage() {
               ))}
             </tbody>
           </table>
-          <a className={styles.source} href={bagrutDatesSources.spokenAndSimulations}>
-            לוח ההדמיות באתר משרד החינוך
-          </a>
         </details>
 
         <p className={styles.prepLink}>

@@ -27,6 +27,7 @@ import {
   sekhemPairSupport,
 } from '@/lib/sekhemCalculatorSupport';
 import ProgramPage from '@/app/programs/[programId]/page';
+import { buildProgramMetadata } from './metadata';
 
 // Independent rendered-copy oracle: a named composite followed by a cutoff.
 // Do not call the production selector here: this must catch missing wording support.
@@ -106,6 +107,37 @@ describe('published-threshold calculator links', () => {
     }
   });
 
+  it('does not promise calculator support for mismatched TAU semester or programme rules', async () => {
+    const programs = getStaticCataloguePrograms();
+    for (const id of ['tau_ee', 'ee', 'tau_datascience', 'datascience']) {
+      expect(
+        sekhemPairSupport(
+          programs.find((program) => program.id === id)!,
+          'tau',
+        ),
+      ).toBeUndefined();
+    }
+    expect(
+      sekhemPairSupport(
+        programs.find((program) => program.id === 'tau_me')!,
+        'tau',
+      ),
+    ).toBe('score');
+    expect(
+      sekhemPairSupport(
+        programs.find((program) => program.id === 'technion_ee')!,
+        'technion',
+      ),
+    ).toBe('score');
+    for (const id of ['tau_ee', 'ee', 'tau_datascience', 'datascience']) {
+      const html = renderToStaticMarkup(
+        await ProgramPage({ params: Promise.resolve({ programId: id }) }),
+      );
+      expect(html).not.toContain(`href="/sekhem-calculator?program=${id}"`);
+      expect((await buildProgramMetadata(id)).title).not.toContain('סיכויי קבלה');
+    }
+  });
+
   it('links exactly every programme whose rendered requirements contain a composite cutoff', async () => {
     const offerings = await loadSekhemCalculatorOfferings();
     const rows = [];
@@ -130,6 +162,8 @@ describe('published-threshold calculator links', () => {
         id: program.id,
         text: renderedRequirementText(section),
         supported:
+          // The mixed hubs also show TAU routes that the active evaluator cannot check.
+          !['ee', 'datascience'].includes(program.id) &&
           offerings.some((row) => row.programId === program.id) &&
           Object.entries(
             await getPublicProgramRequirementSources((await getPublicProgramPageData(program.id))!),
@@ -151,6 +185,9 @@ describe('published-threshold calculator links', () => {
       .sort();
     expect(unlinkedThresholds(rows)).toEqual([]);
     expect(linked).toEqual(thresholds);
+    expect(
+      rows.filter((row) => ['ee', 'datascience'].includes(row.id)).every((row) => !row.linked),
+    ).toBe(true);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
     // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
     expect(linked).not.toContain('cs');

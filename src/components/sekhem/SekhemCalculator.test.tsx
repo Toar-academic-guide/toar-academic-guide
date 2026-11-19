@@ -4,6 +4,8 @@ import { beforeEach, expect, it, vi } from 'vitest';
 import SekhemCalculator from './SekhemCalculator';
 import { ENQUIRY_COPY } from '@/lib/enquiries';
 import type { AdmissionsBatchReport, AdmissionsRequiredInput } from '@/types/admissionsEvaluation';
+import posthog from 'posthog-js';
+import { StrictMode } from 'react';
 
 vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
 const offerings = [
@@ -45,6 +47,7 @@ const response = (requiredInputs: AdmissionsRequiredInput[] = []): AdmissionsBat
 });
 const fetchMock = vi.fn<typeof fetch>();
 beforeEach(() => {
+  vi.mocked(posthog.capture).mockClear();
   sessionStorage.clear();
   vi.stubGlobal('fetch', fetchMock);
   fetchMock.mockReset();
@@ -60,6 +63,158 @@ function submit() {
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 28)
   fireEvent.click(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }));
 }
+
+const completionEvents = () =>
+  vi.mocked(posthog.capture).mock.calls.filter(([name]) => name === 'calculator_completed');
+
+it.each(['needs_input', 'manual_gate', 'authority_unavailable', 'unsupported'] as const)(
+  'does not complete a rendered %s outcome',
+  async (kind) => {
+    const data = response();
+    data.reports.haifa_cs.results[0] = {
+      ...data.reports.haifa_cs.results[0],
+      kind,
+      decision: 'unknown',
+    };
+    fetchMock.mockResolvedValueOnce(Response.json({ data }));
+    render(<SekhemCalculator offerings={offerings} />);
+    examples();
+    submit();
+    await waitFor(() =>
+      expect(
+        vi.mocked(posthog.capture).mock.calls.filter(([name]) => name === 'calculator_outcome'),
+      ).toHaveLength(1),
+    );
+    expect(completionEvents()).toHaveLength(0);
+  },
+);
+
+it('keeps network errors and missing response rows out of completions, then resolves a retry', async () => {
+  fetchMock.mockRejectedValueOnce(new Error('private provider body score 706'));
+  render(<SekhemCalculator offerings={offerings} />);
+  examples();
+  submit();
+  const retry = await screen.findByRole('button', { name: 'לנסות שוב' });
+  expect(completionEvents()).toHaveLength(0);
+  fireEvent.click(retry);
+  await waitFor(() => expect(completionEvents()).toHaveLength(1));
+  fetchMock.mockResolvedValueOnce(Response.json({ data: { reports: {}, failedDegreeIds: [] } }));
+  submit();
+  await waitFor(() =>
+    expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }).hasAttribute('disabled')).toBe(
+      false,
+    ),
+  );
+  expect(completionEvents()).toHaveLength(1);
+  const events = vi
+    .mocked(posthog.capture)
+    .mock.calls.filter(
+      ([name]) => name === 'calculator_completed' || name === 'calculator_outcome',
+    );
+  expect(events.map(([name]) => name)).toEqual([
+    'calculator_outcome',
+    'calculator_completed',
+    'calculator_outcome',
+  ]);
+  expect(JSON.stringify(events)).not.toMatch(/private|706|score|signature/);
+});
+
+it('counts only settled intentional results once through StrictMode, rerenders and restoration', async () => {
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>((resolve) => (finish = resolve)));
+  const ui = (
+    <StrictMode>
+      <SekhemCalculator offerings={offerings} />
+    </StrictMode>
+  );
+  const view = render(ui);
+  examples();
+  submit();
+  expect(completionEvents()).toHaveLength(0);
+  await act(async () => finish(Response.json({ data: response() })));
+  expect(screen.getByText('706')).toBeTruthy();
+  expect(completionEvents()).toEqual([
+    [
+      'calculator_completed',
+      {
+        calculator_surface: 'sekhem_calculator',
+        source: 'evaluation',
+        result_status: 'computed',
+        result_count: '1',
+      },
+    ],
+  ]);
+  view.rerender(ui);
+  expect(completionEvents()).toHaveLength(1);
+  submit();
+  await waitFor(() => expect(completionEvents()).toHaveLength(2));
+  view.unmount();
+  render(ui);
+  expect(screen.getByText('706')).toBeTruthy();
+  expect(completionEvents()).toHaveLength(2);
+});
+
+it('does not complete needs-input results, stale responses, validation or no-programme errors', async () => {
+  const view = render(<SekhemCalculator offerings={offerings} />);
+  submit();
+  expect(fetchMock).not.toHaveBeenCalled();
+  examples();
+  fetchMock.mockResolvedValueOnce(
+    Response.json({ data: response(['haifa_hebrew_qualification']) }),
+  );
+  submit();
+  await screen.findByLabelText('הבסיס לעמידה בדרישת העברית בחיפה');
+  expect(completionEvents()).toHaveLength(0);
+  let finish!: (response: Response) => void;
+  fetchMock.mockImplementationOnce(() => new Promise<Response>((resolve) => (finish = resolve)));
+  submit();
+  fireEvent.change(screen.getByLabelText('ציון 1'), { target: { value: '91' } });
+  await act(async () => finish(Response.json({ data: response() })));
+  expect(completionEvents()).toHaveLength(0);
+  view.unmount();
+  sessionStorage.clear();
+  render(<SekhemCalculator offerings={[]} />);
+  examples();
+  submit();
+  expect(screen.getByRole('alert').textContent).toContain('לא נמצאו תוכניות');
+  expect(completionEvents()).toHaveLength(0);
+});
+
+it('keeps a partial batch run through retries and completes once only after all batches resolve', async () => {
+  const many = Array.from({ length: 51 }, (_, i) => ({ ...offerings[0], programId: `haifa_${i}` }));
+  let finish!: (response: Response) => void;
+  const makeBatch = (ids: string[]) => ({
+    reports: Object.fromEntries(
+      ids.map((id) => {
+        const report = response().reports.haifa_cs;
+        return [id, { ...report, input: { degreeId: id }, program: { ...report.program, id } }];
+      }),
+    ),
+    failedDegreeIds: [],
+  });
+  fetchMock.mockImplementation(async (_url, init) => {
+    const { degreeIds } = JSON.parse(String(init?.body));
+    if (degreeIds[0] === 'haifa_50') return new Promise<Response>((resolve) => (finish = resolve));
+    return Response.json({ data: makeBatch(degreeIds) });
+  });
+  render(<SekhemCalculator offerings={many} />);
+  examples();
+  submit();
+  await waitFor(() => expect(fetchMock).toHaveBeenCalledTimes(2));
+  expect(screen.getByText('706')).toBeTruthy();
+  expect(completionEvents()).toHaveLength(0);
+  await act(async () =>
+    finish(Response.json({ data: { reports: {}, failedDegreeIds: ['haifa_50'] } })),
+  );
+  expect(completionEvents()).toHaveLength(0);
+  fireEvent.click(screen.getByRole('button', { name: 'לנסות שוב' }));
+  await act(async () => finish(Response.json({ data: makeBatch(['haifa_50']) })));
+  expect(completionEvents()).toHaveLength(1);
+  expect(completionEvents()[0][1]).toMatchObject({
+    result_count: '51_plus',
+    result_status: 'computed',
+  });
+});
 
 it('completes medicine applicant fields, keeps the academic score, and restores the answers', async () => {
   const medicineOfferings = [

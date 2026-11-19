@@ -15,6 +15,7 @@ import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
 import { officialUrl } from '@/lib/studyJourney';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { getEnquiryTarget } from '@/lib/enquiryTarget';
+import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { indexableInstitutionIds, isIndexableProgram } from '@/lib/seo/indexability';
 import { institutionLink } from '@/lib/institutionLinks';
@@ -28,6 +29,107 @@ import {
 } from './publicCataloguePages';
 
 describe('public catalogue page data', () => {
+  it.each(['static', 'database'] as const)(
+    'uses the approved prep links in %s presentation',
+    async (source) => {
+      const programs = getStaticCataloguePrograms();
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data: source === 'database' ? programs.map((program) => ({ ...program })) : programs,
+        meta: { catalogueSource: source },
+      });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+        data: getStaticCatalogueInstitutions(),
+        meta: { catalogueSource: source },
+      });
+      for (const [id, expected] of [
+        ['huji_prep', 'https://mechina.huji.ac.il/'],
+        ['biu_prep', 'https://mechina-kda.biu.ac.il/node/851'],
+        ['braude_prep', 'https://w3.braude.ac.il/department/mechina/'],
+        ['ruppin_prep', 'https://www.ruppin.ac.il/'],
+        ['sapir_prep', null],
+        ['telhai_prep', 'https://www.telhai.ac.il/'],
+        ['sce_prep', 'https://www.sce.ac.il/'],
+      ] as const) {
+        const page = (await getPublicProgramPageData(id))!;
+        const link = (await getPublicProgramRequirementSources(page))[page.institutions[0].id]
+          .officialUrl;
+        expect(link ?? null, id).toEqual(expected ? expect.stringContaining(expected) : null);
+        expect(link ?? '').not.toContain('/ba/law');
+      }
+    },
+  );
+
+  it.each(['static', 'database'] as const)(
+    'shows sourced medicine, complementary-medicine and Ono nursing listings in %s mode',
+    async (source) => {
+      const programs = getStaticCataloguePrograms();
+      vi.mocked(listCataloguePrograms).mockResolvedValue({
+        data:
+          source === 'database'
+            ? programs.filter(
+                (program) =>
+                  !['tiltan_medicine', 'givat_washington_medicine', 'ono_medicine'].includes(
+                    program.id,
+                  ),
+              )
+            : programs,
+        meta: { catalogueSource: source },
+      });
+      vi.mocked(listCatalogueInstitutions).mockResolvedValue({
+        data: getStaticCatalogueInstitutions(),
+        meta: { catalogueSource: source },
+      });
+
+      const catalogue = await loadPublicCatalogue();
+      const { publishedHubs } = buildSubjectHubs(catalogue);
+      const medicine = publishedHubs.find((hub) => hub.id === 'medicine')!;
+      const complementary = publishedHubs.find((hub) => hub.id === 'complementary_medicine')!;
+      const communication = publishedHubs.find((hub) => hub.id === 'communication_disorders')!;
+      const ids = ['mon_12341128804_medicine', 'mon_12341137918_medicine'];
+
+      for (const id of ids) {
+        expect(medicine.programs.map((program) => program.id)).not.toContain(id);
+      }
+      expect(communication.programs.map((program) => program.id)).toContain(
+        'achva_communication_disorders',
+      );
+      expect(medicine.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
+      expect(complementary.programs.map((program) => program.id)).not.toContain(
+        'achva_communication_disorders',
+      );
+      expect(complementary.name).toBe('רפואה משלימה');
+      expect(complementary.programs.map((program) => program.id).sort()).toEqual(
+        [...ids, 'reidman_medicine'].sort(),
+      );
+      expect(complementary.programLinks).toBe(3);
+
+      const onoLegacy = (await getPublicProgramPageData('ono_medicine'))!;
+      expect(onoLegacy.program).toMatchObject({ id: 'ono_medicine', isListed: false });
+      expect(onoLegacy.institutions.map((institution) => institution.id)).toEqual(['ono']);
+      expect(await isIndexableProgram('ono_medicine')).toBe(false);
+      expect((await getPublicProgramPageData('nursing'))?.institutionProgramPaths.ono).toBe(
+        '/programs/ono_nursing',
+      );
+      const ono = (await getPublicInstitutionPageData('ono'))!;
+      expect(ono.programs.map((program) => program.id)).toContain('ono_nursing');
+      expect(ono.programs.map((program) => program.id)).not.toContain('ono_medicine');
+
+      for (const id of ids) {
+        const page = (await getPublicProgramPageData(id))!;
+        expect(page.institutions.map((institution) => institution.id)).toEqual([
+          id.slice(0, -'_medicine'.length),
+        ]);
+        expect(page.program.category).toBe('רפואה משלימה');
+      }
+      const tiltan = (await getPublicProgramPageData('mon_12341137918_medicine'))!;
+      expect(
+        (await getPublicProgramRequirementSources(tiltan)).mon_12341137918.officialUrl,
+      ).toContain('tiltan-college.co.il/about');
+    },
+  );
+
   it.each([
     ['technion_ee', 94, 91.5],
     ['technion_me', 92, 87],
@@ -379,7 +481,6 @@ describe('public catalogue page data', () => {
       'bgu',
       'haifa',
       'ariel',
-      'telhai',
       'mta',
       'ono',
     ]);
@@ -553,6 +654,8 @@ describe('public catalogue page data', () => {
         haifa: ['communication'],
         ariel: ['communication'],
         biu: ['medicine'],
+        achva: ['education'],
+        beit_berl: ['criminology'],
       });
     },
   );

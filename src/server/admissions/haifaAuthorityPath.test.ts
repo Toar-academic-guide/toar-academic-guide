@@ -95,12 +95,13 @@ it('withholds the real Haifa CS vector when database authority is unavailable de
     now: new Date('2026-10-29T12:00:00Z'),
   });
   expect(report.results).toHaveLength(1);
-  // Approved test update, Jorje 2026-10-31: missing subject rows prevent scoring independently of database authority.
+  // Missing subject rows request actionable input independently of database authority.
   expect(report.results[0]).toMatchObject({
     linkedInstitutionId: 'haifa',
-    capability: 'tracked_missing_rule',
-    kind: 'tracked_missing_rule',
+    capability: 'needs_input',
+    kind: 'needs_input',
     decision: 'unknown',
+    requiredInputs: ['haifa_bagrut_average'],
   });
   // Approved test update, Jorje 2026-10-31: ignoring the legacy average reports missing calculation inputs rather than an authority degradation.
   expect(report.results[0].degradationReason).toBeUndefined();

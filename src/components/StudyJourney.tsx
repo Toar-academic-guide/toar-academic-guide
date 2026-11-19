@@ -1,5 +1,6 @@
 'use client';
 
+import { ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS } from '@/data/admissions/unreviewedCalculatorPairs';
 import { savedAcademicRevision } from '@/lib/sekhemProfile';
 import { resultCalculatorHref } from '@/lib/resultCalculatorLink';
 import HomeHero from './hero/HomeHero';
@@ -36,6 +37,11 @@ import { useAuth } from '@/context/AuthContext';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { fetchCatalogueInstitutions, fetchCataloguePrograms } from '@/lib/catalogueClient';
 import { fetchAdmissionsBatch } from '@/lib/admissionsEvaluationClient';
+import {
+  captureCalculatorOutcome,
+  createCalculatorRun,
+  type CalculatorRun,
+} from '@/lib/calculatorAnalytics';
 import { admissionsExtraInputsFromAcademicScores } from '@/lib/admissionsEvaluationProfile';
 import {
   bagrutScoresForMode,
@@ -55,6 +61,7 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  medicineLaterStagesLine,
   resultSourceLinks,
   showsOfficialNoCalculationNote,
   isTechnionMedicineScore,
@@ -81,6 +88,7 @@ import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
 import TechnionThresholdNotice from './TechnionThresholdNotice';
 import TechnionMedicineComparison from './TechnionMedicineComparison';
+import SocialFollowLinks from './SocialFollowLinks';
 import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 import { isBatchCUnsupportedProgramId } from '@/data/admissions/batchCUnsupportedProgramIds';
 import { DANON_PROGRAM_URLS } from '@/data/admissions/danon';
@@ -117,7 +125,7 @@ function journeyAdmissionRequirements(
   ];
 }
 
-const STEPS = [
+export const journeySteps = [
   'home',
   'intent',
   'subjects',
@@ -143,7 +151,7 @@ const STEPS = [
   'quiz-result',
   'account',
 ] as const;
-type Step = (typeof STEPS)[number];
+type Step = (typeof journeySteps)[number];
 const DRAFT_KEY = 'myway_study_journey_v2';
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 interface JourneyCatalogue {
@@ -337,6 +345,14 @@ export default function StudyJourney({
   const [failedReports, setFailedReports] = useState<string[]>([]);
   const [calculating, setCalculating] = useState(false);
   const calculation = useRef(0);
+  const [settledCalculation, setSettledCalculation] = useState<number | null>(null);
+  const [analyticsIntent, setAnalyticsIntent] = useState<CalculatorRun | null>(null);
+  const analyticsBoundary = useRef<{
+    run: CalculatorRun;
+    signature: string;
+    version: number;
+    active: boolean;
+  } | null>(null);
   const [groupBy, setGroupBy] = useState<'field' | 'institution'>('field');
   const [resultFilter, setResultFilter] = useState('all');
   const [filtersOpen, setFiltersOpen] = useState(false);
@@ -385,7 +401,7 @@ export default function StudyJourney({
     const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
       focusHeadingOnNavigation.current = !!event;
-      setStep(STEPS.includes(hash as Step) ? (hash as Step) : initialStep);
+      setStep(journeySteps.includes(hash as Step) ? (hash as Step) : initialStep);
     };
     readStep();
     window.addEventListener('hashchange', readStep);
@@ -664,7 +680,10 @@ export default function StudyJourney({
           setFailedReports([...failed]);
         }
       }
-      if (calculation.current === version) setCalculating(false);
+      if (calculation.current === version) {
+        setCalculating(false);
+        setSettledCalculation(version);
+      }
     },
     [],
   );
@@ -720,6 +739,28 @@ export default function StudyJourney({
     evaluationTarget,
   ]);
   const lastEvaluation = useRef('');
+  useEffect(() => {
+    if (evaluationScope !== 'results') {
+      if (analyticsBoundary.current) analyticsBoundary.current.active = false;
+      return;
+    }
+    if (!analyticsIntent || analyticsBoundary.current?.run === analyticsIntent) return;
+    if (!ready || catalogueRefreshing || catalogueError) return;
+    analyticsBoundary.current = {
+      run: analyticsIntent,
+      signature: resultSignature,
+      active: true,
+      version:
+        lastEvaluation.current === resultSignature ? calculation.current : calculation.current + 1,
+    };
+  }, [
+    analyticsIntent,
+    ready,
+    catalogueRefreshing,
+    catalogueError,
+    evaluationScope,
+    resultSignature,
+  ]);
   const viewedResults = useRef('');
   useEffect(() => {
     if (!['results', 'plan'].includes(step)) {
@@ -784,6 +825,44 @@ export default function StudyJourney({
     draft.fields.length,
     evaluate,
   ]);
+  useEffect(() => {
+    const boundary = analyticsBoundary.current;
+    if (
+      !boundary?.active ||
+      boundary.run !== analyticsIntent ||
+      boundary.signature !== resultSignature
+    )
+      return;
+    if (
+      !ready ||
+      catalogueRefreshing ||
+      catalogueError ||
+      calculating ||
+      evaluationScope !== 'results'
+    )
+      return;
+    if (boundary.version !== calculation.current) return;
+    if (!draft.fields.length || !selectedFieldIds.length) return;
+    const empty = !rows.length;
+    if (
+      !empty &&
+      (settledCalculation !== calculation.current || lastEvaluation.current !== resultSignature)
+    )
+      return;
+    captureCalculatorOutcome(boundary.run, 'journey_calculator', rows, empty);
+  }, [
+    analyticsIntent,
+    ready,
+    catalogueRefreshing,
+    catalogueError,
+    calculating,
+    evaluationScope,
+    resultSignature,
+    rows,
+    settledCalculation,
+    draft.fields.length,
+    selectedFieldIds.length,
+  ]);
   useEffect(
     () => () => {
       calculation.current++;
@@ -842,6 +921,7 @@ export default function StudyJourney({
   const startResults = async () => {
     setSimulation(undefined);
     await saveScores();
+    setAnalyticsIntent(createCalculatorRun('evaluation'));
     go('results');
   };
   const afterGrades = () => go('psy-mode');
@@ -939,6 +1019,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const laterStages = medicineLaterStagesLine(row.result, row.program.id);
     const calculatorId = row.program.calculatorProgramIds?.[row.institution.id];
     const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
@@ -958,6 +1039,7 @@ export default function StudyJourney({
               {status.label}
             </span>
           )}
+          {laterStages && <p className="journey-result-explanation">{laterStages}</p>}
           {calculatorId && (step === 'results' || step === 'plan') && (
             <a
               className="journey-text-button"
@@ -1351,8 +1433,10 @@ export default function StudyJourney({
             className="journey-narrow"
             onSubmit={(event) => {
               event.preventDefault();
-              if (step === 'improve') go('plan');
-              else go('review');
+              if (step === 'improve') {
+                setAnalyticsIntent(createCalculatorRun('simulation'));
+                go('plan');
+              } else go('review');
             }}
           >
             <label className="journey-number-label">
@@ -1530,14 +1614,18 @@ export default function StudyJourney({
                 חלק מהחישובים לא נטענו.{' '}
                 <button
                   className="journey-text-button"
-                  onClick={() =>
+                  onClick={() => {
+                    if (analyticsBoundary.current?.signature === resultSignature) {
+                      analyticsBoundary.current.version = calculation.current + 1;
+                      analyticsBoundary.current.active = true;
+                    }
                     void evaluate(
                       selectedRows.filter((row) => failedReports.includes(row.program.id)),
                       journeyScores,
                       simulation ?? draft.target,
                       true,
-                    )
-                  }
+                    );
+                  }}
                 >
                   לנסות שוב
                 </button>
@@ -1592,6 +1680,12 @@ export default function StudyJourney({
                 )}
               </div>
             )}
+            {step === 'results' && !catalogueLoading && !catalogueError && (
+              <div dir="rtl" className="mt-10 border-t border-slate-200 pt-4 text-right">
+                <p className="text-sm text-slate-500">עקבו אחרינו</p>
+                <SocialFollowLinks />
+              </div>
+            )}
           </section>
         )}
         {['detail', 'alternatives'].includes(step) &&
@@ -1636,11 +1730,20 @@ export default function StudyJourney({
                       {biuFloorVerdict(biuFloorResult.floorChecks!)}
                     </p>
                   ) : (
-                    resultExplanation(activeRow.result, activeRow.program.id) && (
-                      <p className="journey-result-explanation">
-                        {resultExplanation(activeRow.result, activeRow.program.id)}
-                      </p>
-                    )
+                    <>
+                      {resultExplanation(activeRow.result, activeRow.program.id) && (
+                        <p className="journey-result-explanation">
+                          {resultExplanation(activeRow.result, activeRow.program.id)}
+                        </p>
+                      )}
+                      {medicineLaterStagesLine(activeRow.result, activeRow.program.id) &&
+                        medicineLaterStagesLine(activeRow.result, activeRow.program.id) !==
+                          resultExplanation(activeRow.result, activeRow.program.id) && (
+                          <p className="journey-result-explanation">
+                            {medicineLaterStagesLine(activeRow.result, activeRow.program.id)}
+                          </p>
+                        )}
+                    </>
                   )}
                   {!activeRow.result?.floorChecks && (
                     <AdmissionEstimate result={activeRow.result} />
@@ -1709,9 +1812,10 @@ export default function StudyJourney({
                       activeRow.result?.degradationReason !==
                         'incomplete_published_requirements' && (
                         <>
-                          {!activeShowsNoCalculationNote && (
-                            <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>
-                          )}
+                          {!activeShowsNoCalculationNote &&
+                            !ISSUE_370_UNREVIEWED_CALCULATOR_PAIRS.has(
+                              `${activeRow.program.id}__${activeRow.institution.id}`,
+                            ) && <button onClick={() => go('missing')}>השלימו וקבלו תשובה</button>}
                           <button onClick={() => go('alternatives')}>עוד דרכי קבלה</button>
                         </>
                       )}
@@ -1921,6 +2025,7 @@ export default function StudyJourney({
               if (!(await updateProfile({ academicScores: scores }))) return false;
               patch({ scores });
               lastEvaluation.current = '';
+              setAnalyticsIntent(createCalculatorRun('evaluation'));
               go('results');
               return true;
             }}

@@ -65,7 +65,7 @@ async function detail(psychometric = 649, programId = 'biu_ee', quantitative: nu
     }),
   );
   const rendered = render(<StudyJourney initialStep="detail" />);
-  const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלך' });
+  const table = await screen.findByRole('table', { name: 'בדיקת תנאי הסף לפי הציונים שלכם' });
   return {
     ...rendered,
     table,
@@ -107,7 +107,7 @@ describe('BIU journey detail verdict', () => {
 
   it('keeps conflicting floors to one short verdict with no invented threshold', async () => {
     const { summary } = await detail(650);
-    expect(summary.textContent).toBe('מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי');
+    expect(summary.textContent).toBe('נתונים סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי');
     expect(screen.queryByText(reservist)).toBeNull();
   });
 

@@ -98,13 +98,13 @@ export const ICEBREAKER_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q1',
     section: 1,
-    prompt: 'מה מהבאים הכי מושך אותך?',
+    prompt: 'מה מהבאים הכי מושך אתכם?',
     maxSelect: 3,
     skippable: true,
     options: [
       {
         id: 'Q1-A',
-        title: 'יצירה מקורית:',
+        title: 'יצירה עצמאית:',
         subtitle: 'ליצור משהו מאפס - רעיון, עיצוב, כתיבה או אמנות.',
         weights: { CR: 2 },
       },
@@ -130,7 +130,7 @@ export const ICEBREAKER_QUESTIONS: MultiSelectQuestion[] = [
       {
         id: 'Q1-E',
         title: 'חקר תרבויות, היסטוריה וטקסטים:',
-        subtitle: 'להתעמק במקורות, ללמוד שפות חדשות ולהבין חברות, תהליכים והגות מהעבר ומההווה.',
+        subtitle: 'להתעמק בטקסטים, ללמוד שפות חדשות ולהבין חברות, תהליכים והגות מהעבר ומההווה.',
         weights: { ER: 2 },
       },
       {
@@ -330,7 +330,7 @@ export const QUICK_PICK_ITEMS: QuickPickItem[] = [
     section: 2,
     dim: 'ER',
     skippable: true,
-    text: 'להעמיק בנושא אקדמי שמעניין אותך, גם בלי מטרה מעשית',
+    text: 'להעמיק בנושא אקדמי שמעניין אותי, גם בלי מטרה מעשית',
   },
 ];
 
@@ -343,37 +343,37 @@ export const ARMY_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'ARMY-1',
     section: 3,
-    prompt: 'מה גילית על עצמך בזמן השירות הצבאי / הלאומי? (בחר/י עד 3)',
+    prompt: 'מה גיליתם על עצמכם בזמן השירות הצבאי / הלאומי? (בחרו עד 3)',
     maxSelect: 3,
     skippable: true,
     options: [
       {
         id: 'ARMY-1A',
-        title: 'שאני אוהב/ת לעבוד עם אנשים:',
+        title: 'שעבודה עם אנשים מהנה עבורי:',
         subtitle: 'הקשר הצוותי, הליווי של אחרים, התמיכה ההדדית.',
         weights: { SO: 2 },
       },
       {
         id: 'ARMY-1B',
-        title: 'שאני טוב/ה בפתרון בעיות תחת לחץ:',
+        title: 'שיש לי יכולת לפתור בעיות תחת לחץ:',
         subtitle: 'חשיבה מהירה, קבלת החלטות, אילתור.',
         weights: { AN: 2 },
       },
       {
         id: 'ARMY-1C',
-        title: 'שאני אוהב/ת פעילות בשטח ותנועה:',
+        title: 'שפעילות בשטח ותנועה מהנות עבורי:',
         subtitle: 'להיות בחוץ, לזוז, לפעול פיזית.',
         weights: { TE: 2 },
       },
       {
         id: 'ARMY-1D',
-        title: 'שאני נהנה/ית ללמוד מיומנויות חדשות:',
+        title: 'שלמידת מיומנויות חדשות מהנה עבורי:',
         subtitle: 'לרכוש ידע שלא היה לי לפני - טכני, מקצועי, אישי.',
         weights: { ER: 1, TE: 1 },
       },
       {
         id: 'ARMY-1E',
-        title: 'שאני משגשג/ת כשיש מבנה ומשימה ברורה:',
+        title: 'שמבנה ומשימה ברורה עוזרים לי לשגשג:',
         subtitle: 'לדעת במדויק מה עלי לעשות, כדי שאוכל לתכנן ולבצע ברמה גבוהה.',
         weights: { OR: 2 },
       },
@@ -385,31 +385,31 @@ export const ARMY_QUESTIONS: MultiSelectQuestion[] = [
       },
       {
         id: 'ARMY-1G',
-        title: 'שאני אוהב/ת להוביל ולפקד:',
+        title: 'שהובלה ופיקוד מהנים עבורי:',
         subtitle: 'לקחת אחריות על אנשים, לקבל החלטות ולהוביל.',
         weights: { LE: 2 },
       },
       {
         id: 'ARMY-1H',
-        title: 'שאני מתחבר/ת לעשייה סביב טכנולוגיה ומערכות:',
+        title: 'שיש לי חיבור לעשייה סביב טכנולוגיה ומערכות:',
         subtitle: 'קוד, סייבר, תשתיות דיגיטליות או מחקר טכנולוגי.',
         weights: { DI: 2, AN: 1 },
       },
       {
         id: 'ARMY-1I',
-        title: 'שאני אוהב/ת ליצור ולבנות דברים בעצמי:',
+        title: 'שיצירה ובנייה של דברים בעצמי מהנות עבורי:',
         subtitle: 'אילתור, בנייה, יצירתיות וחשיבה מחוץ לקופסה.',
         weights: { CR: 2, TE: 1 },
       },
       {
         id: 'ARMY-1J',
-        title: 'שאני מרגיש/ה חיבור לעולם הרפואה והטיפול:',
+        title: 'שיש לי חיבור לעולם הרפואה והטיפול:',
         subtitle: 'עזרה ראשונה, ליווי רפואי, דאגה לבריאות ולרווחה של אחרים.',
         weights: { SO: 2, AN: 1 },
       },
       {
         id: 'ARMY-1K',
-        title: 'שאני נמשך/ת לתמיכה רגשית ונפשית:',
+        title: 'שיש לי משיכה לתמיכה רגשית ונפשית:',
         subtitle: 'הקשבה, ליווי אנשים בתקופות קשות ועזרה להתמודד עם לחצים.',
         weights: { SO: 2 },
       },
@@ -419,7 +419,7 @@ export const ARMY_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'ARMY-2',
     section: 3,
-    prompt: 'מה הכי שחק אותך בשירות? (בחר/י עד 2)',
+    prompt: 'מה הכי שחק אתכם בשירות? (בחרו עד 2)',
     maxSelect: 2,
     skippable: true,
     options: [
@@ -478,7 +478,7 @@ export const STYLE_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q3',
     section: 4,
-    prompt: 'מהי סביבת העבודה האידיאלית בעיניך?',
+    prompt: 'מהי סביבת העבודה האידיאלית בעיניכם?',
     maxSelect: 1,
     skippable: true,
     options: [
@@ -519,7 +519,7 @@ export const STYLE_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q4',
     section: 4,
-    prompt: 'כשאת/ה נחשף/ת לתחום ידע חדש, היכן נמצאת המשיכה הטבעית שלך?',
+    prompt: 'כשאתם נחשפים לתחום ידע חדש, היכן נמצאת המשיכה הטבעית שלכם?',
     maxSelect: 1,
     skippable: true,
     options: [
@@ -565,25 +565,25 @@ export const STYLE_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q5',
     section: 4,
-    prompt: 'כשאת/ה עובד/ת בצוות, איזה תפקיד בדרך כלל מרגיש לך הכי טבעי?',
+    prompt: 'כשאתם עובדים בצוות, איזה תפקיד בדרך כלל מרגיש לכם הכי טבעי?',
     maxSelect: 1,
     skippable: true,
     options: [
       {
         id: 'Q5-A',
-        title: 'המוביל והמנהל:',
+        title: 'הובלה וניהול:',
         subtitle: 'לקיחת אחריות, ראיית התמונה המלאה והובלת הצוות אל היעד.',
         weights: { LE: 2 },
       },
       {
         id: 'Q5-B',
-        title: 'פותר/ת הבעיות:',
+        title: 'פתרון בעיות:',
         subtitle: 'צלילה לנתונים, ניתוח לוגי ומציאת פתרונות לבעיות טכניות או מדעיות מורכבות.',
         weights: { AN: 2 },
       },
       {
         id: 'Q5-C',
-        title: 'המחבר/ת בין אנשים:',
+        title: 'חיבור בין אנשים:',
         subtitle:
           'הבנה עמוקה של בני אדם, ניהול הדינמיקה הקבוצתית ויצירת חיבורים בין אנשים ורעיונות.',
         weights: { SO: 2 },
@@ -607,7 +607,7 @@ export const STYLE_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q6',
     section: 4,
-    prompt: 'כשאת/ה נתקל/ת בבעיה מורכבת, מהי התגובה האינטואיטיבית שלך?',
+    prompt: 'כשאתם נתקלים בבעיה מורכבת, מהי התגובה האינטואיטיבית שלכם?',
     maxSelect: 1,
     skippable: true,
     options: [
@@ -645,7 +645,7 @@ export const STYLE_QUESTIONS: MultiSelectQuestion[] = [
     kind: 'multi-select',
     id: 'Q8',
     section: 4,
-    prompt: 'כשאת/ה ניגש/ת למשימה או לפרויקט מורכב, מהו סגנון העבודה שהכי טבעי לך?',
+    prompt: 'כשאתם ניגשים למשימה או לפרויקט מורכב, מהו סגנון העבודה שהכי טבעי לכם?',
     maxSelect: 1,
     skippable: true,
     options: [
@@ -687,7 +687,7 @@ export const VALUE_SLIDERS: ValueSliderQuestion[] = [
     id: 'V1',
     section: 5,
     leftLabel: 'הכנסה גבוהה וביטחון כלכלי',
-    leftDescription: 'לדעת שאני מרוויח/ה טוב ויכול/ה לחיות ברמת החיים שנוחה לי.',
+    leftDescription: 'לדעת שיש לי הכנסה טובה ואפשרות לחיות ברמת החיים שנוחה לי.',
     rightLabel: 'עשייה עם משמעות והשפעה',
     rightDescription: 'לדעת שהעבודה שלי עוזרת לאנשים או תורמת לשינוי של משהו שחשוב לי.',
     valueKey: 'incomeVsImpact',
@@ -743,8 +743,8 @@ export const SCREEN_SEQUENCE: Screen[] = [
   {
     kind: 'transition',
     section: 1,
-    title: 'בואו נכיר אותך',
-    subtitle: 'שתי שאלות קצרות על מה שמרגיש לך הכי טבעי',
+    title: 'בואו נכיר אתכם',
+    subtitle: 'שתי שאלות קצרות על מה שמרגיש לכם הכי טבעי',
   },
   { kind: 'multi-select', questionId: 'Q1' },
   { kind: 'multi-select', questionId: 'Q2' },
@@ -753,7 +753,7 @@ export const SCREEN_SEQUENCE: Screen[] = [
   {
     kind: 'transition',
     section: 2,
-    title: 'כמה זה את/ה?',
+    title: 'עד כמה זה מתאים לכם?',
     subtitle: '8 משפטים קצרים - כן, אולי, או לא',
   },
   { kind: 'quick-picks', itemIds: ['QP-AN', 'QP-TE', 'QP-CR', 'QP-SO'] },
@@ -767,8 +767,8 @@ export const SCREEN_SEQUENCE: Screen[] = [
   {
     kind: 'transition',
     section: 4,
-    title: 'איך אתה פועל?',
-    subtitle: 'חמש שאלות על סגנון העבודה וההעדפות שלך',
+    title: 'איך אתם פועלים?',
+    subtitle: 'חמש שאלות על סגנון העבודה וההעדפות שלכם',
   },
   { kind: 'multi-select', questionId: 'Q3' },
   { kind: 'multi-select', questionId: 'Q4' },
@@ -780,8 +780,8 @@ export const SCREEN_SEQUENCE: Screen[] = [
   {
     kind: 'transition',
     section: 5,
-    title: 'מה חשוב לך?',
-    subtitle: 'ארבעה צירים - בחר/י את הצד שמושך אותך יותר',
+    title: 'מה חשוב לכם?',
+    subtitle: 'ארבעה צירים - בחרו את הצד שמושך אתכם יותר',
   },
   { kind: 'value-slider', sliderId: 'V1' },
   { kind: 'value-slider', sliderId: 'V2' },
@@ -818,7 +818,7 @@ export function getValueSlider(id: string): ValueSliderQuestion | undefined {
 
 export const SECTION_LABELS: Record<number, string> = {
   1: 'הכרות',
-  2: 'כמה זה אתה?',
+  2: 'עד כמה זה מתאים לכם?',
   3: 'שירות',
   4: 'סגנון',
   5: 'ערכים',

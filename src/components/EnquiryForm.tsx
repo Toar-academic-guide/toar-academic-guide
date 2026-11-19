@@ -2,6 +2,7 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
+import { captureEnquiryProgress } from '@/lib/calculatorAnalytics';
 import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
 import { getEnquiryOrigin } from '@/lib/leadAttribution';
@@ -11,6 +12,18 @@ import {
   ENQUIRY_PREP_COPY,
   type EnquiryInput,
 } from '@/lib/enquiries';
+
+function isolateDegree(text: string) {
+  return text.split(/(\(B\.A\.\)|B\.A\.)/g).map((part, index) =>
+    part === '(B.A.)' || part === 'B.A.' ? (
+      <bdi key={index} dir="ltr">
+        {part}
+      </bdi>
+    ) : (
+      part
+    ),
+  );
+}
 
 const CONSENT_COLOR = '#666666';
 const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
@@ -44,6 +57,9 @@ export default function EnquiryForm({
   const requestId = useRef<string | null>(null);
   const sending = useRef(false);
   const viewed = useRef(false);
+  const contactEntered = useRef(false);
+  const validated = useRef(false);
+  const attempted = useRef(false);
   const [open, setOpen] = useState(true);
   const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'failed'>('idle');
   const [errors, setErrors] = useState({ name: false, phone: false });
@@ -109,6 +125,14 @@ export default function EnquiryForm({
     }
     sending.current = true;
     setStatus('sending');
+    if (!validated.current) {
+      validated.current = true;
+      captureEnquiryProgress(programId, institutionId, surface, { step: 'validated' });
+    }
+    captureEnquiryProgress(programId, institutionId, surface, {
+      attempt_kind: attempted.current ? 'retry' : 'initial',
+    });
+    attempted.current = true;
     requestId.current ??= crypto.randomUUID();
     const body: EnquiryInput = {
       requestId: requestId.current,
@@ -161,7 +185,7 @@ export default function EnquiryForm({
       <section className="rounded-2xl border border-[#dce2ef] bg-white p-6 text-right" dir="rtl">
         <h1 className="text-2xl font-bold">{heading}</h1>
         {intro && <p className="mt-2">{intro}</p>}
-        <p className="mt-2">{title}</p>
+        <p className="mt-2">{isolateDegree(title)}</p>
         <button
           type="button"
           className="way-button-primary mt-4 px-6 py-3"
@@ -247,6 +271,13 @@ export default function EnquiryForm({
                       aria-describedby={errors[field] ? `${id}-${field}-error` : undefined}
                       maxLength={field === 'name' ? 100 : 22}
                       readOnly={status === 'sending'}
+                      onChange={(event) => {
+                        if (contactEntered.current || !event.target.value.trim()) return;
+                        contactEntered.current = true;
+                        captureEnquiryProgress(programId, institutionId, surface, {
+                          step: 'contact_entered',
+                        });
+                      }}
                       className={`min-h-11 w-full rounded-lg border border-[#7f8faa] bg-white px-3 py-[9px] text-right text-base leading-6 placeholder:text-[#666666]! placeholder:opacity-100 focus-visible:outline-3 focus-visible:outline-offset-3 focus-visible:outline-[#6554b8] aria-invalid:border-[#8c2438]! ${field === 'phone' ? 'placeholder-shown:[direction:rtl]' : ''}`}
                     />
                     {errors[field] && (

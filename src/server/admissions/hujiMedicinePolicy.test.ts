@@ -93,11 +93,11 @@ describe('HUJI Medicine current official policy', () => {
       missing: [],
     });
   });
-  it('requires the official average and assessment, not a generic average', () => {
+  it('requires subject rows and assessment, not an entered institution average', () => {
     const result = resolveHujiMedicineAdmission(800, {});
     expect(result.status).toBe('needs_input');
     expect(result.missing).toEqual(
-      expect.arrayContaining(['huji_bagrut_average', 'huji_medicine_assessment_score']),
+      expect.arrayContaining(['bagrut_subject_record', 'huji_medicine_assessment_score']),
     );
     expect(result.score).toBeUndefined();
   });

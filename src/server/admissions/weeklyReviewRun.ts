@@ -6,7 +6,11 @@ import {
   type FormulaPairVerificationLedgerEntry,
 } from '@/data/admissions/formulaBackedVerificationLedger';
 
-import type { ReviewedAdmissionsManifest } from './reviewedManifest';
+import {
+  cutoffEvidenceMatchesTarget,
+  requiresCutoffEvidence,
+  type ReviewedAdmissionsManifest,
+} from './reviewedManifest';
 
 export interface PublishedAdmissionRule {
   target: { institutionId: string; programId: string; cycle: string };
@@ -21,7 +25,10 @@ export type AdmissionsReviewExclusionReason =
   | 'pair_verification_incomplete'
   | 'no_reviewed_baseline'
   | 'unchanged'
-  | 'reviewer_excluded';
+  | 'reviewer_excluded'
+  | 'route_evidence_missing'
+  | 'cycle_evidence_mismatch'
+  | 'proof_source_invalid';
 
 export interface AdmissionsReviewExclusion {
   sourceProofId: string;
@@ -94,7 +101,7 @@ export function buildAdmissionsReviewRun(input: {
 
   for (const proof of input.proofs) {
     const programId = stringValue(proof.normalizedPayload.programId);
-    const cutoff = numberValue(
+    let cutoff = numberValue(
       proof.normalizedPayload.acceptanceThreshold ?? proof.normalizedPayload.acceptanceCutoff,
     );
 
@@ -113,6 +120,58 @@ export function buildAdmissionsReviewRun(input: {
     if (!programId || cutoff === undefined) {
       excluded.push(exclusion(proof, 'missing_program_or_cutoff'));
       continue;
+    }
+    const protectedCutoff = requiresCutoffEvidence(proof.institutionId, programId);
+    const evidence = proof.publicationCutoff;
+    if (protectedCutoff) {
+      if (
+        !evidence ||
+        evidence.route !== 'main' ||
+        !evidence.programPath ||
+        !evidence.prerequisites ||
+        !evidence.sourceExcerpt ||
+        (proof.institutionId === 'bgu' && !evidence.registrationStatus)
+      ) {
+        excluded.push(exclusion(proof, 'route_evidence_missing'));
+        continue;
+      }
+      const expectedMetric =
+        proof.institutionId === 'bgu' && !['psychology', 'bgu_psychology'].includes(programId)
+          ? 'quantitative_sekhem'
+          : 'sekhem';
+      if (evidence.metric !== expectedMetric) {
+        excluded.push(exclusion(proof, 'cutoff_metric_incompatible'));
+        continue;
+      }
+      if (evidence.cycle !== input.cycle) {
+        excluded.push(exclusion(proof, 'cycle_evidence_mismatch'));
+        continue;
+      }
+      if (evidence.sourceUrl !== proof.officialUrl && proof.institutionId !== 'technion') {
+        excluded.push(exclusion(proof, 'proof_source_invalid'));
+        continue;
+      }
+      if (
+        !cutoffEvidenceMatchesTarget({
+          institutionId: proof.institutionId,
+          programId,
+          cycle: input.cycle,
+          value: evidence.value,
+          sourceUrl: evidence.sourceUrl,
+          evidence,
+        }) ||
+        !proof.rawResponseMetadata?.some(
+          (response) =>
+            response.endpoint === evidence.sourceUrl &&
+            response.status === evidence.sourceStatus &&
+            response.status >= 200 &&
+            response.status < 300,
+        )
+      ) {
+        excluded.push(exclusion(proof, 'proof_source_invalid'));
+        continue;
+      }
+      cutoff = evidence.value;
     }
     const pairId =
       stringValue(proof.normalizedPayload.pairId) ?? `${programId}__${proof.institutionId}`;
@@ -144,10 +203,20 @@ export function buildAdmissionsReviewRun(input: {
         after: cutoff,
         sourceProof: {
           sourceId: proof.id,
-          digest: digest(stableJson(proof.normalizedPayload)),
-          excerpt: safeExcerpt(proof, cutoff),
-          url: proof.officialUrl,
+          digest: digest(
+            stableJson(
+              protectedCutoff
+                ? { payload: proof.normalizedPayload, evidence }
+                : proof.normalizedPayload,
+            ),
+          ),
+          excerpt:
+            protectedCutoff && evidence
+              ? safeText(evidence.sourceExcerpt)
+              : safeExcerpt(proof, cutoff),
+          url: protectedCutoff && evidence ? evidence.sourceUrl : proof.officialUrl,
           proofType: 'exact_official',
+          ...(protectedCutoff && evidence ? { cutoffEvidence: evidence } : {}),
         },
         institutionName: proof.institutionName,
       },
@@ -316,6 +385,12 @@ function exclusion(
     no_reviewed_baseline: 'No reviewed published baseline exists for this target.',
     unchanged: 'The official cutoff matches the current reviewed baseline.',
     reviewer_excluded: 'A reviewer excluded this candidate from the generated admissions update.',
+    route_evidence_missing:
+      'No source-backed main-route cutoff and prerequisites were established for publication.',
+    cycle_evidence_mismatch:
+      'The source-backed cutoff does not establish the requested admissions cycle.',
+    proof_source_invalid:
+      'The cutoff source response was missing, unsuccessful, or unrelated to the published proof.',
   };
   return {
     sourceProofId: proof.id,
