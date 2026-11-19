@@ -68,14 +68,14 @@ function AtudaLinkText({ text }: { text: string }) {
   if (!match) return text;
   const [, before, word, year] = match;
   return (
-    <>
+    <span>
       {before}
       <span className="whitespace-nowrap">
         {word}
         {'\u00A0'}
         <bdi dir="ltr">{year}</bdi>
       </span>
-    </>
+    </span>
   );
 }
 

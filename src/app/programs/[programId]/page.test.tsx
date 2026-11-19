@@ -63,6 +63,11 @@ describe('ProgramPage', () => {
     expect(year?.textContent).toBe('2027–2028');
     expect(year?.parentElement?.className).toContain('whitespace-nowrap');
     expect(year?.parentElement?.textContent).toMatch(/ומועדי\u00A02027–2028/);
+    const label = year?.parentElement?.parentElement;
+    expect(label?.tagName).toBe('SPAN');
+    expect(label?.parentElement).toBe(link);
+    expect(label?.classList.contains('whitespace-nowrap')).toBe(false);
+    expect(label?.textContent).toMatch(/עילית ומועדי\u00A02027–2028/);
     expect(link.textContent).toMatch(/ומועדי\u00A02027–2028/);
     expect(link.textContent).not.toMatch(/ומועדי2027/);
     const calculator = screen.getByRole('link', { name: 'איך מחשבון סיכויי הקבלה עובד' });
