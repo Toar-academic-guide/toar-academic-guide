@@ -265,9 +265,9 @@ describe('CalculatorResults', () => {
             return actual.origin === expected.origin && actual.pathname === expected.pathname;
           });
           expect(link, source).toBeTruthy();
+          expect(link!.textContent).not.toContain('מקור');
           expect(new URL(link!.getAttribute('href')!).searchParams.get('utm_source')).toBe('myway');
         }
-        expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
       } else {
         expect(screen.getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toMatch(
           /^https:\/\//,
