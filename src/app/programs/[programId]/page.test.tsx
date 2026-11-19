@@ -333,6 +333,7 @@ describe('ProgramPage', () => {
     expect(hujiBagrut.textContent).toContain('109.5');
     expect(hujiBagrut.textContent).not.toContain('—');
     expect(table.textContent).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
+    expect(container.textContent).not.toMatch(/נכון ל/);
     expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
     const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
     expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
