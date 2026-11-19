@@ -17,6 +17,7 @@ async function evaluate(
   psychometric = 750,
   extra: AdmissionsExtraInputs = {},
   fetcher = vi.fn<typeof fetch>(),
+  freshnessStatesBySourceId = new Map(),
 ) {
   const program = getStaticCataloguePrograms().find((p) => p.id === `${id}_medicine`)!;
   const report = await evaluateAdmissionsForProgram({
@@ -27,7 +28,7 @@ async function evaluate(
     },
     program,
     institutions: getStaticCatalogueInstitutions(),
-    freshnessStatesBySourceId: new Map(),
+    freshnessStatesBySourceId,
     fetcher,
   });
   return report.results.find((result) => result.linkedInstitutionId === id)!;
@@ -42,7 +43,9 @@ describe('medicine academic stage', () => {
       threshold: 25.186,
       decision: 'below',
       registrationStatus: 'closed',
+      explanation: 'הקבלה נקבעת בהמשך, במו״ר או בראיונות.',
     });
+    expect(result.explanation).not.toMatch(/נתוני הבסיס אומתו|2026/);
     expect(result.requiredInputs ?? []).not.toContain('huji_medicine_assessment_score');
   });
   it('keeps a calculable HUJI score when the language or exam date is missing', async () => {
@@ -144,6 +147,34 @@ describe('medicine academic stage', () => {
     );
     expect(result.kind).toBe('authority_unavailable');
     expect(result.score).toBeUndefined();
+    expect(result.explanation).not.toContain('נתוני הבסיס אומתו');
+  });
+  it('keeps a blocked BGU medicine verification status out of the card', async () => {
+    const now = new Date('2026-11-08T09:58:00Z');
+    const result = await evaluate(
+      'bgu',
+      679,
+      {},
+      vi.fn<typeof fetch>(),
+      new Map([
+        [
+          'bgu-bgu_medicine-live',
+          {
+            sourceId: 'bgu-bgu_medicine-live',
+            status: 'changed_needs_review',
+            capability: 'decision_capable',
+            sourceClass: 'api_static_json',
+            lastCheckedAt: now,
+            lastSuccessfulCheckAt: now,
+            lastChangedAt: now,
+            createdAt: now,
+            updatedAt: now,
+          } as never,
+        ],
+      ]),
+    );
+    expect(result.explanation).not.toContain('נתוני הבסיס אומתו');
+    expect(result.stage).not.toBe('academic');
   });
 });
 
@@ -172,6 +203,22 @@ it('does not invent a bonus for an unresolved legacy subject name', async () => 
   const result = await evaluate('huji', 750, { bagrutSubjectRecord: record });
   expect(result.kind).toBe('authority_unavailable');
   expect(result.score).toBeUndefined();
+});
+
+it('withholds a BGU score when a selectable subject lacks an official code mapping', async () => {
+  const { subjectIdForWizardLabel } = await import('@/utils/bagrutSubjectRecord');
+  const record = structuredClone(references.bgu.record);
+  record.subjects.push({
+    subjectId: subjectIdForWizardLabel('יהדות ממ"ד'),
+    units: 5,
+    grade: 100,
+    assessmentKind: 'exam',
+  });
+  const fetcher = vi.fn<typeof fetch>();
+  const result = await evaluate('bgu', 750, { bagrutSubjectRecord: record }, fetcher);
+  expect(result.kind).toBe('authority_unavailable');
+  expect(result.score).toBeUndefined();
+  expect(fetcher).not.toHaveBeenCalled();
 });
 
 it('requests a specific required subject and calculates after it is restored', async () => {

@@ -23,6 +23,7 @@ import {
   medicineBagrutSubjects,
   COMBINED_MEDICINE_SUBJECT_IDS,
   UNRESOLVED_MEDICINE_SUBJECT_IDS,
+  UNRESOLVED_BGU_MEDICINE_SUBJECT_IDS,
 } from '@/data/admissions/medicineBagrutSubjects';
 
 /** Academic-stage evidence is separate from the existing final-stage proof ledger. */
@@ -78,7 +79,9 @@ export async function evaluateMedicineAcademicStage({
     )
   )
     return { ...base, requiredInputs: ['bagrut_combined_subjects'] };
-  if (id !== 'bgu' && record.subjects.some((s) => UNRESOLVED_MEDICINE_SUBJECT_IDS.has(s.subjectId)))
+  const unresolvedSubjects =
+    id === 'bgu' ? UNRESOLVED_BGU_MEDICINE_SUBJECT_IDS : UNRESOLVED_MEDICINE_SUBJECT_IDS;
+  if (record.subjects.some((s) => unresolvedSubjects.has(s.subjectId)))
     return {
       ...base,
       kind: 'authority_unavailable',
@@ -230,7 +233,7 @@ export async function evaluateMedicineAcademicStage({
       requiredInputs,
       scoreAssessment: score >= threshold ? 'meets_threshold' : 'below_threshold',
       decision: score >= threshold ? 'eligible_to_apply' : 'below',
-      explanation: 'בדיקת השלב האקדמי לתשפ״ז (2026–2027).',
+      explanation: 'הקבלה נקבעת בהמשך, במו״ר או בראיונות.',
     },
     conditions,
   );

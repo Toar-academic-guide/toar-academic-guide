@@ -36,9 +36,5 @@ export function usesMedicineAcademicStage(
       })
     | undefined,
 ): boolean {
-  return (
-    extra?.medicineStage === 'academic' &&
-    (!extra.hujiMedicineRoute || extra.hujiMedicineRoute === 'bagrut') &&
-    extra.hujiMedicineAffirmativeAction !== 'eligible'
-  );
+  return extra?.medicineStage === 'academic';
 }

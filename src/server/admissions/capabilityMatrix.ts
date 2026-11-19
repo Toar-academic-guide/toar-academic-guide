@@ -1375,6 +1375,13 @@ export function getMedicineAcademicVerification(
 ) {
   if (!isMedicineAcademicPair(programId, institutionId) || !usesMedicineAcademicStage(extra))
     return undefined;
+  if (
+    institutionId === 'huji' &&
+    ((extra?.hujiMedicineRoute && extra.hujiMedicineRoute !== 'bagrut') ||
+      extra?.hujiMedicineAffirmativeAction === 'eligible' ||
+      extra?.hujiMedicineAssessmentScore !== undefined)
+  )
+    return undefined;
   return MEDICINE_ACADEMIC_REFERENCE_CASES[
     institutionId as keyof typeof MEDICINE_ACADEMIC_REFERENCE_CASES
   ];

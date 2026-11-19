@@ -61,6 +61,7 @@ import {
   groupJourneyRows,
   resultLabel,
   resultExplanation,
+  medicineLaterStagesLine,
   resultSourceLinks,
   showsOfficialNoCalculationNote,
   isTechnionMedicineScore,
@@ -1018,6 +1019,7 @@ export default function StudyJourney({
   const groups = groupJourneyRows(visibleRows, groupBy);
   const rowView = (row: JourneyRow) => {
     const status = resultLabel(row.result, row.failed, calculating && !row.result, row.program.id);
+    const laterStages = medicineLaterStagesLine(row.result, row.program.id);
     const calculatorId = row.program.calculatorProgramIds?.[row.institution.id];
     const sourceLinks = resultSourceLinks(row.result, row.institution.programUrl);
     return (
@@ -1037,6 +1039,7 @@ export default function StudyJourney({
               {status.label}
             </span>
           )}
+          {laterStages && <p className="journey-result-explanation">{laterStages}</p>}
           {calculatorId && (step === 'results' || step === 'plan') && (
             <a
               className="journey-text-button"
@@ -1727,11 +1730,20 @@ export default function StudyJourney({
                       {biuFloorVerdict(biuFloorResult.floorChecks!)}
                     </p>
                   ) : (
-                    resultExplanation(activeRow.result, activeRow.program.id) && (
-                      <p className="journey-result-explanation">
-                        {resultExplanation(activeRow.result, activeRow.program.id)}
-                      </p>
-                    )
+                    <>
+                      {resultExplanation(activeRow.result, activeRow.program.id) && (
+                        <p className="journey-result-explanation">
+                          {resultExplanation(activeRow.result, activeRow.program.id)}
+                        </p>
+                      )}
+                      {medicineLaterStagesLine(activeRow.result, activeRow.program.id) &&
+                        medicineLaterStagesLine(activeRow.result, activeRow.program.id) !==
+                          resultExplanation(activeRow.result, activeRow.program.id) && (
+                          <p className="journey-result-explanation">
+                            {medicineLaterStagesLine(activeRow.result, activeRow.program.id)}
+                          </p>
+                        )}
+                    </>
                   )}
                   {!activeRow.result?.floorChecks && (
                     <AdmissionEstimate result={activeRow.result} />

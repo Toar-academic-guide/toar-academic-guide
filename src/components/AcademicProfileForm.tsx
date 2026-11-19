@@ -340,7 +340,10 @@ export default function AcademicProfileForm({
     Object.assign(admissions, parsedPsychology.data);
     const medicineInputs = Object.fromEntries(
       HUJI_MEDICINE_PROFILE_KEYS.filter(
-        (key) => medicineValues[key] !== undefined && medicineValues[key] !== '',
+        (key) =>
+          key !== 'hujiBagrutAverage' &&
+          medicineValues[key] !== undefined &&
+          medicineValues[key] !== '',
       ).map((key) => [
         key,
         /(?:Confirmed|Eligible)$/.test(key)

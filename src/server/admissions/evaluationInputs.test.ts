@@ -48,6 +48,22 @@ describe('evaluation input derivation and provenance', () => {
     expect(missing.input.extraInputs.tauBagrutAverage).toBeUndefined();
     expect(missing.input.extraInputs.bguBagrutAverage).toBeUndefined();
   });
+  it('defaults saved medicine evaluations to the academic stage and ignores entered averages', () => {
+    const normalized = normalizeEvaluationInputs({
+      degreeId: 'huji_medicine',
+      psychometric: 750,
+      extraInputs: { bagrutSubjectRecord: bguRecord, hujiBagrutAverage: 120 },
+    });
+    expect(normalized.input.extraInputs.medicineStage).toBe('academic');
+    expect(normalized.input.extraInputs.hujiBagrutAverage).not.toBe(120);
+    const noSubjects = normalizeEvaluationInputs({
+      degreeId: 'tau_medicine',
+      bagrut: 118,
+      psychometric: 750,
+      extraInputs: { tauBagrutAverage: 117 },
+    });
+    expect(noSubjects.input.extraInputs.tauBagrutAverage).toBeUndefined();
+  });
   it.each(['other', 'external_1977_or_later'] as const)(
     'derives the BGU average from a non-internal %s certificate',
     (certificateType) => {
