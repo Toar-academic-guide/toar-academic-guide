@@ -56,7 +56,10 @@ describe('ProgramPage', () => {
       name: /עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי\s2027–2028/,
     });
     expect(link.getAttribute('href')).toBe('/atuda');
-    expect(link.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
+    const year = link.querySelector('bdi[dir="ltr"]');
+    expect(year?.textContent).toBe('2027–2028');
+    expect(year?.parentElement?.className).toContain('whitespace-nowrap');
+    expect(year?.parentElement?.textContent).toMatch(/ומועדי\u00A02027–2028/);
     expect(link.textContent).toMatch(/ומועדי\u00A02027–2028/);
     expect(link.textContent).not.toMatch(/ומועדי2027/);
     const calculator = screen.getByRole('link', { name: 'איך מחשבון סיכויי הקבלה עובד' });

@@ -64,14 +64,18 @@ const atudaLinksBySubject: Record<string, string> = {
 };
 
 function AtudaLinkText({ text }: { text: string }) {
-  return text.split(/(2027–2028)/g).map((part, index) =>
-    part === '2027–2028' ? (
-      <bdi dir="ltr" key={index} className="whitespace-nowrap">
-        {part}
-      </bdi>
-    ) : (
-      part.replace(/ $/, '\u00A0')
-    ),
+  const match = text.match(/^(.*?)(\S+) (2027–2028)$/);
+  if (!match) return text;
+  const [, before, word, year] = match;
+  return (
+    <>
+      {before}
+      <span className="whitespace-nowrap">
+        {word}
+        {'\u00A0'}
+        <bdi dir="ltr">{year}</bdi>
+      </span>
+    </>
   );
 }
 
