@@ -56,6 +56,29 @@ interface ProgramPageProps {
   params: Promise<{ programId: string }>;
 }
 
+const atudaLinksBySubject: Record<string, string> = {
+  engineering: 'עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי 2027–2028',
+  ee: 'לומדים חשמל בעתודה? מסלול ״דיגמא״ ותוכניות ״פסגות״ ו״רעמים״',
+  cs: 'מדעי המחשב בעתודה (מסלול ״אמירים״): מוסדות ומועדים',
+  softwareeng: 'הנדסת תוכנה בעתודה: מוסדות ותוכנית ״פסגות״',
+};
+
+function AtudaLinkText({ text }: { text: string }) {
+  const match = text.match(/^(.*?)(\S+) (2027–2028)$/);
+  if (!match) return text;
+  const [, before, word, year] = match;
+  return (
+    <span>
+      {before}
+      <span className="whitespace-nowrap">
+        {word}
+        {'\u00A0'}
+        <bdi dir="ltr">{year}</bdi>
+      </span>
+    </span>
+  );
+}
+
 const onoLegacyPageTitle = 'הלימודים בקריה האקדמית אונו';
 
 export async function generateMetadata({ params }: ProgramPageProps) {
@@ -193,14 +216,26 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         >
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
-          </h1>{' '}
-          {programId !== 'medicine' && (
-            <Link
-              href="/calculator"
-              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
-            >
-              איך מחשבון סיכויי הקבלה עובד
-            </Link>
+          </h1>
+          {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
+            <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+              {atudaLinksBySubject[programId] && (
+                <Link
+                  href="/atuda"
+                  className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  <AtudaLinkText text={atudaLinksBySubject[programId]} />
+                </Link>
+              )}
+              {programId !== 'medicine' && (
+                <Link
+                  href="/calculator"
+                  className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  איך מחשבון סיכויי הקבלה עובד
+                </Link>
+              )}
+            </div>
           )}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
@@ -635,6 +670,16 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               )}
             </section>
           )}{' '}
+          {isGeneral && atudaLinksBySubject[program.id] && (
+            <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
+              <Link
+                href="/atuda"
+                className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+              >
+                <AtudaLinkText text={atudaLinksBySubject[program.id]} />
+              </Link>
+            </section>
+          )}
           {csComparedProgramIds.has(program.id) && !isGeneral && (
             <Link
               href="/programs/cs#cs-thresholds"

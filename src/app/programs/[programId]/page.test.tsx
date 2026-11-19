@@ -53,6 +53,39 @@ import { nursingInstitutions, nursingSource, nursingTrackLabels } from '@/data/n
 import ProgramPage, { generateMetadata } from './page';
 
 describe('ProgramPage', () => {
+  it('isolates the engineering atuda year range in its inbound link', async () => {
+    render(await ProgramPage({ params: Promise.resolve({ programId: 'engineering' }) }));
+    const link = screen.getByRole('link', {
+      name: /עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי\s2027–2028/,
+    });
+    expect(link.getAttribute('href')).toBe('/atuda');
+    const year = link.querySelector('bdi[dir="ltr"]');
+    expect(year?.textContent).toBe('2027–2028');
+    expect(year?.parentElement?.className).toContain('whitespace-nowrap');
+    expect(year?.parentElement?.textContent).toMatch(/ומועדי\u00A02027–2028/);
+    const label = year?.parentElement?.parentElement;
+    expect(label?.tagName).toBe('SPAN');
+    expect(label?.parentElement).toBe(link);
+    expect(label?.classList.contains('whitespace-nowrap')).toBe(false);
+    expect(label?.textContent).toMatch(/עילית ומועדי\u00A02027–2028/);
+    expect(link.textContent).toMatch(/ומועדי\u00A02027–2028/);
+    expect(link.textContent).not.toMatch(/ומועדי2027/);
+    const calculator = screen.getByRole('link', { name: 'איך מחשבון סיכויי הקבלה עובד' });
+    expect(calculator.parentElement).toBe(link.parentElement);
+    expect(link.parentElement?.className).toContain('gap-x-6');
+  });
+
+  it.each([
+    ['ee', 'לומדים חשמל בעתודה? מסלול ״דיגמא״ ותוכניות ״פסגות״ ו״רעמים״'],
+    ['cs', 'מדעי המחשב בעתודה (מסלול ״אמירים״): מוסדות ומועדים'],
+    ['softwareeng', 'הנדסת תוכנה בעתודה: מוסדות ותוכנית ״פסגות״'],
+  ] as const)('keeps the %s atuda link from joining a word to a year', async (programId, name) => {
+    render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+    const link = screen.getByRole('link', { name });
+    expect(link.getAttribute('href')).toBe('/atuda');
+    expect(link.textContent).not.toMatch(/[א-ת]\d/);
+  });
+
   it.each([
     ['telhai_nursing', '/programs/nursing'],
     ['ono_socialwork', '/programs/social_work'],
