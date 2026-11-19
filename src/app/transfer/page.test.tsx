@@ -15,6 +15,7 @@ vi.mock('@/server/catalogue/queries', async () => {
   };
 });
 
+import { transferReferenceUrls } from '@/data/transferReferenceUrls';
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
 
@@ -45,6 +46,15 @@ it('renders the two separate decisions and concrete official-source next steps',
   expect(text).not.toMatch(/\b(?:30|40|44|50|700|800)\b/);
   expect(text).not.toContain('ההרשמה פתוחה');
   expect(text).not.toContain('חיסכון');
+  expect(text).not.toContain('מקור');
+  expect(transferReferenceUrls.map((source) => source.href)).toEqual([
+    'https://go.tau.ac.il/he/ba/partial-studies',
+    'https://go.tau.ac.il/he/ba/process-doc',
+    'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
+    'https://www.openu.ac.il/transfertrack/pages/default.aspx',
+    'https://www.openu.ac.il/transfertrack/pages/faq.aspx',
+    'https://stuad.biu.ac.il/node/52',
+  ]);
 });
 
 it('publishes matching absolute canonical and social metadata and a dated sitemap entry', async () => {

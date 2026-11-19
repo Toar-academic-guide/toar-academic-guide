@@ -4,14 +4,6 @@ import WayPageShell from '@/components/WayPageShell';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
 
-export const twoDomainPolicyUrls = {
-  bgu: 'https://www.bgu.ac.il/welcome/blog/articles/new-psychometry/',
-  tauPolicy: 'https://go.tau.ac.il/he/psychometric-test',
-  tauPsychometric: 'https://go.tau.ac.il/he/ba/psycho',
-  huji: 'https://info.huji.ac.il/reception-components/Psychometric',
-  haifa: 'https://admissions.haifa.ac.il/psychometric-amirnet-yaelnet-tests/',
-} as const;
-
 const title = 'פסיכומטרי דו־תחומי: הבחינה, הציונים ותנאי הקבלה | MyWay';
 const description =
   'מה משתנה בפסיכומטרי מדצמבר 2026, איך מחושב הציון, מה קורה לציונים קודמים ומה לבדוק לקראת הרשמה ללימודים.';

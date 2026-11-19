@@ -2,7 +2,8 @@
 
 import { renderToStaticMarkup } from 'react-dom/server';
 import { describe, expect, it, vi } from 'vitest';
-import Page, { metadata, twoDomainPolicyUrls } from './page';
+import { twoDomainPolicyUrls } from '@/data/twoDomainPolicyUrls';
+import Page, { metadata } from './page';
 
 vi.mock('@/components/PublicNavBar', () => ({ default: () => null }));
 vi.mock('@/components/WayBackdrop', () => ({ default: () => null }));
