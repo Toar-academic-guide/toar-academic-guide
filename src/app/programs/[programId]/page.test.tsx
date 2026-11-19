@@ -59,6 +59,9 @@ describe('ProgramPage', () => {
     expect(link.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
     expect(link.textContent).toMatch(/ומועדי\u00A02027–2028/);
     expect(link.textContent).not.toMatch(/ומועדי2027/);
+    const calculator = screen.getByRole('link', { name: 'איך מחשבון סיכויי הקבלה עובד' });
+    expect(calculator.parentElement).toBe(link.parentElement);
+    expect(link.parentElement?.className).toContain('gap-x-6');
   });
 
   it.each([

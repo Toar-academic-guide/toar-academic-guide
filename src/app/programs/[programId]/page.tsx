@@ -212,22 +212,26 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         >
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
-          </h1>{' '}
-          {atudaLinksBySubject[programId] && (
-            <Link
-              href="/atuda"
-              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
-            >
-              <AtudaLinkText text={atudaLinksBySubject[programId]} />
-            </Link>
-          )}
-          {programId !== 'medicine' && (
-            <Link
-              href="/calculator"
-              className="mb-6 inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
-            >
-              איך מחשבון סיכויי הקבלה עובד
-            </Link>
+          </h1>
+          {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
+            <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
+              {atudaLinksBySubject[programId] && (
+                <Link
+                  href="/atuda"
+                  className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  <AtudaLinkText text={atudaLinksBySubject[programId]} />
+                </Link>
+              )}
+              {programId !== 'medicine' && (
+                <Link
+                  href="/calculator"
+                  className="inline-flex min-h-11 items-center font-semibold text-[#6554b8] underline underline-offset-2"
+                >
+                  איך מחשבון סיכויי הקבלה עובד
+                </Link>
+              )}
+            </div>
           )}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (

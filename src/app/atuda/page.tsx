@@ -72,8 +72,8 @@ const timeline = [
 ] as const;
 
 function BidiRanges({ text }: { text: string }) {
-  return text.split(/(2027–2028|35–36)/g).map((part, index) =>
-    part === '2027–2028' || part === '35–36' ? (
+  return text.split(/(2027–2028)/g).map((part, index) =>
+    part === '2027–2028' ? (
       <bdi dir="ltr" key={index}>
         {part}
       </bdi>
@@ -116,9 +116,7 @@ export default function Page() {
               הנדרש
             </h1>
             {reviewDue && (
-              <p className={styles.reviewDue}>
-                המידע לשנה זו בבדיקה מחדש. בדקו גם את המידעון העדכני של צה״ל.
-              </p>
+              <p className={styles.reviewDue}>המידע לשנה זו בבדיקה מחדש. בדקו גם באתר צה״ל.</p>
             )}
             <p className={styles.answer}>
               <strong>העתודה האקדמית</strong> היא מסלול של צה״ל שבו לומדים תואר לפני השירות ומשרתים
@@ -221,7 +219,7 @@ export default function Page() {
                 <thead>
                   <tr>
                     <th scope="col">מגמה</th>
-                    <th scope="col">מוסדות לפי המידעון</th>
+                    <th scope="col">מוסדות</th>
                   </tr>
                 </thead>
                 <tbody>

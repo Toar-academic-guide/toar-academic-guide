@@ -3,6 +3,7 @@ import { render, screen, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: null }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/atuda' }));
+import { atudaQuestions } from '@/data/atuda';
 import Page, { metadata } from './page';
 
 it('renders the 2027–2028 booklet values and complete selected-major tables', () => {
@@ -43,6 +44,8 @@ it('renders the 2027–2028 booklet values and complete selected-major tables', 
     within(accountingRow).getByRole('link', { name: 'אוניברסיטת תל אביב' }).getAttribute('href'),
   ).toBe('/programs/tau_economics');
   expect(main.innerHTML).not.toContain('מקור');
+  expect(main.innerHTML).not.toContain('עמ׳ ');
+  expect(main.innerHTML).not.toContain('מידעון');
   expect(main.innerHTML).not.toContain('fliphtml5.com');
   expect(main.innerHTML).not.toContain('go.idf.il');
   expect(within(main).getByRole('link', { name: 'בדקו את הסיכוי שלכם במחשבון' })).toBeTruthy();
@@ -60,9 +63,16 @@ it('keeps the five visible FAQ answers identical to schema and has breadcrumb on
   ]);
   const visible = Array.from(container.querySelectorAll('section[aria-labelledby="faq"] > div'));
   expect(visible).toHaveLength(5);
-  expect(
-    Array.from(visible[0].querySelectorAll('p bdi[dir="ltr"]')).map((node) => node.textContent),
-  ).toEqual(['2027–2028', '35–36']);
+  expect(visible[0].querySelectorAll('p bdi[dir="ltr"]')).toHaveLength(0);
+  expect(atudaQuestions.map((item) => item.pages)).toEqual([
+    'מידעון 2027–2028, עמ׳ 10, 35–36',
+    'עמ׳ 10, 18',
+    'עמ׳ 11, 18, 20',
+    'עמ׳ 28',
+    'עמ׳ 9',
+  ]);
+  expect(container.innerHTML).not.toContain('עמ׳ ');
+  expect(container.innerHTML).not.toContain('מידעון');
   expect(visible[2].querySelector('h3 bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
   expect(graph[0].mainEntity).toEqual(
     visible.map((item) => ({
