@@ -44,7 +44,7 @@ it('renders the 2027–2028 booklet values and complete selected-major tables', 
   ).toBe('/programs/tau_economics');
   expect(
     within(main).getByRole('link', { name: /מידעון העתודה האקדמית של צה״ל לשנת/ }).textContent,
-  ).toContain('לשנת 2027–2028');
+  ).toMatch(/לשנת\u00A02027–2028/);
   for (const number of main.querySelectorAll('bdi')) expect(number.getAttribute('dir')).toBe('ltr');
 });
 

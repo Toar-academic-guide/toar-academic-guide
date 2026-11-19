@@ -53,10 +53,23 @@ describe('ProgramPage', () => {
   it('isolates the engineering atuda year range in its inbound link', async () => {
     render(await ProgramPage({ params: Promise.resolve({ programId: 'engineering' }) }));
     const link = screen.getByRole('link', {
-      name: 'עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי 2027–2028',
+      name: /עתודה אקדמית: מגמות הנדסה, תוכניות עילית ומועדי\s2027–2028/,
     });
     expect(link.getAttribute('href')).toBe('/atuda');
     expect(link.querySelector('bdi[dir="ltr"]')?.textContent).toBe('2027–2028');
+    expect(link.textContent).toMatch(/ומועדי\u00A02027–2028/);
+    expect(link.textContent).not.toMatch(/ומועדי2027/);
+  });
+
+  it.each([
+    ['ee', 'לומדים חשמל בעתודה? מסלול ״דיגמא״ ותוכניות ״פסגות״ ו״רעמים״'],
+    ['cs', 'מדעי המחשב בעתודה (מסלול ״אמירים״): מוסדות ומועדים'],
+    ['softwareeng', 'הנדסת תוכנה בעתודה: מוסדות ותוכנית ״פסגות״'],
+  ] as const)('keeps the %s atuda link from joining a word to a year', async (programId, name) => {
+    render(await ProgramPage({ params: Promise.resolve({ programId }) }));
+    const link = screen.getByRole('link', { name });
+    expect(link.getAttribute('href')).toBe('/atuda');
+    expect(link.textContent).not.toMatch(/[א-ת]\d/);
   });
 
   it.each([

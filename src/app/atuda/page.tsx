@@ -137,8 +137,9 @@ export default function Page() {
             </h1>
             <p className={styles.source}>
               מקור:{' '}
-              <a className={styles.bookletLink} href={atudaBooklet}>
-                מידעון העתודה האקדמית של צה״ל לשנת <bdi dir="ltr">2027–2028</bdi>
+              <a href={atudaBooklet}>
+                {'מידעון העתודה האקדמית של צה״ל לשנת\u00A0'}
+                <bdi dir="ltr">2027–2028</bdi>
               </a>{' '}
               ו<a href={atudaIdfPage}>אתר העתודה של צה״ל</a>
             </p>

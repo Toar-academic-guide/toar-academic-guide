@@ -70,7 +70,7 @@ function AtudaLinkText({ text }: { text: string }) {
         {part}
       </bdi>
     ) : (
-      part
+      part.replace(/ $/, '\u00A0')
     ),
   );
 }
