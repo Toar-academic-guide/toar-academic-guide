@@ -27,7 +27,7 @@ function outcome(result: AdmissionsEvaluationResult) {
 async function evaluate(
   programId: string,
   legacy?: number,
-  rows: 'complete' | 'missing' | 'partial' = 'complete',
+  rows: 'complete' | 'missing' | 'empty' | 'partial' = 'complete',
 ) {
   const fetcher = vi.fn<typeof fetch>().mockRejectedValue(new Error('Unexpected network call'));
   const report = await evaluateAdmissionsForProgram({
@@ -39,6 +39,14 @@ async function evaluate(
       extraInputs: {
         ...haifaQaApplicant.extraInputs,
         ...(rows === 'missing' ? { bagrutSubjectRecord: undefined } : {}),
+        ...(rows === 'empty'
+          ? {
+              bagrutSubjectRecord: {
+                ...haifaQaApplicant.extraInputs!.bagrutSubjectRecord!,
+                subjects: [],
+              },
+            }
+          : {}),
         ...(rows === 'partial'
           ? {
               bagrutSubjectRecord: {
@@ -74,12 +82,18 @@ it.each(
 
 it.each(
   haifaQaProgramIds.flatMap((programId) =>
-    (['missing', 'partial'] as const).map((rows) => ({ programId, rows })),
+    (['missing', 'empty', 'partial'] as const).map((rows) => ({ programId, rows })),
   ),
 )(
-  'never falls back to a legacy average for $programId with $rows subject rows',
+  'asks for subject rows instead of falling back to a legacy average for $programId with $rows rows',
   async ({ programId, rows }) => {
     const baseline = await evaluate(programId, undefined, rows);
+    expect(baseline).toMatchObject({
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+      nextAction: expect.stringContaining('מקצועות הבגרות'),
+    });
     expect(baseline.score).toBeUndefined();
     for (const legacy of [60, 119])
       expect(outcome(await evaluate(programId, legacy, rows))).toEqual(outcome(baseline));

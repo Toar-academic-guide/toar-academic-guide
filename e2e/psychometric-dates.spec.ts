@@ -20,7 +20,7 @@ for (const width of [1280, 390]) {
     // Accept either side if Jerusalem midnight crossed the request; the server clock stays real.
     const statuses = getSittingStatuses(psychometricDates, before);
     const afterStatuses = getSittingStatuses(psychometricDates, new Date());
-    const rows = main.locator('tbody tr');
+    const rows = main.getByRole('region', { name: 'מועדי הבחינה הקרובים' }).locator('tbody tr');
     const actualRows = await rows.allTextContents();
     const matches = (expected: typeof statuses) =>
       expected.length === actualRows.length &&

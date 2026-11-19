@@ -14,6 +14,7 @@ import { institutionProgramName } from '@/lib/institutionProgramName';
 import { BATCH_C_CATALOGUE_FALLBACK_PROGRAM_IDS } from '@/lib/admissionsEvaluationProgram';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import { INSTITUTION_BY_NAME } from '@/data/institutions';
+import { prepRow } from '@/lib/prepGuide';
 
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { catalogueAdmissionRequirements } from '@/lib/catalogueDisplayText';
@@ -23,6 +24,7 @@ import { getRequirementsChecked, type RequirementsChecked } from '@/lib/requirem
 import { getCodeReviewedTechnionWinterVerification } from '@/data/admissions/technionProgramVerification';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
+import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 
 const PUBLIC_PROGRAMS = getStaticCataloguePrograms();
 const PUBLIC_INSTITUTIONS = getStaticCatalogueInstitutions();
@@ -51,7 +53,12 @@ export const loadPublicCatalogue = cache(async () => {
   const currentProgramIds = new Set(programs.data.map((program) => program.id));
   const currentInstitutionIds = new Set(institutions.data.map((institution) => institution.id));
   const allPrograms = [
-    ...programs.data,
+    ...programs.data.map((program) =>
+      // The existing DB row has the old psychology label. Its official Ono
+      // curriculum awards a B.A. in behavioural sciences; fix public copy
+      // without writing to the active catalogue or changing evaluation.
+      program.id === 'ono_psychology' ? (STATIC_PROGRAM_BY_ID.get(program.id) ?? program) : program,
+    ),
     ...PUBLIC_PROGRAMS.filter((legacy) => !currentProgramIds.has(legacy.id)),
   ];
   const allInstitutions = [
@@ -88,10 +95,21 @@ export const loadPublicCatalogue = cache(async () => {
       generalProgramIds.has(program.id)
     )
       continue;
-    const providers = institutionProgramsByName.get(program.name) ?? new Map();
-    // Preserve the first listed match, as the page links did before indexing.
-    if (!providers.has(program.institutionId)) providers.set(program.institutionId, program);
-    institutionProgramsByName.set(program.name, providers);
+    // A qualification in a specific programme title should not hide that
+    // provider from an existing subject page with the same subject name.
+    const names = [
+      program.name,
+      catalogueSubjectName(
+        program.id,
+        program.name.replace(/ \((?:B\.A\.|B\.Sc\.|B\.Ed\.|B\.Ed\.F\.A\.)\)$/, ''),
+      ),
+    ];
+    for (const name of new Set(names)) {
+      const providers = institutionProgramsByName.get(name) ?? new Map();
+      // Preserve the first listed match, as the page links did before indexing.
+      if (!providers.has(program.institutionId)) providers.set(program.institutionId, program);
+      institutionProgramsByName.set(name, providers);
+    }
   }
   const resolvedPrograms = allPrograms.map((program) => {
     if (!generalProgramIds.has(program.id)) return program;
@@ -180,6 +198,18 @@ export async function getPublicProgramPageData(
   );
   const isGeneral = catalogue.generalProgramIds.has(program.id);
   const programPages = isGeneral ? subjectProgramPages(catalogue, program) : new Map();
+  if (isGeneral && program.id === 'law') {
+    for (const id of lawBarOutcomes.additionalHubProgramIds) {
+      const specific = catalogue.programs.find((candidate) => candidate.id === id);
+      const institution = catalogue.institutions.find(
+        (candidate) => candidate.id === specific?.institutionId,
+      );
+      if (!specific || !institution) throw new Error(`Missing law programme ${id}`);
+      if (!institutions.some((entry) => entry.id === institution.id))
+        institutions.push(institution);
+      programPages.set(institution.id, specific);
+    }
+  }
   const institutionProgramPaths: Record<string, string> = {};
   for (const institution of institutions) {
     const specific = programPages.get(institution.id);
@@ -226,7 +256,11 @@ export async function getPublicProgramRequirementSources({
       requirementsProgram.id,
     );
     const useSpecific =
-      isGeneral && program.isListed !== false && !hasRequirements(requirements) && !!specific;
+      isGeneral &&
+      program.isListed !== false &&
+      !!specific &&
+      (!hasRequirements(requirements) ||
+        (program.id === 'psychology' && institution.id === 'huji'));
     const sourceProgram = useSpecific ? specific : requirementsProgram;
     const sourceDetail = useSpecific
       ? specific.institutionDetails?.find((entry) =>
@@ -250,6 +284,7 @@ export async function getPublicProgramRequirementSources({
       winterCutoff == null
         ? sourceRequirements
         : [`בחורף תשפ"ז: סכם ${winterCutoff}`, ...sourceRequirements];
+    const prep = prepRow(sourceProgram.id);
     institutionRequirementSources[institution.id] = {
       program: sourceProgram,
       sourceProgramId: sourceProgram.id,
@@ -257,7 +292,11 @@ export async function getPublicProgramRequirementSources({
         isGeneral && program.isListed !== false && !hasRequirements(displayRequirements)
           ? []
           : displayRequirements,
-      officialUrl: officialUrl(sourceDetail?.programUrl, institution.id),
+      officialUrl: prep
+        ? officialUrl(prep.officialUrl, institution.id, {
+            fallbackToWebsite: false,
+          })
+        : officialUrl(sourceDetail?.programUrl, institution.id),
       ...([
         'tlvyaffo_cs',
         'mta_cs',

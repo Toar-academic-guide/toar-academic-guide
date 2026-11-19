@@ -5,6 +5,7 @@ export { vocationalPrograms } from './vocationalPrograms';
 
 import { ACADEMIC_PROGRAMS } from './academic';
 import { academicPrograms } from './academicPrograms';
+import { collegeProgrammes } from './collegeProgrammes';
 import { vocationalPrograms } from './vocationalPrograms';
 import {
   DANON_BEGINNER_REQUIREMENT,
@@ -111,10 +112,11 @@ const MONDAY_PROGRAM_URL_OVERRIDES: Readonly<Record<string, string>> = {
   // Official Braude pages read 2026-10-28; the broad programme IDs do not identify
   // a single department or preparatory route. Keep the admissions link specific.
   braude_engineering: 'https://w3.braude.ac.il/intrested/',
-  braude_prep: 'https://w3.braude.ac.il/department/mechina/?yeudit#section-id-2',
+  braude_prep: 'https://w3.braude.ac.il/department/mechina/',
   colman_law: 'https://www.colman.ac.il/academics/ba/law/',
   colman_business: 'https://www.colman.ac.il/academics/ba/business-administration/',
 };
+const HADASSAH_CALCULATOR_URL = 'https://www.jmc.ac.il/ללמוד-אצלנו/הרשמה-ללימודים/מחשבון-מתאם/';
 const VERIFIED_KEEPER_PROGRAM_URLS: Readonly<Record<string, string>> = {
   tlvyaffo_cs: 'https://www.mta.ac.il/program/bsc_computer_science',
   colmgmt_law: 'https://www.colman.ac.il/academics/ba/law/',
@@ -827,6 +829,7 @@ for (const record of mondayAdmissionsEvidence) {
     continue;
   }
 
+  const isHadassahRecord = record.itemId === '12220685569';
   const programInstitutionKey = (record.catalogueInstitutionId ||
     `mon_${record.itemId}`) as InstitutionId;
   const instId = (record.catalogueInstitutionId ??
@@ -842,9 +845,16 @@ for (const record of mondayAdmissionsEvidence) {
     const fallback = fallbackDynamicProgram(record);
     matches = [{ keywords: [], ...fallback }];
   }
+  if (isHadassahRecord) {
+    matches.push({ keywords: [], id: 'cs', name: 'מדעי המחשב', category: 'מדעי המחשב' });
+  }
 
   for (const prog of matches) {
-    const progId = `${programInstitutionKey}_${prog.id}`;
+    // The existing computer science route predates the institution rename.
+    const progId =
+      isHadassahRecord && prog.id === 'cs'
+        ? 'mon_12220685569_cs'
+        : `${programInstitutionKey}_${prog.id}`;
     // Verified dance/music rows replace these mixed imports; Sam Spiegel's
     // combined import duplicates its existing cinema and screenwriting rows.
     if (RETIRED_PROGRAM_IDS.includes(progId)) continue;
@@ -871,6 +881,7 @@ for (const record of mondayAdmissionsEvidence) {
 
     const type = isCertificateType ? 'certificate' : 'academic';
 
+    const isReviewedHadassahCs = progId === 'mon_12220685569_cs';
     const detailId = `${progId}:${instId}`;
     const publicInstitutionName =
       instId === 'braude' || instId === 'hadassah'
@@ -878,7 +889,8 @@ for (const record of mondayAdmissionsEvidence) {
         : record.displayName;
     const primarySourceUrl =
       MONDAY_PROGRAM_URL_OVERRIDES[progId] ?? resolveUrl(record.displayName, record.officialUrls);
-    const sourceCandidateId = primarySourceUrl ? `${detailId}:source:monday-evidence` : undefined;
+    const sourceCandidateId =
+      primarySourceUrl && !isReviewedHadassahCs ? `${detailId}:source:monday-evidence` : undefined;
     const sourceCandidates: AdmissionsSourceCandidate[] =
       sourceCandidateId && primarySourceUrl
         ? [
@@ -891,7 +903,7 @@ for (const record of mondayAdmissionsEvidence) {
                   : ('generic' as const),
               confidence: record.confidence,
               url: primarySourceUrl,
-              title: `מקור מוסדי עבור ${publicInstitutionName}`,
+              title: `אתר ${publicInstitutionName}`,
               notes: `Institutional evidence item ${record.itemId}. ${record.nextAction}`,
             },
           ]
@@ -1016,18 +1028,22 @@ for (const record of mondayAdmissionsEvidence) {
           specificAdmissionNotes: record.limitations.length
             ? ['לפרטים על תנאי הקבלה, יש לבדוק באתר המוסד.']
             : [],
-          officialCalculatorUrl: primarySourceUrl || '',
+          officialCalculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : primarySourceUrl || '',
           programUrl: primarySourceUrl,
-          calculatorUrl: record.officialUrls.find(
-            (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
-          ),
+          calculatorUrl: isHadassahRecord
+            ? HADASSAH_CALCULATOR_URL
+            : record.officialUrls.find(
+                (url) => url.includes('calculator') && !url.includes('yoram.walla.co.il'),
+              ),
           ...(sourceCandidates.length > 0
             ? {
                 admissionsSourceCandidates: sourceCandidates,
               }
             : {}),
-          admissionFacts,
-          ...(admissionAlternativePaths.length > 0
+          admissionFacts: isReviewedHadassahCs ? [] : admissionFacts,
+          ...(!isReviewedHadassahCs && admissionAlternativePaths.length > 0
             ? {
                 admissionAlternativePaths,
               }
@@ -1050,6 +1066,45 @@ for (const record of mondayAdmissionsEvidence) {
   }
 }
 
+// The Monday import identified these schools as broad medicine groups. Keep the
+// old IDs for saved references, while the sourced certificate records are listed.
+const complementaryLegacyIds: Readonly<Record<string, string>> = {
+  givat_washington_medicine: 'mon_12341128804_medicine',
+  tiltan_medicine: 'mon_12341137918_medicine',
+};
+for (const [legacyId, programId] of Object.entries(complementaryLegacyIds)) {
+  const legacyIndex = dynamicPrograms.findIndex((program) => program.id === legacyId);
+  if (legacyIndex < 0) continue;
+  const original = dynamicPrograms[legacyIndex];
+  const institutionId = programId.slice(0, -'_medicine'.length) as InstitutionId;
+  const institution = INSTITUTION_BY_ID[institutionId];
+  const sourceUrl = institution.programUrl!;
+  const corrected: Program = {
+    ...original,
+    id: programId,
+    name: 'רפואה משלימה',
+    institution: institution.name,
+    institutionId,
+    type: 'certificate',
+    category: 'רפואה משלימה',
+    admissionRequirements: [],
+    thresholds: {},
+    institutionDetails: (original.institutionDetails ?? []).map((detail) => ({
+      ...detail,
+      institutionName: institution.name,
+      durationYears: null,
+      specificAdmissionNotes: [],
+      programUrl: sourceUrl,
+      officialCalculatorUrl: sourceUrl,
+      admissionsSourceCandidates: [],
+      admissionFacts: [],
+      admissionAlternativePaths: [],
+    })),
+  };
+  dynamicPrograms[legacyIndex] = { ...corrected, id: legacyId, isListed: false };
+  dynamicPrograms.push(corrected);
+}
+
 // Single combined catalogue.
 // Add future sub-modules by spreading their arrays here.
 export const programsWithLegacyAdmissionFacts = [
@@ -1058,6 +1113,7 @@ export const programsWithLegacyAdmissionFacts = [
   ...normalizeLegacyPrograms(vocationalPrograms),
   ...dynamicPrograms,
 ].map((program): Program => {
+  if (program.id === 'ono_medicine') return { ...program, isListed: false };
   const verifiedProgramUrl = VERIFIED_KEEPER_PROGRAM_URLS[program.id];
   if (verifiedProgramUrl) {
     return {
@@ -1106,7 +1162,10 @@ export const programsWithLegacyAdmissionFacts = [
 });
 
 // Verified display copy is deliberately separate from inferred legacy calculation facts.
-export const allPrograms = programsWithLegacyAdmissionFacts.map((program) => {
-  const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
-  return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
-});
+export const allPrograms = [
+  ...programsWithLegacyAdmissionFacts.map((program) => {
+    const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+    return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
+  }),
+  ...collegeProgrammes,
+];

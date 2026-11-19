@@ -16,9 +16,8 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Metadata captured from main (a4d84ae). #379 updates nested provider offer lists. JSON-LD hashes include provider
-// catalogues, with duplicate aliases removed from MTA and Colman, and the
-// intentional slashed homepage breadcrumb identity from the indexing brief.
+// Metadata identities and JSON-LD hashes are preserved from main (a4d84ae).
+// Unsupported calculator descriptions now state the available admissions information.
 const unchangedPrograms = [
   {
     id: 'bgu_psychology',
@@ -52,11 +51,11 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: '69e9019a8c7590756785eacb95a3bd58b54887942707e36db5f093c472ec79b8',
+    structuredDataSha256: 'bb7aa5b2c50221ddcea923d52bc936018735a4a1226761b371c2159d675d4fd5',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
-      'סיעוד ב-8 מוסדות לימוד: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'סיעוד ב-7 מוסדות לימוד: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'tau',
@@ -79,10 +78,6 @@ const unchangedPrograms = [
         name: 'אוניברסיטת אריאל',
       },
       {
-        id: 'telhai',
-        name: 'מכללת תל-חי',
-      },
-      {
         id: 'mta',
         name: 'המכללה האקדמית תל-אביב-יפו',
       },
@@ -95,11 +90,11 @@ const unchangedPrograms = [
   },
   {
     id: 'tlvyaffo_cs',
-    structuredDataSha256: '3128a1f6c9654b14cb70ea9b739840dab5e00ee00d5301d565f45fa6261f97e8',
+    structuredDataSha256: 'edcf2a353612fced9f1e8675f1dfeb965c7000e8d6b55d4812a70663d52d1d56',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – המכללה האקדמית תל-אביב-יפו: תנאי קבלה',
     description:
-      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מדעי המחשב במכללה האקדמית תל-אביב-יפו: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'mta',
@@ -114,7 +109,7 @@ const unchangedPrograms = [
     name: 'מנהל עסקים',
     title: 'מנהל עסקים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'מנהל עסקים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -129,7 +124,7 @@ const unchangedPrograms = [
     name: 'משפטים',
     title: 'משפטים – מכללת ניהול – לימודים אקדמיים: תנאי קבלה',
     description:
-      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.',
+      'משפטים במכללת ניהול – לימודים אקדמיים: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.',
     providers: [
       {
         id: 'colman',
@@ -176,6 +171,15 @@ describe('program institution attribution', () => {
     if (expected.id === 'nursing') {
       expect(page.isGeneral).toBe(true);
       expect(page.program.institutionId).toBeUndefined();
+      const ono = ld.provider.find((provider) => provider.name === 'המכללה האקדמית אונו');
+      expect(ono?.hasOfferCatalog.itemListElement).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'מדעי ההתנהגות (B.A.)',
+            url: 'https://findmyway.co.il/programs/ono_psychology',
+          }),
+        ]),
+      );
     }
   });
 
@@ -203,7 +207,7 @@ describe('program institution attribution', () => {
     async ({ id, institution, location, token }) => {
       const page = (await getPublicProgramPageData(id))!;
       const title = `הנדסה וטכנולוגיה – ${institution}${id === 'haifa_engineering' ? ': תנאי קבלה' : ''}`;
-      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ובדיקת סיכויי קבלה בחינם ב-MyWay. התנאים המחייבים באתר המוסד.`;
+      const description = `הנדסה וטכנולוגיה ${location}: תנאי קבלה ופרטים על הלימודים ב-MyWay. התנאים המחייבים באתר המוסד.`;
       const metadata = await buildProgramMetadata(id);
       expect(metadata).toMatchObject({
         title,

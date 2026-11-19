@@ -29,11 +29,11 @@ it('scopes the parsed 3px focus-visible rule to the enquiry modal and keeps 4px 
     )!;
     const modalRule = rules.find(
       (rule) =>
-        rule.selectorText === ".study-journey :where(dialog[aria-modal='true']) :focus-visible",
+        rule.selectorText === '.study-journey :where(dialog[aria-modal="true"]) :focus-visible',
     )!;
     expect(journeyRule).toBeDefined();
     expect(modalRule).toBeDefined();
-    expect(journeyRule.style.getPropertyValue('outline')).toBe('3px solid #6554b8');
+    expect(journeyRule.style.getPropertyValue('outline')).toBe('3px solid rgb(101, 84, 184)');
     expect(journeyRule.style.getPropertyValue('outline-offset')).toBe('4px');
     expect(modalRule.style.getPropertyValue('outline-offset')).toBe('3px');
     expect(modalRule.style.getPropertyPriority('outline-offset')).toBe('important');
@@ -81,7 +81,7 @@ it('exempts only enquiry prep consent from the 18px journey checkbox rule', () =
 
     const rule = Array.from(style.sheet!.cssRules).find(
       (rule): rule is CSSStyleRule =>
-        rule instanceof CSSStyleRule && rule.selectorText.includes("input[type='checkbox']"),
+        rule instanceof CSSStyleRule && rule.selectorText.includes('input[type="checkbox"]'),
     );
     expect(rule).toBeDefined();
     expect(rule!.style.getPropertyValue('width')).toBe('18px');

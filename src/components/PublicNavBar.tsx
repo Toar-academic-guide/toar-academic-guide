@@ -13,7 +13,7 @@ const NAV_GROUPS = [
     label: 'מחשבונים',
     links: [
       { label: 'מחשבון סכם', href: '/sekhem-calculator' },
-      { label: 'בדיקת סיכויי קבלה', href: '/sekhem-calculator' },
+      { label: 'בדיקת סיכויי קבלה', href: '/calculator' },
     ],
   },
   {
@@ -33,7 +33,10 @@ const NAV_GROUPS = [
   {
     id: 'preparation',
     label: 'הכנה וקבלה',
-    links: [{ label: 'עזרה בהכנה לפסיכומטרי', href: '/enquiry?program=psychometric-preparation' }],
+    links: [
+      { label: 'עזרה בהכנה לפסיכומטרי', href: '/enquiry?program=psychometric-preparation' },
+      { label: 'התאמות לפסיכומטרי', href: '/psychometric-accommodations' },
+    ],
   },
 ];
 
@@ -203,9 +206,9 @@ export default function PublicNavBar({
       <nav aria-label="ניווט ראשי" className={styles.navigation}>
         <div id={linksId} className={styles.links}>
           <Link
-            href="/sekhem-calculator"
+            href="/calculator"
             className={styles.question}
-            aria-current={pathname === '/sekhem-calculator' ? 'page' : undefined}
+            aria-current={pathname === '/calculator' ? 'page' : undefined}
           >
             מה הסיכויים שלי?{' '}
           </Link>

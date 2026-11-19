@@ -11,6 +11,6 @@ it.each([
   render(<TechnionMedicineComparison score={score as number} />);
   // Approved test update, Jorje 2026-10-29
   expect(
-    screen.getByText(`ציון הקבלה שלך ${score}, ${relation} הזימון המשוער (92)`).className,
+    screen.getByText(`ציון הקבלה שלכם ${score}, ${relation} הזימון המשוער (92)`).className,
   ).toContain(colour);
 });

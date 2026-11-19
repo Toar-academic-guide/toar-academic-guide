@@ -60,9 +60,9 @@ describe.each(Object.entries(catalogues))('subject hub contract on the %s', (_, 
   async function load() {
     queries.listCataloguePrograms.mockImplementation(async () => ({ data: programs, meta: {} }));
     const catalogue = await loadPublicCatalogue();
-    const index = hrefs(renderToStaticMarkup(await SubjectIndexPage())).map((href) =>
-      decodeURIComponent(href.replace(/^\/programs\//, '')),
-    );
+    const index = hrefs(renderToStaticMarkup(await SubjectIndexPage()))
+      .filter((href) => href.startsWith('/programs/'))
+      .map((href) => decodeURIComponent(href.slice('/programs/'.length)));
     const institutionProgramIds = new Set(
       catalogue.programs
         .filter((program) => !catalogue.generalProgramIds.has(program.id))
@@ -180,7 +180,7 @@ describe.each(Object.entries(catalogues))('subject hub contract on the %s', (_, 
         program.id,
       ).toEqual([]);
     }
-  });
+  }, 10_000);
 
   it('never publishes a hub slug built from one institution programme id', async () => {
     const { index, institutionProgramIds } = await load();

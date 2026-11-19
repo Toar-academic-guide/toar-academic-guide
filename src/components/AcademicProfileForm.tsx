@@ -35,7 +35,7 @@ import {
   tauPhysiotherapyInputsSchema,
 } from '@/lib/tauPhysiotherapyInputs';
 import BagrutCalculatorWizard from './BagrutCalculatorWizard';
-import { colmanBagrutInputsShape, COLMAN_BAGRUT_CALCULATOR_URL } from '@/lib/colmanBagrutInputs';
+import { colmanBagrutInputsShape } from '@/lib/colmanBagrutInputs';
 import { BguEngineeringFields } from './BguEngineeringFields';
 
 const EASE: [number, number, number, number] = [0.22, 1, 0.36, 1];
@@ -895,24 +895,6 @@ export default function AcademicProfileForm({
                 ממוצעים מוסדיים עשויים להיות שונים מהממוצע הכללי. הזינו רק ממוצע רשמי שכבר חישבתם;
                 אל תעתיקו לכאן אוטומטית אומדן מהאשף.
               </p>
-              <div className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-                <a
-                  href="https://www.ims.tau.ac.il/md/ut/bagrut.aspx"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-indigo-700 underline underline-offset-2"
-                >
-                  מחשבון ממוצע בגרות של אוניברסיטת תל אביב
-                </a>
-                <a
-                  href="https://bgu4u.bgu.ac.il/html/average_calc/index.php"
-                  target="_blank"
-                  rel="noreferrer"
-                  className="font-medium text-indigo-700 underline underline-offset-2"
-                >
-                  מחשבון ממוצע בגרות של בן־גוריון
-                </a>
-              </div>
             </div>
 
             <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
@@ -969,16 +951,8 @@ export default function AcademicProfileForm({
                 />
                 <p className="text-xs text-slate-500">
                   למסלול הבגרות במדעי המחשב נדרש ממוצע 85 לפחות לפי המכללה, בנוסף למתמטיקה ולמבדק
-                  פנימי. הזינו את יחידות וציון המתמטיקה במחשבון מקצועות הבגרות למעלה.{' '}
-                  <a
-                    href={COLMAN_BAGRUT_CALCULATOR_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="underline"
-                  >
-                    מחשבון הבגרות של המכללה
-                  </a>{' '}
-                  נותן הערכה; הממוצע הקובע נקבע במרכז הרישום.
+                  פנימי. הזינו את יחידות וציון המתמטיקה במחשבון מקצועות הבגרות למעלה. הממוצע הקובע
+                  נקבע במרכז הרישום.
                 </p>
               </div>
               <div className="flex flex-col gap-1.5">
@@ -1144,14 +1118,6 @@ export default function AcademicProfileForm({
               השתמשו בממוצע תל אביב הרשמי שבשדה למעלה ובמקצועות המתמטיקה והאנגלית שהזנתם. אפיק PMA
               יכול להתאים גם מתחת לפסיכומטרי 620.
             </p>
-            <a
-              href="https://go.tau.ac.il/he/management/ba/management?v=requirements"
-              target="_blank"
-              rel="noreferrer"
-              className="mt-2 inline-block text-xs font-medium text-indigo-700 underline"
-            >
-              תנאי הקבלה לניהול בתל אביב
-            </a>
             <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <label
@@ -1255,25 +1221,7 @@ export default function AcademicProfileForm({
               לארכיטקטורה, שבו אין כפל משקל במתמטיקה, ואת תוצאת בחינת הכניסה לארכיטקטורה. גם עמידה
               בסף אינה מבטיחה קבלה: הקבלה תלויה במקום פנוי.
             </p>
-            <div className="my-3 flex flex-wrap gap-x-4 gap-y-1 text-xs">
-              <a
-                href="https://admissions.technion.ac.il/calculator/"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-indigo-700 underline underline-offset-2"
-              >
-                מחשבון הטכניון — ארכיטקטורה
-              </a>
-              <a
-                href="https://admissions.technion.ac.il/architecture-info/"
-                target="_blank"
-                rel="noreferrer"
-                className="font-medium text-indigo-700 underline underline-offset-2"
-              >
-                תנאי הקבלה לארכיטקטורה בטכניון
-              </a>
-            </div>
-            <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
               <div className="flex flex-col gap-1.5">
                 <label
                   htmlFor="technion-architecture-average"

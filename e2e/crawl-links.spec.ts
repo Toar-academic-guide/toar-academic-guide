@@ -28,8 +28,11 @@ test('homepage keeps the hero CTA and footer links in raw HTML', async ({ reques
   expect(footer).toEqual([
     '/',
     'mailto:info@findmyway.co.il',
+    'https://www.instagram.com/findmyway_il/',
+    'https://www.tiktok.com/@myway_study',
     '/programs',
     '/institutions',
+    '/calculator',
     '/about',
     '/app/saved-programs',
     '/privacy',
@@ -56,7 +59,11 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
   test.setTimeout(300_000);
   const html = await (await request.get('/programs')).text();
   const main = html.split('<main')[1]?.split('</main>')[0] ?? '';
-  const index = anchors(main).map((href) => decodeURIComponent(href.replace(/^\/programs\//, '')));
+  const links = anchors(main);
+  expect(links).toContain('/calculator');
+  const index = links
+    .filter((href) => href.startsWith('/programs/'))
+    .map((href) => decodeURIComponent(href.slice('/programs/'.length)));
   expect(index.length).toBeGreaterThan(0);
   expect(new Set(index).size).toBe(index.length);
   for (const id of ['cs', 'engineering', 'occupational_therapy']) expect(index).toContain(id);
@@ -71,9 +78,12 @@ test('subject index lists exactly the hubs the sitemap publishes', async ({ requ
   expect(api.status()).toBe(200);
   const rows: { id: string; institutionId?: string }[] = (await api.json()).data;
   const institutionProgramIds = new Set(
-    rows.filter((row) => row.institutionId).map((row) => row.id),
+    rows
+      .filter((row) => row.institutionId && row.id.startsWith(`${row.institutionId}_`))
+      .map((row) => row.id),
   );
-  // No hub slug may be built from one institution programme's id.
+  expect(institutionProgramIds.size).toBeGreaterThan(0);
+  // No hub slug may be built from an institution-prefixed programme id.
   for (const id of index)
     expect(
       [...institutionProgramIds].filter((programId) => id.startsWith(`${programId}_`)),

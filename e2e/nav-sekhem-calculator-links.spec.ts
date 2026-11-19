@@ -20,16 +20,17 @@ for (const width of [390, 1280]) {
         await page.goto(path);
         const nav = page.locator('header').getByRole('navigation', { name: 'ניווט ראשי' });
         if (width === 390) {
+          await page.waitForLoadState('networkidle');
           await nav.getByRole('button', { name: 'תפריט ניווט' }).click();
         }
         await expect(nav.getByRole('link', { name: 'מה הסיכויים שלי?' })).toHaveAttribute(
           'href',
-          '/sekhem-calculator',
+          '/calculator',
         );
         await nav.getByRole('button', { name: 'מחשבונים' }).click();
         await expect(nav.getByRole('link', { name: 'בדיקת סיכויי קבלה' })).toHaveAttribute(
           'href',
-          '/sekhem-calculator',
+          '/calculator',
         );
         await expect(nav.locator('a[href="/app/calculator"]')).toHaveCount(0);
         if (path === '/') {
@@ -41,15 +42,25 @@ for (const width of [390, 1280]) {
       });
     }
 
-    test('marks the top calculator link as current on /sekhem-calculator', async ({ page }) => {
-      await page.goto('/sekhem-calculator');
+    test('marks the chances links as current on /calculator', async ({ page }) => {
+      await page.goto('/calculator');
       const nav = page.getByRole('navigation', { name: 'ניווט ראשי' });
       if (width === 390) {
+        await page.waitForLoadState('networkidle');
         await nav.getByRole('button', { name: 'תפריט ניווט' }).click();
       }
       await expect(nav.getByRole('link', { name: 'מה הסיכויים שלי?' })).toHaveAttribute(
         'aria-current',
         'page',
+      );
+      await nav.getByRole('button', { name: 'מחשבונים' }).click();
+      await expect(nav.getByRole('link', { name: 'בדיקת סיכויי קבלה' })).toHaveAttribute(
+        'aria-current',
+        'page',
+      );
+      await expect(nav.getByRole('link', { name: 'מחשבון סכם' })).toHaveAttribute(
+        'href',
+        '/sekhem-calculator',
       );
     });
   });

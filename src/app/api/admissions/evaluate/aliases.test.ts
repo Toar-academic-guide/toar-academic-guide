@@ -268,8 +268,10 @@ describe('generic and institution-specific admissions IDs', () => {
       expect(pairResults[0]).toEqual(pairResults[1]);
       if (institutionId === 'haifa')
         expect(pairResults[0]).toMatchObject({
-          kind: 'authority_unavailable',
+          kind: 'needs_input',
+          capability: 'needs_input',
           decision: 'unknown',
+          requiredInputs: ['haifa_bagrut_average'],
         });
       if (institutionId === 'biu' && generic === 'cs')
         expect(pairResults[0]).toMatchObject({ kind: 'estimated' });

@@ -130,10 +130,8 @@ export async function runTechnionAdmissionsProof(
     if (!thresholdResponse.ok) {
       throw new Error(`Technion threshold table returned HTTP ${thresholdResponse.status}`);
     }
-    const acceptanceThreshold = parseTechnionOfficialThreshold(
-      await thresholdResponse.text(),
-      program.id,
-    );
+    const thresholdHtml = await thresholdResponse.text();
+    const acceptanceThreshold = parseTechnionOfficialThreshold(thresholdHtml, program.id);
     const codeReviewedWinter = getCodeReviewedTechnionWinterVerification(`${program.id}__technion`);
     if (
       codeReviewedWinter &&
@@ -142,6 +140,31 @@ export async function runTechnionAdmissionsProof(
       throw new Error('Technion winter cutoff no longer matches the reviewed code contract');
     }
     const exact = acceptanceThreshold !== undefined;
+    const winterTableStart = thresholdHtml.search(/<table\b[^>]*\bid=["']tablepress-485["']/i);
+    const precedingHeading =
+      winterTableStart >= 0
+        ? [
+            ...thresholdHtml
+              .slice(0, winterTableStart)
+              .matchAll(/<h[1-6]\b[^>]*>([\s\S]*?)<\/h[1-6]>/gi),
+          ].at(-1)?.[1]
+        : undefined;
+    const winterCycleProven =
+      precedingHeading !== undefined &&
+      /חורף\s+תשפ["״]?ז/.test(precedingHeading.replace(/<[^>]*>/g, ' '));
+    const officialTitle =
+      TECHNION_OFFICIAL_TITLE_BY_PROGRAM_ID[program.id.replace(/^technion_/, '')];
+    const winterTable = thresholdHtml.match(
+      /<table\b[^>]*\bid=["']tablepress-485["'][^>]*>[\s\S]*?<\/table>/i,
+    )?.[0];
+    const cutoffRow =
+      winterTable && officialTitle
+        ? [...winterTable.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)]
+            .find((row) => row[1].includes(officialTitle))?.[1]
+            .replace(/<[^>]*>/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim()
+        : undefined;
     const derivedVerdict = exact
       ? parsedSekhem >= acceptanceThreshold
         ? program.scoreField === 'invitation'
@@ -176,6 +199,26 @@ export async function runTechnionAdmissionsProof(
         proofLevel: exact ? 'exact_official' : 'partial_official',
         decisionProvenance: exact ? 'verified_derivation' : 'none',
       },
+      ...(exact &&
+      codeReviewedWinter &&
+      winterCycleProven &&
+      officialTitle &&
+      cutoffRow === `${officialTitle} ${acceptanceThreshold}`
+        ? {
+            publicationCutoff: {
+              value: acceptanceThreshold,
+              metric: 'sekhem' as const,
+              route: 'main' as const,
+              cycle: '2027',
+              programPath: officialTitle,
+              prerequisites:
+                'Initial winter cutoff table; programme-specific manual gates remain separate.',
+              sourceUrl: TECHNION_THRESHOLD_URL,
+              sourceStatus: thresholdResponse.status,
+              sourceExcerpt: cutoffRow,
+            },
+          }
+        : {}),
       limitations: exact
         ? [
             'The cutoff-table proof covers the numeric Sekhem threshold; programme-specific manual gates remain outside this replay.',
@@ -321,13 +364,12 @@ export function parseTechnionOfficialThreshold(
   if (!winterTable) return undefined;
 
   const escapedTitle = officialTitle.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-  const titleSuffix = '\\s*\\*?\\s*</td>';
-  const row = winterTable.match(
-    new RegExp(
-      `<tr[^>]*>\\s*<td[^>]*column-1[^>]*>\\s*${escapedTitle}${titleSuffix}[\\s\\S]*?<td[^>]*column-2[^>]*>\\s*([\\d.]+)`,
-    ),
+  const matchingRows = [...winterTable.matchAll(/<tr\b[^>]*>([\s\S]*?)<\/tr>/gi)].filter((row) =>
+    new RegExp(`<td[^>]*column-1[^>]*>\\s*${escapedTitle}\\s*\\*?\\s*</td>`).test(row[1]),
   );
-  return row ? parseOfficialNumeric(row[1]) : undefined;
+  if (matchingRows.length !== 1) return undefined;
+  const cutoff = matchingRows[0][1].match(/<td[^>]*column-2[^>]*>\s*([\d.]+)(?:\s|<|$)/i);
+  return cutoff ? parseOfficialNumeric(cutoff[1]) : undefined;
 }
 
 function failedTechnionProof(

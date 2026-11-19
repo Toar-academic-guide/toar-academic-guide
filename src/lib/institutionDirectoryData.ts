@@ -1,4 +1,5 @@
 import 'server-only';
+import { directoryCampusAreas } from '@/data/institutionCampusAreas';
 import type { CatalogueInstitution } from '@/types/catalogue';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import {
@@ -24,6 +25,8 @@ import {
 
 const fieldSources: Readonly<Record<string, Readonly<Record<string, string>>>> = fieldEvidence;
 const collator = new Intl.Collator('he');
+const itcOperatorUrl =
+  'https://www.jewishagency.org/israel-tech-challenge/?utm_source=myway&utm_medium=referral';
 const QUALIFICATIONS = {
   academic: 'תואר אקדמי',
   certificate: 'תעודה',
@@ -105,10 +108,11 @@ export async function getPublicInstitutionDirectoryData() {
                 institution.region
               ] ?? null),
         diplomaType: null,
-        sourceUrl: institutionLink(institution.programUrl, id) ?? null,
+        sourceUrl:
+          id === 'itc' ? itcOperatorUrl : (institutionLink(institution.programUrl, id) ?? null),
         domain: institution.domain ?? null,
         logoUrl: institution.logoUrl ?? null,
-        areas: institution.region === 'any' ? [] : [institution.region],
+        areas: directoryCampusAreas(id, null, institution.region),
         categories: [],
         credentials: [],
         fieldSources: { ...fieldSources[id] },

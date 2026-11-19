@@ -74,10 +74,9 @@ for (const width of [1440, 390]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/wa');
     await page.goto('/programs/colmgmt_cs?utm_source=facebook');
-    await expect(
-      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 37)
-      page.getByRole('link', { name: 'בדקו אם אתם מתקבלים', exact: true }),
-    ).toHaveAttribute('href', '/app/calculator?program=colmgmt_cs');
+    await expect(page.getByRole('link', { name: 'בדקו אם אתם מתקבלים', exact: true })).toHaveCount(
+      0,
+    );
     await expect(page.getByRole('link', { name: 'לאתר המוסד', exact: true })).toHaveAttribute(
       'href',
       /utm_source=myway&utm_medium=referral/,

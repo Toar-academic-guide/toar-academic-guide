@@ -2168,7 +2168,7 @@ export const mondayAdmissionEvidenceRecords = [
     mondayUrl: 'https://malichi-hub.monday.com/boards/18416803950/pulses/12341091743',
     itemNumber: 54,
     itemName: '54. המכללה למינהל\\- רשת מכללות הנדסאים',
-    displayName: 'המכללה למינהל\\- רשת מכללות הנדסאים',
+    displayName: 'המכללה למינהל - רשת מכללות הנדסאים',
     catalogueInstitutionId: 'tech_management',
     catalogueVisibility: 'catalogue_mapped',
     institutionType: 'מכללה ציבורית',

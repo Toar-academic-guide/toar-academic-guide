@@ -64,6 +64,7 @@ supabase/.temp/
 
 # local evidence exports
 /scratch/*.json
+/.indexnow/
 
 # Transcripts are private; only synthetic fixtures and admissions evidence are tracked.
 *.[pP][dD][fF]

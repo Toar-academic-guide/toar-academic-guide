@@ -55,7 +55,6 @@ function EventDate({ event }: { event: OpenDay }) {
         <span>{dateLabel(event.date, event.endDate)}</span>
         {description && <small>{description}</small>}
       </div>
-      <a href={event.registration || event.source}>{event.registration ? 'להרשמה' : 'לפרטים'}</a>
     </div>
   );
 }

@@ -89,40 +89,48 @@ it.each([
     score: 611,
     assessment: 'below_threshold',
   },
-] as const)('local Haifa CS score $score carries $assessment', async (profile) => {
-  const fetcher = vi.fn<typeof fetch>();
-  const report = await evaluateAdmissionsForProgram({
-    program: haifaCs,
-    institutions,
-    input: {
-      degreeId: 'haifa_cs',
-      psychometric: profile.psychometric,
-      extraInputs: {
-        haifaBagrutAverage: profile.average,
-        haifaBagrutYear: 2026,
-        haifaPsychometricYear: 2026,
-        psychometricMath: profile.q,
-        psychometricVerbal: profile.v,
-        psychometricEnglish: profile.e,
-        haifaHebrewQualification: 'hebrew_school',
-        mathUnits: 5,
-        mathGrade: 75,
+] as const)(
+  'legacy Haifa CS average $average without rows cannot produce score $score',
+  async (profile) => {
+    const fetcher = vi.fn<typeof fetch>();
+    const report = await evaluateAdmissionsForProgram({
+      program: haifaCs,
+      institutions,
+      input: {
+        degreeId: 'haifa_cs',
+        psychometric: profile.psychometric,
+        extraInputs: {
+          haifaBagrutAverage: profile.average,
+          haifaBagrutYear: 2026,
+          haifaPsychometricYear: 2026,
+          psychometricMath: profile.q,
+          psychometricVerbal: profile.v,
+          psychometricEnglish: profile.e,
+          haifaHebrewQualification: 'hebrew_school',
+          mathUnits: 5,
+          mathGrade: 75,
+        },
       },
-    },
-    fetcher,
-    now: new Date('2026-10-29T12:00:00Z'),
-  });
-  const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
-  // Approved test update, Jorje 2026-10-31: legacy-only Haifa CS profiles have no calculated admission result.
-  expect(result).toMatchObject({ capability: 'tracked_missing_rule', decision: 'unknown' });
-  // Approved test update, Jorje 2026-10-31: ignored averages cannot establish a score, cutoff or score assessment.
-  expect([result.score, result.threshold, result.scoreAssessment]).toEqual([
-    undefined,
-    undefined,
-    undefined,
-  ]);
-  expect(fetcher).not.toHaveBeenCalled();
-});
+      fetcher,
+      now: new Date('2026-10-29T12:00:00Z'),
+    });
+    const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
+    // Legacy-only Haifa CS profiles request subject rows rather than showing an uncalculated result.
+    expect(result).toMatchObject({
+      capability: 'needs_input',
+      kind: 'needs_input',
+      decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
+    });
+    // Approved test update, Jorje 2026-10-31: ignored averages cannot establish a score, cutoff or score assessment.
+    expect([result.score, result.threshold, result.scoreAssessment]).toEqual([
+      undefined,
+      undefined,
+      undefined,
+    ]);
+    expect(fetcher).not.toHaveBeenCalled();
+  },
+);
 
 it.each([
   { bagrut: 70, psychometric: 400 },
@@ -139,9 +147,14 @@ it.each([
     fetcher,
   });
   const result = report.results.find((row) => row.linkedInstitutionId === 'haifa')!;
-  expect(result).toMatchObject({ capability: 'authority_unavailable', decision: 'unknown' });
+  expect(result).toMatchObject({
+    capability: 'needs_input',
+    kind: 'needs_input',
+    decision: 'unknown',
+    requiredInputs: ['haifa_bagrut_average'],
+  });
   expect(result.score).toBeUndefined();
-  expect(result.requiredInputs).toBeUndefined();
+  expect(result.nextAction).toContain('מקצועות הבגרות');
   expect(result.explanation).not.toMatch(/[a-zA-Z]|פסיכומטרי 680|בגרות 85/);
   expect(fetcher).not.toHaveBeenCalled();
   expect(haifaPolicies.records.find((row) => row.programme === 'psychology')).toMatchObject({
@@ -741,15 +754,16 @@ describe('evaluateAdmissionsForProgram', () => {
   );
 
   it.each(
-    routingOfficial.tau.flatMap((capture) => {
-      const id = capture.pair.split('__')[0];
-      const aliases: Record<string, string[]> = {
-        ee: ['ee', 'tau_ee'],
-        me: ['me', 'tau_me'],
-        occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
-      };
-      return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
-    }),
+    routingOfficial.tau
+      .filter((capture) => capture.pair !== 'ee__tau')
+      .flatMap((capture) => {
+        const id = capture.pair.split('__')[0];
+        const aliases: Record<string, string[]> = {
+          me: ['me', 'tau_me'],
+          occupational_therapy: ['occupational_therapy', 'tau_occupational_therapy'],
+        };
+        return (aliases[id] ?? [id]).map((degreeId) => ({ degreeId, capture }));
+      }),
   )(
     'replays $degreeId through the evaluator against the captured official response',
     async ({ degreeId, capture }) => {
@@ -789,9 +803,50 @@ describe('evaluateAdmissionsForProgram', () => {
       expect(fetcher).toHaveBeenCalledTimes(2);
     },
   );
+  it.each(['ee', 'tau_ee', 'datascience', 'tau_datascience'])(
+    'withholds the unreviewed TAU %s evaluator route even for complete applicant scores',
+    async (degreeId) => {
+      const program = {
+        ...getStaticCataloguePrograms().find((entry) => entry.id === degreeId)!,
+        linkedInstitutionIds: ['tau'],
+      };
+      const fetcher = vi.fn<typeof fetch>();
+      const report = await evaluateAdmissionsForProgram({
+        input: {
+          degreeId,
+          psychometric: 730,
+          bagrut: 115,
+          extraInputs: {
+            psychometricEnglish: 110,
+            bagrutSubjectRecord: {
+              schemaVersion: 1,
+              sector: 'jewish',
+              subjects: [
+                { subjectId: 'mathematics', units: 5, grade: 82 },
+                { subjectId: 'physics', units: 4, grade: 80 },
+              ],
+            },
+          },
+        },
+        program,
+        institutions: getStaticCatalogueInstitutions(),
+        fetcher,
+        freshnessStatesBySourceId: qualifiedFreshnessStates(program),
+      });
+      const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+      expect(tau).toMatchObject({
+        capability: 'requirements_only',
+        kind: 'requirements_only',
+        decision: 'unknown',
+        confidence: 'low',
+      });
+      expect(tau?.score).toBeUndefined();
+      expect(tau?.threshold).toBeUndefined();
+      expect(tau?.scoreAssessment).toBeUndefined();
+      expect(fetcher).not.toHaveBeenCalled();
+    },
+  );
   it.each([
-    'ee',
-    'tau_ee',
     'me',
     'tau_me',
     'occupational_therapy',
@@ -856,11 +911,12 @@ describe('evaluateAdmissionsForProgram', () => {
       },
       fetcher,
     });
-    // Approved test update, Jorje 2026-10-31: an overall average without subject rows cannot establish Haifa mapping eligibility.
+    // A legacy overall average without subject rows requests the missing grades before mapping.
     expect(result.results[0]).toMatchObject({
-      capability: 'tracked_missing_rule',
+      capability: 'needs_input',
+      kind: 'needs_input',
       decision: 'unknown',
-      sourceLabel: 'אין מספיק מידע',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     expect(result.results[0].score).toBeUndefined();
     expect(fetcher).not.toHaveBeenCalled();
@@ -905,10 +961,12 @@ describe('evaluateAdmissionsForProgram', () => {
           fetcher,
           now: new Date('2026-09-28T20:00:00Z'),
         });
-        // Approved test update, Jorje 2026-10-31: both captured legacy-average bands lack subject rows and remain uncalculated.
+        // Both captured legacy-average bands lack subject rows and request them.
         expect(result.results[0]).toMatchObject({
-          capability: 'tracked_missing_rule',
+          capability: 'needs_input',
+          kind: 'needs_input',
           decision: 'unknown',
+          requiredInputs: ['haifa_bagrut_average'],
         });
         // Approved test update, Jorje 2026-10-31: neither legacy-average capture supplies a calculated score or cutoff.
         expect([result.results[0].score, result.results[0].threshold]).toEqual([
@@ -1021,7 +1079,8 @@ describe('evaluateAdmissionsForProgram', () => {
       decision: 'unknown',
     });
     expect(report.results[0].explanation).toContain('610');
-    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו');
+    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו למחזור');
+    expect(report.results[0].explanation).not.toMatch(/אומתו ב־/);
     expect(report.results[0].officialUrls?.[0]).toMatch(/^https:\/\//);
     expect(report.results[0].score).toBeUndefined();
   });
@@ -1301,14 +1360,14 @@ describe('evaluateAdmissionsForProgram', () => {
     expect(report.results).toContainEqual(
       expect.objectContaining({
         linkedInstitutionId: 'haifa',
-        kind: 'tracked_missing_rule',
-        capability: 'tracked_missing_rule',
+        kind: 'needs_input',
+        capability: 'needs_input',
         decision: 'unknown',
-        explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+        requiredInputs: ['haifa_bagrut_average'],
       }),
     );
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].requiredInputs).toEqual(['haifa_bagrut_average']);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -1382,12 +1441,13 @@ describe('evaluateAdmissionsForProgram', () => {
     // Ruling: /workspace/codex-tasks/r1-pr278-rulings-2026-10-25.md row 2. Official source: none named in rulings; see PR #278 table. Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     // Approved test update, Jorje 2026-10-31: missing subject rows take precedence over later year and qualification questions.
     expect(report.results[0]).toMatchObject({
-      kind: 'tracked_missing_rule',
+      kind: 'needs_input',
+      capability: 'needs_input',
       // Amit ruling 2026-10-25 via Jorje: full bagrut assumed when grades entered
       decision: 'unknown',
+      requiredInputs: ['haifa_bagrut_average'],
     });
-    // Approved test update, Jorje 2026-10-31: ignored averages do not advance to later Haifa follow-up inputs.
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
     expect(report.results[0].estimated).not.toBe(true);
     // Estimated-flag scope per Jorje's 07:24 ruling (subject-derived never estimated; flag/note only on calculated results). Approved by Jorje 2026-10-25 (r1-pr278-rulings-2026-10-25.md)
@@ -2064,49 +2124,15 @@ describe('evaluateAdmissionsForProgram', () => {
   });
 
   it('does not call the TAU adapter while required exact inputs are missing', async () => {
-    const fetcher = vi
-      .fn<typeof fetch>()
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              getLastScore: {
-                body: JSON.stringify({
-                  hatama_handasa: 712,
-                }),
-              },
-            },
-          }),
-          { status: 200 },
-        ),
-      )
-      .mockResolvedValueOnce(
-        new Response(
-          JSON.stringify({
-            data: {
-              getPrograms: {
-                total: 1,
-                results: [
-                  {
-                    field_plain_id_programs: ['056011050000'],
-                    field_this_year_receipt_threshol: 700,
-                    field_this_year_rejection_thresh: 670,
-                  },
-                ],
-              },
-            },
-          }),
-          { status: 200 },
-        ),
-      );
+    const fetcher = vi.fn<typeof fetch>();
 
     const report = await evaluateAdmissionsForProgram({
       input: {
-        degreeId: 'tau_datascience',
+        degreeId: 'nursing',
         psychometric: 700,
         bagrut: 110,
       },
-      program: tauDataScience,
+      program: tauNursing,
       institutions,
       fetcher,
     });
@@ -2117,12 +2143,12 @@ describe('evaluateAdmissionsForProgram', () => {
         linkedInstitutionId: 'tau',
         capability: 'needs_input',
         decision: 'unknown',
-        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
+        requiredInputs: ['psychometric_english'],
       }),
     );
   });
 
-  it('returns the reviewed TAU score and verdict with current proof and complete inputs', async () => {
+  it('does not replay the old high-tech-plus proof for dedicated TAU data science', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -2183,23 +2209,18 @@ describe('evaluateAdmissionsForProgram', () => {
       now: new Date('2026-07-25T21:00:00Z'),
     });
 
-    expect(fetcher).toHaveBeenCalledTimes(2);
-    expect(JSON.parse(String(fetcher.mock.calls[0][1]?.body))).toMatchObject({
-      variables: { scoresData: { reali10: 1 } },
+    expect(fetcher).not.toHaveBeenCalled();
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({
+      kind: 'requirements_only',
+      capability: 'requirements_only',
+      decision: 'unknown',
     });
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'accepted',
-        score: 664,
-        threshold: 652,
-      }),
-    );
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
-  it('returns an exact below verdict for a failed TAU minimum gate without a live call', async () => {
+  it('does not reject dedicated TAU data science using the old high-tech-plus floor', async () => {
     const fetcher = vi.fn<typeof fetch>();
     const report = await evaluateAdmissionsForProgram({
       input: {
@@ -2223,15 +2244,14 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        kind: 'exact',
-        capability: 'exact',
-        decision: 'below',
-        explanation: expect.stringContaining('פסיכומטרי כללי 620'),
-      }),
-    );
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({
+      kind: 'requirements_only',
+      capability: 'requirements_only',
+      decision: 'unknown',
+    });
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
   it('returns TAU Nursing eligibility for manual assessment, never final acceptance', async () => {
@@ -2451,7 +2471,7 @@ describe('evaluateAdmissionsForProgram', () => {
     );
   });
 
-  it('does not spend live-call budget on a TAU pair with missing exact inputs', async () => {
+  it('does not spend live-call budget on a withheld TAU pair in a multi-institution request', async () => {
     const fetcher = vi
       .fn<typeof fetch>()
       .mockResolvedValueOnce(
@@ -2503,14 +2523,10 @@ describe('evaluateAdmissionsForProgram', () => {
     });
 
     expect(fetcher).not.toHaveBeenCalled();
-    expect(report.results).toContainEqual(
-      expect.objectContaining({
-        linkedInstitutionId: 'tau',
-        capability: 'needs_input',
-        decision: 'unknown',
-        requiredInputs: ['psychometric_english', 'bagrut_subject_record'],
-      }),
-    );
+    const tau = report.results.find((result) => result.linkedInstitutionId === 'tau');
+    expect(tau).toMatchObject({ capability: 'requirements_only', decision: 'unknown' });
+    expect(tau?.score).toBeUndefined();
+    expect(tau?.threshold).toBeUndefined();
   });
 
   it('includes dynamic admissions criteria (interview, portfolio, no bagrut, no psychometric) from Monday evidence in evaluator Hebrew explanation', async () => {
@@ -4497,12 +4513,12 @@ describe('results average normalization regressions', () => {
     expect(report.results[0].requiredInputs ?? []).not.toContain('haifa_bagrut_year');
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0]).toMatchObject({
-      kind: 'tracked_missing_rule',
-      capability: 'tracked_missing_rule',
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      kind: 'needs_input',
+      capability: 'needs_input',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
   });
   it('does not leak the HIT implementation note after math gates are supplied', async () => {
     const report = await evaluateAdmissionsForProgram({
@@ -4993,15 +5009,15 @@ it.each([
   if (proxy) {
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0]).toMatchObject({
-      kind: 'tracked_missing_rule',
-      capability: 'tracked_missing_rule',
+      kind: 'needs_input',
+      capability: 'needs_input',
       decision: 'unknown',
-      explanation: 'עדיין לא מחשבים כאן את ציון הקבלה של חיפה',
+      requiredInputs: ['haifa_bagrut_average'],
     });
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0].score).toBeUndefined();
     // Approved test update, Jorje 2026-10-29
-    expect(report.results[0].requiredInputs).toBeUndefined();
+    expect(report.results[0].nextAction).toContain('מקצועות הבגרות');
     // Approved test update, Jorje 2026-10-29
     expect(report.results[0].estimated).not.toBe(true);
     // Approved test update, Jorje 2026-10-29
@@ -5101,7 +5117,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      expect(pairs).toBe(436);
+      // The sourced college routes, complementary certificates and Hadassah add distinct pairs.
+      expect(pairs).toBe(465);
     },
   );
   it.each([
@@ -5164,8 +5181,8 @@ it.each(['tlvyaffo_economics', 'ruppin_marine_bio'])(
       // https://www.ruppin.ac.il/faculties/ba/marine-science-and-environment/application-requirements/
       expect(result).toMatchObject({ decision: 'unknown', kind: 'needs_input' });
     else {
-      expect(result.kind).toBe('manual_gate');
-      expect(result.explanation).toContain('ראיון');
+      expect(result.kind).toBe('requirements_only');
+      expect(result.explanation).not.toContain('ראיון');
     }
   },
 );

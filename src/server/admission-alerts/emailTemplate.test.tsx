@@ -23,10 +23,13 @@ describe('admission-alert Hebrew email', () => {
     async (institutionName) => {
       const payload = await renderAdmissionAlertEmail({ ...input, institutionName }, config);
       expect(payload.html).toContain('lang="he" dir="rtl"');
-      for (const content of [institutionName, input.programName, '29.09.2026', '2026']) {
+      for (const content of [institutionName, input.programName, '2026']) {
         expect(payload.html).toContain(content);
         expect(payload.text).toContain(content);
       }
+      expect(payload.html).not.toContain('29.09.2026');
+      expect(payload.text).not.toContain('29.09.2026');
+      expect(payload.html).not.toContain('נבדק בתאריך');
       for (const url of [
         `${config.origin}/app/calculator`,
         `${config.origin}/app/profile#admission-alerts`,

@@ -34,6 +34,6 @@ export function biuFloorVerdict(rows: FloorCheckRow[]): string {
     .flat();
   if (possible.some((row) => row.status === 'missing')) return 'חסרים נתונים לבדיקת תנאי הסף';
   if (possible.some((row) => row.status === 'conflicting'))
-    return 'מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי';
+    return 'נתונים סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי';
   return 'יש לבדוק את תנאי הסף במחשבון הרשמי';
 }

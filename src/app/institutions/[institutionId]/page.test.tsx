@@ -21,6 +21,10 @@ vi.mock('@/context/AuthContext', () => ({
   useAuth: () => ({ loading: false, user: null }),
 }));
 
+import {
+  openUniversityTransferReferenceUrls,
+  openUniversityTransferTracks,
+} from '@/data/openUniversityTransferTracks';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import * as publicCataloguePages from '@/lib/publicCataloguePages';
 
@@ -28,7 +32,7 @@ import InstitutionPage from './page';
 
 describe('InstitutionPage', () => {
   it('renders public institution content and links into app routes', async () => {
-    const institution = getStaticCatalogueInstitutions()[0];
+    const institution = getStaticCatalogueInstitutions().find((entry) => entry.id === 'haifa')!;
 
     render(await InstitutionPage({ params: Promise.resolve({ institutionId: institution.id }) }));
 
@@ -42,6 +46,48 @@ describe('InstitutionPage', () => {
         .getAttribute('href'),
     ).toBe('/app/calculator');
     expect(screen.queryByText('academicScores')).toBeNull();
+  });
+
+  it('does not promise a calculator for an institution with no supported programme', async () => {
+    render(await InstitutionPage({ params: Promise.resolve({ institutionId: 'danon' }) }));
+
+    expect(screen.getByRole('heading', { name: /דנון/ })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: 'מחשבון קבלה' })).toBeNull();
+    expect(screen.getByRole('link', { name: 'שאלון התאמה' })).toBeTruthy();
+  });
+
+  it('renders official OpenU transfer tracks only on the OpenU institution page', async () => {
+    const { container } = render(
+      await InstitutionPage({ params: Promise.resolve({ institutionId: 'open_university' }) }),
+    );
+
+    const section = screen
+      .getByRole('heading', { name: 'אפיקי מעבר מהאוניברסיטה הפתוחה' })
+      .closest('section')!;
+    expect(section.textContent).toContain('8 בנובמבר 2026');
+    for (const track of openUniversityTransferTracks) {
+      expect(section.textContent).toContain(track.label);
+      expect(section.querySelector(`a[href="${track.href}"]`)).toBeNull();
+    }
+    expect(section.textContent).not.toContain('סיעוד');
+    expect(section.querySelector('a[href^="https://"]')).toBeNull();
+    expect(openUniversityTransferReferenceUrls.faq).toMatch(/^https:\/\/www\.openu\.ac\.il\//);
+    expect(openUniversityTransferReferenceUrls.updates).toMatch(/^https:\/\/www\.openu\.ac\.il\//);
+    expect(section.querySelector('a[href="/sekhem-calculator"]')?.textContent).toContain(
+      'למחשבון הסכם',
+    );
+    expect(container.querySelector('main a[href="/app/assessment"]')?.textContent).toContain(
+      'שאלון התאמה',
+    );
+
+    const otherInstitution = render(
+      await InstitutionPage({ params: Promise.resolve({ institutionId: 'tau' }) }),
+    );
+    expect(
+      within(otherInstitution.container).queryByRole('heading', {
+        name: 'אפיקי מעבר מהאוניברסיטה הפתוחה',
+      }),
+    ).toBeNull();
   });
 
   it('calls notFound for unknown institution IDs', async () => {

@@ -3,20 +3,31 @@ import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import ProfileSekhemCalculator from '@/components/sekhem/ProfileSekhemCalculator';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
-import { HAIFA_CALCULATOR_URL, HAIFA_PROGRAM_URLS } from '@/data/admissions/haifaOfficialUrls';
 import JsonLd from '@/components/seo/JsonLd';
+import { sekhemAverageSources } from '@/data/sekhemAverageSources';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
 import { sekhemCalculatorLd } from '@/lib/seo/jsonLd';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
+import { isMedicineAcademicPair } from '@/lib/medicineAcademicInputs';
 
-const title = 'מחשבון סכם לפי מוסד ותוכנית | MyWay';
+const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
 const description =
-  'מחשבון סכם לפי ציוני הבגרות והפסיכומטרי שלכם. בחרו תוכנית לימודים ובדקו איך הציון שלכם משתווה לסף הקבלה שלה.';
+  'חשבו סכם וממוצע בגרות לפי המוסד בתוכניות הנתמכות, מציוני המקצועות והפסיכומטרי שלכם. השוו לסף הקבלה.';
 const canonical = absoluteUrl('/sekhem-calculator');
 
 const faq = [
+  {
+    question: 'איך שיפור בפסיכומטרי משפיע על הסכם?',
+    answer:
+      'הסכם מחושב לפי הנוסחה של המוסד שבחרתם. אחרי שמזינים את הציון החדש, רואים את הסכם העדכני לאותה תוכנית. שיפור בציון אינו מבטיח קבלה.',
+  },
+  {
+    question: 'איך ארבע יחידות במתמטיקה נכנסות לחישוב?',
+    answer:
+      'כל מוסד מחשב בונוסים לפי הכללים שלו. מזינים את מספר היחידות ואת הציון כפי שהם בתעודה, ואנחנו מחשבים לפי הכללים שהמוסד פרסם לתוכנית שנבחרה.',
+  },
   {
     question: 'מהו ציון סכם?',
     answer:
@@ -34,7 +45,8 @@ const faq = [
   },
   {
     question: 'באילו תוכניות אפשר לבדוק את הסכם?',
-    answer: 'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק.',
+    answer:
+      'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק. רוצים לראות לאן מתקבלים בתוכניות שבחרתם? למחשבון סיכויי הקבלה',
   },
 ];
 
@@ -60,6 +72,13 @@ export default async function Page({
   searchParams: Promise<{ program?: string; from?: string }>;
 }) {
   const [offerings, params] = await Promise.all([loadSekhemCalculatorOfferings(), searchParams]);
+  const coveredAverageSources = sekhemAverageSources.filter((source) =>
+    offerings.some(
+      (offering) =>
+        offering.institutionId === source.id &&
+        (source.id !== 'huji' || isMedicineAcademicPair(offering.programId, 'huji')),
+    ),
+  );
   const requestedId = params.program ? canonicalProgramId(params.program) : undefined;
   const initialProgramId = offerings.some((row) => row.programId === requestedId)
     ? requestedId
@@ -92,7 +111,9 @@ export default async function Page({
           ]}
         />
         <header className="mb-8 text-center">
-          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">מחשבון סכם</h1>
+          <h1 className="text-3xl font-semibold leading-tight sm:text-4xl">
+            מחשבון סכם וממוצע בגרות לפי מוסד
+          </h1>
           <p className="mt-4 text-(--text-body)">
             חשבו את הסכם שלכם ובדקו איך הוא משתווה לסף הקבלה לתוכנית שבחרתם.
           </p>
@@ -121,6 +142,57 @@ export default async function Page({
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
+        <section className="mt-10 space-y-4 leading-7" aria-labelledby="bagrut-average-title">
+          <h2 id="bagrut-average-title" className="text-xl font-semibold">
+            ממוצע הבגרות שלכם לפי כל מוסד
+          </h2>
+          <p className="text-(--text-body)">
+            ממוצע הבגרות מחושב לפי משקל היחידות, וכל מוסד מוסיף בונוסים לפי הכללים שלו. לכן אותן
+            בגרויות יכולות לתת ממוצע שונה ממוסד למוסד. כאן מוצג הממוצע לפי המוסד של התוכנית שבחרתם,
+            ורק במוסדות שהמחשבון באמת מכסה. אין כאן הבטחת קבלה, ואין נוסחה אחת לכולם.
+          </p>
+          <table
+            className="w-full table-fixed text-right text-sm leading-6"
+            aria-labelledby="bagrut-average-title"
+          >
+            <thead>
+              <tr className="border-b border-(--border)">
+                <th scope="col" className="py-3 pe-2">
+                  מוסד
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {coveredAverageSources.map((source) => (
+                <tr key={source.id} className="border-b border-(--border)">
+                  <th scope="row" className="py-3 pe-2 align-top font-medium">
+                    {source.name}
+                    {source.id === 'huji' && (
+                      <span className="block font-normal">במסלול הרפואה הנתמך</span>
+                    )}
+                  </th>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </section>
+        <section className="mt-10 space-y-4 leading-7" aria-labelledby="sekhem-improvement-title">
+          <h2 id="sekhem-improvement-title" className="text-xl font-semibold">
+            איך שיפור בפסיכומטרי וארבע יחידות במתמטיקה נכנסים לסכם?
+          </h2>
+          <p className="text-(--text-body)">
+            הסכם מחושב לפי הנוסחה של כל מוסד, מציון הבגרות המשוקלל ומהפסיכומטרי. שיפור בפסיכומטרי
+            וציון בארבע יחידות מתמטיקה נכנסים לחישוב רק לפי כללי אותו מוסד, כולל הבונוס שהוא מפרסם.
+            מזינים את הציונים כפי שהם בתעודה ואת הציון החדש בפסיכומטרי, ורואים איך הסכם משתנה
+            בתוכנית שבחרתם. אין כאן הבטחת קבלה.
+          </p>
+          <Link
+            href="/without-psychometric"
+            className="inline-flex min-h-11 items-center underline underline-offset-4"
+          >
+            מסלולי קבלה ללא פסיכומטרי
+          </Link>
+        </section>
         <section className="mt-10 space-y-7 leading-7" aria-labelledby="sekhem-faq-title">
           <h2 id="sekhem-faq-title" className="sr-only">
             שאלות על מחשבון הסכם
@@ -128,7 +200,18 @@ export default async function Page({
           {faq.map(({ question, answer }) => (
             <div key={question}>
               <h2 className="text-xl font-semibold">{question}</h2>
-              <p className="mt-2 text-(--text-body)">{answer}</p>
+              <p className="mt-2 text-(--text-body)">
+                {question === 'באילו תוכניות אפשר לבדוק את הסכם?' ? (
+                  <>
+                    {answer.slice(0, -'למחשבון סיכויי הקבלה'.length)}
+                    <Link href="/calculator" className="underline underline-offset-4">
+                      למחשבון סיכויי הקבלה
+                    </Link>
+                  </>
+                ) : (
+                  answer
+                )}
+              </p>
             </div>
           ))}
         </section>
@@ -139,6 +222,20 @@ export default async function Page({
             prefetch={false}
           >
             פסיכומטרי דו־תחומי: מה משתנה ומה קורה לציונים קודמים?
+          </Link>
+          {' · '}
+          <Link
+            className="underline underline-offset-4"
+            href="/psychometric-dates"
+            prefetch={false}
+          >
+            מועדי הפסיכומטרי
+          </Link>
+        </p>
+        <p className="mt-4 leading-7">
+          כבר לומדים במוסד אחר?{' '}
+          <Link className="underline underline-offset-4" href="/transfer">
+            כך מתכננים מעבר בין מוסדות לימוד
           </Link>
         </p>
         {!unavailable && (
@@ -158,14 +255,6 @@ export default async function Page({
               מתקבל <strong>סכם של 718</strong> — 18 נקודות מעל הסף של 700 לשנת תשפ״ז. הציון
               במתמטיקה עומד גם בדרישת החוג לחמש יחידות. עדיין צריך לבדוק את דרישות העברית והאנגלית.
             </p>
-            <div className="flex flex-wrap gap-x-5 gap-y-2 text-sm">
-              <a className="underline underline-offset-4" href={HAIFA_CALCULATOR_URL}>
-                איך אוניברסיטת חיפה מחשבת סכם
-              </a>
-              <a className="underline underline-offset-4" href={HAIFA_PROGRAM_URLS.haifa_cs}>
-                תנאי הקבלה למדעי המחשב בחיפה
-              </a>
-            </div>
           </section>
         )}
       </main>

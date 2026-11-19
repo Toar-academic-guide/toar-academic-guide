@@ -60,9 +60,37 @@ const institutions: DirectoryInstitution[] = [
 function open() {
   render(<InstitutionsDirectory institutions={institutions} subjects={subjects} fields={fields} />);
 }
+it('links to the transfer guide below the institution results', () => {
+  open();
+  expect(
+    screen.getByRole('link', { name: 'המדריך למעבר בין מוסדות לימוד' }).getAttribute('href'),
+  ).toBe('/transfer');
+  expect(screen.getByRole('link', { name: 'מוסד א׳' }).getAttribute('href')).toBe(
+    '/institutions/a',
+  );
+});
 const fieldGroup = () => screen.getByRole('group', { name: 'תחום לימודים' });
 const subjectGroup = () => screen.getByRole('group', { name: 'תכנית לימודים' });
 describe('institution subject pills', () => {
+  it('keeps the ITC name without a Jewish Agency link', () => {
+    render(
+      <InstitutionsDirectory
+        institutions={[
+          {
+            ...base,
+            id: 'itc',
+            name: 'Israel Tech Challenge (ITC)',
+            sourceUrl: 'https://www.jewishagency.org/israel-tech-challenge/',
+          },
+        ]}
+        subjects={subjects}
+        fields={fields}
+      />,
+    );
+    expect(screen.getByRole('link', { name: 'Israel Tech Challenge (ITC)' })).toBeTruthy();
+    expect(screen.queryByRole('link', { name: /הסוכנות היהודית/ })).toBeNull();
+    expect(screen.queryByText('מידע באתר הסוכנות היהודית')).toBeNull();
+  });
   it('starts with every institution and filters directly by a programme, then clears it', () => {
     open();
     expect(screen.getByRole('link', { name: 'מוסד ג׳' })).toBeTruthy();
@@ -94,9 +122,7 @@ describe('institution subject pills', () => {
     fireEvent.click(within(fieldGroup()).getByRole('button', { name: 'הנדסה' }));
     const row = screen.getByRole('row', { name: /מוסד ג׳/ });
     expect(within(row).getByText('—')).toBeTruthy();
-    expect(within(row).getByRole('link', { name: 'מסלולים באתר המוסד' }).getAttribute('href')).toBe(
-      'https://example.edu/engineering',
-    );
+    expect(within(row).queryByRole('link', { name: 'מסלולים באתר המוסד' })).toBeNull();
     fireEvent.click(within(subjectGroup()).getByRole('button', { name: 'הנדסת תוכנה' }));
     expect(screen.queryByRole('link', { name: 'מוסד ג׳' })).toBeNull();
   });

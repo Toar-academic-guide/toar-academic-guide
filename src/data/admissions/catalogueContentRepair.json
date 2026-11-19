@@ -98,7 +98,7 @@
         "אפיק נוסף: פסיכומטרי 700 לפחות וזכאות לבגרות.",
         "לבעלי תואר ראשון: ציון משולב 1475 לפחות וגם פסיכומטרי 600 לפחות; הציון המשולב הוא ממוצע התואר כפול 10, בתוספת הפסיכומטרי הרב־תחומי.",
         "ציון 85 בקורס צמיחה כלכלית וצדק חלוקתי מוסיף 3 נקודות להתאמה. ציון 85 גם בקורס מקוון נוסף מהרשימה מזכה בתוספת כוללת של 5 נקודות.",
-        "בקבלה חריגה ללא פסיכומטרי נדרשים קורות חיים, חיבור מקורי על סוגיה משפטית עד 300 מילים, ולבעלי תואר גם גיליון ציונים ואישור זכאות. יש להגישם בתוך שלושה שבועות מהרישום ולעדכן את ועדת הקבלה.",
+        "בקבלה חריגה ללא פסיכומטרי נדרשים קורות חיים, חיבור עצמאי על סוגיה משפטית עד 300 מילים, ולבעלי תואר גם גיליון ציונים ואישור זכאות. יש להגישם בתוך שלושה שבועות מהרישום ולעדכן את ועדת הקבלה.",
         "יש לעמוד בדרישות האוניברסיטה. המועד האחרון לקורסים המקוונים במחזור תשפ״ז היה יוני 2026; ספי הקבלה ומועדי הרישום עשויים להשתנות."
       ],
       "coverage": "published_conditions"
@@ -813,7 +813,7 @@
     },
     {
       "programId": "mon_12220685569_cs",
-      "institutionId": "mon_12220685569",
+      "institutionId": "hadassah",
       "sourceUrl": "https://www.jmc.ac.il/תוכניות-לימוד/ביה-ס-הבינתחומי-לבריאות-חברה-ומדע/מדעי-המחשב/קבלה-ורישום/תנאי-קבלה/",
       "sourceSha256": "fe72d51204f9c6e047ef00e07f6cad71e5ba759e3e5352cc2768b0b845f74115",
       "checkedAt": "2026-10-21",
@@ -1395,9 +1395,9 @@
     {
       "programId": "mon_12341128804_medicine",
       "institutionId": "mon_12341128804",
-      "sourceUrl": "https://washington.ac.il/",
-      "sourceSha256": "60fa2fd8655d182730a586a94b2d100972d45d91d354955833bb4ce869924612",
-      "checkedAt": "2026-10-21",
+      "sourceUrl": "https://www.washington.ac.il/teuda/adama/",
+      "sourceSha256": "ae9ce1ad1a166765dd30e9d7f148979e25f1501ba64c1ade8f57b1a1bfd3cfb7",
+      "checkedAt": "2026-11-08",
       "notes": [
         "דרישות הקבלה למסלולי הרפואה המשלימה אינן מפורטות באתר הקריה. יש לבחור מסלול ולברר את תנאיו עם בית הספר אדמה."
       ],
@@ -1657,6 +1657,34 @@
     }
   ],
   "excludedPrograms": [
+    {
+      "programId": "achva_general_academic",
+      "institutionId": "achva",
+      "reason": "Broad imported placeholder replaced by the eight current, source-backed first-degree routes.",
+      "sourceUrl": "https://www.achva.ac.il/תואר-ראשון/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_general_academic",
+      "institutionId": "beit_berl",
+      "reason": "Broad imported placeholder replaced by current, specific first-degree routes.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "beit_berl_graphic_design",
+      "institutionId": "beit_berl",
+      "reason": "Broad design category does not identify a specific qualification; current art and film B.Ed.F.A. routes have their own records.",
+      "sourceUrl": "https://www.beitberl.ac.il/degree/bed-ba/",
+      "checkedAt": "2026-11-08"
+    },
+    {
+      "programId": "david_yellin_education",
+      "institutionId": "david_yellin",
+      "reason": "Broad imported education placeholder replaced by current B.Ed. study routes.",
+      "sourceUrl": "https://dyellin.ac.il/bed",
+      "checkedAt": "2026-11-08"
+    },
     {
       "programId": "bgu_law",
       "institutionId": "bgu",

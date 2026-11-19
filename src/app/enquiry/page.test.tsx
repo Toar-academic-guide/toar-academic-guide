@@ -4,6 +4,7 @@ import { metadata as rootMetadata } from '@/app/layout';
 import ProgramPage from '@/app/programs/[programId]/page';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
+import { getEnquiryTarget } from '@/lib/enquiryTarget';
 import { listCatalogueInstitutions, listCataloguePrograms } from '@/server/catalogue/queries';
 import { SITE_DESCRIPTION } from '@/lib/site';
 import type { CatalogueProgram } from '@/types/catalogue';
@@ -37,6 +38,7 @@ const livePrograms = [
     id: id === 'social_work' ? 'ono_socialwork' : 'ono_psychology',
     institutionId: 'ono',
     linkedInstitutionIds: ['ono'],
+    isListed: id !== 'social_work',
     thresholds: {},
     institutionDetails: [],
   })),
@@ -137,11 +139,43 @@ describe('enquiry link integrity', () => {
     expect(await form(href)).toContain('<form');
   });
 
-  it('renders a form for every one of the 113 QA failures', async () => {
+  it('keeps the historical QA links reachable except the three delisted offers', async () => {
     expect(new Set(failedLinks).size).toBe(113);
+    const delisted = new Set([
+      '/enquiry?program=nursing&institution=telhai',
+      '/enquiry?program=social_work&institution=mta',
+      '/enquiry?program=social_work&institution=ono',
+    ]);
+    for (const href of delisted) expect(failedLinks).toContain(href);
     for (const href of failedLinks) {
-      await expect(form(href), href).resolves.toContain('<form');
+      if (delisted.has(href)) {
+        await expect(form(href)).rejects.toThrow('NEXT_HTTP_ERROR_FALLBACK;404');
+        continue;
+      }
+      const markup = await form(href).catch((error: unknown) => {
+        throw new Error(`${href}: ${String(error)}`);
+      });
+      expect(markup, href).toContain('<form');
     }
+  });
+
+  it('routes an old Ono psychology enquiry to the behavioural-sciences degree', async () => {
+    const markup = await form('/enquiry?program=psychology&institution=ono');
+    expect(markup).toContain('מדעי ההתנהגות <bdi dir="ltr">(B.A.)</bdi>');
+    expect(markup).not.toContain('פסיכולוגיה · המכללה האקדמית אונו');
+  });
+
+  it('keeps old medicine enquiry pairs pointed at their schools without changing design Tiltan', async () => {
+    expect(
+      (await getEnquiryTarget('givat_washington_medicine', 'givat_washington'))?.institution.id,
+    ).toBe('mon_12341128804');
+    expect((await getEnquiryTarget('tiltan_medicine', 'tiltan'))?.institution.id).toBe(
+      'mon_12341137918',
+    );
+    expect((await getEnquiryTarget('tiltan_graphic_design', 'tiltan'))?.institution.id).toBe(
+      'tiltan',
+    );
+    expect(await form('/enquiry?program=tiltan_medicine&institution=tiltan')).toContain('<form');
   });
 
   it.each(['static', 'database'] as const)(
@@ -154,6 +188,7 @@ describe('enquiry link integrity', () => {
       const catalogue = await loadPublicCatalogue();
       const hrefs = new Set<string>();
       for (const program of catalogue.programs) {
+        if (program.isListed === false) continue;
         const markup = renderToStaticMarkup(
           await ProgramPage({ params: Promise.resolve({ programId: program.id }) }),
         );

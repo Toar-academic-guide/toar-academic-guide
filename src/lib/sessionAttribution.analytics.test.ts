@@ -5,6 +5,7 @@ vi.mock('posthog-js', () => ({ default: { init, register_for_session: register }
 afterEach(() => {
   window.history.replaceState(null, '', '/');
   sessionStorage.clear();
+  vi.restoreAllMocks();
 });
 it('registers session super properties before the initial pageview and keeps all events on first touch', async () => {
   sessionStorage.clear();
@@ -23,6 +24,8 @@ it('registers session super properties before the initial pageview and keeps all
         utm_medium: null,
         utm_campaign: 'fall_2026',
         referrer: 'https://example.com',
+        $referrer: 'https://example.com',
+        $referring_domain: 'example.com',
       },
     ],
   ]);
@@ -39,6 +42,7 @@ it('registers session super properties before the initial pageview and keeps all
     utm_campaign: 'fall_2026',
     referrer: 'https://example.com',
     $referrer: 'https://example.com',
+    $referring_domain: 'example.com',
   });
   expect(JSON.stringify(event)).not.toContain('0501234567');
   expect(options.before_send(null)).toBeNull();
@@ -49,17 +53,30 @@ it('does not leak invalid campaign values through automatic page URLs or referre
   register.mockClear();
   vi.resetModules();
   sessionStorage.clear();
-  window.history.replaceState(null, '', '/?utm_campaign=0501234567');
+  window.history.replaceState(
+    null,
+    '',
+    '/?utm_campaign=0501234567&utm_medium=https%3A%2F%2Fexample.com%2Fprivate',
+  );
   await import('../../instrumentation-client');
   const options = init.mock.calls[0][1];
+  options.loaded({ register_for_session: register });
+  expect(register.mock.calls[0][0]).toMatchObject({ utm_campaign: null, utm_medium: null });
   const event = options.before_send({
     event: '$pageview',
     properties: {
       $current_url: 'https://example.com/?utm_campaign=0501234567&utm_source=tiktok',
       $initial_referrer: 'https://example.com/article?phone=0501234567',
+      $session_entry_utm_medium: 'https://example.com/private',
+      $session_entry_utm_campaign: '0501234567',
+      $session_entry_utm_content: 'score=680',
     },
   });
   expect(JSON.stringify(event)).not.toContain('0501234567');
+  expect(JSON.stringify(event)).not.toContain('/private');
+  expect(event.properties.$session_entry_utm_medium).toBeNull();
+  expect(event.properties.$session_entry_utm_campaign).toBeNull();
+  expect(event.properties.$session_entry_utm_content).toBeUndefined();
   expect(event.properties.$current_url).toBe('https://example.com/');
 });
 
@@ -93,7 +110,8 @@ it('minimizes SDK URL fields through before_send while keeping canonical first-t
     $current_url: 'https://findmyway.co.il/',
     $session_entry_url: 'https://findmyway.co.il/',
     $session_entry_referrer: 'https://example.com',
-    $referrer: 'https://findmyway.co.il',
+    $referrer: 'https://example.com',
+    $referring_domain: 'example.com',
     $set_once: {
       $initial_current_url: 'https://findmyway.co.il/',
       $initial_referrer: 'https://example.com',
@@ -101,4 +119,52 @@ it('minimizes SDK URL fields through before_send while keeping canonical first-t
     $pathname: '/',
   });
   expect(JSON.stringify(event)).not.toMatch(/680|105\.5/);
+});
+
+it('omits same-origin self-referrers and only sets person campaigns on identify', async () => {
+  init.mockClear();
+  vi.resetModules();
+  sessionStorage.clear();
+  window.history.replaceState(
+    null,
+    '',
+    '/?utm_source=facebook&utm_medium=group&utm_campaign=higher_ed',
+  );
+  vi.spyOn(document, 'referrer', 'get').mockReturnValue(
+    `${window.location.origin}/private?email=a@example.com`,
+  );
+  await import('../../instrumentation-client');
+  const options = init.mock.calls[0][1];
+  const pageview = options.before_send({ event: '$pageview', properties: {} });
+  expect(pageview.properties).toMatchObject({
+    utm_source: 'facebook',
+    utm_medium: 'group',
+    utm_campaign: 'higher_ed',
+    referrer: null,
+    $referrer: null,
+    $referring_domain: null,
+  });
+  expect(pageview.properties.$set).toBeUndefined();
+  expect(JSON.stringify(pageview)).not.toContain('/private');
+  const identify = options.before_send({
+    event: '$identify',
+    properties: { $set: { tier: 'member' } },
+  });
+  expect(identify.properties.$set).toMatchObject({
+    tier: 'member',
+    utm_source: 'facebook',
+    utm_medium: 'group',
+    utm_campaign: 'higher_ed',
+  });
+  expect(identify.properties.$set_once).toMatchObject({
+    $initial_utm_source: 'facebook',
+    $initial_utm_medium: 'group',
+    $initial_utm_campaign: 'higher_ed',
+  });
+  expect(options.custom_blocked_useragents).toEqual([
+    'meta-externalfetcher',
+    'tiktokspider',
+    'tiktokbot',
+    'instagrambot',
+  ]);
 });

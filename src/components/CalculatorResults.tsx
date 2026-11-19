@@ -15,6 +15,7 @@ import { acceptedManualGateFootnote } from '@/lib/acceptedManualGateFootnote';
 
 import { institutionLink } from '@/lib/institutionLinks';
 import AdmissionRequirements from './AdmissionRequirements';
+import SocialFollowLinks from './SocialFollowLinks';
 
 import { allowsNoGenericBagrut, allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
 
@@ -986,6 +987,12 @@ export default function CalculatorResults({
             </p>
           </div>
         ) : null}
+        {!loading && !error ? (
+          <div className="mt-8 border-t border-slate-200 pt-4 text-slate-500">
+            <p className="text-sm">עקבו אחרינו</p>
+            <SocialFollowLinks />
+          </div>
+        ) : null}
       </div>
     </div>
   );
@@ -1145,7 +1152,7 @@ function VerifiedRoutePanel({
       ) : null}
       {loading ? (
         <p className="mt-3 text-sm font-semibold text-slate-700">
-          מאמתים מסלולים אפשריים מול המקור הרשמי…
+          מאמתים מסלולים אפשריים מול אתר המוסד…
         </p>
       ) : null}
       {error ? (
@@ -1155,7 +1162,7 @@ function VerifiedRoutePanel({
       ) : null}
       {!loading && !error && result?.status === 'authority_unavailable' ? (
         <p className="mt-3 text-sm font-semibold text-rose-800">
-          האימות הרשמי אינו זמין כרגע — תוצאת הקבלה המקורית נשארת מוצגת, ולא הוצגה המלצה לא מאומתת.
+          האימות הרשמי אינו זמין כרגע — תוצאת הקבלה שחושבה נשארת מוצגת, ולא הוצגה המלצה לא מאומתת.
         </p>
       ) : null}
       {!loading && !error && result?.status === 'no_route' ? (
@@ -1206,7 +1213,7 @@ function RouteCard({ title, route }: { title: string; route: AdmissionsRouteResu
           rel="noreferrer"
           className="mt-2 inline-block text-xs font-semibold text-[#4f46e5] underline"
         >
-          מקור האימות הרשמי
+          לאתר המוסד
         </a>
       ) : null}
     </article>

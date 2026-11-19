@@ -4,6 +4,7 @@ import repair from './catalogueContentRepair.json';
 import { INSTITUTION_BY_ID, INSTITUTION_BY_NAME, type InstitutionId } from '../institutions';
 import type { Program } from '../degrees/types';
 import { vocationalPrograms } from '../degrees/vocationalPrograms';
+import { ISSUE_370_CORRECTIONS, ISSUE_370_HIDDEN_PROGRAM_IDS } from './issue370Corrections';
 
 type ContentRepair = {
   programId: string;
@@ -14,6 +15,9 @@ type ContentRepair = {
   identity?: Pick<Program, 'name' | 'type'> &
     Partial<Pick<Program, 'institution' | 'category' | 'awardedCredential'>>;
   durationYears?: number;
+  clearLegacyFacts?: boolean;
+  clearAllFacts?: boolean;
+  replaceRequirements?: boolean;
 };
 
 // BGU has no LL.B.: https://www.bgu.ac.il/welcome/ba/catalog/
@@ -26,8 +30,19 @@ export const RETIRED_PROGRAM_IDS = [
   'samspiegel_documentary',
 ];
 
-const requirements = repair.requirements as ContentRepair[];
-const excludedIds = new Set(repair.excludedPrograms.map((row) => row.programId));
+const issue370Keys = new Set(
+  ISSUE_370_CORRECTIONS.map((row) => `${row.programId}__${row.institutionId}`),
+);
+const requirements: ContentRepair[] = [
+  ...ISSUE_370_CORRECTIONS,
+  ...(repair.requirements as ContentRepair[]).filter(
+    (row) => !issue370Keys.has(`${row.programId}__${row.institutionId}`),
+  ),
+];
+const excludedIds = new Set([
+  ...repair.excludedPrograms.map((row) => row.programId),
+  ...ISSUE_370_HIDDEN_PROGRAM_IDS,
+]);
 
 /** Apply verified content after legacy normalization; maths facts use explicit source rules. */
 export function applyCatalogueContentRepair<T extends Program>(program: T): T {
@@ -51,10 +66,19 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
       ['afeka_ee', 'afeka_softwareeng', 'afeka_cs', 'afeka_biomedical'].includes(row.programId),
   );
   const details = [...(program.institutionDetails ?? [])];
+  const linkedInstitutionIds =
+    'linkedInstitutionIds' in program && Array.isArray(program.linkedInstitutionIds)
+      ? (program.linkedInstitutionIds as string[])
+      : undefined;
   for (const row of rows) {
     const institution = INSTITUTION_BY_ID[row.institutionId as InstitutionId];
     if (
       !institution ||
+      (linkedInstitutionIds &&
+        !program.institutionId &&
+        !linkedInstitutionIds.some(
+          (id) => canonicalInstitutionId(id) === canonicalInstitutionId(row.institutionId),
+        )) ||
       details.some(
         (detail) =>
           INSTITUTION_BY_NAME[detail.institutionName]?.id ===
@@ -75,6 +99,14 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
   return {
     ...program,
     ...identity,
+    ...(program.institutionId && rows.some((row) => row.replaceRequirements)
+      ? {
+          admissionRequirements: [],
+          ...(program.admissionType === 'requirements'
+            ? { admissionType: 'requirements' as const }
+            : {}),
+        }
+      : {}),
     ...(afekaRoutes || verifiedArts
       ? {
           admissionType: 'requirements' as const,
@@ -98,6 +130,16 @@ export function applyCatalogueContentRepair<T extends Program>(program: T): T {
         institutionName: row.identity?.institution ?? detail.institutionName,
         specificAdmissionNotes: row.notes,
         programUrl: row.programUrl ?? row.sourceUrl,
+        ...(row.clearAllFacts
+          ? { admissionFacts: [], admissionAlternativePaths: [] }
+          : row.clearLegacyFacts
+            ? {
+                admissionFacts: detail.admissionFacts?.filter(
+                  (fact) => fact.kind !== 'numeric_gate',
+                ),
+                admissionAlternativePaths: [],
+              }
+            : {}),
         ...(row.durationYears !== undefined ? { durationYears: row.durationYears } : {}),
         ...(verifiedArts ? { programDescription: undefined } : {}),
         ...((afekaRoutes && row.institutionId === 'afeka') || verifiedArts

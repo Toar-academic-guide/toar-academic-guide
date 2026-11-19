@@ -460,7 +460,7 @@ export function resultSourceLinks(result?: AdmissionsEvaluationResult, fallbackU
   return (hasSources ? result.officialUrls! : [fallbackUrl]).flatMap((source, index) => {
     const href = institutionLink(source, result.linkedInstitutionId);
     return href
-      ? [{ href, label: hasSources ? (index === 0 ? 'למקור הרשמי' : 'למקור נוסף') : 'לאתר המוסד' }]
+      ? [{ href, label: hasSources && index > 0 ? 'עמוד נוסף באתר המוסד' : 'לאתר המוסד' }]
       : [];
   });
 }

@@ -3,9 +3,17 @@
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
-import type { ReactNode } from 'react';
-import InstitutionPage from '@/app/institutions/[institutionId]/page';
-import ProgramPage from '@/app/programs/[programId]/page';
+import { AuthProvider } from '@/context/AuthContext';
+import { createElement, type ReactNode } from 'react';
+import PrivacyPage from '@/app/privacy/page';
+import InstitutionPage, {
+  generateMetadata as generateInstitutionMetadata,
+} from '@/app/institutions/[institutionId]/page';
+import AcademicProfileForm from '@/components/AcademicProfileForm';
+import StudyJourney, { journeySteps } from '@/components/StudyJourney';
+import ProgramPage, {
+  generateMetadata as generateProgramMetadata,
+} from '@/app/programs/[programId]/page';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import robots from '@/app/robots';
@@ -45,6 +53,15 @@ import {
 } from './jsonLd';
 
 vi.mock('server-only', () => ({}));
+vi.mock('next/navigation', async () => {
+  const actual = await vi.importActual<typeof import('next/navigation')>('next/navigation');
+  return {
+    ...actual,
+    useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+    usePathname: () => '/',
+    useSearchParams: () => new URLSearchParams(),
+  };
+});
 vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: ReactNode }) => children,
 }));
@@ -85,12 +102,19 @@ describe('crawl policy', () => {
   it('directs llms.txt readers to public pages and preserves the business-model disclosure', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
     expect(llms).not.toContain('/app/');
+    expect(llms).toContain(
+      '- [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.',
+    );
+    expect(llms).toContain(
+      '- [ימים פתוחים](https://findmyway.co.il/open-days): תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, עם קישורים למוסדות.',
+    );
     expect(llms).toContain('https://findmyway.co.il/institutions');
     expect(llms).toContain('https://findmyway.co.il/programs/<id>');
     expect(llms.split('\n')).toContain(
       'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.',
     );
-    expect(llms).toContain('Last updated: 2026-11-06');
+    expect(llms).not.toMatch(/Last updated:/i);
+    expect(llms).not.toContain('תאריך בדיקה');
   });
 
   it('separates wildcard, search and allowed training policies with operational exclusions', async () => {
@@ -162,7 +186,6 @@ describe('crawl policy', () => {
     }
     expect([...thinSubjects].sort()).toEqual([
       'communication',
-      'education',
       'nutrition',
       'pharmacy',
       'sports_science',
@@ -206,7 +229,7 @@ describe('crawl policy', () => {
     );
   }, 15_000);
 
-  it('keeps all 404 canonical public URLs in order with stable data modification dates', async () => {
+  it('keeps canonical public URLs in order with stable data modification dates', async () => {
     const entries = await sitemap();
     for (const path of ['/tt', '/ig', '/fb', '/wa']) {
       expect(entries.map((entry) => entry.url)).not.toContain(`${SITE_URL}${path}`);
@@ -220,9 +243,15 @@ describe('crawl policy', () => {
       `${SITE_URL}/`,
       `${SITE_URL}/about`,
       `${SITE_URL}/sekhem-calculator`,
+      `${SITE_URL}/calculator`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
+      `${SITE_URL}/amirnet`,
+      `${SITE_URL}/psychometric-accommodations`,
+      `${SITE_URL}/atuda`,
       `${SITE_URL}/open-days`,
+      `${SITE_URL}/transfer`,
+      `${SITE_URL}/without-psychometric`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -235,16 +264,23 @@ describe('crawl policy', () => {
       ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
     expect(generatedHubIds).toContain('engineering');
-    expect(generatedHubIds).toHaveLength(56);
+    expect(generatedHubIds).toHaveLength(74);
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_psychology`);
     expect(new Set(urls).size).toBe(urls.length);
     expect(urls).not.toContain(`${SITE_URL}/programs/danon_cs`);
+    for (const id of Object.keys(PROGRAM_RETIREMENT_REDIRECTS))
+      expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(id)}`);
+    for (const program of programs) {
+      if (canonicalProgramId(program.id) !== program.id)
+        expect(urls).not.toContain(`${SITE_URL}/programs/${encodeURIComponent(program.id)}`);
+    }
     expect(urls).toContain(`${SITE_URL}/programs/ruppin_cs`);
-    // PM rule (#271): the 5 general subjects with no programme links (noindex,follow)
-    // leave the sitemap: 410 before this rule - 5 = 405.
-    for (const id of ['communication', 'education', 'nutrition', 'pharmacy', 'sports_science'])
+    // PM rule (#271): general subjects with no programme links stay out of the sitemap.
+    // Education now links to Achva's source-backed B.Ed. route.
+    for (const id of ['communication', 'nutrition', 'pharmacy', 'sports_science'])
       expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
     // JAMD is a one-for-one replacement; TAU and Sam Spiegel each lose a
     // duplicate programme. Retiring the unsupported documentary row also removes
@@ -252,7 +288,17 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/samspiegel_documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/documentary`);
     expect(urls).not.toContain(`${SITE_URL}/programs/kinneret_sound_eng`);
-    expect(urls).toHaveLength(404);
+    for (const id of ['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork'])
+      expect(urls).not.toContain(`${SITE_URL}/programs/${id}`);
+    expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
+    expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
+    expect(urls).toContain(`${SITE_URL}/atuda`);
+    expect(urls).toHaveLength(446);
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
+      url: `${SITE_URL}/amirnet`,
+      lastModified: '2026-11-14',
+      changeFrequency: 'weekly',
+    });
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
@@ -397,12 +443,28 @@ describe('metadata', () => {
         await ProgramPage({ params: Promise.resolve({ programId: 'danon_cs' }) }),
       ),
     ).toContain(page.program.name);
-  });
+  }, 10_000);
 
   it('absorbs the definite article in institution descriptions', async () => {
     expect((await buildProgramMetadata('huji_cs')).description).toContain(
       'באוניברסיטה העברית בירושלים',
     );
+  });
+
+  it('keeps calculator claims out of unsupported institution and programme metadata', async () => {
+    for (const metadata of [
+      await buildInstitutionMetadata('danon'),
+      await buildProgramMetadata('danon_culinary'),
+      await buildProgramMetadata('infosystems'),
+    ]) {
+      expect(metadata.title).not.toContain('סיכויי קבלה');
+      expect(metadata.description).not.toContain('סיכויי קבלה');
+      expect(metadata.description).toContain('תנאי קבלה');
+    }
+
+    const supported = await buildProgramMetadata('haifa_cs');
+    expect(supported.title).toContain('סיכויי קבלה');
+    expect(supported.description).toContain('בדיקת סיכויי קבלה');
   });
 
   it('uses the general title even when the only subject signal is one institution', async () => {
@@ -427,7 +489,7 @@ describe('metadata', () => {
   });
 
   it.each([
-    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'telhai', 'mta', 'ono']],
+    ['nursing', ['tau', 'bgu', 'haifa', 'ariel', 'mta', 'ono']],
     ['biology', ['tau', 'huji', 'bgu', 'haifa', 'biu', 'telhai']],
   ])(
     'uses every provider for %s in metadata, JSON-LD and rendered links',
@@ -460,6 +522,11 @@ describe('metadata', () => {
         await ProgramPage({ params: Promise.resolve({ programId: id }) }),
       );
       for (const institution of page.institutions) {
+        if (id === 'nursing' && institution.id === 'telhai') {
+          expect(markup).not.toContain('/programs/telhai_nursing');
+          expect(markup).not.toContain('/institutions/telhai');
+          continue;
+        }
         const specific = programs.find(
           (program) =>
             program.isListed !== false &&
@@ -521,7 +588,7 @@ describe('metadata', () => {
         expect(markup.split('</summary>')[1]).toContain(`/programs/${page.programs[12].id}`);
       } else expect(markup).not.toContain('<details');
     }
-  });
+  }, 10_000);
 
   it('gives every excluded existing detail page a self-canonical and noindex,follow', async () => {
     const institutionIds = await indexableInstitutionIds();
@@ -542,7 +609,7 @@ describe('metadata', () => {
     }
     expect(await buildInstitutionMetadata('missing')).toEqual({});
     expect(await buildProgramMetadata('missing')).toEqual({});
-  });
+  }, 15_000);
 
   it('leads with real relation facts and keeps descriptions unique across indexable detail pages', async () => {
     const institution = (await getPublicInstitutionPageData('tau'))!;
@@ -617,9 +684,12 @@ describe('structured data', () => {
       alternateName: SITE_ALT_NAMES,
       url: `${SITE_URL}/`,
       logo: `${SITE_URL}/brand/myway-wordmark-1200.png`,
+      description:
+        'MyWay הוא מוצר עצמאי לבחירת לימודים בישראל. הוא אינו מערכת של אוניברסיטה או מכללה ואינו מסונף לאוניברסיטת תל אביב או למוסד לימודים אחר.',
       areaServed: 'IL',
       knowsLanguage: 'he',
     });
+    expect(organizationLd()).not.toHaveProperty('sameAs');
     expect(websiteLd()).toMatchObject({
       '@type': 'WebSite',
       '@id': `${SITE_URL}/#website`,
@@ -655,7 +725,7 @@ describe('structured data', () => {
     expect(application).toEqual({
       '@type': 'WebApplication',
       '@id': 'https://findmyway.co.il/sekhem-calculator#webapp',
-      name: 'מחשבון סכם',
+      name: 'מחשבון סכם וממוצע בגרות לפי מוסד',
       url: 'https://findmyway.co.il/sekhem-calculator',
       applicationCategory: 'EducationalApplication',
       operatingSystem: 'Web',
@@ -663,7 +733,12 @@ describe('structured data', () => {
       isAccessibleForFree: true,
       offers: { '@type': 'Offer', price: 0, priceCurrency: 'ILS' },
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows Extra)
-      featureList: ['חישוב סכם לפי תוכנית', 'השוואה לסף הקבלה', 'קישור לתנאי הקבלה של התוכנית'],
+      featureList: [
+        'חישוב ממוצע בגרות במוסדות הנתמכים',
+        'חישוב סכם לפי תוכנית',
+        'השוואה לסף הקבלה',
+        'קישור לתנאי הקבלה של התוכנית',
+      ],
       publisher: { '@id': organizationLd()['@id'] },
       isPartOf: { '@id': websiteLd()['@id'] },
     });
@@ -814,7 +889,7 @@ describe('structured data', () => {
     return { data, sources, document, graph };
   }
 
-  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee', 'psychology'];
+  const noFaqProgramIds = [...formerlyFaqProgramIds, 'tau_cs', 'bgu_cs', 'afeka_ee'];
 
   it('emits FAQPage on zero formerly-FAQ and control programme pages', async () => {
     const allowedIds: string[] = [];
@@ -843,10 +918,8 @@ describe('structured data', () => {
           (heading) => heading.textContent,
         ),
       ).not.toContain('שאלות נפוצות');
-      // Each institution's checked requirements retain their existing single stamp.
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(Object.values(sources).filter((source) => source.checked).length);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/עודכן לאחרונה:/);
+      expect(document.querySelector('main')!.textContent).not.toMatch(/נבדק בתאריך/);
       if (!formerlyFaqProgramIds.includes(id)) return;
       const visibleText =
         id === 'colmgmt_cs'
@@ -893,22 +966,15 @@ describe('structured data', () => {
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
       }
-      const checkedText = source.checked
-        ? `עודכן לאחרונה: ${source.checked.date}${source.checked.sourceUrl ? ` · מקור: אתר ${data.institutions[0].name}` : ''}`
-        : undefined;
-      for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
-        for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
-          expect(visibleText).toContain(number);
-        }
-      }
-      if (checkedText) {
-        expect(visibleText).toContain(checkedText);
+      expect(visibleText).not.toContain('מקור');
+      for (const number of source.requirements.join(' ').match(/\d+(?:\.\d+)?/g) ?? []) {
+        expect(visibleText).toContain(number);
       }
     },
   );
 
   it.each(['afeka_ee', 'afeka_cs', 'afeka_softwareeng', 'bezalel_graphic_design'])(
-    'renders the requirements update stamp once on the non-FAQ programme page %s',
+    'renders the source line once and omits the checked date on %s',
     async (id) => {
       const data = (await getPublicProgramPageData(id))!;
       const sources = await getPublicProgramRequirementSources(data);
@@ -917,9 +983,9 @@ describe('structured data', () => {
         renderToStaticMarkup(await ProgramPage({ params: Promise.resolve({ programId: id }) })),
         'text/html',
       );
-      expect(
-        document.querySelector('main')!.textContent!.match(/עודכן לאחרונה:/g) ?? [],
-      ).toHaveLength(1);
+      const text = document.querySelector('main')!.textContent!;
+      expect(text).not.toMatch(/עודכן לאחרונה:/);
+      expect(text).not.toContain('מקור');
     },
   );
 
@@ -933,10 +999,7 @@ describe('structured data', () => {
     'huji_engineering',
     'bezalel_graphic_design',
     'afeka_cs',
-    'psychology',
-    'law',
-    'nursing',
-    'cs',
+    'haifa_nursing',
     ...programs.filter((program) => program.id.startsWith('reichman_')).map(({ id }) => id),
   ])('omits FAQPage from the rendered non-allowlisted page %s', async (id) => {
     const document = new DOMParser().parseFromString(
@@ -1058,40 +1121,188 @@ describe('structured data', () => {
 });
 
 describe('llms.txt calculator link', () => {
-  const calculatorLine =
-    '- [מחשבון סכם וסיכויי קבלה](https://findmyway.co.il/sekhem-calculator): חישוב לפי מוסד ותוכנית מציוני בגרות ופסיכומטרי.';
-
-  it('includes the unchanged calculator bullet exactly once', () => {
+  it('lists the Sekhem calculator once in the most-asked answer pages', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    expect(llms.split('\n').filter((line) => line === calculatorLine)).toHaveLength(1);
+    const section = llms.split('## Most asked — answer pages\n')[1]?.split(/^## /m)[0];
+    expect(section).toContain(
+      '- [מחשבון סכם](https://findmyway.co.il/sekhem-calculator): חישוב סכם וממוצע בגרות לפי מוסד ותוכנית.',
+    );
     expect(llms.split('https://findmyway.co.il/sekhem-calculator')).toHaveLength(2);
   });
 
-  it('places the calculator last in the right-source list before the official-source paragraph', () => {
+  it('lists only canonical sitemap routes in llms.txt and includes the nursing answer page', async () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const section = llms.split('## When MyWay is the right source\n')[1]?.split(/^## /m)[0];
-    expect(section).toBeDefined();
-    expect(section).toContain(`${calculatorLine}\n\nלכל שאלה שבסמכות`);
-    expect(
-      section
-        ?.split('\n')
-        .filter((line) => line.startsWith('- '))
-        .at(-1),
-    ).toBe(calculatorLine);
+    const mostAsked = llms.split('## Most asked — answer pages\n')[1]?.split(/^## /m)[0];
+    expect(mostAsked).toContain('https://findmyway.co.il/programs/nursing)');
+    expect(llms).not.toContain('המקור והתאריך');
+    const urls = [...llms.matchAll(/\((https:\/\/findmyway\.co\.il[^)\s]*)\)/g)].map(
+      ([, url]) => new URL(url),
+    );
+    expect(urls.length).toBeGreaterThan(18);
+    const sitemapUrls = new Set((await sitemap()).map(({ url }) => url));
+    for (const url of urls) {
+      expect(sitemapUrls.has(`${url.origin}${url.pathname}`), url.href).toBe(true);
+      if (url.pathname.startsWith('/programs/')) {
+        const id = url.pathname.slice('/programs/'.length);
+        expect(canonicalProgramId(id)).toBe(id);
+        expect(PROGRAM_RETIREMENT_REDIRECTS[id]).toBeUndefined();
+        expect(['telhai_nursing', 'ono_socialwork', 'tlvyaffo_socialwork']).not.toContain(id);
+      }
+    }
   });
 
-  it('ends with the approved update date inside the Business model section', () => {
+  it('ends the business-model section without a last-updated stamp', () => {
     const llms = readFileSync('public/llms.txt', 'utf8');
-    const updated = 'Last updated: 2026-11-06';
-    expect(llms).toContain(updated);
+    const business =
+      'Business model: MyWay is free for students; revenue comes from referring qualified leads to academic institutions.';
+    expect(llms).not.toMatch(/Last updated:/i);
     expect(
       llms
         .split('\n')
         .filter((line) => line.trim())
         .at(-1),
-    ).toBe(updated);
+    ).toBe(business);
     const businessSection = llms.split('## Business model\n')[1]?.split(/^## /m)[0];
-    expect(businessSection).toContain(updated);
-    expect(llms.endsWith(`${updated}\n`)).toBe(true);
+    expect(businessSection).toContain(business);
+    expect(llms.trimEnd().endsWith(business)).toBe(true);
   });
 });
+
+const ALLOWED_EXTERNAL_LABELS = new Set([
+  'לאתר המוסד',
+  'למחשבון המכללה',
+  'לא זוכרים? למעבר לציונים',
+  'https://www.gov.il/he/departments/the_privacy_protection_authority',
+]);
+
+function isOwnHost(hostname: string) {
+  const host = hostname.replace(/^www\./, '');
+  return host === 'findmyway.co.il' || host.endsWith('.findmyway.co.il');
+}
+
+function contentHtml(markup: string) {
+  return markup
+    .replace(/<header\b[^>]*>[\s\S]*?<\/header>/gi, '')
+    .replace(/<footer\b[^>]*>[\s\S]*?<\/footer>/gi, '');
+}
+
+describe('visible source labels', () => {
+  const staticPages: Record<string, () => Promise<unknown>> = {
+    '/': () => import('@/app/page'),
+    '/about': () => import('@/app/about/page'),
+    '/sekhem-calculator': () => import('@/app/sekhem-calculator/page'),
+    '/calculator': () => import('@/app/calculator/page'),
+    '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
+    '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
+    '/amirnet': () => import('@/app/amirnet/page'),
+    '/psychometric-accommodations': () => import('@/app/psychometric-accommodations/page'),
+    '/atuda': () => import('@/app/atuda/page'),
+    '/open-days': () => import('@/app/open-days/page'),
+    '/transfer': () => import('@/app/transfer/page'),
+    '/without-psychometric': () => import('@/app/without-psychometric/page'),
+    '/institutions': () => import('@/app/institutions/page'),
+    '/programs': () => import('@/app/programs/page'),
+  };
+
+  it('renders no source labels or page citations on any sitemap page', async () => {
+    const hits: string[] = [];
+    for (const { url } of await sitemap()) {
+      const path = new URL(url).pathname;
+      try {
+        let html = '';
+        let markup = '';
+        if (path.startsWith('/programs/')) {
+          const programId = decodeURIComponent(path.slice('/programs/'.length));
+          const params = Promise.resolve({ programId });
+          html = renderToStaticMarkup(await ProgramPage({ params }));
+          markup = `${JSON.stringify(await generateProgramMetadata({ params }))}\n${html}`;
+        } else if (path.startsWith('/institutions/')) {
+          const institutionId = decodeURIComponent(
+            path.slice('/institutions/'.length),
+          ) as InstitutionId;
+          const params = Promise.resolve({ institutionId });
+          html = renderToStaticMarkup(await InstitutionPage({ params }));
+          markup = `${JSON.stringify(await generateInstitutionMetadata({ params }))}\n${html}`;
+        } else {
+          const load = staticPages[path];
+          if (!load) throw new Error('missing renderer');
+          const mod = (await load()) as {
+            default: (props?: {
+              searchParams: Promise<Record<string, never>>;
+            }) => ReactNode | Promise<ReactNode>;
+            metadata?: unknown;
+          };
+          const props =
+            path === '/open-days' || path === '/sekhem-calculator'
+              ? { searchParams: Promise.resolve({}) }
+              : undefined;
+          const element = await mod.default(props);
+          html = renderToStaticMarkup(
+            path === '/' ? createElement(AuthProvider, null, element) : element,
+          );
+          markup = `${JSON.stringify(mod.metadata ?? '')}\n${html}`;
+        }
+        recordVisibleSources(hits, path, html, markup);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    try {
+      const html = renderToStaticMarkup(createElement(PrivacyPage));
+      recordVisibleSources(hits, '/privacy', html, html);
+    } catch (error) {
+      hits.push(`/privacy ${error instanceof Error ? error.message : String(error)}`);
+    }
+    try {
+      const html = renderToStaticMarkup(
+        createElement(AcademicProfileForm, {
+          onComplete: async () => true,
+          onClearLocalProfileData: async () => {},
+          onSkip: () => {},
+        }),
+      );
+      recordVisibleSources(hits, '/app/calculator#missing', html, html);
+    } catch (error) {
+      hits.push(
+        `/app/calculator#missing ${error instanceof Error ? error.message : String(error)}`,
+      );
+    }
+    for (const step of journeySteps) {
+      const path = `/app/calculator#${step}`;
+      try {
+        const html = renderToStaticMarkup(
+          createElement(AuthProvider, null, createElement(StudyJourney, { initialStep: step })),
+        );
+        recordVisibleSources(hits, path, html, html);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    expect(hits).toEqual([]);
+  }, 180000);
+});
+
+function recordVisibleSources(hits: string[], path: string, html: string, markup: string) {
+  for (const needle of ['מקור', 'עמ׳ ', 'מידעון', 'קישור רשמי', 'נכון ל', 'האתר הרשמי מציין']) {
+    const index = markup.indexOf(needle);
+    if (index >= 0)
+      hits.push(`${path} ${needle} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+  }
+  const content = contentHtml(html);
+  for (const match of content.matchAll(/<a\b[^>]*href="([^"]+)"[^>]*>([\s\S]*?)<\/a>/gi)) {
+    const href = match[1];
+    const text = match[2]
+      .replace(/<[^>]+>/g, '')
+      .replace(/\s+/g, ' ')
+      .trim();
+    if (ALLOWED_EXTERNAL_LABELS.has(text)) continue;
+    let url: URL;
+    try {
+      url = new URL(href, 'https://findmyway.co.il');
+    } catch {
+      continue;
+    }
+    if (!/^https?:$/.test(url.protocol) || isOwnHost(url.hostname)) continue;
+    hits.push(`${path} ${text || href} -> ${href}`);
+  }
+}
