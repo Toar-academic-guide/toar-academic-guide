@@ -6,7 +6,7 @@ import styles from './page.module.css';
 
 const title = 'מעבר בין מוסדות לימוד אקדמיים: קבלה והכרה בקורסים | MyWay';
 const description =
-  'איך מתכננים מעבר בין מוסדות לימוד אקדמיים: קבלה לתוכנית על סמך לימודים קודמים, הכנת מסמכים ובקשת הכרה בקורסים, עם קישורים למקורות הרשמיים.';
+  'איך מתכננים מעבר בין מוסדות לימוד אקדמיים: קבלה לתוכנית על סמך לימודים קודמים, הכנת מסמכים ובקשת הכרה בקורסים.';
 const canonical = absoluteUrl('/transfer');
 
 export const metadata: Metadata = {
@@ -24,7 +24,7 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title, description },
 };
 
-const sources = [
+export const transferReferenceUrls = [
   {
     href: 'https://go.tau.ac.il/he/ba/partial-studies',
     label: 'קבלה לתואר ראשון על סמך השכלה אקדמית חלקית או מלאה — אוניברסיטת תל אביב',
@@ -37,7 +37,7 @@ const sources = [
   },
   {
     href: 'https://coller.tau.ac.il/BA-students/programs/2026-27/management/rules/student-exemption',
-    label: 'נוהל פטור מקורסים בחוג לניהול — אוניברסיטת תל אביב, תשפ״ז',
+    label: 'נוהל פטור בקורסים בחוג לניהול — אוניברסיטת תל אביב, תשפ״ז',
     detail: 'דוגמה לנוהל של חוג מסוים.',
   },
   {
@@ -132,17 +132,6 @@ export default function TransferPage() {
               {' · '}
               <Link href="/institutions/open_university">האוניברסיטה הפתוחה ב־MyWay</Link>
             </p>
-          </section>
-
-          <section aria-labelledby="sources" className={styles.section}>
-            <h2 id="sources">מקורות רשמיים</h2>
-            <ul>
-              {sources.map((source) => (
-                <li key={source.href}>
-                  <a href={source.href}>{source.label}</a> — {source.detail}
-                </li>
-              ))}
-            </ul>
           </section>
 
           <section aria-labelledby="myway" className={styles.cta}>

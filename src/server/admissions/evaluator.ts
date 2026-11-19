@@ -1288,7 +1288,7 @@ async function evaluateExactScores(args: {
       const result = normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'המקור הרשמי של בן־גוריון',
+        explanationPrefix: 'אתר המוסד של בן־גוריון',
         positiveDecision: 'eligible_to_apply',
       });
       if (result.capability !== 'exact') return result;
@@ -1377,7 +1377,7 @@ async function evaluateExactScores(args: {
         baseResult: normalizeExactProofResult({
           institution,
           proof: proof.normalizedPayload,
-          explanationPrefix: 'מקור רשמי של הטכניון',
+          explanationPrefix: 'אתר המוסד של הטכניון',
         }),
       });
     }
@@ -1431,7 +1431,7 @@ async function evaluateExactScores(args: {
         baseResult: normalizeExactProofResult({
           institution,
           proof: proof.normalizedPayload,
-          explanationPrefix: 'מקור רשמי של אוניברסיטת בן-גוריון',
+          explanationPrefix: 'אתר המוסד של אוניברסיטת בן-גוריון',
         }),
       });
     }
@@ -1449,7 +1449,7 @@ async function evaluateExactScores(args: {
       const result = normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של האוניברסיטה העברית',
+        explanationPrefix: 'אתר המוסד של האוניברסיטה העברית',
       });
       return HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS.includes(program.id)
         ? applyHujiPsychologyDirectRoute(result, input.psychometric, proof.normalizedPayload)
@@ -1498,7 +1498,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
         positiveDecision: 'eligible_to_apply',
       });
     }
@@ -1528,7 +1528,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
         positiveDecision: 'eligible_to_apply',
       });
     }
@@ -1561,7 +1561,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1581,7 +1581,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1610,7 +1610,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1643,7 +1643,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1675,7 +1675,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1704,7 +1704,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1733,7 +1733,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1763,7 +1763,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1796,7 +1796,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1827,7 +1827,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1866,7 +1866,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1905,7 +1905,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1938,7 +1938,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -1977,7 +1977,7 @@ async function evaluateExactScores(args: {
       return normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       });
     }
 
@@ -2011,7 +2011,7 @@ async function evaluateExactScores(args: {
       baseResult: normalizeExactProofResult({
         institution,
         proof: proof.normalizedPayload,
-        explanationPrefix: 'מקור רשמי של אוניברסיטת תל אביב',
+        explanationPrefix: 'אתר המוסד של אוניברסיטת תל אביב',
       }),
     });
   } catch (error) {
@@ -2057,7 +2057,7 @@ function normalizeExactProofResult(args: {
       confidence: 'low',
       sourceLabel: 'אימות רשמי חלקי',
       explanation: `${explanationPrefix} לא החזיר הוכחת החלטה מלאה ומאומתת.`,
-      nextAction: 'בדקו ישירות במקור הרשמי או נסו שוב מאוחר יותר.',
+      nextAction: 'בדקו ישירות באתר המוסד או נסו שוב מאוחר יותר.',
       degradationReason: 'official_source_partial',
     };
   }
@@ -2079,7 +2079,7 @@ function normalizeExactProofResult(args: {
       confidence: 'low',
       sourceLabel: 'אימות רשמי חלקי',
       explanation: `${explanationPrefix} החזיר נתונים חלקיים ללא סף קבלה מאומת.`,
-      nextAction: 'בדקו ישירות במקור הרשמי או נסו שוב מאוחר יותר.',
+      nextAction: 'בדקו ישירות באתר המוסד או נסו שוב מאוחר יותר.',
       degradationReason: 'official_source_partial',
     };
   }
@@ -2264,7 +2264,7 @@ function evaluateNonExactResult(args: {
       sourceLabel: 'האימות הרשמי טרם הושלם',
       explanation:
         entry.pairVerification?.state === 'exact'
-          ? 'תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של המקור הרשמי. בדקו במוסד לפני הרשמה.'
+          ? 'תנאי המסלול נבדקו, אך עדיין חסר אימות עדכני של אתר המוסד. בדקו במוסד לפני הרשמה.'
           : (entry.pairVerification?.reason ??
             'עדיין אין מספיק מידע רשמי מאומת כדי להציג החלטת קבלה למסלול זה.'),
       nextAction: entry.pairVerification?.sourceUrl
@@ -2300,10 +2300,10 @@ function evaluateNonExactResult(args: {
       kind: 'unsupported',
       decision: 'unknown',
       confidence: 'low',
-      sourceLabel: 'מקור חסום',
+      sourceLabel: 'האתר חסום',
       explanation:
         hebrewStudentText(entry.sourceTarget?.blockedReason) ??
-        'המקור הרשמי דורש בדיקה ידנית באתר המוסד.',
+        'צריך לבדוק את התנאים ידנית באתר המוסד.',
       nextAction: hebrewStudentText(entry.sourceTarget?.nextAction) ?? 'בדקו ישירות באתר המוסד.',
     };
   }
@@ -2318,7 +2318,7 @@ function evaluateNonExactResult(args: {
       confidence: 'low',
       sourceLabel: 'אימות רשמי לא זמין',
       explanation: 'לא הצלחנו להשלים אימות עדכני של תנאי הקבלה.',
-      nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות במקור הרשמי.',
+      nextAction: 'נסו שוב מאוחר יותר או בדקו ישירות באתר המוסד.',
       degradationReason: 'source_stale',
     };
   }
@@ -2446,7 +2446,7 @@ function evaluateNonExactResult(args: {
             decision: 'below',
             confidence: 'high',
             sourceLabel: 'סף זימון נדרש',
-            explanation: `לפי המקור הרשמי, צריך להגיע לפחות לפסיכומטרי ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
+            explanation: `לפי אתר המוסד, צריך להגיע לפחות לפסיכומטרי ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
             nextAction:
               'שפרו את ציון הפסיכומטרי או בדקו מול המוסד אם קיים אפיק חריגים. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
             score: input.psychometric,
@@ -2467,7 +2467,7 @@ function evaluateNonExactResult(args: {
           decision: 'eligible_to_apply',
           confidence: 'high',
           sourceLabel: 'נדרש מיון נוסף',
-          explanation: `לפי המקור הרשמי, הגעתם לסף הזימון בפסיכומטרי ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
+          explanation: `לפי אתר המוסד, הגעתם לסף הזימון בפסיכומטרי ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
           nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או המבחנים הנדרשים למסלול.',
           score: input.psychometric,
           scoreLabel: 'פסיכומטרי',
@@ -2524,7 +2524,7 @@ function evaluateNonExactResult(args: {
               decision: 'below',
               confidence: 'high',
               sourceLabel: 'סף זימון נדרש',
-              explanation: `לפי המקור הרשמי, צריך להגיע לפחות לסכם ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
+              explanation: `לפי אתר המוסד, צריך להגיע לפחות לסכם ${verifiedThreshold.threshold} כדי לעבור לשלב המיון הידני. ${thresholdExplanation}`,
               nextAction:
                 'שפרו את הנתונים שמופיעים בפער לפני הרשמה. גם מעבר סף הזימון לא מבטיח קבלה סופית.',
               score: evaluation.sekhem ?? undefined,
@@ -2542,7 +2542,7 @@ function evaluateNonExactResult(args: {
             decision: 'eligible_to_apply',
             confidence: 'high',
             sourceLabel: 'נדרש מיון נוסף',
-            explanation: `לפי המקור הרשמי, הגעתם לסף הזימון ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
+            explanation: `לפי אתר המוסד, הגעתם לסף הזימון ${verifiedThreshold.threshold}. ${thresholdExplanation}`,
             nextAction: 'הגישו מועמדות והשלימו את שלבי המיון הידניים או הראיונות שנדרשים למסלול.',
             score: evaluation.sekhem ?? undefined,
             scoreLabel: evaluation.sekhem === null ? undefined : 'סכם',
@@ -2666,10 +2666,10 @@ function evaluateNonExactResult(args: {
     const sourceBlocked =
       entry.evidence?.officialVerificationStatus.startsWith('blocked_') ?? false;
     const defaultExplanation = sourceBlocked
-      ? 'המקור הרשמי חסום כרגע, לכן התוצאה מבוססת על נוסחת סכם ממופה ועל סף קבלה שנשמר בקטלוג, בלי אימות חי של אתר המוסד.'
+      ? 'אתר המוסד חסום כרגע, לכן התוצאה מבוססת על נוסחת סכם ממופה ועל סף קבלה שנשמר בקטלוג, בלי אימות חי של אתר המוסד.'
       : entry.capability === 'estimated'
-        ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו ממקור מוסדי ונבדקו בקטלוג.'
-        : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשהמקור הרשמי מספק חלק מהמידע.';
+        ? 'התוצאה מבוססת על נוסחת סכם וסף קבלה שמופו מפרסום המוסד ונבדקו בקטלוג.'
+        : 'התוצאה מבוססת על נוסחת סכם ממופה וסף קבלה שנבדק בקטלוג, כשאתר המוסד מספק חלק מהמידע.';
     const defaultNextAction = sourceBlocked
       ? (entry.evidence?.nextAction ??
         'בדקו ישירות באתר המוסד או במחשבון הרשמי כשהוא זמין, לפני קבלת החלטה סופית.')
@@ -2689,10 +2689,10 @@ function evaluateNonExactResult(args: {
         decision: evaluation.status === 'accepted' ? 'accepted' : 'below',
         confidence: sourceBlocked ? 'medium' : entry.capability === 'estimated' ? 'high' : 'medium',
         sourceLabel: sourceBlocked
-          ? 'כלל קבלה ממופה, מקור רשמי חסום'
+          ? 'כלל קבלה ממופה, אתר המוסד חסום'
           : entry.capability === 'estimated'
             ? 'כלל קבלה ממופה'
-            : 'כלל קבלה ממופה ממקור חלקי',
+            : 'כלל קבלה ממופה מפרסום חלקי',
         explanation: evaluation.explanation ?? defaultExplanation,
         nextAction: defaultNextAction,
         score: evaluation.sekhem ?? undefined,
@@ -3501,7 +3501,7 @@ function missingInputsCopy(requiredInputs: AdmissionsRequiredInput[]) {
 
   return needsOnlyPsychometricSubscores
     ? {
-        explanation: 'כדי לחשב מסלול זה דרך המקור הרשמי צריך גם תתי-ציונים בפסיכומטרי.',
+        explanation: 'כדי לחשב מסלול זה דרך אתר המוסד צריך גם תתי-ציונים בפסיכומטרי.',
         nextAction: 'השלימו ציוני כמותי, מילולי ואנגלית כדי לקבל אימות רשמי.',
       }
     : {

@@ -227,7 +227,7 @@ export default function AdmissionRequirements({
                                   pass: 'עומדים',
                                   miss: 'לא עומדים',
                                   missing: 'חסר נתון',
-                                  conflicting: 'מקורות סותרים',
+                                  conflicting: 'נתונים סותרים',
                                   soft_miss: 'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
                                 } as const
                               )[row.status]
@@ -245,7 +245,6 @@ export default function AdmissionRequirements({
           </table>
           {institutionId !== 'tau' && (
             <p className="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">
-              {programId !== 'biu_law' && programId !== 'law' && 'מקור: אתר אוניברסיטת בר-אילן — '}
               <a
                 href={institutionLink(BIU_CALCULATOR_URL, 'biu')}
                 target="_blank"

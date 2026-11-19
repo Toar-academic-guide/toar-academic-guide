@@ -216,7 +216,7 @@ describe('CalculatorResults', () => {
         />,
       );
       expect(await screen.findByText(result.explanation, { exact: true })).toBeTruthy();
-      expect(screen.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      expect(screen.getByRole('link', { name: 'לאתר המוסד' })).toBeTruthy();
       if (institutionId === 'haifa') {
         expect(screen.queryByLabelText(/^אוניברסיטת חיפה: /)).toBeNull();
         expect(screen.queryByText('האימות טרם הושלם')).toBeNull();

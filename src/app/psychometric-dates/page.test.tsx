@@ -4,10 +4,11 @@ import { afterEach, expect, it, vi } from 'vitest';
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: null }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/psychometric-dates' }));
 import Page, { dynamic, metadata } from './page';
+import { semesterValiditySources } from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר.';
 const canonical = 'https://findmyway.co.il/psychometric-dates';
 afterEach(() => vi.useRealTimers());
 
@@ -63,20 +64,16 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'פתיחת הרשמה: 31.1.2027. שנת הלימודים מתחילה באוקטובר 2027.',
   );
   expect(autumnRows[2].textContent).toContain('פתיחת הרשמה לשנת תשפ"ח: 01.11.2026.');
-  expect(
-    within(section)
-      .getAllByRole('link')
-      .map((link) => link.getAttribute('href')),
-  ).toEqual([
+  expect(within(section).queryAllByRole('link')).toHaveLength(0);
+  expect(Object.values(semesterValiditySources)).toEqual([
     'https://admissions.technion.ac.il/registeration-dates/',
+    'https://admissions.technion.ac.il/technion_psychometri/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
     'https://info.huji.ac.il/registration-process/calendar',
+    'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://go.tau.ac.il/he/reg-dates',
     'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
     'https://www.openu.ac.il/registration/spring/pages/default.aspx',
-    'https://admissions.technion.ac.il/technion_psychometri/',
-    'https://www.bgu.ac.il/events/registrastion-2027-2028/',
-    'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   ]);
   expect(section.querySelectorAll('time[datetime="2026-11-17"]')).toHaveLength(0);
   expect(section.querySelectorAll('time[datetime="2026-11-10"]')).toHaveLength(0);

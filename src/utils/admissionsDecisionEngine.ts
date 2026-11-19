@@ -218,7 +218,7 @@ function nextActionFor(args: {
   if (status === 'likely_accepted_needs_verification') {
     return {
       kind: 'manual_check',
-      label: 'לאמת את התנאים מול המקור הרשמי',
+      label: 'לאמת את התנאים מול אתר המוסד',
       ...(sourceUrl ? { url: sourceUrl } : {}),
     };
   }
@@ -266,7 +266,7 @@ function nextActionFor(args: {
     kind: status === 'insufficient_data' ? 'official_source' : 'manual_check',
     label:
       status === 'insufficient_data'
-        ? 'לבדוק את מקור הקבלה הרשמי או לשמור יעד למעקב'
+        ? 'לבדוק את תנאי הקבלה באתר המוסד או לשמור יעד למעקב'
         : 'לבצע בדיקה ידנית לפני החלטה',
     ...(sourceUrl ? { url: sourceUrl } : {}),
   };

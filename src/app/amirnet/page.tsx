@@ -7,7 +7,7 @@ import styles from './page.module.css';
 
 const title = 'רמות אמירנט ופטור באנגלית לפי מוסד | MyWay';
 const description =
-  'מה אומר הציון באמירנט, מאיזו רמה מתחיל הפטור, והאם רמת האנגלית יכולה לחסום קבלה. טבלה לפי מוסד, עם קישור למקור הרשמי.';
+  'מה אומר הציון באמירנט, מאיזו רמה מתחיל הפטור, והאם רמת האנגלית יכולה לחסום קבלה. טבלה לפי מוסד.';
 const canonical = absoluteUrl('/amirnet');
 
 const nite = {
@@ -25,7 +25,7 @@ const institutions = [
     advancedA: '100–119',
     admission:
       'טרום בסיסי (עד 84) נדחה אוטומטית, גם אחרי קבלה על תנאי. יש חריג לעולים ממדינות שבהן לא למדו אנגלית ברמת התיכון בישראל. לרוב נדרשת רמת מתקדמים א׳ עד תחילת הלימודים; בדקו את דרישת החוג.',
-    after: 'פטור מקורסי אנגלית לפי תקנון הפקולטה.',
+    after: 'פטור בקורסי אנגלית לפי תקנון הפקולטה.',
     details: 'בסיסי: 85–99. הסיווג לפי הרמה הגבוהה מבין הציונים התקפים. אמירנט מוכר מ־1.5.2024.',
     source: 'https://go.tau.ac.il/he/ba/english',
   },
@@ -46,7 +46,7 @@ const institutions = [
     advancedB: '120–133',
     advancedA: '100–119',
     admission: 'בסיסי (85–99) הוא סף הקבלה הכללי לתואר ראשון; בחלק מהחוגים נדרשת רמה גבוהה יותר.',
-    after: 'פטור מקורסי האנגלית. מי שהתקבל ללא פטור נדרש להגיע אליו עד תחילת שנה ב׳.',
+    after: 'פטור בקורסי האנגלית. מי שהתקבל ללא פטור נדרש להגיע אליו עד תחילת שנה ב׳.',
     details: 'טרום בסיסי ב׳: 70–84; טרום בסיסי א׳: 50–69.',
     source: 'https://info.huji.ac.il/reception-components/English-level?cat=407&in=394',
   },
@@ -200,7 +200,7 @@ export default function Page() {
             <h2 id="levels">טבלת רמות וסף קבלה לפי מוסד</h2>
             <div className={styles.tableWrap}>
               <table className={styles.table}>
-                <caption>רמות אמירנט בשמונה מוסדות, לפי המקורות הרשמיים</caption>
+                <caption>רמות אמירנט בשמונה מוסדות</caption>
                 <thead>
                   <tr>
                     <th scope="col">מוסד</th>
@@ -209,7 +209,6 @@ export default function Page() {
                     <th scope="col">מתקדמים א׳</th>
                     <th scope="col">האם הציון יכול לחסום קבלה?</th>
                     <th scope="col">אחרי הפטור</th>
-                    <th scope="col">מקור</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -230,20 +229,14 @@ export default function Page() {
                         <p className={styles.rowDetail}>{isolatedNumbers(institution.details)}</p>
                       </td>
                       <td data-label="אחרי הפטור">{isolatedNumbers(institution.after)}</td>
-                      <td data-label="מקור">
-                        <a href={institution.source}>עמוד המוסד הרשמי</a>
-                        {'secondSource' in institution && (
-                          <a href={institution.secondSource}>עמוד היחידה לאנגלית</a>
-                        )}
-                      </td>
                     </tr>
                   ))}
                 </tbody>
               </table>
             </div>
             <p className={styles.note}>
-              המספרים לקוחים מהעמודים הרשמיים. הם אינם כלל ארצי של מאל״ו, והם עשויים להשתנות לפי
-              תוכנית ושנת הרשמה. בדקו תמיד את העמוד המקושר.
+              המספרים לקוחים מפרסומי המוסדות. הם אינם כלל ארצי של מאל״ו, והם עשויים להשתנות לפי
+              תוכנית ושנת הרשמה. בדקו תמיד באתר המוסד.
             </p>
           </section>
 

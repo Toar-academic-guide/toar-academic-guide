@@ -105,7 +105,7 @@ describe('ProgramPage', () => {
     const table = within(section as HTMLElement).getByRole('table');
     expect(table.querySelectorAll('tbody tr')).toHaveLength(16);
     expect(table.querySelector('caption')?.textContent).toBe(lawBarOutcomes.caption);
-    expect(table.querySelector('caption a')?.getAttribute('href')).toBe(lawBarOutcomes.sourceUrl);
+    expect(table.querySelector('caption a')).toBeNull();
     expect(
       within(table).getByRole('rowheader', { name: 'אוניברסיטת רייכמן' }).parentElement
         ?.textContent,
@@ -204,8 +204,7 @@ describe('ProgramPage', () => {
       } else {
         expect(screen.queryByText(/באביב תשפ/)).toBeNull();
       }
-      const source = screen.getByRole('link', { name: 'הטכניון' });
-      expect(source.getAttribute('href')).toContain('utm_source=myway&utm_medium=referral');
+      expect(screen.queryByRole('link', { name: 'הטכניון' })).toBeNull();
     },
   );
 
@@ -241,11 +240,8 @@ describe('ProgramPage', () => {
       expect(within(row).getAllByRole('cell')[0].textContent).toBe(
         source.tracks.map((track) => nursingTrackLabels[track]).join(' · '),
       );
-      const officialLabel =
-        source.officialFormat === 'pdf' ? 'ידיעון האוניברסיטה (PDF)' : 'לאתר המוסד';
-      expect(within(row).getByRole('link', { name: officialLabel }).getAttribute('href')).toBe(
-        source.officialUrl,
-      );
+      expect(within(row).queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
+      expect(within(row).queryByRole('link', { name: 'ידיעון האוניברסיטה (PDF)' })).toBeNull();
       if (source.programId) {
         const programme = await publicCataloguePages.getPublicProgramPageData(source.programId);
         expect(programme?.program.isListed).not.toBe(false);
@@ -259,7 +255,7 @@ describe('ProgramPage', () => {
     const tau = within(rows[0]).getByRole('link', { name: 'תנאי קבלה בעמוד הזה' });
     expect(tau.getAttribute('href')).toBe('#tau');
     expect(container.querySelector('#tau h3')?.textContent).toBe('אוניברסיטת תל אביב');
-    expect(table.closest('section')?.querySelector(`a[href="${nursingSource.url}"]`)).toBeTruthy();
+    expect(table.closest('section')?.querySelector(`a[href="${nursingSource.url}"]`)).toBeNull();
     expect(table.textContent).not.toMatch(/\d|נבדק|עודכן/);
     expect(container.innerHTML).not.toMatch(/telhai_nursing|תל[- ]חי/);
 
@@ -322,9 +318,7 @@ describe('ProgramPage', () => {
         `/programs/${source.programId}`,
       );
       expect(row.textContent).not.toContain(source.checkedDate);
-      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-        source.officialUrl,
-      );
+      expect(within(row).queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
     }
     expect(table.textContent).toContain('מסלול אופק ללא פסיכומטרי');
     const huji = rows.find((row) => row.textContent?.includes('האוניברסיטה העברית בירושלים'))!;
@@ -444,7 +438,7 @@ describe('ProgramPage', () => {
     expect(within(table).getByText('500 לפחות בפסיכומטרי או במימ״ד')).toBeTruthy();
     for (const id of ['biu_prep', 'ruppin_prep', 'sapir_prep', 'sce_prep']) {
       const row = table.querySelector(`a[href="/programs/${id}"]`)!.closest('tr')!;
-      expect(row.querySelectorAll('td')).toHaveLength(5);
+      expect(row.querySelectorAll('td')).toHaveLength(4);
       expect([...row.querySelectorAll('td')].slice(0, 4).every((cell) => !cell.textContent)).toBe(
         true,
       );
@@ -641,17 +635,9 @@ describe('ProgramPage', () => {
       expect(within(row).getByRole('link', { name: source.institution }).getAttribute('href')).toBe(
         `/programs/${source.programId}`,
       );
-      expect(within(row).getByRole('link', { name: 'אתר המוסד' }).getAttribute('href')).toBe(
-        source.sourceUrl,
-      );
+      expect(within(row).queryByRole('link', { name: 'אתר המוסד' })).toBeNull();
       expect(row.textContent).not.toContain(source.checkedDate);
-      if (source.numeric) {
-        const valueLink = within(row).getByRole('link', { name: source.value });
-        // Group mixed Hebrew and isolated numbers in one flex item so spaces render.
-        expect(valueLink.firstElementChild?.tagName).toBe('SPAN');
-        expect(valueLink.firstElementChild?.textContent).toBe(source.value);
-        expect(valueLink.querySelector('bdi[dir="ltr"]')).toBeTruthy();
-      }
+      expect(row.textContent).toContain(source.value);
     }
     expect(container.querySelector('#cs-thresholds')).toBeTruthy();
     const cards = screen.getByRole('heading', { name: 'מוסדות לימוד' }).nextElementSibling!;
@@ -885,12 +871,8 @@ describe('ProgramPage', () => {
         )!;
         const { unmount } = render(await ProgramPage({ params: Promise.resolve({ programId }) }));
 
-        const sourceLink = screen.getByRole('link', { name: `אתר ${institution.name}` });
-        expect(sourceLink.getAttribute('href')).toBe(
-          `${sourceUrl}?utm_source=myway&utm_medium=referral`,
-        );
-        expect(sourceLink.closest('p')!.textContent).toBe(`מקור: אתר ${institution.name}`);
-        expect(sourceLink.closest('p')!.textContent).not.toContain(date);
+        expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+        expect(screen.queryByText(/מקור/)).toBeNull();
         expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
         expect(screen.queryByText(date)).toBeNull();
         if (programId === 'colmgmt_cs') {
@@ -928,20 +910,11 @@ describe('ProgramPage', () => {
     it('renders the fetched source below the link row without the check date', async () => {
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      const link = screen.getByRole('link', { name: `אתר ${institution.name}` });
-      expect(link.getAttribute('href')).toBe(trackedSource.href);
-      expect(link.getAttribute('target')).toBe('_blank');
-      expect(link.getAttribute('rel')).toBe('noopener noreferrer');
-      const line = link.closest('p')!;
-      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
+      expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+      expect(screen.queryByText(/מקור/)).toBeNull();
       expect(screen.queryByText(/עודכן לאחרונה:/)).toBeNull();
       expect(screen.queryByText('21.10.2026')).toBeNull();
-      expect(line.getAttribute('dir')).toBe('rtl');
-      expect(line.className).toBe(
-        'mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]',
-      );
-      expect(line.previousElementSibling?.textContent).toBe('לאתר המוסד');
-      expect(line.parentElement?.lastElementChild).toBe(line);
+      expect(screen.getByRole('link', { name: 'לאתר המוסד' })).toBeTruthy();
     });
 
     it.each(['different notes', 'no entry'])('hides the entire line for %s', async (reason) => {
@@ -985,10 +958,7 @@ describe('ProgramPage', () => {
       expect(
         within(row).getByRole('link', { name: 'אוניברסיטת בן־גוריון בנגב' }).getAttribute('href'),
       ).toBe('/programs/bgu_psychology');
-      expect(within(row).getByRole('link', { name: 'לאתר המוסד' }).getAttribute('href')).toBe(
-        psychologyComparisonRows.find((candidate) => candidate.programId === 'bgu_psychology')
-          ?.officialUrl,
-      );
+      expect(within(row).queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
       expect(row.textContent).not.toContain('14.11.2026');
       expect(row.textContent).not.toMatch(/עודכן לאחרונה|נבדק בתאריך/);
       expect(row.textContent).toContain('סכם 650 וגם פסיכומטרי 650');
@@ -1005,11 +975,9 @@ describe('ProgramPage', () => {
       });
       render(await ProgramPage({ params: Promise.resolve({ programId: entry.programId }) }));
 
-      const line = screen.getByRole('link', { name: `אתר ${institution.name}` }).closest('p')!;
-      expect(line.textContent).toBe(`מקור: אתר ${institution.name}`);
+      expect(screen.queryByRole('link', { name: `אתר ${institution.name}` })).toBeNull();
+      expect(screen.queryByText(/מקור/)).toBeNull();
       expect(screen.queryByRole('link', { name: 'לאתר המוסד' })).toBeNull();
-      expect(line.parentElement?.lastElementChild).toBe(line);
-      expect(line.classList.contains('mt-2')).toBe(true);
     });
   });
 

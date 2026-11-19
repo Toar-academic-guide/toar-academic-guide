@@ -10,7 +10,7 @@ import SemesterValidity from './SemesterValidity';
 
 const title = 'מועדי פסיכומטרי 2026–2027: תאריכים וסיום הרשמה | MyWay';
 const description =
-  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר, עם קישור למקור הרשמי.';
+  'מועדי הבחינה הפסיכומטרית לפי לוח מאל״ו: תאריכי בחינה, מועדי סיום הרשמה ושפות לכל מועד, ואיזה מועד נחשב לאיזה סמסטר.';
 const canonical = absoluteUrl('/psychometric-dates');
 
 export const dynamic = 'force-dynamic';
@@ -98,10 +98,7 @@ export default async function Page() {
               {statuses.map(({ sitting, registrationOpen, isNextOpen }) => (
                 <tr key={sitting.id} className={isNextOpen ? styles.next : undefined}>
                   <th scope="row">
-                    <a
-                      href={sitting.sourceUrl}
-                      aria-label={`מועד ${sitting.displayLabel} — מקור מאל״ו`}
-                    >
+                    <a href={sitting.sourceUrl} aria-label={`מועד ${sitting.displayLabel}`}>
                       <bdi dir="ltr">{sitting.displayLabel}</bdi>
                     </a>
                     {isNextOpen && <small>המועד הקרוב</small>}

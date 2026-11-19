@@ -3,9 +3,14 @@
 import { readFileSync } from 'node:fs';
 import type { InstitutionId } from '@/data/institutions';
 import { applyCatalogueContentRepair } from '@/data/admissions/catalogueContentRepair';
-import type { ReactNode } from 'react';
-import InstitutionPage from '@/app/institutions/[institutionId]/page';
-import ProgramPage from '@/app/programs/[programId]/page';
+import { AuthProvider } from '@/context/AuthContext';
+import { createElement, type ReactNode } from 'react';
+import InstitutionPage, {
+  generateMetadata as generateInstitutionMetadata,
+} from '@/app/institutions/[institutionId]/page';
+import ProgramPage, {
+  generateMetadata as generateProgramMetadata,
+} from '@/app/programs/[programId]/page';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import robots from '@/app/robots';
@@ -45,6 +50,15 @@ import {
 } from './jsonLd';
 
 vi.mock('server-only', () => ({}));
+vi.mock('next/navigation', async () => {
+  const actual = await vi.importActual<typeof import('next/navigation')>('next/navigation');
+  return {
+    ...actual,
+    useRouter: () => ({ push() {}, replace() {}, prefetch() {} }),
+    usePathname: () => '/',
+    useSearchParams: () => new URLSearchParams(),
+  };
+});
 vi.mock('@/components/WayPageShell', () => ({
   default: ({ children }: { children: ReactNode }) => children,
 }));
@@ -590,7 +604,7 @@ describe('metadata', () => {
     }
     expect(await buildInstitutionMetadata('missing')).toEqual({});
     expect(await buildProgramMetadata('missing')).toEqual({});
-  });
+  }, 15_000);
 
   it('leads with real relation facts and keeps descriptions unique across indexable detail pages', async () => {
     const institution = (await getPublicInstitutionPageData('tau'))!;
@@ -947,16 +961,9 @@ describe('structured data', () => {
             'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
         });
       }
-      const checkedText = source.checked?.sourceUrl
-        ? `מקור: אתר ${data.institutions[0].name}`
-        : undefined;
-      for (const text of [source.requirements.join(' '), ...(checkedText ? [checkedText] : [])]) {
-        for (const number of text.match(/\d+(?:\.\d+)?/g) ?? []) {
-          expect(visibleText).toContain(number);
-        }
-      }
-      if (checkedText) {
-        expect(visibleText).toContain(checkedText);
+      expect(visibleText).not.toContain('מקור');
+      for (const number of source.requirements.join(' ').match(/\d+(?:\.\d+)?/g) ?? []) {
+        expect(visibleText).toContain(number);
       }
     },
   );
@@ -973,7 +980,7 @@ describe('structured data', () => {
       );
       const text = document.querySelector('main')!.textContent!;
       expect(text).not.toMatch(/עודכן לאחרונה:/);
-      expect(text.match(/מקור: אתר/g) ?? []).toHaveLength(1);
+      expect(text).not.toContain('מקור');
     },
   );
 
@@ -1154,4 +1161,70 @@ describe('llms.txt calculator link', () => {
     expect(businessSection).toContain(business);
     expect(llms.trimEnd().endsWith(business)).toBe(true);
   });
+});
+
+describe('visible source labels', () => {
+  const staticPages: Record<string, () => Promise<unknown>> = {
+    '/': () => import('@/app/page'),
+    '/about': () => import('@/app/about/page'),
+    '/sekhem-calculator': () => import('@/app/sekhem-calculator/page'),
+    '/calculator': () => import('@/app/calculator/page'),
+    '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
+    '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
+    '/amirnet': () => import('@/app/amirnet/page'),
+    '/psychometric-accommodations': () => import('@/app/psychometric-accommodations/page'),
+    '/open-days': () => import('@/app/open-days/page'),
+    '/transfer': () => import('@/app/transfer/page'),
+    '/without-psychometric': () => import('@/app/without-psychometric/page'),
+    '/institutions': () => import('@/app/institutions/page'),
+    '/programs': () => import('@/app/programs/page'),
+  };
+
+  it('renders no מקור on any sitemap page', async () => {
+    const hits: string[] = [];
+    for (const { url } of await sitemap()) {
+      const path = new URL(url).pathname;
+      try {
+        let markup = '';
+        if (path.startsWith('/programs/')) {
+          const programId = decodeURIComponent(path.slice('/programs/'.length));
+          const params = Promise.resolve({ programId });
+          markup = `${JSON.stringify(await generateProgramMetadata({ params }))}\n${renderToStaticMarkup(
+            await ProgramPage({ params }),
+          )}`;
+        } else if (path.startsWith('/institutions/')) {
+          const institutionId = decodeURIComponent(
+            path.slice('/institutions/'.length),
+          ) as InstitutionId;
+          const params = Promise.resolve({ institutionId });
+          markup = `${JSON.stringify(await generateInstitutionMetadata({ params }))}\n${renderToStaticMarkup(
+            await InstitutionPage({ params }),
+          )}`;
+        } else {
+          const load = staticPages[path];
+          if (!load) throw new Error('missing renderer');
+          const mod = (await load()) as {
+            default: (props?: {
+              searchParams: Promise<Record<string, never>>;
+            }) => ReactNode | Promise<ReactNode>;
+            metadata?: unknown;
+          };
+          const props =
+            path === '/open-days' || path === '/sekhem-calculator'
+              ? { searchParams: Promise.resolve({}) }
+              : undefined;
+          const element = await mod.default(props);
+          markup = `${JSON.stringify(mod.metadata ?? '')}\n${renderToStaticMarkup(
+            path === '/' ? createElement(AuthProvider, null, element) : element,
+          )}`;
+        }
+        const index = markup.indexOf('מקור');
+        if (index >= 0)
+          hits.push(`${path} :: ${markup.slice(Math.max(0, index - 90), index + 90)}`);
+      } catch (error) {
+        hits.push(`${path} ${error instanceof Error ? error.message : String(error)}`);
+      }
+    }
+    expect(hits).toEqual([]);
+  }, 180000);
 });

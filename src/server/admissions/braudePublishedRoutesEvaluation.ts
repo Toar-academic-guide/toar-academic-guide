@@ -336,7 +336,7 @@ export function evaluateBraudePublishedRoutes({
       ...base,
       decision: 'below',
       scoreAssessment: 'below_threshold',
-      explanation: `הציונים שהוזנו אינם עומדים בתנאי הסף: ${missedFloors}. מקור: תנאי הסף של בראודה.`,
+      explanation: `הציונים שהוזנו אינם עומדים בתנאי הסף: ${missedFloors}.`,
       nextAction: 'בדקו את תנאי הסף באתר המכללה ואת אפשרויות שיפור הציונים.',
     };
   if (primary.below || primary.missing.length || gaps.length) {
@@ -347,7 +347,7 @@ export function evaluateBraudePublishedRoutes({
       decision: 'unknown',
       requiredInputs: primary.below ? [] : primary.missing,
       explanation: primary.below
-        ? `מסלול הפסיכומטרי אינו עומד בתנאי הסף: ${missedFloors}. מסלול הבגרות ללא פסיכומטרי טרם נבדק במלואו. מקור: תנאי הסף של בראודה.`
+        ? `מסלול הפסיכומטרי אינו עומד בתנאי הסף: ${missedFloors}. מסלול הבגרות ללא פסיכומטרי טרם נבדק במלואו.`
         : `נדרשים נתונים נוספים לבדיקת כל תנאי הסף.${gaps.length ? ` תנאים שטרם נבדקו: ${gaps.map((f) => f.label).join('; ')}.` : ''}`,
       nextAction:
         gaps.length || bonus !== undefined

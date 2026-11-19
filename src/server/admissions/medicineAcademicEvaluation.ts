@@ -214,7 +214,7 @@ export async function evaluateMedicineAcademicStage({
       kind: 'authority_unavailable',
       capability: 'authority_unavailable',
       confidence: 'low',
-      explanation: 'לא ניתן לחשב כרגע מול המקור הרשמי. נסו שוב מאוחר יותר.',
+      explanation: 'לא ניתן לחשב כרגע מול אתר המוסד. נסו שוב מאוחר יותר.',
       requiredInputs,
       additionalConditions: conditions,
     };

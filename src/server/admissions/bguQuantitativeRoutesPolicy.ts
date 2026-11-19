@@ -200,7 +200,7 @@ export function resolveBguQuantitativeRoute(
     }
     if (route === 'bagrut' || p === undefined) {
       if (config.directAverage === undefined)
-        return { kind: 'below', reason: 'בחשבונאות אין אפיק בגרות ללא פסיכומטרי במקור הנוכחי.' };
+        return { kind: 'below', reason: 'בחשבונאות אין אפיק בגרות ללא פסיכומטרי בפרסום הנוכחי.' };
       if (
         hasPrepDetails &&
         !validAverage &&

@@ -61,7 +61,7 @@ function gateText(result: AdmissionsEvaluationResult): string[] {
     .map((label) => label.replace(/מתואם|סכם|מצרף/g, 'ציון הקבלה'))
     .filter(
       (label) =>
-        !/נדרשת בדיקה מול המוסד|מקור חסום|ממוצע בגרות רשמי של חיפה|נתונים|[a-z]+_[a-z_]+/i.test(
+        !/נדרשת בדיקה מול המוסד|מקור חסום|האתר חסום|ממוצע בגרות רשמי של חיפה|נתונים|[a-z]+_[a-z_]+/i.test(
           label,
         ),
     );
@@ -75,7 +75,7 @@ function haifaReasons(result: AdmissionsEvaluationResult): string[] {
         typeof text === 'string' &&
         Boolean(text.trim()) &&
         /[א-ת]/.test(text) &&
-        !/[a-z_]|מיפוי|טרם אומת|מקור חסום|עדיין לא מחשבים כאן|ציון הקבלה חושב לפי נוסחת/i.test(
+        !/[a-z_]|מיפוי|טרם אומת|מקור חסום|האתר חסום|עדיין לא מחשבים כאן|ציון הקבלה חושב לפי נוסחת/i.test(
           text,
         ),
     )

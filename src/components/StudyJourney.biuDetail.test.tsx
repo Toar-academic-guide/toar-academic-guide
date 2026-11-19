@@ -107,7 +107,7 @@ describe('BIU journey detail verdict', () => {
 
   it('keeps conflicting floors to one short verdict with no invented threshold', async () => {
     const { summary } = await detail(650);
-    expect(summary.textContent).toBe('מקורות סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי');
+    expect(summary.textContent).toBe('נתונים סותרים לגבי תנאי הסף — כדאי לבדוק במחשבון הרשמי');
     expect(screen.queryByText(reservist)).toBeNull();
   });
 

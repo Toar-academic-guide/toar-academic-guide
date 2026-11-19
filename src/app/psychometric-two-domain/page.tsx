@@ -4,9 +4,17 @@ import WayPageShell from '@/components/WayPageShell';
 import { absoluteUrl, SITE_NAME } from '@/lib/site';
 import styles from './page.module.css';
 
+export const twoDomainPolicyUrls = {
+  bgu: 'https://www.bgu.ac.il/welcome/blog/articles/new-psychometry/',
+  tauPolicy: 'https://go.tau.ac.il/he/psychometric-test',
+  tauPsychometric: 'https://go.tau.ac.il/he/ba/psycho',
+  huji: 'https://info.huji.ac.il/reception-components/Psychometric',
+  haifa: 'https://admissions.haifa.ac.il/psychometric-amirnet-yaelnet-tests/',
+} as const;
+
 const title = 'פסיכומטרי דו־תחומי: הבחינה, הציונים ותנאי הקבלה | MyWay';
 const description =
-  'מה משתנה בפסיכומטרי מדצמבר 2026, איך מחושב הציון, מה קורה לציונים קודמים ומה לבדוק לקראת הרשמה ללימודים. מדריך עם מקורות מאל״ו.';
+  'מה משתנה בפסיכומטרי מדצמבר 2026, איך מחושב הציון, מה קורה לציונים קודמים ומה לבדוק לקראת הרשמה ללימודים.';
 const canonical = absoluteUrl('/psychometric-two-domain');
 const nite = {
   announcement: 'https://www.nite.org.il/news/notice-081026/',
@@ -202,31 +210,24 @@ export default function Page() {
             <h2 id="admissions">איזה ציון ייחשב בקבלה לתשפ״ח?</h2>
             <p id="admissions-answer">
               איזה ציון פסיכומטרי ייחשב בקבלה? זה תלוי במוסד ובשנת הלימודים. בטבלה כאן מובא הכלל שכל
-              מוסד פרסם לתשפ״ח, עם קישור רשמי. באוניברסיטת בן־גוריון, לנבחנים שלפני דצמבר{' '}
-              <bdi dir="ltr">2026</bdi> ייחשב הציון הגבוה מבין הציון הרב־תחומי לבין הציון הדו־תחומי.
-              מוסדות שלא נמצא אצלם כלל מופיעים עם קישור בלבד.
+              מוסד פרסם לתשפ״ח. באוניברסיטת בן־גוריון, לנבחנים שלפני דצמבר <bdi dir="ltr">2026</bdi>{' '}
+              ייחשב הציון הגבוה מבין הציון הרב־תחומי לבין הציון הדו־תחומי.
             </p>
             <table className={styles.admissionsTable} aria-labelledby="admissions">
               <thead>
                 <tr>
                   <th scope="col">מוסד</th>
                   <th scope="col">איזה ציון נחשב?</th>
-                  <th scope="col">מקור רשמי</th>
                 </tr>
               </thead>
               <tbody>
                 <tr>
                   <th scope="row">אוניברסיטת בן־גוריון בנגב</th>
                   <td>
-                    לנבחנים לפני דצמבר <bdi dir="ltr">2026</bdi>: הגבוה מבין הציון הרב־תחומי המקורי
+                    לנבחנים לפני דצמבר <bdi dir="ltr">2026</bdi>: הגבוה מבין הציון הרב־תחומי הקודם
                     והציון הדו־תחומי המחושב ממנו. לנבחנים במתכונת החדשה: הציון הדו־תחומי. אין צורך
                     להיבחן שוב רק בגלל השינוי. הכלל מתייחס לציון הכללי; למסלולים המשתמשים בסכם כמותי
-                    או בסכם הנדסה יש חישוב נפרד, כמפורט במקור.
-                  </td>
-                  <td>
-                    <a href="https://www.bgu.ac.il/welcome/blog/articles/new-psychometry/">
-                      מדיניות בן־גוריון
-                    </a>
+                    או בסכם הנדסה יש חישוב נפרד באתר המוסד.
                   </td>
                 </tr>
                 <tr>
@@ -237,28 +238,14 @@ export default function Page() {
                     התלת־תחומי הישן, הדו־תחומי המחושב מהבחינה הישנה והדו־תחומי החדש. המדיניות לתשפ״ח
                     היא פיילוט לשנתיים.
                   </td>
-                  <td>
-                    <a href="https://go.tau.ac.il/he/psychometric-test">מדיניות תל אביב</a>
-                    <a href="https://go.tau.ac.il/he/ba/psycho">עמוד הפסיכומטרי</a>
-                  </td>
                 </tr>
                 <tr>
                   <th scope="row">האוניברסיטה העברית</th>
                   <td>לא נמצא כלל לתשפ״ח בעמוד שנבדק. בדקו באתר המוסד.</td>
-                  <td>
-                    <a href="https://info.huji.ac.il/reception-components/Psychometric">
-                      הנחיות הפסיכומטרי
-                    </a>
-                  </td>
                 </tr>
                 <tr>
                   <th scope="row">אוניברסיטת חיפה</th>
                   <td>לא נמצא כלל לתשפ״ח בעמוד שנבדק. בדקו באתר המוסד.</td>
-                  <td>
-                    <a href="https://admissions.haifa.ac.il/psychometric-amirnet-yaelnet-tests/">
-                      מידע על הבחינות
-                    </a>
-                  </td>
                 </tr>
               </tbody>
             </table>

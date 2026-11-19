@@ -234,7 +234,7 @@ describe('account grades in the homepage journey', () => {
       const scope = within(
         container.querySelector(surface === 'results' ? '.journey-result-row' : '.journey-narrow')!,
       );
-      expect(scope.getByRole('link', { name: 'למקור הרשמי' })).toBeTruthy();
+      expect(scope.getByRole('link', { name: 'לאתר המוסד' })).toBeTruthy();
       if (hide) {
         expect.soft(container.querySelector('.journey-status')).toBeNull();
         expect.soft(scope.queryByText('הנתונים הרשמיים אינם זמינים')).toBeNull();

@@ -92,7 +92,7 @@ export async function generateMetadata({ params }: ProgramPageProps) {
   }
   if (programId === 'cs') {
     const description =
-      'ספי הקבלה למדעי המחשב בטכניון, בתל אביב, בחיפה וברייכמן, כל סף בסולם של המוסד ועם קישור למקור. בדקו מסלולים נתמכים במחשבון MyWay.';
+      'ספי הקבלה למדעי המחשב בטכניון, בתל אביב, בחיפה וברייכמן, כל סף בסולם של המוסד. בדקו מסלולים נתמכים במחשבון MyWay.';
     return {
       ...metadata,
       description,
@@ -530,9 +530,6 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     ['tau', 'huji', 'technion'].includes(institution.id)
                       ? `${currentSourceUrl}${currentSourceUrl.includes('?') ? '&' : '?'}utm_source=myway&utm_medium=referral`
                       : currentSourceUrl;
-                  const checked = isCsReichman
-                    ? { date: '14.11.2026', sourceUrl: csHubAdmissionSourceUrls.reichman }
-                    : source.checked;
                   const officialLink = officialLinkHref && (
                     <ProgramTrackedLink
                       event="institution_site_clicked"
@@ -645,24 +642,6 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                           )}
                         </p>
                       )}
-                      {!prep &&
-                        checked?.sourceUrl &&
-                        !(program.id === 'haifa_cs' && institution.id === 'haifa') && (
-                          <p
-                            dir="rtl"
-                            className="mt-2 text-right text-xs leading-[18px] font-normal text-[var(--text-muted)]"
-                          >
-                            {'מקור: '}
-                            <a
-                              href={checked.sourceUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className={`text-inherit no-underline hover:underline focus-visible:underline ${isCsHub ? 'inline-flex min-h-11 items-center' : ''}`}
-                            >
-                              אתר {institution.name}
-                            </a>
-                          </p>
-                        )}
                     </div>
                   );
                 })}

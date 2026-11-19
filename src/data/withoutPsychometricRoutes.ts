@@ -189,7 +189,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     average: 102,
     averageLabel: 'ממוצע בגרות 102',
     conditions: 'זכאות לבגרות ועמידה בדרישות הקבלה הכלליות של האוניברסיטה.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/social-sciences/ba/communications?v=requirements',
   },
   {
@@ -201,7 +201,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     averageLabel: 'ממוצע בגרות 97',
     conditions:
       'זכאות לבגרות ושני קורסים מקוונים, אחד מכל מקבץ המפורט באתר החוג, בציון 85 לפחות בכל קורס.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
   },
   {
@@ -212,7 +212,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     average: 102,
     averageLabel: 'ממוצע בגרות 102',
     conditions: 'זכאות לבגרות ועמידה בדרישות הקבלה הכלליות של האוניברסיטה.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/social-sciences/ba/political-science?v=admission-requirements',
   },
   {
@@ -223,7 +223,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     average: 97,
     averageLabel: 'ממוצע בגרות משוקלל 97',
     conditions: 'זכאות לבגרות ושני קורסים מקוונים מהרשימה הרשמית בציון 80 לפחות בכל קורס.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/education/ba?v=requirements',
   },
   {
@@ -234,7 +234,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     average: 102,
     averageLabel: 'ממוצע בגרות 102, כולל בונוסים',
     conditions: 'זכאות לבגרות ועמידה בדרישות הקבלה הכלליות של האוניברסיטה.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/education/ba?v=requirements',
   },
   {
@@ -247,7 +247,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     averageLabel: 'ממוצע בגרות 104, כולל בונוסים',
     conditions:
       'אנגלית 5 יחידות בציון 85, מתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 90, ללא בונוסים בציוני המקצועות; הכרת דוחות כספיים וצעדים ראשונים במדעי המחשב ותכנות בפייתון, כל אחד בציון 85 לפחות.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז; ההרשמה לחוג היא בסמסטר א׳ בלבד.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז; ההרשמה לחוג היא בסמסטר א׳ בלבד.',
     source: 'https://go.tau.ac.il/he/management/ba/management?v=requirements',
   },
   {
@@ -259,7 +259,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     averageLabel: 'ממוצע בגרות 104, כולל בונוסים',
     conditions:
       'אנגלית 5 יחידות בציון 85, מתמטיקה 5 יחידות בציון 70 או 4 יחידות בציון 90, ללא בונוסים בציוני המקצועות; הכרת דוחות כספיים וצעדים ראשונים במדעי המחשב ותכנות בפייתון, כל אחד בציון 85 לפחות.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז; ההרשמה לחוג היא בסמסטר א׳ בלבד.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז; ההרשמה לחוג היא בסמסטר א׳ בלבד.',
     source: 'https://go.tau.ac.il/he/management/ba/accounting?v=admission-requirements',
   },
   {
@@ -377,7 +377,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     programId: 'nursing',
     conditions:
       'זכאות לבגרות; אנגלית 5 יחידות בציון 90 לפחות; שני קורסים מקוונים מהרשימה הרשמית בציון 85 לפחות בכל קורס. נדרשים גם מבדקי התאמה, ריאיון ועמידה בדרישות השפה.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז; החוג בוחר מועמדים לפי מכלול הנתונים.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז; החוג בוחר מועמדים לפי מכלול הנתונים.',
     source: 'https://go.tau.ac.il/he/med/ba/nursing?v=admission-requirements',
   },
   {
@@ -386,7 +386,7 @@ export const withoutPsychometricRoutes: readonly WithoutPsychometricRoute[] = [
     programme: 'חינוך — אפיק מקצועות בגרות',
     programId: 'education',
     conditions: 'זכאות לבגרות; אנגלית 5 יחידות ומתמטיקה 4 יחידות, בציון 80 לפחות בכל אחד מהם.',
-    status: 'המקור מתייחס לסמסטר א׳ תשפ״ז.',
+    status: 'הנתונים מתייחסים לסמסטר א׳ תשפ״ז.',
     source: 'https://go.tau.ac.il/he/education/ba?v=requirements',
   },
 ].sort((a, b) => (a.average ?? Infinity) - (b.average ?? Infinity));

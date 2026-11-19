@@ -33,8 +33,8 @@ const baseline = {
     ],
   },
   standard: {
-    text: 'מקור: אתר אוניברסיטת בר-אילן — המחשבון הרשמי של בר-אילן',
-    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">מקור: אתר אוניברסיטת בר-אילן — <a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a></p>',
+    text: 'המחשבון הרשמי של בר-אילן',
+    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]"><a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a></p>',
     links: [
       {
         text: 'המחשבון הרשמי של בר-אילן',
@@ -43,8 +43,8 @@ const baseline = {
     ],
   },
   engineering: {
-    text: 'מקור: אתר אוניברסיטת בר-אילן — המחשבון הרשמי של בר-אילן; תנאי הקבלה בפקולטה להנדסה',
-    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]">מקור: אתר אוניברסיטת בר-אילן — <a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a>; <a href="https://engineering.biu.ac.il/prerequisites?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">תנאי הקבלה בפקולטה להנדסה</a></p>',
+    text: 'המחשבון הרשמי של בר-אילן; תנאי הקבלה בפקולטה להנדסה',
+    html: '<p class="mt-3 text-xs text-[var(--text-muted)] [overflow-wrap:anywhere]"><a href="https://shoham.biu.ac.il/kabala/?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="font-semibold text-[#6554b8] underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">המחשבון הרשמי של בר-אילן</a>; <a href="https://engineering.biu.ac.il/prerequisites?utm_source=myway&amp;utm_medium=referral" target="_blank" rel="noopener noreferrer" class="underline underline-offset-4 focus-visible:outline-2 focus-visible:outline-offset-2">תנאי הקבלה בפקולטה להנדסה</a></p>',
     links: [
       {
         text: 'המחשבון הרשמי של בר-אילן',

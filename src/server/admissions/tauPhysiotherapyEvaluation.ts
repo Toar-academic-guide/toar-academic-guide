@@ -205,7 +205,7 @@ export async function evaluateTauPhysiotherapyResult({
       kind: 'authority_unavailable',
       decision: 'unknown',
       confidence: 'low',
-      explanation: 'לא ניתן לאמת כרגע את הסכם או תנאי הפיזיותרפיה מול המקור הרשמי.',
+      explanation: 'לא ניתן לאמת כרגע את הסכם או תנאי הפיזיותרפיה מול אתר המוסד.',
       nextAction: 'נסו שוב או בדקו במחשבון ובאתר תל אביב.',
       degradationReason: error instanceof Error ? error.message : String(error),
     };

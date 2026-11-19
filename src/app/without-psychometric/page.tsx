@@ -15,7 +15,7 @@ export const dynamic = 'force-dynamic';
 
 const title = 'לימודים בלי פסיכומטרי: מסלולים לפי ממוצע בגרות | MyWay';
 const description =
-  'תוכניות לימוד עם מסלול קבלה לפי בגרות ללא פסיכומטרי. תנאים, מקורות רשמיים ומועד בדיקה לכל מסלול.';
+  'תוכניות לימוד עם מסלול קבלה לפי בגרות ללא פסיכומטרי. תנאים ומועד בדיקה לכל מסלול.';
 const canonical = absoluteUrl('/without-psychometric');
 
 export const metadata: Metadata = {
@@ -93,7 +93,6 @@ export default async function WithoutPsychometricPage() {
                         <p>{route.conditions}</p>
                         {route.status && <p className={styles.status}>{route.status}</p>}
                         <div className={styles.links}>
-                          <a href={route.source}>תנאי הקבלה באתר המוסד</a>
                           {programHref && <Link href={programHref}>עמוד התוכנית</Link>}
                           {calculator && (
                             <Link

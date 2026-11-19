@@ -28,7 +28,7 @@ describe('BIU per-floor presentation in the shared requirements component', () =
       'עומדים',
       'לא עומדים',
       'חסר נתון',
-      'מקורות סותרים',
+      'נתונים סותרים',
       'לפי המחשבון: קבלה מותנית בקורס הכנה בקיץ',
     ])
       expect(within(table).getByText(text)).toBeTruthy();
