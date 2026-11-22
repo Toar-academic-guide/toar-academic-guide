@@ -102,7 +102,7 @@ for (const id of [
             await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
           ).toBe(false);
         } else {
-          await expect(card.getByText('תנאים נוספים', { exact: true })).toBeVisible();
+          await expect(card.getByText('תנאים נוספים', { exact: true }).first()).toBeVisible();
         }
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
