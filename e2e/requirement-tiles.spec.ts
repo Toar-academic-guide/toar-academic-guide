@@ -94,10 +94,16 @@ for (const id of [
       if (
         ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(id)
       ) {
-        await expect(tiled.first()).toBeVisible();
-        expect(
-          await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
-        ).toBe(false);
+        // Number tiles stay up for 30 days after the October 2026 check, then the
+        // full requirement list replaces them.
+        if (await tiled.count()) {
+          await expect(tiled.first()).toBeVisible();
+          expect(
+            await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
+          ).toBe(false);
+        } else {
+          await expect(card.getByText('תנאים נוספים', { exact: true })).toBeVisible();
+        }
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,

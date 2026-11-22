@@ -46,8 +46,13 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
-        await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
-        await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        const tileHeading = main.getByText('מספיק אחד מאלה:', { exact: true });
+        if (await tileHeading.count()) {
+          await expect(tileHeading).toBeVisible();
+          await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        } else {
+          await expect(main.getByText('תנאים נוספים', { exact: true })).toBeVisible();
+        }
         const details = main.locator('details');
         for (const number of value.reqs.join(' ').match(/\d+/g) ?? []) {
           await expect(main).toContainText(number);
