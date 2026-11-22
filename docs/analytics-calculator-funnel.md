@@ -72,16 +72,18 @@ There is no wizard or new UI. Existing `enquiry_form_viewed` remains once per mo
 instance, including StrictMode; closing and reopening the same instance does not emit a
 new view. A newly mounted instance does. Existing submitted/failure events are unchanged.
 
-| Event                         | Trigger / new closed property                                                                                                     |
-| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| `enquiry_form_step_completed` | Once at first nonempty contact-field edit: `step=contact_entered`; once after existing client validation passes: `step=validated` |
-| `enquiry_submit_attempted`    | Each client-valid accepted transition to sending an actual request: `attempt_kind=initial` or `retry`                             |
-| `enquiry_submitted`           | Existing OK, confirmed `data.received` server response; never optimistic click success                                            |
-| `enquiry_submit_failed`       | Existing coarse network/server reason and HTTP status only                                                                        |
-| `server_enquiry_created`      | Existing server receipt when at least one delivery/persistence path succeeds; not confirmed partner delivery                      |
+| Event                         | Trigger / new closed property                                                                                                                 |
+| ----------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enquiry_form_step_completed` | Once at first nonempty contact-field edit: `step=contact_entered`; once after existing client validation passes: `step=validated`             |
+| `enquiry_submit_attempted`    | Each client-valid accepted transition to sending an actual request: `attempt_kind=initial` or `retry`                                         |
+| `enquiry_submitted`           | Existing OK, confirmed `data.received` server response; never optimistic click success                                                        |
+| `enquiry_submit_failed`       | Existing coarse network/server reason and HTTP status only                                                                                    |
+| `server_enquiry_created`      | Existing server receipt when at least one delivery/persistence path succeeds; not confirmed partner delivery                                  |
+| `enquiry_contact_prefilled`   | Once per mount when name, phone, or both are already filled from the profile or this visit. `fields` is `name`, `phone`, or `both`. No values |
+| `enquiry_whatsapp_clicked`    | Click on the WhatsApp link. The link renders only when `NEXT_PUBLIC_WHATSAPP_E164` is set. No number and no message body                      |
 
 New form events carry only existing `program_id`, `institution_id`, `surface` and their
-closed `step`/`attempt_kind`. Contact entry implies interaction, not validity of either
+closed `step`/`attempt_kind`/`fields`. Contact entry implies interaction, not validity of either
 field. Validation is recorded on accepted submit, not on each keystroke. Optional prep
 checkbox interaction emits no progression event. Invalid submissions and duplicate clicks
 while sending emit no attempt. Retry still reuses the existing request ID; that ID is not
