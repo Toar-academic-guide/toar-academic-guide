@@ -9,6 +9,8 @@ test.use({
   },
 });
 
+// The SSR summaries intentionally expire after 30 days; full conditions stay available.
+const summariesCurrent = Date.now() <= Date.parse('2026-10-22') + 30 * 86_400_000;
 let catalogueHasOfficialData = false;
 
 test.beforeAll(async ({ request }) => {
@@ -46,8 +48,14 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
-        await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
-        await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toHaveCount(
+          summariesCurrent ? 1 : 0,
+        );
+        await expect(
+          main.getByText(summariesCurrent ? 'פרטים נוספים' : 'תנאים נוספים', { exact: true }),
+        ).toBeVisible();
+        for (const requirement of [...value.reqs, ...value.notes])
+          await expect(main).toContainText(requirement);
         const details = main.locator('details');
         for (const number of value.reqs.join(' ').match(/\d+/g) ?? []) {
           await expect(main).toContainText(number);
