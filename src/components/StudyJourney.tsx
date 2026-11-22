@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import posthog from 'posthog-js';
 import ProgramTrackedLink from './ProgramTrackedLink';
+import ThresholdAlertCta from './ThresholdAlertCta';
 import {
   ArrowLeft,
   ArrowRight,
@@ -1680,6 +1681,7 @@ export default function StudyJourney({
                 )}
               </div>
             )}
+            {!!rows.length && <ThresholdAlertCta surface="journey_results" />}
             {step === 'results' && !catalogueLoading && !catalogueError && (
               <div dir="rtl" className="mt-10 border-t border-slate-200 pt-4 text-right">
                 <p className="text-sm text-slate-500">עקבו אחרינו</p>

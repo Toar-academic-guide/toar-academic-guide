@@ -14,6 +14,7 @@ import { institutionLd, institutionBreadcrumbLd } from '@/lib/seo/jsonLd';
 import JsonLd from '@/components/seo/JsonLd';
 import type { CatalogueInstitution, CatalogueProgram } from '@/types/catalogue';
 import { openUniversityTransferTracks } from '@/data/openUniversityTransferTracks';
+import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 
 export const dynamic = 'force-dynamic';
 
@@ -136,6 +137,9 @@ export default async function InstitutionPage({ params }: InstitutionPageProps) 
                   מחשבון קבלה{' '}
                 </Link>
               )}
+            </div>
+            <div className="mt-4">
+              <ThresholdAlertCta surface="institution_page" institutionId={institution.id} />
             </div>
           </div>
 

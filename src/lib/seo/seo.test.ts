@@ -147,6 +147,7 @@ describe('crawl policy', () => {
       ]);
       expect(rule.disallow).not.toContain('/signup');
       expect(rule.disallow).not.toContain('/enquiry');
+      expect(rule.disallow).not.toContain('/threshold-alerts');
     }
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     expect(result.host).toBe(SITE_URL);
@@ -244,6 +245,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/about`,
       `${SITE_URL}/sekhem-calculator`,
       `${SITE_URL}/calculator`,
+      `${SITE_URL}/threshold-alerts`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/amirnet`,
@@ -293,7 +295,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(446);
+    expect(urls).toHaveLength(447);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -1192,6 +1194,7 @@ describe('visible source labels', () => {
     '/about': () => import('@/app/about/page'),
     '/sekhem-calculator': () => import('@/app/sekhem-calculator/page'),
     '/calculator': () => import('@/app/calculator/page'),
+    '/threshold-alerts': () => import('@/app/threshold-alerts/page'),
     '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
     '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
     '/amirnet': () => import('@/app/amirnet/page'),
@@ -1233,7 +1236,7 @@ describe('visible source labels', () => {
             metadata?: unknown;
           };
           const props =
-            path === '/open-days' || path === '/sekhem-calculator'
+            path === '/open-days' || path === '/sekhem-calculator' || path === '/threshold-alerts'
               ? { searchParams: Promise.resolve({}) }
               : undefined;
           const element = await mod.default(props);

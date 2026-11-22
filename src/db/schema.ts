@@ -992,3 +992,37 @@ export const enquiries = pgTable(
     check('enquiries_consent_check', sql`${table.consent} = true`),
   ],
 );
+
+export const thresholdAlertSignups = pgTable(
+  'threshold_alert_signups',
+  {
+    requestId: uuid('request_id').primaryKey(),
+    email: text('email'),
+    phone: text('phone'),
+    institutions: text('institutions').array().notNull(),
+    degrees: text('degrees').array().notNull(),
+    cycle: text('cycle').notNull(),
+    consent: boolean('consent').notNull(),
+    consentText: text('consent_text').notNull(),
+    sourcePath: text('source_path').notNull(),
+    utmSource: varchar('utm_source', { length: 100 }),
+    utmMedium: varchar('utm_medium', { length: 100 }),
+    utmCampaign: varchar('utm_campaign', { length: 100 }),
+    referrer: varchar('referrer', { length: 256 }),
+    notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
+  },
+  (table) => [
+    index('threshold_alert_signups_created_at_idx').on(table.createdAt),
+    check('threshold_alert_signups_consent_check', sql`${table.consent} = true`),
+    check('threshold_alert_signups_cycle_check', sql`${table.cycle} = '2027'`),
+    check(
+      'threshold_alert_signups_contact_check',
+      sql`${table.email} is not null or ${table.phone} is not null`,
+    ),
+    check(
+      'threshold_alert_signups_target_check',
+      sql`cardinality(${table.institutions}) > 0 or cardinality(${table.degrees}) > 0`,
+    ),
+  ],
+);

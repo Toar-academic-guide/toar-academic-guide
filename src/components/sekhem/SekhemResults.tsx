@@ -7,6 +7,7 @@ import {
 } from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
+import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import type {
   AdmissionsEvaluationReport,
@@ -351,6 +352,9 @@ export default function SekhemResults({
           יש גם אפיקי קבלה נוספים
         </Link>
       )}
+      <div className="mt-4">
+        <ThresholdAlertCta surface="sekhem_results" />
+      </div>
     </section>
   );
 }
