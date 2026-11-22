@@ -83,6 +83,7 @@ import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
 import ProgramShareButton from './ProgramShareButton';
+import CalculatorShareButton from './CalculatorShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
@@ -1742,6 +1743,7 @@ export default function StudyJourney({
             )}
             {!!rows.length && (
               <div className="journey-actions">
+                <CalculatorShareButton surface="journey_calculator" className="journey-secondary" />
                 <button className="journey-secondary" onClick={() => go('saved')}>
                   לרשימה שלי
                 </button>

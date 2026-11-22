@@ -92,18 +92,15 @@ for (const id of [
       await expect(card).toBeVisible();
       const tiled = card.getByText('פרטים נוספים', { exact: true });
       if (
-        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(id)
+        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(
+          id,
+        ) &&
+        (await tiled.count())
       ) {
-        // Number tiles stay up for 30 days after the October 2026 check, then the
-        // full requirement list replaces them.
-        if (await tiled.count()) {
-          await expect(tiled.first()).toBeVisible();
-          expect(
-            await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
-          ).toBe(false);
-        } else {
-          await expect(card.getByText('תנאים נוספים', { exact: true }).first()).toBeVisible();
-        }
+        await expect(tiled.first()).toBeVisible();
+        expect(
+          await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
+        ).toBe(false);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
@@ -121,7 +118,9 @@ for (const id of [
         true,
       );
       await expect(card).not.toContainText('incomplete_published_requirements');
-      if (id === 'tlvyaffo_cs') await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      if (id === 'tlvyaffo_cs' && (await card.getByText('פרטים נוספים', { exact: true }).count())) {
+        await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      }
     }
   });
 }

@@ -46,18 +46,21 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
-        const tileHeading = main.getByText('מספיק אחד מאלה:', { exact: true });
-        if (await tileHeading.count()) {
-          await expect(tileHeading).toBeVisible();
-          await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        // Number summaries expire 30 days after 2026-10-22. The source sentences stay either way.
+        const summary = main.getByText('פרטים נוספים', { exact: true });
+        if (await summary.count()) {
+          await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
+          await expect(summary).toBeVisible();
+          const details = main.locator('details');
+          await expect(details).not.toContainText('ראיון קבלה חובה');
         } else {
-          await expect(main.getByText('תנאים נוספים', { exact: true })).toBeVisible();
+          for (const sentence of [...value.reqs, ...value.notes]) {
+            await expect(main).toContainText(sentence);
+          }
         }
-        const details = main.locator('details');
         for (const number of value.reqs.join(' ').match(/\d+/g) ?? []) {
           await expect(main).toContainText(number);
         }
-        await expect(details).not.toContainText('ראיון קבלה חובה');
         const calculator = main.getByRole('link', { name: 'למחשבון המכללה', exact: true });
         const calculatorUrl = new URL((await calculator.getAttribute('href'))!);
         expect(calculatorUrl.searchParams.get('utm_source')).toBe('myway');

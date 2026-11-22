@@ -943,7 +943,8 @@ describe('structured data', () => {
           }
         }
         if (id === 'colmgmt_cs') {
-          for (const [, pageFact] of [
+          // Number tiles last 30 days from 2026-10-22. After that the page keeps the source sentences.
+          const facts = [
             ['ממוצע בגרות משוקלל 85+', '85בגרות'],
             ['מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+', 'מתמטיקה 5 יח"ל 70 / 4 יח"ל 80'],
             ['ומעבר מבדק פנימי', '+ מבדק פנימי'],
@@ -956,8 +957,10 @@ describe('structured data', () => {
               'חסר רק ציון המתמטיקה: אחרי מבדק פנימי וסיום מכינת ריענון במתמטיקה בהצלחה.',
             ],
             ['או שתיהן, לפי מה שחסר', 'חסרים שניהם: אחרי מבדק פנימי וסיום שתי המכינות בהצלחה.'],
-          ]) {
-            expect(visibleText).toContain(pageFact);
+          ] as const;
+          const numberSummary = visibleText.includes('מספיק אחד מאלה:');
+          for (const [sourceFact, tileFact] of facts) {
+            expect(visibleText).toContain(numberSummary ? tileFact : sourceFact);
           }
         }
         if (id === 'ono_law' || id === 'colmgmt_cs') {

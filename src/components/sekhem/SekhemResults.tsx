@@ -7,6 +7,7 @@ import {
 } from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
+import CalculatorShareButton from '@/components/CalculatorShareButton';
 import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import type {
   AdmissionsEvaluationReport,
@@ -324,10 +325,16 @@ export default function SekhemResults({
     groups.set(id, entries);
   }
   return (
-    <section aria-labelledby="sekhem-results-title" className="mt-12">
+    <section aria-labelledby="sekhem-results-title" className="mt-12 text-right">
       <h2 id="sekhem-results-title" className="text-2xl font-semibold">
         הסכם לפי מוסד ותוכנית
       </h2>
+      {groups.size > 0 && (
+        <CalculatorShareButton
+          surface="sekhem_calculator"
+          className="way-button-secondary mt-3 min-h-11 px-5 py-3"
+        />
+      )}
       {[...groups.entries()]
         .map(([id, entries]) => ({ id, entries, entry: groupEntry(entries, selectedPrograms[id]) }))
         .sort((a, b) => Number(hasResultNumber(b.entry)) - Number(hasResultNumber(a.entry)))
