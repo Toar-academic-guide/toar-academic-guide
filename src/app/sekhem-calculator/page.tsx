@@ -9,7 +9,8 @@ import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
 import { canonicalProgramId, canonicalProgramPath } from '@/lib/seo/programAliases';
 import { sekhemCalculatorLd } from '@/lib/seo/jsonLd';
-import { absoluteUrl, SITE_NAME } from '@/lib/site';
+import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
+import { absoluteUrl } from '@/lib/site';
 import { isMedicineAcademicPair } from '@/lib/medicineAcademicInputs';
 
 const title = 'מחשבון סכם וממוצע בגרות לפי מוסד | MyWay';
@@ -55,15 +56,7 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: { canonical },
-  openGraph: {
-    title,
-    description,
-    url: canonical,
-    type: 'website',
-    locale: 'he_IL',
-    siteName: SITE_NAME,
-  },
-  twitter: { card: 'summary', title, description },
+  ...socialMetadata(shareCards.sekhem, title, description, canonical),
 };
 
 export default async function Page({
