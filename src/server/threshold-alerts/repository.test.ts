@@ -37,7 +37,11 @@ describe('threshold alert signup storage', () => {
   });
 
   it('stores the signup through the insert-only function without putting the phone in SQL text', async () => {
-    await saveThresholdAlertSignup({ ...signup, institutions: [...signup.institutions], degrees: [...signup.degrees] });
+    await saveThresholdAlertSignup({
+      ...signup,
+      institutions: [...signup.institutions],
+      degrees: [...signup.degrees],
+    });
     const queries = execute.mock.calls.map(([query]) => new PgDialect().sqlToQuery(query));
     expect(queries[0].sql).toMatch(/statement_timeout/);
     expect(queries[1].sql).toContain('public.store_threshold_alert_signup');

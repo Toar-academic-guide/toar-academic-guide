@@ -46,13 +46,18 @@ for (const width of [320, 390, 768, 1280, 1440]) {
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 16)
       await expect(main.getByRole('link', { name: 'קבלו שיחה מהמוסד', exact: true })).toBeVisible();
       if (officialCatalogueApplied()) {
-        await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
-        await expect(main.getByText('פרטים נוספים', { exact: true })).toBeVisible();
+        const tiles = main.getByText('פרטים נוספים', { exact: true });
+        // The 2026-10-22 number summaries expire after 30 days. Until then they
+        // use the short tile disclosure; afterwards the full requirement text remains.
+        if ((await tiles.count()) > 0) {
+          await expect(main.getByText('מספיק אחד מאלה:', { exact: true })).toBeVisible();
+          await expect(tiles).toBeVisible();
+        }
         const details = main.locator('details');
         for (const number of value.reqs.join(' ').match(/\d+/g) ?? []) {
           await expect(main).toContainText(number);
         }
-        await expect(details).not.toContainText('ראיון קבלה חובה');
+        if ((await details.count()) > 0) await expect(details).not.toContainText('ראיון קבלה חובה');
         const calculator = main.getByRole('link', { name: 'למחשבון המכללה', exact: true });
         const calculatorUrl = new URL((await calculator.getAttribute('href'))!);
         expect(calculatorUrl.searchParams.get('utm_source')).toBe('myway');

@@ -91,8 +91,13 @@ for (const id of [
         .filter({ has: page.getByRole('heading', { name: 'תנאי קבלה', exact: true }) });
       await expect(card).toBeVisible();
       const tiled = card.getByText('פרטים נוספים', { exact: true });
+      // Number summaries expire 30 days after their review. The full requirement
+      // list stays; the closed disclosure is only there while the summary is current.
       if (
-        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(id)
+        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(
+          id,
+        ) &&
+        (await tiled.count()) > 0
       ) {
         await expect(tiled.first()).toBeVisible();
         expect(
