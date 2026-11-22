@@ -94,6 +94,28 @@ export function captureCalculatorOutcome(
   });
 }
 
+export function captureEnquiryPrefill(
+  programId: string,
+  institutionId: string,
+  surface: string,
+  fields: 'name' | 'phone' | 'both',
+) {
+  capture('enquiry_contact_prefilled', {
+    program_id: programId,
+    institution_id: institutionId,
+    surface,
+    fields,
+  });
+}
+
+export function captureEnquiryWhatsApp(programId: string, institutionId: string, surface: string) {
+  capture('enquiry_whatsapp_clicked', {
+    program_id: programId,
+    institution_id: institutionId,
+    surface,
+  });
+}
+
 export function captureCalculatorShare(surface: CalculatorShareSurface) {
   capture('calculator_results_shared', { calculator_surface: surface });
 }
