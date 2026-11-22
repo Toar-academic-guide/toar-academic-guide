@@ -1,0 +1,94 @@
+.shell.shell {
+  background: var(--way-page-background);
+}
+.shell [data-way-backdrop] {
+  display: none;
+}
+.main {
+  max-width: 850px;
+  margin-inline: auto;
+  padding: 40px 24px 80px;
+  color: var(--text-body);
+  text-align: right;
+  font-size: 17px;
+  line-height: 1.85;
+}
+.main h1,
+.main h2 {
+  color: #12234a;
+  font-weight: 700;
+  line-height: 1.4;
+  text-wrap: pretty;
+}
+.main h1 {
+  font-size: clamp(1.8rem, 4vw, 2.4rem);
+}
+.main h2 {
+  font-size: 1.4rem;
+  margin-bottom: 16px;
+}
+.lead {
+  margin-top: 22px;
+  font-size: 1.1rem;
+}
+.section {
+  margin-top: 40px;
+}
+.section ul {
+  padding-inline-start: 24px;
+  list-style: disc;
+}
+.section li + li {
+  margin-top: 16px;
+}
+.main bdi {
+  unicode-bidi: isolate;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+.faq {
+  border-top: 1px solid var(--border);
+}
+.faq summary {
+  min-height: 44px;
+  padding-block: 16px;
+  cursor: pointer;
+  font-weight: 600;
+}
+.faq p {
+  padding-bottom: 20px;
+}
+.next {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px 28px;
+  margin-top: 36px;
+  border-top: 1px solid var(--border);
+  padding-top: 20px;
+}
+.next a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #55449a;
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.main :is(a, summary):focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 4px;
+  border-radius: 2px;
+}
+@media (max-width: 600px) {
+  .main {
+    padding: 24px 20px 56px;
+    font-size: 16px;
+  }
+  .section {
+    margin-top: 30px;
+  }
+  .next {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
