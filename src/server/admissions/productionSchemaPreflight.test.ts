@@ -13,6 +13,10 @@ import {
 } from './productionSchemaPreflight';
 
 const storeEnquiry0044 = readFileSync('src/db/migrations/0044_enquiries_prep_consent.sql', 'utf8'); // Approved test update, Jorje 2026-10-26
+const storeThresholdAlert0045 = readFileSync(
+  'src/db/migrations/0045_threshold_alert_signups.sql',
+  'utf8',
+);
 
 const storeEnquiry0042 = readFileSync(
   'src/db/migrations/0042_store_enquiry_createdat_default.sql',
@@ -67,7 +71,12 @@ describe('production admissions schema preflight', () => {
         .replace('::timestamptz, now()', ' :: TIMESTAMPTZ , NOW ( )'),
     ])('accepts the guarded 0044 body despite SQL formatting (%#)', (definition) => {
     const snapshot = makeSnapshot();
-    Object.assign(snapshot, { functionDefinitions: { 'store_enquiry(jsonb)': definition } });
+    Object.assign(snapshot, {
+      functionDefinitions: {
+        ...snapshot.functionDefinitions,
+        'store_enquiry(jsonb)': definition,
+      },
+    });
     expect(assessProductionSchema(snapshot)).toMatchObject({ status: 'current', issues: [] });
   });
 
@@ -82,6 +91,7 @@ describe('production admissions schema preflight', () => {
       '0042',
       '0043',
       '0044', // Approved test update, Jorje 2026-10-26
+      '0045',
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -1324,6 +1334,56 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         service_role: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'],
       },
     };
+    tables.threshold_alert_signups = {
+      columns: [
+        'request_id',
+        'email',
+        'phone',
+        'institutions',
+        'degrees',
+        'cycle',
+        'consent',
+        'consent_text',
+        'source_path',
+        'utm_source',
+        'utm_medium',
+        'utm_campaign',
+        'referrer',
+        'notified_at',
+        'created_at',
+      ],
+      columnTypes: {
+        request_id: 'uuid',
+        email: 'text',
+        phone: 'text',
+        institutions: 'text[]',
+        degrees: 'text[]',
+        cycle: 'text',
+        consent: 'boolean',
+        consent_text: 'text',
+        source_path: 'text',
+        utm_source: 'character varying',
+        utm_medium: 'character varying',
+        utm_campaign: 'character varying',
+        referrer: 'character varying',
+        notified_at: 'timestamp with time zone',
+        created_at: 'timestamp with time zone',
+      },
+      constraints: [
+        'threshold_alert_signups_pkey',
+        'threshold_alert_signups_consent_check',
+        'threshold_alert_signups_cycle_check',
+        'threshold_alert_signups_contact_check',
+        'threshold_alert_signups_target_check',
+      ],
+      indexes: ['threshold_alert_signups_pkey', 'threshold_alert_signups_created_at_idx'],
+      rowLevelSecurity: true,
+      policies: [],
+      columnGrants: {},
+      grants: {
+        service_role: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'],
+      },
+    };
   }
 
   return {
@@ -1417,13 +1477,20 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
       ...(appliedIds.has('0014') ? ['admission_threshold_scope_invariant'] : []),
       ...(appliedIds.has('0034') ? ['admission_alert_account_deleted'] : []),
     ],
-    functionDefinitions: { 'store_enquiry(jsonb)': storeEnquiry0044 }, // Approved test update, Jorje 2026-10-26
+    functionDefinitions: {
+      'store_enquiry(jsonb)': storeEnquiry0044, // Approved test update, Jorje 2026-10-26
+      'store_threshold_alert_signup(jsonb)': storeThresholdAlert0045,
+    },
     functionAccess: appliedIds.has('0034')
       ? Object.fromEntries([
           ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
             ? [
                 [
                   'store_enquiry(jsonb)',
+                  { securityDefiner: true, executeRoles: ['app_runtime', 'service_role'] },
+                ],
+                [
+                  'store_threshold_alert_signup(jsonb)',
                   { securityDefiner: true, executeRoles: ['app_runtime', 'service_role'] },
                 ],
               ]
@@ -1442,7 +1509,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     functions: appliedIds.has('0014')
       ? {
           ...(appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length
-            ? { 'store_enquiry(jsonb)': ['search_path=""'] }
+            ? {
+                'store_enquiry(jsonb)': ['search_path=""'],
+                'store_threshold_alert_signup(jsonb)': ['search_path=""'],
+              }
             : {}),
           ...(appliedIds.has('0034')
             ? Object.fromEntries(

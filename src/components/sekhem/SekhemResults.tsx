@@ -7,6 +7,7 @@ import {
 } from '@/lib/sekhemResultPresentation';
 import { useState } from 'react';
 import Link from 'next/link';
+import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 import CalculatorShareButton from '@/components/CalculatorShareButton';
 import type { CalculatorOffering } from '@/lib/sekhemCalculator';
 import type {
@@ -358,6 +359,9 @@ export default function SekhemResults({
           יש גם אפיקי קבלה נוספים
         </Link>
       )}
+      <div className="mt-4">
+        <ThresholdAlertCta surface="sekhem_results" />
+      </div>
     </section>
   );
 }
