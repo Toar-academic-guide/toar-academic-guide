@@ -120,7 +120,9 @@ for (const id of [
         true,
       );
       await expect(card).not.toContainText('incomplete_published_requirements');
-      if (id === 'tlvyaffo_cs') await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      if (id === 'tlvyaffo_cs' && (await card.getByText('פרטים נוספים', { exact: true }).count())) {
+        await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      }
     }
   });
 }

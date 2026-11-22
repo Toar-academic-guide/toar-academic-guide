@@ -2,21 +2,18 @@ import InstitutionsDirectory from '@/components/InstitutionsDirectory';
 import { getPublicInstitutionDirectoryData } from '@/lib/institutionDirectoryData';
 import JsonLd from '@/components/seo/JsonLd';
 import { institutionDirectoryLd } from '@/lib/seo/jsonLd';
+import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
 
 export const dynamic = 'force-dynamic';
 
+const title = 'מוסדות לימוד בישראל – השוואה לפי תחום לימודים';
+const description = 'מצאו מוסדות לימוד לפי תחום ותכנית לימודים, מיקום וסוג מוסד.';
+
 export const metadata = {
-  title: 'מוסדות לימוד בישראל – השוואה לפי תחום לימודים',
-  description: 'מצאו מוסדות לימוד לפי תחום ותכנית לימודים, מיקום וסוג מוסד.',
+  title,
+  description,
   alternates: { canonical: '/institutions' },
-  openGraph: {
-    title: 'מוסדות לימוד בישראל – השוואה לפי תחום לימודים',
-    description: 'מצאו מוסדות לימוד לפי תחום ותכנית לימודים, מיקום וסוג מוסד.',
-    url: '/institutions',
-    type: 'website',
-    locale: 'he_IL',
-    siteName: 'MyWay',
-  },
+  ...socialMetadata(shareCards.institutions, title, description, '/institutions'),
 };
 
 export default async function InstitutionsPage() {
