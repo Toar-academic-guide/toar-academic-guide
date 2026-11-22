@@ -4,6 +4,8 @@ import WayPageShell from '@/components/WayPageShell';
 import ProfileSekhemCalculator from '@/components/sekhem/ProfileSekhemCalculator';
 import SekhemCalculator from '@/components/sekhem/SekhemCalculator';
 import JsonLd from '@/components/seo/JsonLd';
+import AdmissionGuidanceText from '@/components/seo/AdmissionGuidanceText';
+import alternatives from '@/data/admissionAlternatives.json';
 import { sekhemAverageSources } from '@/data/sekhemAverageSources';
 import { loadSekhemCalculatorOfferings } from '@/lib/sekhemCalculatorSupport';
 import { getPublicProgramPageData } from '@/lib/publicCataloguePages';
@@ -48,6 +50,7 @@ const faq = [
     answer:
       'פתחו את ״בחירת תחום לימודים״ בטופס כדי לראות את התוכניות שאפשר לבדוק. רוצים לראות לאן מתקבלים בתוכניות שבחרתם? למחשבון סיכויי הקבלה',
   },
+  ...alternatives.thresholds.faq,
 ];
 
 export const dynamic = 'force-dynamic';
@@ -142,6 +145,21 @@ export default async function Page({
         ) : (
           <SekhemCalculator offerings={offerings} initialProgramId={initialProgramId} />
         )}
+        <section className="mt-10 space-y-4 leading-7" aria-labelledby="threshold-timing-title">
+          <h2 id="threshold-timing-title" className="text-xl font-semibold">
+            {alternatives.thresholds.title}
+          </h2>
+          <p>
+            <AdmissionGuidanceText text={alternatives.thresholds.answer} />
+          </p>
+          <ul className="list-disc space-y-2 ps-5">
+            {alternatives.thresholds.details.map((detail) => (
+              <li key={detail}>
+                <AdmissionGuidanceText text={detail} />
+              </li>
+            ))}
+          </ul>
+        </section>
         <section className="mt-10 space-y-4 leading-7" aria-labelledby="bagrut-average-title">
           <h2 id="bagrut-average-title" className="text-xl font-semibold">
             ממוצע הבגרות שלכם לפי כל מוסד
@@ -209,7 +227,7 @@ export default async function Page({
                     </Link>
                   </>
                 ) : (
-                  answer
+                  <AdmissionGuidanceText text={answer} />
                 )}
               </p>
             </div>

@@ -21,10 +21,13 @@ vi.mock('@/lib/sekhemCalculatorSupport', () => ({
 
 import Page, { metadata } from './page';
 import sitemap from '@/app/sitemap';
+import alternatives from '@/data/admissionAlternatives.json';
 
 it('renders official sourced routes in numeric order, preserving cycle and conditional requirements', async () => {
   render(await Page());
-  const rows = screen.getAllByRole('row').slice(1);
+  const rows = within(screen.getByRole('region', { name: 'מסלולים לפי ממוצע בגרות' }))
+    .getAllByRole('row')
+    .slice(1);
   const averages = rows.map((row) => row.querySelector('td')?.textContent ?? '');
   const numbers = averages.map((average) =>
     Number(average.match(/\d+(?:\.\d+)?/)?.[0] ?? Infinity),
@@ -75,4 +78,41 @@ it('publishes a self-canonical indexable route in the sitemap', async () => {
   const entries = (await sitemap()).filter((entry) => entry.url === metadata.alternates?.canonical);
   expect(entries).toHaveLength(1);
   expect(entries[0].lastModified).toBe('2026-11-10');
+});
+
+it('renders all five SAT rows with the approved exclusions and one matching six-item FAQ', async () => {
+  const { container } = render(await Page());
+  const sat = screen.getByRole('table', { name: alternatives.sat.title });
+  const rows = within(sat).getAllByRole('row').slice(1);
+  expect(rows).toHaveLength(5);
+  for (const [index, expected] of alternatives.sat.rows.entries()) {
+    expect([...rows[index].querySelectorAll('th,td')].map((cell) => cell.textContent)).toEqual(
+      Object.values(expected),
+    );
+  }
+  expect(rows[1].textContent).not.toContain('תשפ״ה');
+  expect(rows[4].textContent).toContain('רק למועמדים עם תעודת בגרות או תעודת תיכון מחו״ל');
+  expect(sat.querySelectorAll('a,input')).toHaveLength(0);
+  const nodes = [...container.querySelectorAll('main script[type="application/ld+json"]')].flatMap(
+    (script) => JSON.parse(script.textContent!)['@graph'],
+  );
+  const faq = nodes.filter((node) => node['@type'] === 'FAQPage');
+  expect(faq).toHaveLength(1);
+  const questions = [...alternatives.prep.faq, ...alternatives.sat.faq];
+  expect(faq[0].mainEntity).toEqual(
+    questions.map(({ question, answer }) => ({
+      '@type': 'Question',
+      name: question,
+      acceptedAnswer: { '@type': 'Answer', text: answer },
+    })),
+  );
+  for (const { question, answer } of questions)
+    expect(screen.getByRole('heading', { name: question }).nextElementSibling?.textContent).toBe(
+      answer,
+    );
+  const prep = screen.getByRole('region', { name: alternatives.prep.title });
+  expect(prep.textContent).toContain('באוניברסיטת חיפה, לדוגמה');
+  expect(within(prep).getByRole('link', { name: 'מכינה קדם־אקדמית' }).getAttribute('href')).toBe(
+    '/programs/prep',
+  );
 });

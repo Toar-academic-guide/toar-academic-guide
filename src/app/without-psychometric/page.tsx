@@ -1,5 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
+import JsonLd from '@/components/seo/JsonLd';
+import AdmissionGuidanceText from '@/components/seo/AdmissionGuidanceText';
+import alternatives from '@/data/admissionAlternatives.json';
 import WayPageShell from '@/components/WayPageShell';
 import { withoutPsychometricRoutes } from '@/data/withoutPsychometricRoutes';
 import { allowsNoPsychometric } from '@/lib/calculatorInputRequirements';
@@ -17,6 +20,14 @@ const title = 'לימודים בלי פסיכומטרי: מסלולים לפי �
 const description =
   'תוכניות לימוד עם מסלול קבלה לפי בגרות ללא פסיכומטרי. תנאים ומועד בדיקה לכל מסלול.';
 const canonical = absoluteUrl('/without-psychometric');
+const faq = [...alternatives.prep.faq, ...alternatives.sat.faq];
+const satColumns = [
+  ['sat', 'SAT'],
+  ['act', 'ACT'],
+  ['excluded', 'לא מתקבל ל־'],
+  ['conversion', 'איך מומר הציון'],
+  ['both', 'יש גם פסיכומטרי?'],
+] as const;
 
 export const metadata: Metadata = {
   title: { absolute: title },
@@ -52,17 +63,40 @@ export default async function WithoutPsychometricPage() {
   return (
     <WayPageShell className={styles.shell}>
       <main id="main-content" dir="rtl" className={styles.main}>
+        <JsonLd
+          data={{
+            '@type': 'FAQPage',
+            '@id': `${canonical}#faq`,
+            mainEntity: faq.map(({ question, answer }) => ({
+              '@type': 'Question',
+              name: question,
+              acceptedAnswer: { '@type': 'Answer', text: answer },
+            })),
+          }}
+        />
         <article>
           <header className={styles.header}>
             <p className={styles.eyebrow}>תנאי קבלה</p>
             <h1>לימודים בלי פסיכומטרי</h1>
             <p className={styles.lead}>
-              אפשר להתחיל תואר בלי פסיכומטרי במסלולים שמסתמכים על ציוני הבגרות. בטבלה מופיעים ממוצעי
-              הבגרות שפרסמו המוסדות, מה עוד צריך להשלים וקישור לתנאים הרשמיים. בדקו גם את שנת
-              הלימודים ומצב ההרשמה של התוכנית שמעניינת אתכם.
+              <AdmissionGuidanceText text={alternatives.prep.intro} />
             </p>
           </header>
 
+          <section className={styles.guidance} aria-labelledby="prep-choice-heading">
+            <h2 id="prep-choice-heading">{alternatives.prep.title}</h2>
+            <p>
+              <AdmissionGuidanceText text={alternatives.prep.answer} />
+            </p>
+            <p>
+              <AdmissionGuidanceText text={alternatives.prep.haifa} />
+            </p>
+            <p>
+              להשוואת מכינות לפי מה שהתעודה מחליפה:{' '}
+              <Link href="/programs/prep">מכינה קדם־אקדמית</Link>.
+            </p>
+            <Link href="/sekhem-calculator">בדקו איך הפסיכומטרי נכנס לסכם</Link>
+          </section>
           <section aria-labelledby="routes-heading">
             <h2 id="routes-heading">מסלולים לפי ממוצע בגרות</h2>
             <table className={styles.table}>
@@ -110,9 +144,55 @@ export default async function WithoutPsychometricPage() {
             </table>
           </section>
 
+          <section className={styles.guidance} aria-labelledby="sat-heading">
+            <h2 id="sat-heading">{alternatives.sat.title}</h2>
+            <p>
+              <AdmissionGuidanceText text={alternatives.sat.answer} />
+            </p>
+            <table className={styles.satTable} aria-labelledby="sat-heading">
+              <caption>{alternatives.sat.caption}</caption>
+              <thead>
+                <tr>
+                  <th scope="col">מוסד</th>
+                  {satColumns.map(([key, label]) => (
+                    <th scope="col" key={key}>
+                      {label}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {alternatives.sat.rows.map((row) => (
+                  <tr key={row.institution}>
+                    <th scope="row">{row.institution}</th>
+                    {satColumns.map(([key, label]) => (
+                      <td key={key} data-label={label}>
+                        <AdmissionGuidanceText text={row[key]} />
+                      </td>
+                    ))}
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </section>
+          <section className={styles.guidance} aria-labelledby="faq-heading">
+            <h2 id="faq-heading">שאלות נפוצות</h2>
+            {faq.map(({ question, answer }) => (
+              <div className={styles.faq} key={question}>
+                <h3>{question}</h3>
+                <p>
+                  <AdmissionGuidanceText text={answer} />
+                </p>
+                {question === 'האם מכינה מחליפה בגרות או פסיכומטרי?' && (
+                  <Link href="/programs/prep">לטבלת המכינות</Link>
+                )}
+              </div>
+            ))}
+          </section>
           <nav aria-label="דרכים נוספות ללימודים" className={styles.more}>
             <h2>עוד דרכים להתחיל ללמוד</h2>
             <Link href="/programs/prep">מכינה קדם־אקדמית</Link>
+            <Link href="/calculator">מחשבון סיכויי קבלה</Link>
             <Link href="/transfer">אפיקי מעבר והכרה בלימודים</Link>
             <Link href="/psychometric-two-domain">על הפסיכומטרי הדו־תחומי</Link>
           </nav>
