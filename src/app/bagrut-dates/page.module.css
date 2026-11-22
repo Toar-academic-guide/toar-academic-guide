@@ -25,12 +25,6 @@
   font-weight: 700;
 }
 
-.header p {
-  margin-top: 12px;
-  color: var(--text-body);
-  font-size: 0.9rem;
-}
-
 .main a {
   color: #49388b;
   text-decoration: underline;
@@ -78,9 +72,9 @@
 
 .months {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
-  gap: 16px;
-  margin-top: 16px;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 24px;
 }
 
 .month h3 {
@@ -90,24 +84,42 @@
   font-weight: 600;
 }
 
-.dates {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
+.dates,
+.examGroups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
   margin: 0;
   padding: 0;
   list-style: none;
 }
 
-.dates li {
-  display: grid;
-  min-width: 40px;
-  min-height: 40px;
-  place-items: center;
+.dates li,
+.examCard {
   border: 1px solid #dce2ef;
-  border-radius: 10px;
+  border-radius: 12px;
+  padding: 16px 18px;
   background: #f7f8fc;
+}
+
+.dates li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.dates time {
+  font-size: 1.15rem;
+  font-weight: 650;
   font-variant-numeric: tabular-nums;
+}
+
+.weekday,
+.sitting {
+  color: #56627b;
+  font-size: 0.95rem;
 }
 
 .more {
@@ -115,53 +127,77 @@
 }
 
 .more summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
   cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 650;
+  list-style: none;
+}
+
+.more summary::-webkit-details-marker {
+  display: none;
+}
+
+.more summary::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-inline-end: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  margin-inline-end: 3px;
+}
+
+.more[open] summary::after {
+  transform: rotate(225deg);
+}
+
+.examGroups {
+  margin-top: 20px;
+  align-items: start;
+}
+
+.examCard h3 {
   font-size: 1.05rem;
-  font-weight: 600;
+  line-height: 1.5;
+  font-weight: 650;
 }
 
-.more table {
-  width: 100%;
+.sitting {
+  margin-top: 4px;
+}
+
+.examCard .dates {
+  grid-template-columns: 1fr;
+  gap: 0;
   margin-top: 12px;
-  border-collapse: collapse;
-  font: inherit;
 }
 
-.more th,
-.more td {
-  padding: 11px 10px;
-  border-bottom: 1px solid #e5e9f2;
-  text-align: right;
-  vertical-align: top;
+.examCard .dates li {
+  border: 0;
+  border-top: 1px solid #dce2ef;
+  border-radius: 0;
+  padding: 12px 0;
 }
 
-.more th {
-  font-weight: 600;
-}
-
-.more thead th {
-  color: #56627b;
-  font-size: 0.9rem;
-  font-weight: 500;
-}
-
-.more .dateCell {
-  text-align: right;
+.examTime {
+  margin-top: 4px;
   font-variant-numeric: tabular-nums;
-}
-
-.srOnly {
-  position: absolute;
-  width: 1px;
-  height: 1px;
-  overflow: hidden;
-  clip: rect(0, 0, 0, 0);
-  white-space: nowrap;
-  clip-path: inset(50%);
 }
 
 .prepLink {
   margin-top: 24px;
+}
+
+.prepLink a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
 }
 
 @media (max-width: 600px) {
@@ -179,8 +215,8 @@
     gap: 14px;
   }
 
-  .more th,
-  .more td {
-    padding-inline: 4px;
+  .dates,
+  .examGroups {
+    grid-template-columns: 1fr;
   }
 }

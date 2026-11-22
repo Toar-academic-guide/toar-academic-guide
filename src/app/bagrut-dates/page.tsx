@@ -25,13 +25,22 @@ export const metadata: Metadata = {
   twitter: { card: 'summary', title, description },
 };
 
-function day(iso: string) {
-  return iso.slice(8);
-}
-
 function fullDate(iso: string) {
   const [year, month, date] = iso.split('-');
   return `${Number(date)}.${Number(month)}.${year}`;
+}
+
+const weekday = new Intl.DateTimeFormat('he-IL', { weekday: 'long', timeZone: 'UTC' });
+
+function ExamDate({ date }: { date: string }) {
+  return (
+    <>
+      <time dateTime={date} dir="ltr">
+        {fullDate(date)}
+      </time>
+      <span className={styles.weekday}>{weekday.format(new Date(`${date}T12:00:00Z`))}</span>
+    </>
+  );
 }
 
 function DateList({ dates }: { dates: readonly string[] }) {
@@ -39,9 +48,7 @@ function DateList({ dates }: { dates: readonly string[] }) {
     <ul className={styles.dates}>
       {dates.map((date) => (
         <li key={date}>
-          <time dateTime={date} dir="ltr">
-            {day(date)}
-          </time>
+          <ExamDate date={date} />
         </li>
       ))}
     </ul>
@@ -83,51 +90,34 @@ export default function BagrutDatesPage() {
 
         <details className={styles.more}>
           <summary>בחינות שפה דבורה</summary>
-          <table>
-            <caption className={styles.srOnly}>מועדי בחינות השפה הדבורה</caption>
-            <thead>
-              <tr>
-                <th scope="col">מקצוע</th>
-                <th scope="col">מועד</th>
-                <th scope="col">תאריכים</th>
-              </tr>
-            </thead>
-            <tbody>
-              {spokenLanguageExams.flatMap((exam) =>
-                exam.sittings.map((sitting) => (
-                  <tr key={`${exam.language}-${sitting.label}`}>
-                    <th scope="row">{exam.language}</th>
-                    <td>{sitting.label}</td>
-                    <td dir="ltr" className={styles.dateCell}>
-                      {sitting.dates.map(fullDate).join(' · ')}
-                      {'time' in sitting && ` · ${sitting.time}`}
-                    </td>
-                  </tr>
-                )),
-              )}
-            </tbody>
-          </table>
+          <ul className={styles.examGroups}>
+            {spokenLanguageExams.flatMap((exam) =>
+              exam.sittings.map((sitting) => (
+                <li className={styles.examCard} key={`${exam.language}-${sitting.label}`}>
+                  <h3>{exam.language}</h3>
+                  <p className={styles.sitting}>{sitting.label}</p>
+                  <DateList dates={sitting.dates} />
+                  {'time' in sitting && (
+                    <p className={styles.examTime}>
+                      <bdi dir="ltr">{sitting.time}</bdi>
+                    </p>
+                  )}
+                </li>
+              )),
+            )}
+          </ul>
         </details>
 
         <details className={styles.more}>
           <summary>פתיחת הדמיות</summary>
-          <table>
-            <caption className={styles.srOnly}>תאריכי פתיחת ההדמיות לפי משרד החינוך</caption>
-            <thead>
-              <tr>
-                <th scope="col">מועד</th>
-                <th scope="col">תאריך פתיחה</th>
-              </tr>
-            </thead>
-            <tbody>
-              {simulationOpenings.map((opening) => (
-                <tr key={opening.label}>
-                  <th scope="row">{opening.label}</th>
-                  <td dir="ltr">{fullDate(opening.date)}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <ul className={styles.examGroups}>
+            {simulationOpenings.map((opening) => (
+              <li className={styles.examCard} key={opening.label}>
+                <h3>{opening.label}</h3>
+                <DateList dates={[opening.date]} />
+              </li>
+            ))}
+          </ul>
         </details>
 
         <p className={styles.prepLink}>

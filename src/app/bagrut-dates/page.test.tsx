@@ -3,7 +3,13 @@ import { render, screen, within } from '@testing-library/react';
 import { expect, it, vi } from 'vitest';
 vi.mock('@/context/AuthContext', () => ({ useAuth: () => ({ loading: false, user: null }) }));
 vi.mock('next/navigation', () => ({ usePathname: () => '/bagrut-dates' }));
-import { bagrutDatesCheckedOn, bagrutDatesSources } from '@/data/bagrutDates';
+import {
+  bagrutDatesCheckedOn,
+  bagrutDatesSources,
+  bagrutExamCalendars,
+  simulationOpenings,
+  spokenLanguageExams,
+} from '@/data/bagrutDates';
 import Page, { metadata } from './page';
 
 it('renders complete official winter, summer, spoken-language and simulation schedules', async () => {
@@ -15,7 +21,24 @@ it('renders complete official winter, summer, spoken-language and simulation sch
   expect(main.textContent).not.toMatch(/נבדק/);
   expect(main.textContent).not.toContain(bagrutDatesCheckedOn);
   expect(main.textContent).toContain('טיוטה לפי פורטל משרד החינוך');
-  expect(main.querySelectorAll('time')).toHaveLength(45);
+  const dates = Array.from(main.querySelectorAll('time'));
+  const expectedDates = [
+    ...bagrutExamCalendars.flatMap((calendar) => calendar.months.flatMap((month) => month.dates)),
+    ...spokenLanguageExams.flatMap((exam) => exam.sittings.flatMap((sitting) => sitting.dates)),
+    ...simulationOpenings.map((opening) => opening.date),
+  ];
+  expect(dates.map((date) => date.dateTime)).toEqual(expectedDates);
+  expect(dates).toHaveLength(75);
+  for (const date of dates) {
+    const [year, month, day] = date.dateTime.split('-');
+    expect(date.textContent).toBe(`${Number(day)}.${Number(month)}.${year}`);
+    expect(date.dir).toBe('ltr');
+  }
+  expect(dates[0].parentElement?.textContent).toContain('יום שני');
+  const details = main.querySelectorAll('details');
+  expect(details[0].querySelectorAll('h3')).toHaveLength(9);
+  expect(details[1].querySelectorAll('h3')).toHaveLength(7);
+  expect(main.querySelector('table')).toBeNull();
   expect(main.querySelector('a[href^="https://"]')).toBeNull();
   for (const url of Object.values(bagrutDatesSources)) {
     expect(main.innerHTML).not.toContain(url);
