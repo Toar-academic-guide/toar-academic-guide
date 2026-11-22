@@ -98,18 +98,8 @@ export function PsychologyComparison() {
                       </p>
                     ))}
                     {row.note && (
-                      <p
-                        className={
-                          row.programId === 'ariel_psychology'
-                            ? 'rounded-lg bg-amber-50 px-2 text-amber-950'
-                            : 'text-slate-600'
-                        }
-                      >
-                        {row.programId === 'ariel_psychology' ? (
-                          <BidiText text={row.note} />
-                        ) : (
-                          <SourceText text={row.note} url={row.officialUrl} />
-                        )}
+                      <p className="text-slate-600">
+                        <SourceText text={row.note} url={row.officialUrl} />
                       </p>
                     )}
                   </div>
@@ -124,15 +114,13 @@ export function PsychologyComparison() {
                           <SourceText {...item} />
                         </p>
                       ))
-                    : row.programId === 'ariel_psychology'
-                      ? 'לא אומת'
-                      : '—'}
+                    : '—'}
                 </td>
                 <td className="block border-t border-slate-100 py-3 sm:table-cell sm:border sm:border-slate-200 sm:p-2 sm:align-top">
                   <span className="mb-1 block text-xs font-semibold text-slate-500 sm:hidden">
                     סולם הציון
                   </span>
-                  {row.scale}
+                  <BidiText text={row.scale} />
                 </td>
               </tr>
             ))}

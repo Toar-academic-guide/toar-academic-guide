@@ -1,3 +1,5 @@
+import catalogueContentRepair from './admissions/catalogueContentRepair.json';
+
 export interface PsychologySourceText {
   text: string;
   url: string;
@@ -24,8 +26,10 @@ const bgu =
   'https://bgu4u22.bgu.ac.il/apex/10g/candidate_site/GetRdpData/?p_lang=he&p_year=2027&p_semester=1';
 const haifa = 'https://admissions.haifa.ac.il/social-sciences/program/3268/';
 const biu = 'https://psychology.biu.ac.il/node/587';
-const ariel =
-  'https://www.ariel.ac.il/wp/registration-and-acceptance/%D7%AA%D7%A0%D7%90%D7%99-%D7%94%D7%A7%D7%91%D7%9C%D7%94-%D7%91%D7%9E%D7%93%D7%A2%D7%99-%D7%94%D7%94%D7%AA%D7%A0%D7%94%D7%92%D7%95%D7%AA/';
+const arielRequirement = catalogueContentRepair.requirements.find(
+  (row) => row.programId === 'ariel_psychology' && row.institutionId === 'ariel',
+)!;
+
 const reichman =
   'https://www.runi.ac.il/media/rzpfaakh/%D7%98%D7%91%D7%9C%D7%AA-%D7%A1%D7%A4%D7%99%D7%9D-%D7%9E%D7%A2%D7%95%D7%93%D7%9B%D7%A0%D7%AA-%D7%9C%D7%90%D7%AA%D7%A8-%D7%AA%D7%A9%D7%A4%D7%96.pdf';
 const ono =
@@ -128,17 +132,17 @@ export const psychologyComparisonRows: readonly PsychologyComparisonRow[] = [
   {
     institution: 'אוניברסיטת אריאל',
     programId: 'ariel_psychology',
-    main: [
-      {
-        text: 'תנאי הקבלה הנוכחיים לא אומתו.',
-        url: ariel,
-      },
+    main: arielRequirement.notes
+      .slice(0, 3)
+      .map((text) => ({ text, url: arielRequirement.sourceUrl })),
+    bagrut: [
+      { text: arielRequirement.notes[0].split(', או ')[0], url: arielRequirement.sourceUrl },
     ],
-    bagrut: [],
-    scale: 'לא אומת',
-    officialUrl: ariel,
-    checkedDate: '21.10.2026',
-    note: 'תנאי הקבלה לא אומתו. בדקו את התנאים המעודכנים באתר האוניברסיטה לפני הרשמה.',
+    scale:
+      'ציון קבלה משולב של אריאל: ממוצע בגרות × 6.666 ועוד הפסיכומטרי, חלקי 2 (הגבוה מבין הרב־תחומי והכמותי).',
+    officialUrl: arielRequirement.sourceUrl,
+    checkedDate: arielRequirement.checkedAt.split('-').reverse().join('.'),
+    note: arielRequirement.notes.slice(3).join(' '),
   },
   {
     institution: 'אוניברסיטת רייכמן',

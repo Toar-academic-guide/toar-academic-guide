@@ -366,9 +366,10 @@ describe('ProgramPage', () => {
     expect(container.textContent).not.toMatch(/נכון ל/);
     expect(table.textContent).toContain('מדעי ההתנהגות (B.A.)');
     const ariel = rows.find((row) => row.textContent?.includes('אוניברסיטת אריאל'))!;
-    expect(ariel.textContent).toContain('תנאי הקבלה הנוכחיים לא אומתו');
-    expect(ariel.querySelectorAll('td')[1].textContent).toContain('לא אומת');
-    expect(ariel.textContent).not.toContain('97');
+    expect(ariel.textContent).not.toMatch(/לא אומת|בדקו באתר המוסד/);
+    expect(ariel.textContent).toContain('משולב 580');
+    expect(ariel.querySelectorAll('td')[1].textContent).toContain('בגרות 97 לפחות');
+    expect(ariel.querySelector('bdi[dir="ltr"]')).not.toBeNull();
     expect(
       within(table)
         .getByRole('link', { name: 'הקריה האקדמית אונו — מדעי ההתנהגות (B.A.)' })
