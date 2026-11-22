@@ -79,6 +79,14 @@ it('pin 18 source scan: conversions occur only in temporary TAU code or Ariel ow
     if (filename === 'src/data/journeyGeography.ts') {
       source = source.replace(/\bd:\s*(['"])[^\r\n]*?\1/g, (match) => ' '.repeat(match.length));
     }
+    if (filename === 'src/data/psychologyComparison.ts') {
+      // Approved Ariel-only explanatory copy, not an executable Bagrut conversion.
+      // Match this exact quoted string; new constants or expressions still fail the scan.
+      source = source.replace(
+        "'ציון קבלה משולב של אריאל: ממוצע בגרות × 6.666 ועוד הפסיכומטרי, חלקי 2 (הגבוה מבין הרב־תחומי והכמותי).'",
+        (match) => ' '.repeat(match.length),
+      );
+    }
     const ranges = filename === calculatorPath ? allowedCalculatorRanges(original) : [];
     // Whitespace includes newlines: catches /120, / 120, 800 /120,
     // (bagrut / 120) * 800, and literal 6.66-family constants in code/comments.
