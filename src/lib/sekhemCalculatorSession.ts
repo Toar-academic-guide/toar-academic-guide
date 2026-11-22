@@ -13,6 +13,7 @@ import type { AdmissionsEvaluationReport } from '@/types/admissionsEvaluation';
 export const SEKHEM_SESSION_KEY = 'myway:sekhem-calculator:v1';
 export interface SekhemCalculatorSnapshot extends CalculatorProfile {
   programId: string;
+  institutionId?: string;
   requiredKeys: (keyof HaifaAdmissionsInputs)[];
   haifaValues: HaifaQualificationValues;
   reports: AdmissionsEvaluationReport[];
@@ -94,6 +95,7 @@ const snapshotSchema = z.object({
   quantitative: z.string(),
   english: z.string(),
   programId: z.string(),
+  institutionId: z.string().optional(),
   requiredKeys: z.array(z.enum(HAIFA_PROFILE_KEYS)),
   haifaValues: z.object(
     Object.fromEntries(HAIFA_PROFILE_KEYS.map((key) => [key, z.string().optional()])),
@@ -136,6 +138,11 @@ export function readSekhemSession(
     const offered = (id: string) => offerings.some((row) => row.programId === id);
     if (
       (snapshot.programId && !offered(snapshot.programId)) ||
+      (snapshot.institutionId &&
+        !offerings.some(
+          (row) =>
+            row.programId === snapshot.programId && row.institutionId === snapshot.institutionId,
+        )) ||
       snapshot.failedIds.some((id) => !offered(id)) ||
       snapshot.reports.some(
         (report) =>

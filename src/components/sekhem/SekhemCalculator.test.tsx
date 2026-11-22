@@ -1106,3 +1106,84 @@ it('ignores an average request when complete subject rows already produce the Ha
   expect(screen.queryByLabelText('ממוצע בגרות בחיפה')).toBeNull();
   expect(screen.queryByRole('button', { name: 'השלימו ציוני בגרות' })).toBeNull();
 });
+
+const sharedOccupationalTherapy = ['bgu', 'haifa', 'tau'].map((institutionId) => ({
+  programId: 'occupational_therapy',
+  programName: 'ריפוי בעיסוק',
+  institutionId,
+  institutionName: institutionId,
+}));
+function sharedOccupationalTherapyResponse() {
+  const base = response().reports.haifa_cs;
+  return {
+    reports: {
+      occupational_therapy: {
+        ...base,
+        input: { degreeId: 'occupational_therapy' },
+        program: { id: 'occupational_therapy', name: 'ריפוי בעיסוק' },
+        results: sharedOccupationalTherapy.map((offering) => ({
+          ...base.results[0],
+          institution: {
+            id: offering.institutionId,
+            name: offering.institutionName,
+            region: 'north',
+          },
+          linkedInstitutionId: offering.institutionId,
+          ...(offering.institutionId === 'haifa' && {
+            kind: 'needs_input' as const,
+            requiredInputs: ['haifa_hebrew_qualification' as const],
+          }),
+        })),
+      },
+    },
+    failedDegreeIds: [],
+  };
+}
+
+it.each(['bgu', 'haifa', 'tau'])(
+  'selects only %s for a programme shared by institutions and restores that choice',
+  async (institutionId) => {
+    fetchMock.mockImplementation(async () =>
+      Response.json({ data: sharedOccupationalTherapyResponse() }),
+    );
+    const view = render(<SekhemCalculator offerings={sharedOccupationalTherapy} />);
+    examples();
+    const option = screen.getByRole('option', {
+      name: `ריפוי בעיסוק · ${{ bgu: 'בן־גוריון', haifa: 'חיפה', tau: 'תל אביב' }[institutionId]}`,
+    }) as HTMLOptionElement;
+    fireEvent.change(screen.getByLabelText('תוכנית לימודים'), { target: { value: option.value } });
+    submit();
+    await screen.findByTestId(`institution-${institutionId}`);
+    for (const other of ['bgu', 'haifa', 'tau'].filter((id) => id !== institutionId))
+      expect(screen.queryByTestId(`institution-${other}`)).toBeNull();
+    if (institutionId !== 'haifa')
+      expect(screen.queryByLabelText('הבסיס לעמידה בדרישת העברית בחיפה')).toBeNull();
+    view.unmount();
+    render(<SekhemCalculator offerings={sharedOccupationalTherapy} />);
+    expect(screen.getByTestId(`institution-${institutionId}`)).toBeTruthy();
+    for (const other of ['bgu', 'haifa', 'tau'].filter((id) => id !== institutionId))
+      expect(screen.queryByTestId(`institution-${other}`)).toBeNull();
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    fireEvent.change(screen.getByLabelText('תוכנית לימודים'), { target: { value: '' } });
+    submit();
+    for (const id of ['bgu', 'haifa', 'tau']) await screen.findByTestId(`institution-${id}`);
+  },
+);
+
+it('keeps a legacy generic programme prefill explicitly institution-wide', async () => {
+  fetchMock.mockImplementation(async () =>
+    Response.json({ data: sharedOccupationalTherapyResponse() }),
+  );
+  render(
+    <SekhemCalculator
+      offerings={sharedOccupationalTherapy}
+      initialProgramId="occupational_therapy"
+    />,
+  );
+  expect(
+    (screen.getByLabelText('תוכנית לימודים') as HTMLSelectElement).selectedOptions[0].textContent,
+  ).toBe('ריפוי בעיסוק · כל המוסדות');
+  examples();
+  submit();
+  for (const id of ['bgu', 'haifa', 'tau']) await screen.findByTestId(`institution-${id}`);
+});
