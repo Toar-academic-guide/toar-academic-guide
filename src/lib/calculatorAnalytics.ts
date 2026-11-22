@@ -1,4 +1,5 @@
 import posthog from 'posthog-js';
+import type { CalculatorShareSurface } from '@/lib/calculatorShare';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
 
 type Surface = 'sekhem_calculator' | 'journey_calculator';
@@ -91,6 +92,10 @@ export function captureCalculatorOutcome(
     result_status: status,
     result_count: countBucket(count),
   });
+}
+
+export function captureCalculatorShare(surface: CalculatorShareSurface) {
+  capture('calculator_results_shared', { calculator_surface: surface });
 }
 
 export function captureEnquiryProgress(

@@ -2,14 +2,19 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
 import { getJerusalemDate } from '@/lib/psychometricDates';
+import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
 import { loadOpenDays, type OpenDay } from './openDays';
 import styles from './page.module.css';
 
+const title = 'ימים פתוחים באוניברסיטאות ובמכללות';
+const description =
+  'השוו תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, מצאו את הקמפוס והירשמו באתר המוסד.';
+
 export const metadata: Metadata = {
-  title: 'ימים פתוחים באוניברסיטאות ובמכללות',
-  description:
-    'השוו תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, מצאו את הקמפוס והירשמו באתר המוסד.',
+  title,
+  description,
   alternates: { canonical: '/open-days' },
+  ...socialMetadata(shareCards.openDays, title, description, '/open-days'),
 };
 
 const dateFormat = new Intl.DateTimeFormat('he-IL', {

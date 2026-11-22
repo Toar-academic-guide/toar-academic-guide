@@ -1,6 +1,8 @@
 // @vitest-environment jsdom
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { describe, expect, it, vi } from 'vitest';
+
+vi.mock('posthog-js', () => ({ default: { capture: vi.fn() } }));
 import SekhemResults from './SekhemResults';
 import type {
   AdmissionsEvaluationKind,
@@ -805,9 +807,9 @@ describe('API-only result rows', () => {
       }),
     ]);
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
-    expect(
-      screen.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' }).nextElementSibling?.tagName,
-    ).toBe('SECTION');
+    const heading = screen.getByRole('heading', { name: 'הסכם לפי מוסד ותוכנית' });
+    expect(heading.nextElementSibling?.textContent).toBe('שיתוף התוצאות');
+    expect(heading.nextElementSibling?.nextElementSibling?.tagName).toBe('SECTION');
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
     expect([...container.querySelectorAll('p')].every((p) => p.textContent?.trim())).toBe(true);
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 27)
@@ -931,4 +933,12 @@ it('never presents the generic applicant average as a calculated institutional a
   source.input.bagrut = 110;
   renderReports([source]);
   expect(screen.queryByText(/ממוצע הבגרות לפי המוסד/)).toBeNull();
+});
+
+it('offers to share the results without putting the score in the button', () => {
+  renderReports([report('tau', { score: 679, threshold: 650 })]);
+  const button = screen.getByRole('button', { name: 'שיתוף התוצאות' });
+  expect(button.getAttribute('dir')).toBe('rtl');
+  expect(button.textContent).not.toContain('679');
+  expect(button.closest('a')).toBeNull();
 });
