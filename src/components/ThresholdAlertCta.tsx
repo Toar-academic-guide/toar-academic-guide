@@ -47,7 +47,7 @@ export default function ThresholdAlertCta({
         }
       >
         {THRESHOLD_ALERT_COPY.cta}
-      </Link>
+      </Link>{' '}
     </p>
   );
 }
