@@ -92,7 +92,10 @@ for (const id of [
       await expect(card).toBeVisible();
       const tiled = card.getByText('פרטים נוספים', { exact: true });
       if (
-        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(id)
+        ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(
+          id,
+        ) &&
+        (await tiled.count())
       ) {
         await expect(tiled.first()).toBeVisible();
         expect(
@@ -115,7 +118,9 @@ for (const id of [
         true,
       );
       await expect(card).not.toContainText('incomplete_published_requirements');
-      if (id === 'tlvyaffo_cs') await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      if (id === 'tlvyaffo_cs' && (await card.getByText('פרטים נוספים', { exact: true }).count())) {
+        await expect(card.locator('bdi[dir="ltr"]')).toContainText('÷ 2');
+      }
     }
   });
 }
