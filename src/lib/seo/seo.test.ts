@@ -908,7 +908,18 @@ describe('structured data', () => {
   it.each(noFaqProgramIds)(
     'renders only program and breadcrumb schema without FAQ UI for %s and preserves on-page facts',
     async (id) => {
-      const { data, sources, document, graph } = await renderProgramSchema(id);
+      // Colman computer-science tiles are shown only for 30 days after 2026-10-22.
+      if (id === 'colmgmt_cs') {
+        vi.useFakeTimers();
+        vi.setSystemTime('2026-10-23T12:00:00Z');
+      }
+      let rendered: Awaited<ReturnType<typeof renderProgramSchema>>;
+      try {
+        rendered = await renderProgramSchema(id);
+      } finally {
+        if (id === 'colmgmt_cs') vi.useRealTimers();
+      }
+      const { data, sources, document, graph } = rendered;
       expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
         'EducationalOccupationalProgram',
         'BreadcrumbList',
