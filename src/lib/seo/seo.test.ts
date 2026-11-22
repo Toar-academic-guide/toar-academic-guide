@@ -912,7 +912,18 @@ describe('structured data', () => {
   it.each(noFaqProgramIds)(
     'renders only program and breadcrumb schema without FAQ UI for %s and preserves on-page facts',
     async (id) => {
-      const { data, sources, document, graph } = await renderProgramSchema(id);
+      // Exercise Colman's reviewed tiles before their fixture's freshness window expires.
+      if (id === 'colmgmt_cs') {
+        vi.useFakeTimers({ toFake: ['Date'] });
+        vi.setSystemTime(new Date('2026-10-24T12:00:00Z'));
+      }
+      let rendered: Awaited<ReturnType<typeof renderProgramSchema>>;
+      try {
+        rendered = await renderProgramSchema(id);
+      } finally {
+        if (id === 'colmgmt_cs') vi.useRealTimers();
+      }
+      const { data, sources, document, graph } = rendered;
       expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
         'EducationalOccupationalProgram',
         'BreadcrumbList',
