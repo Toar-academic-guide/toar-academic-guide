@@ -152,11 +152,14 @@ export default function CareerAssessment({ initialDraft, onProgressChange, onCom
 
   function toggleOption(questionId: string, optionId: string, maxSelect: number) {
     const current = progressRef.current.multiSelectAnswers[questionId] ?? [];
-    const selectedOptionIds = current.includes(optionId)
-      ? current.filter((id) => id !== optionId)
-      : current.length >= maxSelect
-        ? current
-        : [...current, optionId];
+    const selectedOptionIds =
+      maxSelect === 1
+        ? [optionId]
+        : current.includes(optionId)
+          ? current.filter((id) => id !== optionId)
+          : current.length >= maxSelect
+            ? current
+            : [...current, optionId];
     const nextAnswers = {
       ...progressRef.current.multiSelectAnswers,
       [questionId]: selectedOptionIds,
@@ -379,31 +382,52 @@ function MultiSelectScreen({
   const isSingleSelect = question.maxSelect === 1;
   return (
     <div>
-      <h3 className="mb-2 text-lg font-semibold text-slate-800">{question.prompt}</h3>
+      <h3 id={`question-${question.id}`} className="mb-2 text-lg font-semibold text-slate-800">
+        {question.prompt}
+      </h3>
       <p className="mb-5 text-sm text-slate-400">
         {isSingleSelect ? 'בחרו אפשרות אחת' : `בחרו עד ${question.maxSelect} אפשרויות`}
       </p>
-      <div className="flex flex-col gap-2.5">
+      <div
+        className="flex flex-col gap-2.5"
+        role={isSingleSelect ? 'radiogroup' : 'group'}
+        aria-labelledby={`question-${question.id}`}
+      >
         {question.options.map((option) => {
           const isSelected = selected.includes(option.id);
           return (
-            <button
+            <label
               key={option.id}
-              type="button"
-              onClick={() => onToggle(option.id)}
-              className={`rounded-xl border-2 px-4 py-3.5 text-right transition ${
+              htmlFor={`answer-${option.id}`}
+              aria-label={`${option.title.replace(/:$/, '')} - ${option.subtitle}`}
+              className={`cursor-pointer rounded-xl border-2 px-4 py-3.5 text-right transition focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-indigo-600 ${
                 isSelected
                   ? 'border-indigo-500 bg-indigo-50/70'
                   : 'border-slate-200 bg-white hover:border-indigo-300 hover:bg-slate-50'
               }`}
             >
+              <input
+                id={`answer-${option.id}`}
+                type={isSingleSelect ? 'radio' : 'checkbox'}
+                name={question.id}
+                value={option.id}
+                checked={isSelected}
+                onChange={() => onToggle(option.id)}
+                className="sr-only"
+              />
               <div className="flex items-start gap-3">
                 <div
-                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center rounded-md border-2 transition ${
+                  aria-hidden="true"
+                  className={`mt-0.5 flex h-5 w-5 flex-shrink-0 items-center justify-center border-2 transition ${isSingleSelect ? 'rounded-full' : 'rounded-md'} ${
                     isSelected ? 'border-indigo-500 bg-indigo-500 text-white' : 'border-slate-300'
                   }`}
                 >
-                  {isSelected && <Check size={12} strokeWidth={3} />}
+                  {isSelected &&
+                    (isSingleSelect ? (
+                      <span className="h-2 w-2 rounded-full bg-white" />
+                    ) : (
+                      <Check size={12} strokeWidth={3} />
+                    ))}
                 </div>
                 <div>
                   <span className="font-semibold text-slate-800">
@@ -412,7 +436,7 @@ function MultiSelectScreen({
                   <span className="text-slate-500"> - {option.subtitle}</span>
                 </div>
               </div>
-            </button>
+            </label>
           );
         })}
       </div>

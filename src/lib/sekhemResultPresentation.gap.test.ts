@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { AdmissionsEvaluationResult } from '@/types/admissionsEvaluation';
-import { resultPresentation } from './sekhemResultPresentation';
+import { formatSekhemNumber, resultPresentation } from './sekhemResultPresentation';
 import { resultVerdict } from './sekhemCalculator';
 
 const below = (
@@ -35,11 +35,13 @@ describe('row 22 sekhem below copy', () => {
       const row = { ...below(id, score, threshold), kind };
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
       expect(resultPresentation(row)).toEqual({
-        text: `חסרות לכם ${gap} נקודות לסף`,
+        text: `חסרות לכם ${gap} נקודות בציון הקבלה לסף (${formatSekhemNumber(score, id)} לעומת ${formatSekhemNumber(threshold, id)})`,
         tone: 'negative',
       });
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-      expect(resultVerdict(row)).toBe(`חסרות לכם ${gap} נקודות לסף`);
+      expect(resultVerdict(row)).toBe(
+        `חסרות לכם ${gap} נקודות בציון הקבלה לסף (${formatSekhemNumber(score, id)} לעומת ${formatSekhemNumber(threshold, id)})`,
+      );
       expect(row.score).toBe(score);
       expect(row.threshold).toBe(threshold);
       expect(row.decision).toBe('below');
@@ -86,10 +88,10 @@ describe('row 22 sekhem below copy', () => {
     };
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
     expect(resultPresentation(row)).toEqual({
-      text: 'חסרות לכם 1.38 נקודות לסף',
+      text: 'חסרות לכם 1.38 נקודות בציון הקבלה לסף (21.12 לעומת 22.5)',
       tone: 'negative',
     });
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(resultVerdict(row)).toBe('חסרות לכם 1.38 נקודות לסף');
+    expect(resultVerdict(row)).toBe('חסרות לכם 1.38 נקודות בציון הקבלה לסף (21.12 לעומת 22.5)');
   });
 });

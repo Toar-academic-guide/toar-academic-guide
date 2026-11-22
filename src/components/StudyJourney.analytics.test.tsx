@@ -219,7 +219,7 @@ describe('journey funnel analytics', () => {
       }),
     );
     fireEvent.click(screen.getByRole('button', { name: 'מה אם אשפר ציון?' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון יעד' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון פסיכומטרי לבדיקה' }), {
       target: { value: '750' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'לבדוק את האפשרויות' }));
@@ -283,7 +283,7 @@ describe('journey funnel analytics', () => {
       () => new Promise<typeof report>((resolve) => (finish = resolve)),
     );
     fireEvent.click(screen.getByRole('button', { name: 'מה אם אשפר ציון?' }));
-    fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון יעד' }), {
+    fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון פסיכומטרי לבדיקה' }), {
       target: { value: '750' },
     });
     fireEvent.click(screen.getByRole('button', { name: 'לבדוק את האפשרויות' }));
@@ -412,7 +412,9 @@ describe('journey funnel analytics', () => {
     );
     const simulate = async (value: string) => {
       fireEvent.click(screen.getByRole('button', { name: 'מה אם אשפר ציון?' }));
-      fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון יעד' }), { target: { value } });
+      fireEvent.change(screen.getByRole('spinbutton', { name: 'ציון פסיכומטרי לבדיקה' }), {
+        target: { value },
+      });
       fireEvent.click(screen.getByRole('button', { name: 'לבדוק את האפשרויות' }));
     };
     await simulate('740');

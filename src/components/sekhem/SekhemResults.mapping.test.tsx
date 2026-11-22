@@ -271,6 +271,9 @@ describe('real evaluator → batch POST → calculator result rows', () => {
     });
     expect(result.score).toBe(profile.expected.score);
     expect(result.threshold).toBe(profile.expected.threshold);
+    if (profile.institutionId === 'huji' && result.capability === 'exact') {
+      expect(result.explanation).not.toMatch(/סיפק ציון וסף קבלה מעודכנים|נתוני הבסיס אומתו/);
+    }
     if (profile.institutionId !== 'haifa') {
       expect(remainingResponses).toEqual([]);
       expect(fetcher).toHaveBeenCalledTimes(profile.responses?.length ?? 0);
@@ -295,12 +298,13 @@ describe('real evaluator → batch POST → calculator result rows', () => {
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
       const gap =
         Number.isFinite(result.score) && Number.isFinite(result.threshold)
-          ? result.threshold! - result.score!
+          ? Number(formatSekhemNumber(result.threshold!, profile.institutionId)) -
+            Number(formatSekhemNumber(result.score!, profile.institutionId))
           : NaN;
       const formattedGap = formatSekhemNumber(Number(gap.toPrecision(12)), profile.institutionId);
       const belowLabel =
         Number.isFinite(gap) && gap > 0 && Number(formattedGap) > 0
-          ? `חסרות לכם ${formattedGap} נקודות לסף`
+          ? `חסרות לכם ${formattedGap} נקודות ב${result.scoreLabel || 'ציון הקבלה'} לסף (${formatSekhemNumber(result.score!, profile.institutionId)} לעומת ${formatSekhemNumber(result.threshold!, profile.institutionId)})`
           : 'עוד לא בסף. בואו נמצא דרך.';
       const expectedVerdict =
         profile.institutionId === 'biu'

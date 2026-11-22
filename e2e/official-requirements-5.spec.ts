@@ -79,7 +79,11 @@ for (const width of [390, 1440]) {
     );
     await expect(
       // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
-      page.getByRole('main').getByText('חסרות לכם 15 נקודות לסף', { exact: true }),
+      page
+        .getByRole('main')
+        .getByText('חסרות לכם 15 נקודות בממוצע בגרות משוקלל — מסלול בגרות לסף (70 לעומת 85)', {
+          exact: true,
+        }),
     ).toBeVisible();
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 15)
     await page.getByRole('button', { name: 'השלימו וקבלו תשובה', exact: true }).click();

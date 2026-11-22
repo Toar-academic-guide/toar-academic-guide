@@ -973,7 +973,7 @@ export default function StudyJourney({
     offer: 'עזרה בהכנה לפסיכומטרי',
     saved: 'הרשימה שלי',
     compare: 'משווים אפשרויות',
-    improve: 'מה יקרה אם נשפר את הציון?',
+    improve: 'מה יקרה אם נשפר את הפסיכומטרי?',
     plan: 'האפשרויות עם ציון היעד',
     missing: 'השלמת נתונים לחישוב',
     questionnaire: 'מגלים מה מתאים לכם',
@@ -1440,7 +1440,11 @@ export default function StudyJourney({
             }}
           >
             <label className="journey-number-label">
-              {step === 'psy-score' ? 'ציון כללי' : 'ציון יעד'}
+              {step === 'psy-score'
+                ? 'ציון כללי'
+                : step === 'improve'
+                  ? 'ציון פסיכומטרי לבדיקה'
+                  : 'ציון יעד'}
               <input
                 type="number"
                 inputMode="numeric"

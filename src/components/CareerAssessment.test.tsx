@@ -23,7 +23,7 @@ describe('CareerAssessment saved progress', () => {
       />,
     );
 
-    fireEvent.click(screen.getByRole('button', { name: /פיצוח לוגי/ }));
+    fireEvent.click(screen.getByRole('checkbox', { name: /פיצוח לוגי/ }));
 
     expect(onProgressChange).toHaveBeenLastCalledWith(
       expect.objectContaining({
@@ -34,5 +34,32 @@ describe('CareerAssessment saved progress', () => {
 
     fireEvent.click(screen.getByRole('button', { name: 'הבא' }));
     expect(onProgressChange).toHaveBeenLastCalledWith(expect.objectContaining({ screenIndex: 2 }));
+  });
+
+  it('replaces a restored single answer directly and keeps it when clicked again', () => {
+    const onProgressChange = vi.fn();
+    render(
+      <CareerAssessment
+        initialDraft={{
+          screenIndex: 10,
+          multiSelectAnswers: { Q4: ['Q4-A'] },
+          quickPickAnswers: {},
+          sliderAnswers: {},
+          skippedScreens: [],
+        }}
+        onProgressChange={onProgressChange}
+        onComplete={vi.fn()}
+      />,
+    );
+    const options = screen.getAllByRole('radio');
+    expect((options[0] as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(options[1]);
+    expect(onProgressChange).toHaveBeenLastCalledWith(
+      expect.objectContaining({ multiSelectAnswers: { Q4: ['Q4-B'] } }),
+    );
+    expect((options[0] as HTMLInputElement).checked).toBe(false);
+    expect((options[1] as HTMLInputElement).checked).toBe(true);
+    fireEvent.click(options[1]);
+    expect((options[1] as HTMLInputElement).checked).toBe(true);
   });
 });

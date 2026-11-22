@@ -327,7 +327,7 @@ describe('API-only result rows', () => {
     ]);
     const row = screen.getByTestId('result-psychology-reichman');
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 22)
-    expect(row.textContent).toContain('חסרות לכם 14 נקודות לסף');
+    expect(row.textContent).toContain('חסרות לכם 14 נקודות בציון התאמה לסף (636 לעומת 650)');
     expect(row.querySelector('[data-result-number="score"]')?.textContent).toBe('636');
     expect(row.querySelector('[data-result-number="threshold"]')?.textContent).toBe('650');
     expect(row.textContent).not.toContain('עומדים');
@@ -428,8 +428,8 @@ describe('API-only result rows', () => {
   it.each([
     ['reichman', 635.7968000000001, '636', 'עוד לא בסף. בואו נמצא דרך.'],
     ['reichman', 700, '700', 'עוד לא בסף. בואו נמצא דרך.'],
-    ['huji', 21.01, '21.01', 'חסרות לכם 614.99 נקודות לסף'],
-    ['huji', 25.186, '25.186', 'חסרות לכם 610.814 נקודות לסף'],
+    ['huji', 21.01, '21.01', 'חסרות לכם 614.99 נקודות בציון התאמה לסף (21.01 לעומת 636)'],
+    ['huji', 25.186, '25.186', 'חסרות לכם 610.814 נקודות בציון התאמה לסף (25.186 לעומת 636)'],
   ] as const)(
     'formats %s score %s as %s without changing the API value or verdict',
     (id, score, shown, belowLabel) => {
