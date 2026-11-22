@@ -115,6 +115,8 @@
 }
 .journey-back {
   font-size: 13px;
+  min-height: 44px;
+  min-width: 44px;
 }
 .journey-primary {
   display: inline-flex;
