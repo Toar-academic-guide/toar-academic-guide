@@ -1,6 +1,8 @@
 import { expect, test, type Page } from './fixtures';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import official from '../docs/admissions-verification/2026-10-22-official-requirements-4.json';
+import repair from '../src/data/admissions/catalogueContentRepair.json';
 
 const evidence = resolve('docs/ui-verification/2026-10-23-requirement-tiles');
 const baselineUrl = process.env.REQUIREMENT_TILES_BASELINE_URL;
@@ -90,13 +92,19 @@ for (const id of [
         .locator('section.rounded-2xl')
         .filter({ has: page.getByRole('heading', { name: 'תנאי קבלה', exact: true }) });
       await expect(card).toBeVisible();
+      const checkedAt = id === 'education' ? '2026-10-21' : '2026-10-22';
+      const summariesCurrent = Date.now() <= Date.parse(checkedAt) + 30 * 86_400_000;
       const tiled = card.getByText('פרטים נוספים', { exact: true });
       if (
         ['tlvyaffo_cs', 'colmgmt_law', 'colmgmt_business', 'colmgmt_cs', 'education'].includes(id)
       ) {
-        await expect(tiled.first()).toBeVisible();
+        const disclosure = summariesCurrent
+          ? tiled
+          : card.getByText('תנאים נוספים', { exact: true });
+        await expect(disclosure.first()).toBeVisible();
+        if (!summariesCurrent) await expect(tiled).toHaveCount(0);
         expect(
-          await tiled.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
+          await disclosure.first().evaluate((e) => (e.parentElement as HTMLDetailsElement).open),
         ).toBe(false);
       }
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
@@ -111,6 +119,14 @@ for (const id of [
         await page.screenshot({ path: resolve(evidence, `${id}-1440.png`), fullPage: true });
       }
       for (const summary of await card.locator('summary').all()) await summary.click();
+      const sourceEvidence = Object.values(official).find((row) => row.program === id);
+      const conditions = sourceEvidence
+        ? [...sourceEvidence.reqs, ...sourceEvidence.notes]
+        : id === 'education'
+          ? repair.requirements.find((row) => row.programId === id && row.institutionId === 'bgu')!
+              .notes
+          : [];
+      for (const condition of conditions) await expect(card).toContainText(condition);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= innerWidth)).toBe(
         true,
       );
