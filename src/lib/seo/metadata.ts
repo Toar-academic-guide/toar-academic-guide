@@ -1,3 +1,4 @@
+import { physiotherapyTitle, physiotherapyDescription } from '@/data/physiotherapyComparison';
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import {
@@ -233,6 +234,14 @@ export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
 
 export async function buildProgramMetadata(id: string): Promise<Metadata> {
   const data = await getPublicProgramPageData(id);
+  if (id === 'physiotherapy' && data) {
+    return pageMetadata(
+      physiotherapyTitle,
+      physiotherapyDescription,
+      '/programs/physiotherapy',
+      true,
+    );
+  }
   if (!data) {
     const subject = await getPublicSubjectHub(id);
     if (!subject) return {};

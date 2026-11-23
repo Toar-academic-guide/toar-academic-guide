@@ -1,3 +1,10 @@
+import physiotherapyStyles from '@/components/seo/PhysiotherapyGuide.module.css';
+import {
+  PhysiotherapyAnswer,
+  PhysiotherapyTable,
+  PhysiotherapyFaq,
+  PhysiotherapyHubLink,
+} from '@/components/seo/PhysiotherapyGuide';
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import ProgramName from '@/components/ProgramName';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
@@ -218,6 +225,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <h1 className="mb-8 text-3xl font-bold">
             <ProgramName name={subject.hub.name} />
           </h1>
+          {programId === 'physiotherapy' && <PhysiotherapyAnswer />}
           <ThresholdAlertCta surface="program_page" programId={programId} />
           {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
             <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
@@ -239,6 +247,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               )}
             </div>
           )}
+          {programId === 'physiotherapy' && <PhysiotherapyTable />}
           <ul className="grid gap-4 sm:grid-cols-2">
             {subject.hub.programs.map((program) => (
               <li key={program.id}>
@@ -253,9 +262,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </li>
             ))}
           </ul>
+          {programId === 'physiotherapy' && <PhysiotherapyFaq />}
           {isNursingRelatedSubject && (
             <div className="mt-8">
-              <NursingRelatedLink />
+              <NursingRelatedLink
+                includePhysiotherapy={['medicine', 'occupational_therapy'].includes(programId)}
+              />
             </div>
           )}
         </main>
@@ -305,7 +317,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         dir="rtl"
         // Lets crawl tests tell subject pages from institution programme pages.
         data-page-kind={isGeneral ? 'subject' : 'programme'}
-        className="px-4 py-10 text-right text-slate-900 sm:px-6"
+        className={`px-4 py-10 text-right text-slate-900 sm:px-6 ${['physiotherapy', 'haifa_physiotherapy'].includes(programId) ? physiotherapyStyles.pageTargets : ''}`}
       >
         <section
           className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
@@ -323,8 +335,9 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </h1>{' '}
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
+            {isGeneral && programId === 'physiotherapy' && <PhysiotherapyAnswer />}
             <div className="mt-6 flex flex-wrap gap-3">
-              {hasCalculator && !hasUnreviewedHubRoute && (
+              {hasCalculator && !hasUnreviewedHubRoute && program.id !== 'physiotherapy' && (
                 <ProgramTrackedLink
                   event="program_calculator_cta_clicked"
                   programId={program.id}
@@ -465,6 +478,24 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           )}
           {isPsychologyHub && <PsychologyComparison />}
+          {isGeneral && programId === 'physiotherapy' && (
+            <>
+              <PhysiotherapyTable />
+              {hasCalculator && !hasUnreviewedHubRoute && (
+                <div>
+                  <ProgramTrackedLink
+                    event="program_calculator_cta_clicked"
+                    programId={program.id}
+                    institutionId=""
+                    href={`${ROUTES.calculator}?program=${encodeURIComponent(program.id)}`}
+                    className="way-button-primary inline-flex min-h-11 items-center px-5 py-2.5 text-sm font-semibold"
+                  >
+                    בדקו את הסיכויים שלכם
+                  </ProgramTrackedLink>
+                </div>
+              )}
+            </>
+          )}
           {isNursingHub && (
             <NursingInstitutionsTable
               programmePaths={new Set(institutions.map(({ id }) => institutionProgramPaths[id]))}
@@ -556,7 +587,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                     ['tau', 'huji', 'technion'].includes(institution.id)
                       ? `${currentSourceUrl}${currentSourceUrl.includes('?') ? '&' : '?'}utm_source=myway&utm_medium=referral`
                       : currentSourceUrl;
-                  const officialLink = officialLinkHref && (
+                  const hidePhysiotherapySource =
+                    ['physiotherapy', 'haifa_physiotherapy'].includes(programId) &&
+                    institution.id === 'haifa';
+                  const officialLink = !hidePhysiotherapySource && officialLinkHref && (
                     <ProgramTrackedLink
                       event="institution_site_clicked"
                       programId={program.id}
@@ -672,6 +706,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   );
                 })}
               </div>
+              {programId === 'haifa_physiotherapy' && (
+                <div className="mt-4">
+                  <PhysiotherapyHubLink child />
+                </div>
+              )}
               {isNursingProgramme && (
                 <div className="mt-4 text-sm">
                   <NursingHubLink>כל המוסדות ללימודי סיעוד</NursingHubLink>
@@ -712,8 +751,18 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 : related.programs
             }
           />
+          {isGeneral && programId === 'physiotherapy' && <PhysiotherapyFaq />}
           {isNursingHub && <NursingFaq />}
-          {isNursingRelatedSubject && <NursingRelatedLink />}
+          {isNursingHub && (
+            <div className="text-sm text-slate-700">
+              תחומים קרובים: <PhysiotherapyHubLink />
+            </div>
+          )}
+          {isNursingRelatedSubject && (
+            <NursingRelatedLink
+              includePhysiotherapy={['medicine', 'occupational_therapy'].includes(programId)}
+            />
+          )}
         </section>
       </main>
     </WayPageShell>

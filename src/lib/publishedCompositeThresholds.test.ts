@@ -40,6 +40,7 @@ export const STATIC_THRESHOLD_PAGE_IDS = [
   'haifa_infosystems',
   'haifa_law',
   'haifa_nursing',
+  'haifa_physiotherapy',
   'haifa_politicalscience',
   // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
   'haifa_psychology',
@@ -94,7 +95,7 @@ describe('published composite threshold selector', () => {
     expect(selected.filter(Boolean).sort()).toEqual(STATIC_THRESHOLD_PAGE_IDS);
     // Approved test update: Jorje 2026-10-29, haifa_psychology and psychology become exact in the Haifa formula PR
     // haifa_cs added: official Haifa 3210 סכם 700 (תשפ״ז), approved by CEO 2026-10-30.
-    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(54);
+    expect(STATIC_THRESHOLD_PAGE_IDS).toHaveLength(55);
   });
 
   it.each([
