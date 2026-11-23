@@ -100,22 +100,25 @@ it('keeps network errors and missing response rows out of completions, then reso
   await waitFor(() => expect(completionEvents()).toHaveLength(1));
   fetchMock.mockResolvedValueOnce(Response.json({ data: { reports: {}, failedDegreeIds: [] } }));
   submit();
+  const outcomeEvents = () =>
+    vi
+      .mocked(posthog.capture)
+      .mock.calls.filter(
+        ([name]) => name === 'calculator_completed' || name === 'calculator_outcome',
+      );
+  // The enabled button is rendered before the outcome effect has necessarily run.
   await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }).hasAttribute('disabled')).toBe(
-      false,
-    ),
+    expect(outcomeEvents().map(([name]) => name)).toEqual([
+      'calculator_outcome',
+      'calculator_completed',
+      'calculator_outcome',
+    ]),
   );
   expect(completionEvents()).toHaveLength(1);
-  const events = vi
-    .mocked(posthog.capture)
-    .mock.calls.filter(
-      ([name]) => name === 'calculator_completed' || name === 'calculator_outcome',
-    );
-  expect(events.map(([name]) => name)).toEqual([
-    'calculator_outcome',
-    'calculator_completed',
-    'calculator_outcome',
-  ]);
+  expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }).hasAttribute('disabled')).toBe(
+    false,
+  );
+  const events = outcomeEvents();
   expect(JSON.stringify(events)).not.toMatch(/private|706|score|signature/);
 });
 
