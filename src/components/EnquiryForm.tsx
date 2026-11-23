@@ -2,7 +2,12 @@
 
 import { useEffect, useId, useRef, useState } from 'react';
 import posthog from 'posthog-js';
-import { captureEnquiryProgress } from '@/lib/calculatorAnalytics';
+import {
+  captureEnquiryPrefill,
+  captureEnquiryProgress,
+  captureEnquiryWhatsApp,
+} from '@/lib/calculatorAnalytics';
+import { enquiryWhatsAppHref } from '@/lib/contactChannels';
 import { CircleAlert, GraduationCap, LoaderCircle, Send, X } from 'lucide-react';
 import { getSessionAttribution } from '@/lib/sessionAttribution';
 import { getEnquiryOrigin } from '@/lib/leadAttribution';
@@ -27,6 +32,49 @@ function isolateDegree(text: string) {
 
 const CONSENT_COLOR = '#666666';
 const consentStyle = { color: CONSENT_COLOR, fontSize: '12px', lineHeight: '18px' };
+const ENQUIRY_CONTACT_KEY = 'myway_enquiry_contact_v1';
+
+function readEnquiryContact(): { name: string; phone: string } {
+  try {
+    const parsed = JSON.parse(sessionStorage.getItem(ENQUIRY_CONTACT_KEY) ?? '');
+    return {
+      name: typeof parsed?.name === 'string' ? parsed.name : '',
+      phone: typeof parsed?.phone === 'string' ? parsed.phone : '',
+    };
+  } catch {
+    return { name: '', phone: '' };
+  }
+}
+
+function rememberEnquiryContact(name: string, phone: string) {
+  try {
+    sessionStorage.setItem(ENQUIRY_CONTACT_KEY, JSON.stringify({ name, phone }));
+  } catch {
+    // Private mode can reject storage. The submission still proceeds.
+  }
+}
+
+function knownScoreLine(scores?: { bagrut?: number; psychometric?: number }) {
+  const parts = [
+    typeof scores?.bagrut === 'number' && Number.isFinite(scores.bagrut)
+      ? `בגרות ${scores.bagrut}`
+      : '',
+    typeof scores?.psychometric === 'number' && Number.isFinite(scores.psychometric)
+      ? `פסיכומטרי ${scores.psychometric}`
+      : '',
+  ].filter(Boolean);
+  return parts.length ? `הציונים מהמחשבון: ${parts.join(', ')}` : '';
+}
+
+function prefersNoAutofocus() {
+  if (typeof navigator !== 'undefined' && /FBAN|FBAV|FB_IAB|Instagram/.test(navigator.userAgent))
+    return true;
+  return (
+    typeof window !== 'undefined' &&
+    typeof window.matchMedia === 'function' &&
+    window.matchMedia('(pointer: coarse)').matches
+  );
+}
 
 export default function EnquiryForm({
   programId,
@@ -37,6 +85,9 @@ export default function EnquiryForm({
   onBack,
   surface = 'enquiry_page',
   evaluationInput,
+  defaultName,
+  defaultPhone,
+  knownScores,
 }: {
   programId: string;
   institutionId: string;
@@ -46,6 +97,9 @@ export default function EnquiryForm({
   onBack?: () => void;
   surface?: string;
   evaluationInput?: EnquiryInput['evaluationInput'];
+  defaultName?: string;
+  defaultPhone?: string;
+  knownScores?: { bagrut?: number; psychometric?: number };
 }) {
   const buttonCopy =
     programId === 'psychometric-preparation' && institutionId === '' ? ENQUIRY_PREP_COPY : COPY;
@@ -58,6 +112,15 @@ export default function EnquiryForm({
   const sending = useRef(false);
   const viewed = useRef(false);
   const contactEntered = useRef(false);
+  const [initialContact] = useState(() => {
+    const stored = readEnquiryContact();
+    return {
+      name: (defaultName?.trim() || stored.name).trim(),
+      phone: (defaultPhone?.trim() || stored.phone).trim(),
+    };
+  });
+  const scoreLine = knownScoreLine(knownScores);
+  const whatsappHref = enquiryWhatsAppHref(title);
   const validated = useRef(false);
   const attempted = useRef(false);
   const [open, setOpen] = useState(true);
@@ -85,17 +148,30 @@ export default function EnquiryForm({
       surface,
       source_path: window.location.pathname,
     });
-  }, [programId, institutionId, surface]);
+    const fields =
+      initialContact.name && initialContact.phone
+        ? 'both'
+        : initialContact.name
+          ? 'name'
+          : initialContact.phone
+            ? 'phone'
+            : '';
+    if (fields) captureEnquiryPrefill(programId, institutionId, surface, fields);
+  }, [programId, institutionId, surface, initialContact.name, initialContact.phone]);
 
   useEffect(() => {
     if (!open || !dialog.current) return;
     const node = dialog.current;
     const previousFocus = document.activeElement;
     const previousOverflow = document.body.style.overflow;
-    if (typeof node.showModal === 'function') node.showModal();
-    else node.setAttribute('open', '');
+    try {
+      if (typeof node.showModal === 'function') node.showModal();
+      else node.setAttribute('open', '');
+    } catch {
+      node.setAttribute('open', '');
+    }
     document.body.style.overflow = 'hidden';
-    nameField.current?.focus();
+    if (!prefersNoAutofocus()) nameField.current?.focus();
     return () => {
       if (typeof node.close === 'function') node.close();
       else node.removeAttribute('open');
@@ -123,6 +199,7 @@ export default function EnquiryForm({
       (invalid.name ? nameField : phoneField).current?.focus();
       return;
     }
+    rememberEnquiryContact(name, phone);
     sending.current = true;
     setStatus('sending');
     if (!validated.current) {
@@ -240,6 +317,9 @@ export default function EnquiryForm({
             </section>
           ) : (
             <form noValidate onSubmit={handleSubmit}>
+              {scoreLine ? (
+                <p className="mb-3 text-right text-sm leading-5 text-[#4b5563]">{scoreLine}</p>
+              ) : null}
               <p className="mb-2 text-[13px] leading-5 text-[#4b5563]">
                 <span aria-hidden="true" className="text-[#8c2438]">
                   *
@@ -265,6 +345,8 @@ export default function EnquiryForm({
                       type={field === 'phone' ? 'tel' : 'text'}
                       dir={field === 'phone' ? 'ltr' : 'rtl'}
                       autoComplete={field === 'phone' ? 'tel' : 'name'}
+                      defaultValue={field === 'name' ? initialContact.name : initialContact.phone}
+                      enterKeyHint={field === 'phone' ? 'send' : undefined}
                       required
                       aria-required="true"
                       aria-invalid={errors[field] || undefined}
@@ -377,6 +459,17 @@ export default function EnquiryForm({
                     ? buttonCopy.loadingButton
                     : buttonCopy.button}
               </button>
+              {whatsappHref ? (
+                <a
+                  className="mt-3 flex min-h-12 w-full items-center justify-center rounded-[10px] border border-[#c9c2e4] bg-white px-4 py-3 text-center text-base font-semibold text-[#55449a]"
+                  href={whatsappHref}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  onClick={() => captureEnquiryWhatsApp(programId, institutionId, surface)}
+                >
+                  או כתבו לנו בוואטסאפ
+                </a>
+              ) : null}
               {status === 'sending' && (
                 <p role="status" className="sr-only">
                   {COPY.loadingLive}

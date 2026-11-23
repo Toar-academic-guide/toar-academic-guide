@@ -156,7 +156,7 @@ export async function loadProductionSchemaSnapshot(sql) {
       cross join lateral (
         select distinct privilege_type as privilege
         from aclexplode(acldefault('r', c.relowner))
-        where c.relname = 'enquiries' or privilege_type <> 'MAINTAIN'
+        where c.relname in ('enquiries', 'threshold_alert_signups') or privilege_type <> 'MAINTAIN'
       ) supported
       where n.nspname = 'public'
         and c.relkind in ('r', 'p')
@@ -184,10 +184,10 @@ export async function loadProductionSchemaSnapshot(sql) {
           (database_role.rolname = 'admissions_automation' and c.relname = 'admission_thresholds'
             and column_privilege.privilege <> 'SELECT')
           or (database_role.rolname = any(${['anon', 'authenticated', 'app_runtime', 'ops_readonly']}::text[])
-            and c.relname = any(${['ingestion_sources', 'ingestion_jobs', 'review_items', 'enquiries']}::text[]))
+            and c.relname = any(${['ingestion_sources', 'ingestion_jobs', 'review_items', 'enquiries', 'threshold_alert_signups']}::text[]))
           or (database_role.rolname = 'admissions_automation' and c.relname = 'review_items'
             and column_privilege.privilege in ('UPDATE', 'REFERENCES'))
-          or (database_role.rolname = 'admissions_automation' and c.relname = 'enquiries')
+          or (database_role.rolname = 'admissions_automation' and c.relname in ('enquiries', 'threshold_alert_signups'))
         )
         and c.relkind in ('r', 'p')
         and attribute.attnum > 0
@@ -198,7 +198,7 @@ export async function loadProductionSchemaSnapshot(sql) {
       join pg_namespace n on n.oid = c.relnamespace
       join pg_attribute attribute on attribute.attrelid = c.oid
       cross join lateral aclexplode(attribute.attacl) acl
-      where n.nspname = 'public' and c.relname = 'enquiries'
+      where n.nspname = 'public' and c.relname in ('enquiries', 'threshold_alert_signups')
         and attribute.attnum > 0 and not attribute.attisdropped and acl.grantee = 0
       order by table_name, role_name, privilege, column_name
     `,
@@ -223,21 +223,21 @@ export async function loadProductionSchemaSnapshot(sql) {
     sql`
       select
         case
-          when n.nspname='public' and p.proname='store_enquiry'
+          when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup')
             then p.proname||'('||oidvectortypes(p.proargtypes)||')'
           when n.nspname='public' then p.proname
           else n.nspname||'.'||p.proname
         end as function_name,
         coalesce(p.proconfig, array[]::text[]) as function_config,
-        case when n.nspname='public' and p.proname='store_enquiry' and p.prokind='f'
+        case when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup') and p.prokind='f'
           then pg_get_functiondef(p.oid) end as function_definition,
         p.prosecdef as security_definer,
         array(select r.rolname from pg_roles r
           where (r.rolname = any(array['anon','authenticated','app_runtime','ops_readonly','admissions_automation'])
-            or (p.proname='store_enquiry' and n.nspname='public' and r.rolname='service_role'))
+            or (p.proname in ('store_enquiry', 'store_threshold_alert_signup') and n.nspname='public' and r.rolname='service_role'))
             and has_function_privilege(r.oid, p.oid, 'EXECUTE')
           order by r.rolname)
-        || case when p.proname='store_enquiry' and n.nspname='public' and exists (
+        || case when p.proname in ('store_enquiry', 'store_threshold_alert_signup') and n.nspname='public' and exists (
           select 1 from aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) acl
           where acl.grantee = 0 and acl.privilege_type = 'EXECUTE'
         ) then array['PUBLIC']::text[] else array[]::text[] end as execute_roles

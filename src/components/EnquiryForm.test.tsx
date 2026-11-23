@@ -563,6 +563,7 @@ it.each([false, true])(
 );
 
 it('shows text errors for untouched required fields and keeps prep optional', () => {
+  sessionStorage.clear();
   const send = vi.fn();
   vi.stubGlobal('fetch', send);
   try {
@@ -622,4 +623,81 @@ it('uses the approved enquiry opening and action', () => {
   expect(screen.getByRole('heading', { level: 1 }).textContent).toBe('רוצים תשובות ישר מהמוסד?');
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 18)
   expect(screen.getByRole('button', { name: 'השאירו פרטים' })).toBeTruthy();
+});
+
+it('prefills the calculator contact and shows the scores already entered', () => {
+  sessionStorage.clear();
+  render(
+    <EnquiryForm
+      programId="tau_cs"
+      institutionId="tau"
+      title="מדעי המחשב · אוניברסיטת תל אביב"
+      defaultName="נועה לוי"
+      knownScores={{ bagrut: 95, psychometric: 650 }}
+    />,
+  );
+  expect((screen.getByLabelText('שם') as HTMLInputElement).value).toBe('נועה לוי');
+  expect(screen.getByText('הציונים מהמחשבון: בגרות 95, פסיכומטרי 650')).toBeTruthy();
+  expect(document.getElementById('action-consent')?.textContent).toBe(
+    'בלחיצה על שליחה אני מאשר/ת להעביר את פרטיי לאוניברסיטת תל אביב בלבד',
+  );
+  expect(screen.getByRole('checkbox', { name: ENQUIRY_PREP_CONSENT })).toBeTruthy();
+  expect(JSON.stringify(capture.mock.calls)).not.toContain('נועה');
+  expect(JSON.stringify(capture.mock.calls)).not.toContain('650');
+  expect(capture.mock.calls).toContainEqual([
+    'enquiry_contact_prefilled',
+    {
+      program_id: 'tau_cs',
+      institution_id: 'tau',
+      surface: 'enquiry_page',
+      fields: 'name',
+    },
+  ]);
+});
+
+it('remembers a phone from this visit so the next open can send in one tap', async () => {
+  const send = vi
+    .fn()
+    .mockResolvedValue(Response.json({ data: { received: true } }, { status: 201 }));
+  vi.stubGlobal('fetch', send);
+  const { unmount } = render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  fireEvent.change(screen.getByLabelText('שם'), { target: { value: 'נועה לוי' } });
+  fireEvent.change(screen.getByLabelText('טלפון נייד'), { target: { value: '0501234567' } });
+  fireEvent.click(screen.getByRole('button', { name: ENQUIRY_COPY.button }));
+  await screen.findByRole('status');
+  unmount();
+  capture.mockClear();
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  expect((screen.getByLabelText('שם') as HTMLInputElement).value).toBe('נועה לוי');
+  expect((screen.getByLabelText('טלפון נייד') as HTMLInputElement).value).toBe('0501234567');
+  expect(capture.mock.calls).toContainEqual([
+    'enquiry_contact_prefilled',
+    {
+      program_id: 'cs',
+      institution_id: 'tau',
+      surface: 'enquiry_page',
+      fields: 'both',
+    },
+  ]);
+});
+
+it('offers WhatsApp only when a number is configured, and does not focus the name in an in-app browser', () => {
+  vi.stubEnv('NEXT_PUBLIC_WHATSAPP_E164', '');
+  vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(
+    'Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Mobile/21A329 [FBAN/FBIOS;FBAV/490.0.0.0.0;]',
+  );
+  const { unmount } = render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  expect(screen.queryByRole('link', { name: 'או כתבו לנו בוואטסאפ' })).toBeNull();
+  expect(document.activeElement).not.toBe(screen.getByLabelText('שם'));
+  unmount();
+  vi.stubEnv('NEXT_PUBLIC_WHATSAPP_E164', '972501111111');
+  render(<EnquiryForm programId="cs" institutionId="tau" title="מדעי המחשב" />);
+  const link = screen.getByRole('link', { name: 'או כתבו לנו בוואטסאפ' });
+  expect(link.getAttribute('href')).toContain('https://wa.me/972501111111');
+  fireEvent.click(link);
+  expect(capture.mock.calls).toContainEqual([
+    'enquiry_whatsapp_clicked',
+    { program_id: 'cs', institution_id: 'tau', surface: 'enquiry_page' },
+  ]);
+  expect(JSON.stringify(capture.mock.calls)).not.toContain('972501111111');
 });
