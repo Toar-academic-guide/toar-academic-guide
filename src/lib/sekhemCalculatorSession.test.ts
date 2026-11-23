@@ -62,6 +62,11 @@ it('ignores snapshots whose programme is no longer offered', () => {
   writeSekhemSession(snapshot());
   expect(readSekhemSession([])).toBeNull();
 });
+it('retains institution selection and rejects a pair no longer offered', () => {
+  writeSekhemSession({ ...snapshot(), institutionId: 'haifa' });
+  expect(readSekhemSession(offerings)?.institutionId).toBe('haifa');
+  expect(readSekhemSession([{ ...offerings[0], institutionId: 'tau' }])).toBeNull();
+});
 it('tolerates unavailable and full storage', () => {
   vi.spyOn(Object.getPrototypeOf(window.sessionStorage), 'getItem').mockImplementation(() => {
     throw new Error('unavailable');

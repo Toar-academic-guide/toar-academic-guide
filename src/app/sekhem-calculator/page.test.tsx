@@ -85,12 +85,24 @@ it('offers only programmes in the runtime evaluator catalogue and refreshes memb
   const ids = () =>
     within(screen.getByLabelText('תוכנית לימודים'))
       .getAllByRole('option')
-      .map((option) => (option as HTMLOptionElement).value)
+      .map((option) => (option as HTMLOptionElement).value.split('__')[0])
       .filter(Boolean);
   expect(ids().length).toBeGreaterThan(0);
   expect(ids().every((id) => active.some((row) => row.id === id))).toBe(true);
   expect(ids().filter((id) => absentEvaluatorIds.includes(id))).toEqual([]);
   expect(ids()).toContain('tau_law');
+  const optionValues = within(screen.getByLabelText('תוכנית לימודים'))
+    .getAllByRole('option')
+    .map((option) => (option as HTMLOptionElement).value);
+  expect(new Set(optionValues).size).toBe(optionValues.length);
+  const offered = await calculatorSupport.loadSekhemCalculatorOfferings();
+  for (const value of optionValues) {
+    const [programId, institutionId] = value.split('__');
+    if (institutionId)
+      expect(
+        offered.some((row) => row.programId === programId && row.institutionId === institutionId),
+      ).toBe(true);
+  }
   view.unmount();
   query.mockResolvedValue({ data: active.filter((row) => row.id !== 'tau_law'), meta });
   render(await Page({ searchParams: Promise.resolve({}) }));

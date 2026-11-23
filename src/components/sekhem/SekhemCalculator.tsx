@@ -119,6 +119,7 @@ export default function SekhemCalculator({
   const [sector, setSector] = useState('יהודי');
   const [certificate, setCertificate] = useState<BagrutCertificateType>('other');
   const [programId, setProgramId] = useState(initialProgramId ?? '');
+  const [institutionId, setInstitutionId] = useState<string>();
   const [reports, setReports] = useState<AdmissionsEvaluationReport[]>([]);
   const [haifaValues, setHaifaValues] = useState<HaifaQualificationValues>({});
   const [medicineValues, setMedicineValues] = useState<MedicineAcademicValues>({});
@@ -183,7 +184,11 @@ export default function SekhemCalculator({
   const generation = useRef(0);
   const analyticsRun = useRef<CalculatorRun | null>(null);
   const [settledGeneration, setSettledGeneration] = useState<number | null>(null);
-  const chosen = offerings.filter((row) => !programId || row.programId === programId);
+  const chosen = offerings.filter(
+    (row) =>
+      (!programId || row.programId === programId) &&
+      (!institutionId || row.institutionId === institutionId),
+  );
   useEffect(() => {
     if (busy || settledGeneration !== generation.current || !analyticsRun.current) return;
     const options = chosen
@@ -200,14 +205,31 @@ export default function SekhemCalculator({
       }));
     captureCalculatorOutcome(analyticsRun.current, 'sekhem_calculator', options);
   }, [busy, settledGeneration, chosen, reports, failedIds]);
-  const programs = [
-    ...new Map(
-      offerings.map((row) => [
-        row.programId,
-        `${row.programName} · ${institutionShortName(row.institutionId, row.institutionName)}`,
-      ]),
-    ).entries(),
+  const distinctOfferings = [
+    ...new Map(offerings.map((row) => [`${row.programId}__${row.institutionId}`, row])).values(),
   ];
+  const institutionCounts = new Map<string, number>();
+  for (const row of distinctOfferings)
+    institutionCounts.set(row.programId, (institutionCounts.get(row.programId) ?? 0) + 1);
+  const programs = distinctOfferings.map((row) => ({
+    offering: row,
+    value:
+      institutionCounts.get(row.programId) === 1
+        ? row.programId
+        : `${row.programId}__${row.institutionId}`,
+    label: `${row.programName} · ${institutionShortName(row.institutionId, row.institutionName)}`,
+  }));
+  const selectionValue = institutionId
+    ? (programs.find(
+        ({ offering }) =>
+          offering.programId === programId && offering.institutionId === institutionId,
+      )?.value ?? '')
+    : programId;
+  // Existing programme-only links and sessions still mean all institutions for that programme.
+  const genericSelection =
+    programId && !institutionId && (institutionCounts.get(programId) ?? 0) > 1
+      ? offerings.find((row) => row.programId === programId)
+      : undefined;
 
   useEffect(() => {
     const saved = readSekhemSession(offerings, entry?.id);
@@ -231,14 +253,16 @@ export default function SekhemCalculator({
     if (saved) {
       const compatible = !!entry || !explicit || explicit === saved.programId;
       setProgramId(entry ? saved.programId : (explicit ?? saved.programId));
+      setInstitutionId(compatible ? saved.institutionId : undefined);
       setReports(compatible ? saved.reports : []);
       setRequiredKeys(compatible ? saved.requiredKeys : []);
       setHaifaValues(compatible ? saved.haifaValues : {});
       setMedicineValues(compatible ? (saved.medicineValues ?? {}) : {});
       setMedicineRequired(compatible ? (saved.medicineRequired ?? []) : []);
       setFailedIds(compatible ? saved.failedIds : []);
-    } else if (explicit) {
-      setProgramId(explicit);
+    } else {
+      setProgramId(explicit ?? '');
+      setInstitutionId(undefined);
       setReports([]);
       setRequiredKeys([]);
       setHaifaValues({});
@@ -266,6 +290,7 @@ export default function SekhemCalculator({
       sector,
       certificate,
       programId,
+      institutionId,
       reports,
       requiredKeys,
       haifaValues,
@@ -290,6 +315,7 @@ export default function SekhemCalculator({
     sector,
     certificate,
     programId,
+    institutionId,
     reports,
     requiredKeys,
     haifaValues,
@@ -392,7 +418,18 @@ export default function SekhemCalculator({
           degreeIds: ids.slice(offset, offset + 50),
         });
         if (generation.current !== version) return;
-        completed.push(...Object.values(batch.reports));
+        completed.push(
+          ...Object.values(batch.reports).map((report) => ({
+            ...report,
+            results: report.results.filter((result) =>
+              chosen.some(
+                (offering) =>
+                  offering.programId === report.input.degreeId &&
+                  offering.institutionId === result.linkedInstitutionId,
+              ),
+            ),
+          })),
+        );
         failed.push(...batch.failedDegreeIds);
         setReports([...completed]);
       }
@@ -637,18 +674,24 @@ export default function SekhemCalculator({
             תוכנית לימודים
             <select
               className="sekhem-input mt-1"
-              value={programId}
+              value={selectionValue}
               onChange={(event) => {
                 invalidate();
-                setProgramId(event.target.value);
+                const selected = programs.find(({ value }) => value === event.target.value);
+                setProgramId(selected?.offering.programId ?? event.target.value);
+                setInstitutionId(selected?.offering.institutionId);
+                setRequiredKeys([]);
                 setMedicineValues({});
                 setMedicineRequired([]);
               }}
             >
               <option value="">כל התוכניות</option>
-              {programs.map(([id, name]) => (
-                <option key={id} value={id}>
-                  {name}
+              {genericSelection && (
+                <option value={programId}>{genericSelection.programName} · כל המוסדות</option>
+              )}
+              {programs.map(({ value, label }) => (
+                <option key={value} value={value}>
+                  {label}
                 </option>
               ))}
             </select>
