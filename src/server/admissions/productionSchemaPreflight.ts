@@ -582,6 +582,7 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
   if (appliedCount === FORWARD_PRODUCTION_MIGRATIONS.length) {
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
       if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
+      if (migration.id === '0045') assessGuardedThresholdAlertSignups(snapshot, issues);
       if ('functionBodies' in migration) {
         for (const [fn, requiredSql] of Object.entries(migration.functionBodies)) {
           const definition = snapshot.functionDefinitions?.[fn];
@@ -1335,6 +1336,111 @@ function assessGuardedEnquiries(
     }
     // Supabase may grant its trusted service_role EXECUTE by default. It is not
     // required by 0041; app_runtime is required and all other checked roles denied.
+    if (
+      !access?.executeRoles.includes('app_runtime') ||
+      access.executeRoles.some((role) => !['app_runtime', 'service_role'].includes(role))
+    ) {
+      issues.push({
+        code: 'grant_mismatch',
+        object: `function:${fn}`,
+        detail:
+          'Expected app_runtime EXECUTE, optional trusted service_role, and no public/operational access.',
+      });
+    }
+  }
+}
+
+function assessGuardedThresholdAlertSignups(
+  snapshot: ProductionSchemaSnapshot,
+  issues: ProductionSchemaIssue[],
+) {
+  const tableName = 'threshold_alert_signups';
+  const table = snapshot.tables[tableName];
+  const fn = 'store_threshold_alert_signup(jsonb)';
+  if (!table) {
+    issues.push({
+      code: 'missing_table',
+      object: `table:${tableName}`,
+      detail: 'Required guarded 0045 table is absent; do not replay historical SQL.',
+    });
+  } else {
+    if (!table.rowLevelSecurity) {
+      issues.push({
+        code: 'rls_disabled',
+        object: `table:${tableName}`,
+        detail: 'Guarded 0045 requires row-level security.',
+      });
+    }
+    for (const policy of table.policies) {
+      issues.push({
+        code: 'unexpected_policy',
+        object: `policy:${policy}`,
+        detail: 'Guarded 0045 requires no threshold alert signup policies.',
+      });
+    }
+    for (const constraint of [
+      'threshold_alert_signups_pkey',
+      'threshold_alert_signups_consent_check',
+      'threshold_alert_signups_cycle_check',
+      'threshold_alert_signups_contact_check',
+      'threshold_alert_signups_target_check',
+    ]) {
+      if (!table.constraints.includes(constraint)) {
+        issues.push({
+          code: 'missing_constraint',
+          object: `constraint:${constraint}`,
+          detail: 'Required guarded 0045 constraint is absent.',
+        });
+      }
+    }
+    const grants: Record<string, readonly string[]> = {
+      PUBLIC: [],
+      anon: [],
+      authenticated: [],
+      app_runtime: [],
+      ops_readonly: [],
+      admissions_automation: [],
+      service_role: ['SELECT', 'INSERT', 'UPDATE', 'DELETE', 'TRUNCATE', 'REFERENCES', 'TRIGGER'],
+    };
+    for (const [role, privileges] of Object.entries(grants)) {
+      const actual = normalizedPrivileges(table.grants[role] ?? []);
+      const expected = normalizedPrivileges(
+        role === 'service_role' ? (table.supportedPrivileges ?? privileges) : privileges,
+      );
+      if (actual.join(',') !== expected.join(',')) {
+        issues.push({
+          code: 'grant_mismatch',
+          object: `grant:${role}:${tableName}`,
+          detail: `Expected [${expected.join(', ')}], found [${actual.join(', ')}].`,
+        });
+      }
+      if (privileges.length > 0) continue;
+      for (const [privilege, columns] of Object.entries(table.columnGrants[role] ?? {})) {
+        if (columns.length > 0) {
+          issues.push({
+            code: 'grant_mismatch',
+            object: `grant:${role}:${tableName}.column:${privilege}`,
+            detail: `Unexpected column privileges on [${columns.join(', ')}].`,
+          });
+        }
+      }
+    }
+  }
+  if (!snapshot.functions[fn]) {
+    issues.push({
+      code: 'missing_function',
+      object: `function:${fn}`,
+      detail: 'Required guarded 0045 function is absent.',
+    });
+  } else {
+    const access = snapshot.functionAccess?.[fn];
+    if (!snapshot.functions[fn].includes('search_path=""') || !access?.securityDefiner) {
+      issues.push({
+        code: 'function_config_mismatch',
+        object: `function:${fn}`,
+        detail: 'Guarded 0045 requires SECURITY DEFINER with an empty search_path.',
+      });
+    }
     if (
       !access?.executeRoles.includes('app_runtime') ||
       access.executeRoles.some((role) => !['app_runtime', 'service_role'].includes(role))

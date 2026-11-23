@@ -12,6 +12,7 @@ const staticPages = new Set([
   '/programs',
   '/institutions',
   '/enquiry',
+  '/threshold-alerts',
   '/sekhem-calculator',
   '/calculator',
   '/psychometric-dates',
