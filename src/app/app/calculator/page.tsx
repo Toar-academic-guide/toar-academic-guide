@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import StudyJourney from '@/components/StudyJourney';
+import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
 
 const TITLE = 'מחשבון סיכויי קבלה לתואר';
 const DESCRIPTION =
@@ -8,15 +9,7 @@ const DESCRIPTION =
 export const metadata: Metadata = {
   title: TITLE,
   description: DESCRIPTION,
-  openGraph: {
-    title: `${TITLE} | MyWay`,
-    description: DESCRIPTION,
-    url: '/app/calculator',
-    type: 'website',
-    locale: 'he_IL',
-    siteName: 'MyWay',
-  },
-  twitter: { card: 'summary', title: `${TITLE} | MyWay`, description: DESCRIPTION },
+  ...socialMetadata(shareCards.admission, `${TITLE} | MyWay`, DESCRIPTION, '/app/calculator'),
 };
 
 export default function CalculatorPage() {

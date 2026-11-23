@@ -22,6 +22,7 @@ import { useRouter } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import posthog from 'posthog-js';
 import ProgramTrackedLink from './ProgramTrackedLink';
+import ThresholdAlertCta from './ThresholdAlertCta';
 import {
   ArrowLeft,
   ArrowRight,
@@ -83,6 +84,7 @@ import EnquiryForm from './EnquiryForm';
 import WayPageShell from './WayPageShell';
 import PublicNavBar from './PublicNavBar';
 import ProgramShareButton from './ProgramShareButton';
+import CalculatorShareButton from './CalculatorShareButton';
 import AdmissionRequirements from './AdmissionRequirements';
 import RequirementTiles from './RequirementTiles';
 import AdmissionConditions from './AdmissionConditions';
@@ -152,6 +154,14 @@ export const journeySteps = [
   'account',
 ] as const;
 type Step = (typeof journeySteps)[number];
+
+function isJourneyStep(value: unknown): value is Step {
+  return typeof value === 'string' && (journeySteps as readonly string[]).includes(value);
+}
+
+function historyRecord(state: unknown): Record<string, unknown> | null {
+  return state && typeof state === 'object' ? (state as Record<string, unknown>) : null;
+}
 const DRAFT_KEY = 'myway_study_journey_v2';
 const useIsomorphicLayoutEffect = typeof window === 'undefined' ? useEffect : useLayoutEffect;
 interface JourneyCatalogue {
@@ -322,6 +332,9 @@ export default function StudyJourney({
   const [ready, setReady] = useState(false);
   const hadStoredDraft = useRef(false);
   const [step, setStep] = useState<Step>(initialStep);
+  const stepRef = useRef(step);
+  stepRef.current = step;
+  const entryStep = useRef<Step>(initialStep);
   const [catalogue, setCatalogue] = useState<JourneyCatalogue | null>(null);
   const programs = catalogue?.programs ?? EMPTY_PROGRAMS;
   const quickAverageValue =
@@ -370,8 +383,15 @@ export default function StudyJourney({
       setMessage('');
       if (next === 'home') router.push(ROUTES.home);
       else if (window.location.hash !== `#${next}`) {
-        // Preserve Next's route state when creating a journey history entry.
-        window.history.pushState(null, '', `#${next}`);
+        // Keep Next's route state. A null state makes the Facebook in-app
+        // browser and the browser Back button drop the page instead of moving
+        // one step.
+        const current = historyRecord(window.history.state);
+        window.history.pushState(
+          { ...current, journeyStep: next, journeyFrom: stepRef.current },
+          '',
+          `#${next}`,
+        );
       }
       window.scrollTo({ top: 0, behavior: 'instant' });
     },
@@ -400,8 +420,10 @@ export default function StudyJourney({
     setReady(true);
     const readStep = (event?: Event) => {
       const hash = window.location.hash.slice(1);
+      const next = journeySteps.includes(hash as Step) ? (hash as Step) : initialStep;
       focusHeadingOnNavigation.current = !!event;
-      setStep(journeySteps.includes(hash as Step) ? (hash as Step) : initialStep);
+      if (!event) entryStep.current = next;
+      setStep(next);
     };
     readStep();
     window.addEventListener('hashchange', readStep);
@@ -869,6 +891,15 @@ export default function StudyJourney({
     },
     [],
   );
+  const contactName = [profile.firstName, profile.lastName].filter(Boolean).join(' ').trim();
+  const knownScores = {
+    ...(typeof draft.scores.bagrut?.weightedAverage === 'number'
+      ? { bagrut: draft.scores.bagrut.weightedAverage }
+      : {}),
+    ...(typeof draft.scores.psychometric?.overall === 'number'
+      ? { psychometric: draft.scores.psychometric.overall }
+      : {}),
+  };
   const contactProgramId = activeRow?.program.id;
   const contactInstitutionId = activeRow?.institution.id;
   const contactResultGroup =
@@ -926,6 +957,9 @@ export default function StudyJourney({
   };
   const afterGrades = () => go('psy-mode');
   const goBack = () => {
+    const record = historyRecord(window.history.state);
+    const journeyFrom =
+      record && isJourneyStep(record.journeyFrom) ? record.journeyFrom : undefined;
     const previous: Partial<Record<Step, Step>> = {
       intent: 'home',
       subjects: 'intent',
@@ -951,7 +985,47 @@ export default function StudyJourney({
       'quiz-result': 'questionnaire',
       account: 'saved',
     };
-    go(previous[step] ?? 'home');
+    // The calculator route opens on subject choice. Back from that first
+    // screen used to invent the intent question, then push another history
+    // entry, so the in-app browser Back button walked forward again.
+    // No journeyFrom means this screen is where the visit started. On the
+    // calculator that screen is subject choice, and Back should leave rather
+    // than open the intent question the route skipped.
+    const coldCalculatorEntry =
+      initialStep === 'subjects' &&
+      entryStep.current === 'subjects' &&
+      step === 'subjects' &&
+      journeyFrom === undefined;
+    const target: Step | 'exit' = coldCalculatorEntry
+      ? 'exit'
+      : step === 'inquiry' && journeyFrom
+        ? journeyFrom
+        : (previous[step] ?? 'home');
+    if (target === 'exit') {
+      setMessage('');
+      // The Facebook in-app browser sometimes reports history and then ignores
+      // back. If the page is still here, go home so the tap is never a no-op.
+      if (window.history.length > 1) {
+        const href = window.location.href;
+        window.history.back();
+        window.setTimeout(() => {
+          if (window.location.href === href) router.push(ROUTES.home);
+        }, 400);
+      } else router.push(ROUTES.home);
+      return;
+    }
+    focusHeadingOnNavigation.current = true;
+    setMessage('');
+    setStep(target);
+    if (target === 'home') {
+      router.push(ROUTES.home);
+      return;
+    }
+    // Replace, don't push. Pushing made the browser and Facebook Back buttons
+    // return to the step the student had just left.
+    const { journeyFrom: _from, ...rest } = record ?? {};
+    window.history.replaceState({ ...rest, journeyStep: target }, '', `#${target}`);
+    window.scrollTo({ top: 0, behavior: 'instant' });
   };
   const titles: Record<Step, string> = {
     home: '',
@@ -1136,7 +1210,7 @@ export default function StudyJourney({
                 </span>
               ))}
             </div>
-            <button className="journey-pill journey-back" onClick={goBack}>
+            <button type="button" className="journey-pill journey-back" onClick={goBack}>
               <ArrowRight size={16} aria-hidden="true" />
               חזרה
             </button>
@@ -1670,6 +1744,7 @@ export default function StudyJourney({
             )}
             {!!rows.length && (
               <div className="journey-actions">
+                <CalculatorShareButton surface="journey_calculator" className="journey-secondary" />
                 <button className="journey-secondary" onClick={() => go('saved')}>
                   לרשימה שלי
                 </button>
@@ -1680,6 +1755,7 @@ export default function StudyJourney({
                 )}
               </div>
             )}
+            {!!rows.length && <ThresholdAlertCta surface="journey_results" />}
             {step === 'results' && !catalogueLoading && !catalogueError && (
               <div dir="rtl" className="mt-10 border-t border-slate-200 pt-4 text-right">
                 <p className="text-sm text-slate-500">עקבו אחרינו</p>
@@ -1897,6 +1973,8 @@ export default function StudyJourney({
                 evaluationInput={reports[activeRow.program.id]?.input}
                 surface="journey"
                 title={`${activeRow.fieldName} · ${activeRow.institution.name}`}
+                defaultName={contactName || undefined}
+                knownScores={knownScores}
                 onBack={() => go('results')}
               />
             </section>
@@ -1910,6 +1988,8 @@ export default function StudyJourney({
               institutionId=""
               surface="journey"
               title="הכנה לפסיכומטרי"
+              defaultName={contactName || undefined}
+              knownScores={knownScores}
               onBack={() => go('results')}
             />
           </section>

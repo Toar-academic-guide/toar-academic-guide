@@ -358,4 +358,33 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
       ],
     },
   },
+  {
+    id: '0045',
+    repositoryPath: 'src/db/migrations/0045_threshold_alert_signups.sql',
+    columns: [
+      { table: 'threshold_alert_signups', column: 'request_id', type: 'uuid' },
+      { table: 'threshold_alert_signups', column: 'email', type: 'text' },
+      { table: 'threshold_alert_signups', column: 'phone', type: 'text' },
+      { table: 'threshold_alert_signups', column: 'institutions', type: 'text[]' },
+      { table: 'threshold_alert_signups', column: 'degrees', type: 'text[]' },
+      { table: 'threshold_alert_signups', column: 'cycle', type: 'text' },
+      { table: 'threshold_alert_signups', column: 'consent', type: 'boolean' },
+      { table: 'threshold_alert_signups', column: 'consent_text', type: 'text' },
+      { table: 'threshold_alert_signups', column: 'source_path', type: 'text' },
+      { table: 'threshold_alert_signups', column: 'utm_source', type: 'character varying' },
+      { table: 'threshold_alert_signups', column: 'utm_medium', type: 'character varying' },
+      { table: 'threshold_alert_signups', column: 'utm_campaign', type: 'character varying' },
+      { table: 'threshold_alert_signups', column: 'referrer', type: 'character varying' },
+      { table: 'threshold_alert_signups', column: 'notified_at', type: 'timestamp with time zone' },
+      { table: 'threshold_alert_signups', column: 'created_at', type: 'timestamp with time zone' },
+    ],
+    functionBodies: {
+      'store_threshold_alert_signup(jsonb)': [
+        'threshold alert consent text mismatch',
+        'אני מבקש/ת ש-MyWay תשלח לי עדכון',
+        'ON CONFLICT (request_id) DO NOTHING',
+        "payload->>'cycle' IS DISTINCT FROM '2027'",
+      ],
+    },
+  },
 ] as const;
