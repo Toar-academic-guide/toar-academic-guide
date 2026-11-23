@@ -1,3 +1,4 @@
+import catalogueContentRepair from './admissions/catalogueContentRepair.json';
 import { describe, expect, it } from 'vitest';
 import { psychologyComparisonRows, psychologyProfessionUrl } from './psychologyComparison';
 
@@ -24,7 +25,7 @@ describe('psychology comparison sources', () => {
     }
   });
 
-  it('keeps the distinct scales, conditional Ofek route, Ono qualification, and Ariel source gap explicit', () => {
+  it('keeps the distinct scales, conditional Ofek route, Ono qualification, and Ariel catalogue conditions explicit', () => {
     const row = (id: string) =>
       psychologyComparisonRows.find((candidate) => candidate.programId === id)!;
     expect(row('tau_psychology').main[0].text).toContain('ציון התאמה: סף קבלה 660, סף דחייה 659');
@@ -33,12 +34,16 @@ describe('psychology comparison sources', () => {
     expect(row('haifa_psychology').bagrut[0].text).toContain('מסלול אופק ללא פסיכומטרי');
     expect(row('haifa_psychology').note).toContain('2–3 קורסים בציון 75');
     expect(row('ono_psychology').institution).toContain('מדעי ההתנהגות (B.A.)');
-    expect(row('ariel_psychology').checkedDate).toBe('21.10.2026');
-    expect(row('ariel_psychology').main[0].text).toBe('תנאי הקבלה הנוכחיים לא אומתו.');
-    expect(row('ariel_psychology').bagrut).toEqual([]);
-    expect(row('ariel_psychology').scale).toBe('לא אומת');
-    expect(row('ariel_psychology').note).toContain('תנאי הקבלה לא אומתו');
-    expect(row('ariel_psychology').note).not.toContain('21.10.2026');
+    const ariel = row('ariel_psychology');
+    const record = catalogueContentRepair.requirements.find(
+      (item) => item.programId === 'ariel_psychology',
+    )!;
+    expect(ariel.main.map((item) => item.text)).toEqual(record.notes.slice(0, 3));
+    expect(ariel.bagrut[0].text).toContain('בגרות 97 לפחות');
+    expect(ariel.main[0].text).toContain('משולב 580');
+    expect(ariel.scale).toContain('6.666');
+    expect(ariel.note).toBe(record.notes.slice(3).join(' '));
+    expect(JSON.stringify(ariel)).not.toContain('לא אומת');
     expect(psychologyProfessionUrl).toMatch(/^https:\/\/me\.health\.gov\.il\//);
   });
 });

@@ -50,13 +50,15 @@ describe('psychometric score choice guide', () => {
     expect(root.querySelector('#admissions')?.parentElement?.textContent).not.toContain('בר־אילן');
   });
 
-  it('states when a score-choice rule was not found, without a source link', () => {
+  it('states existing score rules and the missing transition policy, without source links', () => {
     const root = renderPage();
     const rows = Array.from(root.querySelectorAll('table[aria-labelledby="admissions"] tbody tr'));
     for (const name of ['האוניברסיטה העברית', 'אוניברסיטת חיפה']) {
       const row = rows.find((candidate) => candidate.textContent?.includes(name));
-      expect(row?.textContent).toContain('לא נמצא כלל לתשפ״ח בעמוד שנבדק');
-      expect(row?.textContent).not.toContain('הגבוה');
+      expect(row?.textContent).toContain('עוד לא פורסם');
+      expect(row?.textContent).not.toMatch(/שנבדק|בדקו באתר המוסד/);
+      expect(row?.textContent).toContain('הגבוה');
+      if (name === 'אוניברסיטת חיפה') expect(row?.textContent).toContain('10 שנות לימודים');
       expect(row?.querySelector('a')).toBeNull();
     }
     expect(twoDomainPolicyUrls.huji).toMatch(/^https:\/\/info\.huji\.ac\.il\//);
