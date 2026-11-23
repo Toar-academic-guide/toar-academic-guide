@@ -239,7 +239,9 @@ async function assertAlignedFields(root: Locator) {
 
 async function assertStudentCards(page: Page) {
   for (const card of await page.locator('[data-testid^="institution-"]').all()) {
-    await expect(card).not.toContainText(/מתואם|סכם|מצרף/);
+    // The approved gap now names the returned metric; other card copy stays plain.
+    const outsideGap = (await card.innerText()).replace(/חסרות לכם [^()]+ לסף \([^)]*\)/g, '');
+    expect(outsideGap).not.toMatch(/מתואם|סכם|מצרף/);
     await expect(card.locator('[data-testid^="result-"]')).not.toContainText('נתונים');
   }
 }
@@ -382,16 +384,24 @@ for (const width of [1280, 390]) {
           Number.isFinite(api.score) &&
           Number.isFinite(api.threshold)
         ) {
-          const gap = api.threshold! - api.score!;
+          const gap =
+            Number(formatSekhemNumber(api.threshold!, institutionId)) -
+            Number(formatSekhemNumber(api.score!, institutionId));
           if (Number.isFinite(gap) && gap > 0) {
             const formattedGap = formatSekhemNumber(Number(gap.toPrecision(12)), institutionId);
             if (Number(formattedGap) > 0) expectedGap = formattedGap;
           }
         }
         // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
-        const gapPattern = /חסרות לכם (\d+(?:\.\d+)?) נקודות לסף/g;
+        const gapPattern =
+          /חסרות לכם (\d+(?:\.\d+)?) נקודות ב[^()]+ לסף \(\d+(?:\.\d+)? לעומת \d+(?:\.\d+)?\)/g;
         const displayedGaps = [...renderedText.matchAll(gapPattern)].map((match) => match[1]);
         expect(displayedGaps).toEqual(expectedGap ? [expectedGap] : []);
+        if (expectedGap) {
+          expect(renderedText).toContain(
+            `חסרות לכם ${expectedGap} נקודות ב${api.scoreLabel || 'ציון הקבלה'} לסף (${formatSekhemNumber(api.score!, institutionId)} לעומת ${formatSekhemNumber(api.threshold!, institutionId)})`,
+          );
+        }
         // Approved test update, Jorje 2026-10-29 (sales-copy row 22 gap guard)
         const renderedNumbers = renderedText.replace(gapPattern, '').match(/\d+(?:\.\d+)?/g) ?? [];
         for (const number of renderedNumbers) {

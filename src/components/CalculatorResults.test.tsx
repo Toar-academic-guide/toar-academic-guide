@@ -354,7 +354,7 @@ describe('CalculatorResults', () => {
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 1)
     [85, 'עוברים את הסף ✓'],
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
-    [84.99, 'חסרות לכם 0.01 נקודות לסף'],
+    [84.99, 'חסרות לכם 0.01 נקודות בממוצע בגרות משוקלל — מסלול בגרות לסף (84.99 לעומת 85)'],
   ])(
     'labels the Colman route for average %s and provides profile editing',
     async (average, label) => {

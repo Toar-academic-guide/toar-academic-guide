@@ -1079,7 +1079,7 @@ describe('evaluateAdmissionsForProgram', () => {
       decision: 'unknown',
     });
     expect(report.results[0].explanation).toContain('610');
-    expect(report.results[0].explanation).toContain('נתוני הבסיס אומתו למחזור');
+    expect(report.results[0].explanation).not.toContain('נתוני הבסיס אומתו למחזור');
     expect(report.results[0].explanation).not.toMatch(/אומתו ב־/);
     expect(report.results[0].officialUrls?.[0]).toMatch(/^https:\/\//);
     expect(report.results[0].score).toBeUndefined();

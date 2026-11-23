@@ -871,7 +871,8 @@ export default function RecommendationResults({
                 key={dim}
                 className={`rounded-full px-3 py-1 text-xs font-semibold ${DIMENSION_LABELS[dim].color}`}
               >
-                {DIMENSION_LABELS[dim].name} · {score}
+                {DIMENSION_LABELS[dim].name} ·{' '}
+                <bdi dir="ltr">{score.toLocaleString('he-IL', { maximumFractionDigits: 1 })}</bdi>
               </span>
             ))}
             {geographicPreference !== 'any' && (

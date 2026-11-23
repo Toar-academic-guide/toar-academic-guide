@@ -42,7 +42,9 @@ for (const width of [1440, 390]) {
     const evaluatedPsychometric = width === 390 ? 750 : 680;
     if (width === 390) {
       await page.getByRole('button', { name: 'מה אם אשפר ציון?' }).click();
-      await page.getByRole('spinbutton', { name: 'ציון יעד' }).fill('750');
+      await page
+        .getByRole('spinbutton', { name: 'ציון פסיכומטרי לבדיקה', exact: true })
+        .fill('750');
       await page.getByRole('button', { name: 'לבדוק את האפשרויות' }).click();
       await expect(page.getByText('בודקים את ההתאמה לציונים שלכם…', { exact: true })).toBeHidden();
     }

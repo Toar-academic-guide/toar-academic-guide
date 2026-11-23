@@ -327,17 +327,7 @@ function withVerifiedAdmissionInformation(
   if (!contract || contract.proof.state !== 'verified' || !contract.proof.liveComparedAt)
     return result;
 
-  const verificationNote = `נתוני הבסיס אומתו למחזור ${contract.admissionCycle}.`;
-  const showVerificationNote = !(
-    result.linkedInstitutionId === 'bgu' &&
-    (input.degreeId === 'bgu_medicine' || input.degreeId === 'medicine')
-  );
-
-  if (result.capability === 'exact') {
-    return result.scoreAssessment || !showVerificationNote
-      ? result
-      : { ...result, explanation: `${result.explanation} ${verificationNote}` };
-  }
+  if (result.capability === 'exact') return result;
   if (
     !['degraded', 'authority_unavailable', 'unsupported'].includes(result.kind) ||
     !Number.isFinite(contract.calculation.cutoff.acceptance) ||
@@ -347,7 +337,7 @@ function withVerifiedAdmissionInformation(
 
   return {
     ...result,
-    explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי.${showVerificationNote ? ` ${verificationNote}` : ''}`,
+    explanation: `${result.explanation} סף הקבלה השמור למסלול הוא ${contract.calculation.cutoff.acceptance} בציון המוסדי.`,
     nextAction:
       result.kind === 'degraded' && isBguPsychologyProgram(input.degreeId)
         ? result.nextAction
@@ -2137,7 +2127,7 @@ function normalizeExactProofResult(args: {
           ? `${explanationPrefix} אישר שהציון עומד בסף המספרי למסלול זה.`
           : derivedVerdict === 'pending'
             ? `${explanationPrefix} הציב את הציון בין סף הדחייה לסף הקבלה, ולכן עדיין אין החלטה סופית.`
-            : `${explanationPrefix} סיפק ציון וסף קבלה מעודכנים למסלול זה.`,
+            : '',
     nextAction:
       decision === 'accepted' || bguScoreMatch
         ? 'בדקו את דף ההרשמה הרשמי והשלימו את בדיקת העבר האקדמי, העברית ושאר דרישות המסמכים.'

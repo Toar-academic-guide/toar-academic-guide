@@ -25,21 +25,27 @@ const result = (
 
 describe('approved student result copy', () => {
   it.each([
-    [650, 670, '20'],
-    [21.12, 22.5, '1.38'],
-    [84.999, 85.124, '0.13'],
-    [0, 1, '1'],
-  ])('renders only the real journey gap %s to %s', (score, threshold, gap) => {
-    for (const state of [
-      { decision: 'below' as const },
-      { scoreAssessment: 'below_threshold' as const },
-    ]) {
-      // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
-      expect(
-        resultLabel(result({ score: Number(score), threshold: Number(threshold), ...state })),
-      ).toEqual({ label: `חסרות לכם ${gap} נקודות לסף`, group: 'improve' });
-    }
-  });
+    [650, 670, '20', '650', '670'],
+    [21.12, 22.5, '1.38', '21.12', '22.5'],
+    [84.999, 85.124, '0.12', '85', '85.12'],
+    [0, 1, '1', '0', '1'],
+  ])(
+    'renders only the real journey gap %s to %s',
+    (score, threshold, gap, shownScore, shownThreshold) => {
+      for (const state of [
+        { decision: 'below' as const },
+        { scoreAssessment: 'below_threshold' as const },
+      ]) {
+        // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 2)
+        expect(
+          resultLabel(result({ score: Number(score), threshold: Number(threshold), ...state })),
+        ).toEqual({
+          label: `חסרות לכם ${gap} נקודות בציון הקבלה לסף (${shownScore} לעומת ${shownThreshold})`,
+          group: 'improve',
+        });
+      }
+    },
+  );
   it.each([
     [undefined, 650],
     [640, undefined],
@@ -65,7 +71,7 @@ describe('approved student result copy', () => {
           threshold: 650,
         }),
       ).label,
-    ).toBe('חסרות לכם 15 נקודות לסף');
+    ).toBe('חסרות לכם 15 נקודות בציון הקבלה לסף (635 לעומת 650)');
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 7)
     expect(resultLabel(result({ linkedInstitutionId: 'reichman', score: 635.7968 })).label).toBe(
       'הסכם שלכם: 636',

@@ -1077,6 +1077,8 @@ describe('account grades in the homepage journey', () => {
 
   it('offers target-score exploration with the approved helper', async () => {
     render(<StudyJourney initialStep="improve" />);
+    expect(await screen.findByText('מה יקרה אם נשפר את הפסיכומטרי?')).toBeTruthy();
+    expect(screen.getByRole('spinbutton', { name: 'ציון פסיכומטרי לבדיקה' })).toBeTruthy();
     // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 14)
     expect(await screen.findByText('בדקו מה ציון היעד פותח לכם.')).toBeTruthy();
   });
