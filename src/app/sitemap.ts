@@ -65,6 +65,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/open-days', '2026-11-05');
   dates.set('/transfer', '2026-11-08');
   dates.set('/without-psychometric', '2026-11-10');
+  dates.set('/bagrut-improvement', '2026-11-22');
   for (const id of [
     'law',
     ...lawBarOutcomes.rows.flatMap((row) => ('programId' in row ? [row.programId] : [])),
@@ -95,6 +96,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     '/open-days',
     '/transfer',
     '/without-psychometric',
+    '/bagrut-improvement',
     '/institutions',
     '/programs',
     ...(await indexableInstitutionIds(catalogue)).map(

@@ -254,6 +254,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/open-days`,
       `${SITE_URL}/transfer`,
       `${SITE_URL}/without-psychometric`,
+      `${SITE_URL}/bagrut-improvement`,
       `${SITE_URL}/institutions`,
       `${SITE_URL}/programs`,
       ...(await indexableInstitutionIds()).map(
@@ -295,7 +296,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(448);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -1213,6 +1214,7 @@ describe('visible source labels', () => {
     '/open-days': () => import('@/app/open-days/page'),
     '/transfer': () => import('@/app/transfer/page'),
     '/without-psychometric': () => import('@/app/without-psychometric/page'),
+    '/bagrut-improvement': () => import('@/app/bagrut-improvement/page'),
     '/institutions': () => import('@/app/institutions/page'),
     '/programs': () => import('@/app/programs/page'),
   };

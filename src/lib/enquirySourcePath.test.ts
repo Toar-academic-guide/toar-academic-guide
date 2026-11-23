@@ -15,6 +15,7 @@ describe('enquiry source route guard', () => {
     ['/institutions/tau', '/institutions/tau'],
     ['/transfer?from=calculator', '/transfer'],
     ['/without-psychometric?from=hub', '/without-psychometric'],
+    ['/bagrut-improvement?from=guide', '/bagrut-improvement'],
     ['/amirnet?from=guide', '/amirnet'],
     ['/psychometric-accommodations?from=guide', '/psychometric-accommodations'],
     ['/calculator', '/calculator'],

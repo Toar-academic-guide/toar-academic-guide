@@ -23,6 +23,7 @@ const staticPages = new Set([
   '/open-days',
   '/transfer',
   '/without-psychometric',
+  '/bagrut-improvement',
   '/app',
   '/app/assessment',
   '/app/recommendations',
