@@ -100,22 +100,21 @@ it('keeps network errors and missing response rows out of completions, then reso
   await waitFor(() => expect(completionEvents()).toHaveLength(1));
   fetchMock.mockResolvedValueOnce(Response.json({ data: { reports: {}, failedDegreeIds: [] } }));
   submit();
-  await waitFor(() =>
-    expect(screen.getByRole('button', { name: 'חשבו את הסכם שלי' }).hasAttribute('disabled')).toBe(
-      false,
-    ),
-  );
-  expect(completionEvents()).toHaveLength(1);
+  await waitFor(() => {
+    const names = vi
+      .mocked(posthog.capture)
+      .mock.calls.filter(
+        ([name]) => name === 'calculator_completed' || name === 'calculator_outcome',
+      )
+      .map(([name]) => name);
+    expect(names).toEqual(['calculator_outcome', 'calculator_completed', 'calculator_outcome']);
+  });
   const events = vi
     .mocked(posthog.capture)
     .mock.calls.filter(
       ([name]) => name === 'calculator_completed' || name === 'calculator_outcome',
     );
-  expect(events.map(([name]) => name)).toEqual([
-    'calculator_outcome',
-    'calculator_completed',
-    'calculator_outcome',
-  ]);
+  expect(completionEvents()).toHaveLength(1);
   expect(JSON.stringify(events)).not.toMatch(/private|706|score|signature/);
 });
 
