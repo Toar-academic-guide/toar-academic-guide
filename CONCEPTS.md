@@ -81,6 +81,11 @@ _Avoid:_ Raw scrape, open-PR change
 A user-owned, admissions-cycle-scoped request to re-evaluate one saved Institution and Academic Program target after Approved Admissions Changes and send one email if the saved Academic Profile becomes newly eligible.
 _Avoid:_ Threshold-change alert
 
+### Threshold Publication Signup
+
+A public request to be told when selected institutions publish admission thresholds for a cycle. The student chooses institutions and/or degrees and leaves an email and/or WhatsApp number, with consent that covers only that alert.
+_Avoid:_ Admission Change Subscription, enquiry, prep consent
+
 ### Admissions Cycle
 
 The annual monitoring period used to scope admission rules and subscriptions. For alerting, active subscriptions expire when the new cycle begins on October 1.

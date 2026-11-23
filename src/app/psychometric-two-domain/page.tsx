@@ -1,7 +1,8 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
-import { absoluteUrl, SITE_NAME } from '@/lib/site';
+import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
+import { absoluteUrl } from '@/lib/site';
 import styles from './page.module.css';
 
 const title = 'פסיכומטרי דו־תחומי: הבחינה, הציונים ותנאי הקבלה | MyWay';
@@ -21,15 +22,7 @@ export const metadata: Metadata = {
   title: { absolute: title },
   description,
   alternates: { canonical },
-  openGraph: {
-    title,
-    description,
-    url: canonical,
-    type: 'website',
-    locale: 'he_IL',
-    siteName: SITE_NAME,
-  },
-  twitter: { card: 'summary', title, description },
+  ...socialMetadata(shareCards.psychometricTwoDomain, title, description, canonical),
 };
 
 export default function Page() {
