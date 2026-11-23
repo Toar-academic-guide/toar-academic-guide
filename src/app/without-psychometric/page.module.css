@@ -117,6 +117,92 @@
 .more a {
   min-height: 44px;
 }
+.guidance {
+  margin-block: 40px;
+  line-height: 1.85;
+}
+.guidance p + p {
+  margin-top: 16px;
+}
+.guidance a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+.faq {
+  margin-top: 24px;
+}
+.faq h3 {
+  font-weight: 700;
+  color: #12234a;
+}
+.satTable {
+  width: 100%;
+  margin-top: 24px;
+  border-collapse: collapse;
+  table-layout: fixed;
+  font-size: 14px;
+  line-height: 1.7;
+}
+.satTable caption {
+  text-align: right;
+  margin-bottom: 12px;
+}
+.satTable th,
+.satTable td {
+  padding: 12px 8px;
+  vertical-align: top;
+  text-align: right;
+  border-bottom: 1px solid var(--border);
+  overflow-wrap: anywhere;
+}
+.satTable thead th {
+  color: #12234a;
+  background: #edeafa;
+}
+.satTable th:nth-child(5) {
+  width: 35%;
+}
+@media (max-width: 800px) {
+  .satTable caption {
+    display: block;
+    width: 100%;
+  }
+  .satTable,
+  .satTable tbody,
+  .satTable tr,
+  .satTable td,
+  .satTable th {
+    display: block;
+    width: 100%;
+  }
+  .satTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+  }
+  .satTable tr {
+    margin-top: 20px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 12px;
+  }
+  .satTable tbody th {
+    font-size: 18px;
+    color: #12234a;
+  }
+  .satTable td::before {
+    content: attr(data-label);
+    display: block;
+    font-weight: 700;
+  }
+  .satTable td:last-child {
+    border-bottom: 0;
+  }
+}
 @media (max-width: 600px) {
   .main {
     padding: 32px 16px 64px;

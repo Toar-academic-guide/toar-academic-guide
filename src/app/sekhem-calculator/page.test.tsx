@@ -14,6 +14,7 @@ vi.mock('@/server/catalogue/queries', async () => {
   };
 });
 import Page, { metadata } from './page';
+import alternatives from '@/data/admissionAlternatives.json';
 import sitemap from '@/app/sitemap';
 import { readFileSync } from 'node:fs';
 import * as calculatorSupport from '@/lib/sekhemCalculatorSupport';
@@ -338,7 +339,10 @@ it.each([undefined, 'not_a_public_programme'])(
     render(await Page({ searchParams: Promise.resolve({ program }) }));
     const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
     for (const phrase of ['הערכה', 'מבטיח', 'הבטחה']) {
-      expect(section.textContent?.replace('אינו מבטיח קבלה', '')).not.toContain(phrase);
+      const originalAnswers = answerHeadings
+        .map((name) => within(section).getByRole('heading', { name }).parentElement?.textContent)
+        .join(' ');
+      expect(originalAnswers.replace('אינו מבטיח קבלה', '')).not.toContain(phrase);
     }
   },
 );
@@ -347,7 +351,9 @@ it.each([undefined, 'not_a_public_programme'])(
 it('keeps the answer section free of numbers and unsupported admission promises', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
-  const text = section.textContent!;
+  const text = answerHeadings
+    .map((name) => within(section).getByRole('heading', { name }).parentElement?.textContent)
+    .join(' ');
   expect(text).not.toMatch(/[0-9]/);
   for (const phrase of ['לפי הנוסחה של כל מוסד', 'כל המוסדות', 'תתקבל']) {
     expect(text).not.toContain(phrase);
@@ -371,14 +377,17 @@ it('renders the FAQ below the unavailable block for an unknown programme', async
 });
 
 // Approved test update, Jorje 2026-10-29 (answer-block list + guarantee Q removal)
-it('renders the six visible answer headings in order', async () => {
+it('preserves the six original answers and appends the three threshold questions', async () => {
   render(await Page({ searchParams: Promise.resolve({}) }));
   const section = screen.getByRole('region', { name: 'שאלות על מחשבון הסכם' });
   const headings = within(section)
     .getAllByRole('heading', { level: 2 })
     .filter((heading) => !heading.classList.contains('sr-only'));
-  expect(headings).toHaveLength(6);
-  expect(headings.map((heading) => heading.textContent)).toEqual(answerHeadings);
+  expect(headings).toHaveLength(9);
+  expect(headings.map((heading) => heading.textContent)).toEqual([
+    ...answerHeadings,
+    ...alternatives.thresholds.faq.map((item) => item.question),
+  ]);
   expect(section.textContent).not.toContain('האם התוצאה מבטיחה קבלה?');
 });
 
@@ -393,14 +402,16 @@ it.each([undefined, 'not_a_public_programme'])(
     const faq = nodes.filter((node) => node['@type'] === 'FAQPage');
     expect(faq).toHaveLength(1);
     expect(faq[0].mainEntity).toEqual(
-      answerHeadings.map((name) => ({
-        '@type': 'Question',
-        name,
-        acceptedAnswer: {
-          '@type': 'Answer',
-          text: screen.getByRole('heading', { name }).nextElementSibling?.textContent,
-        },
-      })),
+      [...answerHeadings, ...alternatives.thresholds.faq.map((item) => item.question)].map(
+        (name) => ({
+          '@type': 'Question',
+          name,
+          acceptedAnswer: {
+            '@type': 'Answer',
+            text: screen.getByRole('heading', { name }).nextElementSibling?.textContent,
+          },
+        }),
+      ),
     );
   },
 );
@@ -533,4 +544,14 @@ it('removes a computed-average institution from the table when no active offerin
   } finally {
     spy.mockRestore();
   }
+});
+
+it('distinguishes Technion winter thresholds from BGU registration opening', async () => {
+  render(await Page({ searchParams: Promise.resolve({}) }));
+  const section = screen.getByRole('region', { name: alternatives.thresholds.title });
+  expect(section.textContent).toContain('בינואר 2027');
+  expect(section.textContent).toContain('אוקטובר 2027');
+  expect(section.textContent).toContain('31.1.2027');
+  expect(section.textContent).toContain('זה מועד פתיחת הרשמה, לא מועד פרסום הספים');
+  expect(section.querySelectorAll('a')).toHaveLength(0);
 });
