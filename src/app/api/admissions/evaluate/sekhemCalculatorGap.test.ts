@@ -122,7 +122,7 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
   });
 
   it.each([
-    ['static', gapPrograms, 20],
+    ['static', gapPrograms, 21],
     ['saved audit', savedGapPrograms, 27],
   ] as const)(
     'enumerates every %s Haifa pair and returns the honest note without a composite ask',
@@ -132,6 +132,13 @@ describe('#320 request-shape compatibility at 12fd33f', () => {
       for (const row of haifa) {
         const { result, fetcher } = await gapEvaluate(row, 'haifa');
         expect(result.score, row.id).toBeUndefined();
+        if (row.id === 'haifa_fine_arts') {
+          expect(result).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
+          expect(result.threshold).toBeUndefined();
+          expect(result.requiredInputs ?? []).toEqual([]);
+          expect(fetcher).not.toHaveBeenCalled();
+          continue;
+        }
         // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
         expect(result.kind, row.id).toBe(
           row.id === 'haifa_engineering' ? 'unsupported' : 'needs_input',

@@ -5117,8 +5117,8 @@ describe('Amit 07:33 full-bagrut assumption', () => {
           }
         }
       }
-      // The sourced college routes, complementary certificates and Hadassah add distinct pairs.
-      expect(pairs).toBe(465);
+      // The sourced college and fine-arts routes, complementary certificates and Hadassah add distinct pairs.
+      expect(pairs).toBe(468);
     },
   );
   it.each([

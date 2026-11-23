@@ -1,3 +1,4 @@
+import fineArtsGuide from '@/data/fineArtsGuide.json';
 import type { Metadata } from 'next';
 import { cache } from 'react';
 import {
@@ -233,6 +234,14 @@ export async function buildInstitutionMetadata(id: string): Promise<Metadata> {
 
 export async function buildProgramMetadata(id: string): Promise<Metadata> {
   const data = await getPublicProgramPageData(id);
+  if (id === 'fine_arts' && (data || (await getPublicSubjectHub(id)))) {
+    return pageMetadata(
+      fineArtsGuide.title,
+      fineArtsGuide.description,
+      '/programs/fine_arts',
+      true,
+    );
+  }
   if (!data) {
     const subject = await getPublicSubjectHub(id);
     if (!subject) return {};

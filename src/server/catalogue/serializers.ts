@@ -1,3 +1,4 @@
+import { applyFineArtsCopy } from '@/data/degrees/fineArtsProgrammes';
 import { HUJI_PSYCHOLOGY_DIRECT_ROUTE_PROGRAM_IDS } from '@/server/admissions/hujiPsychologyDirectRoutePolicy';
 import { canonicalInstitutionId } from '@/data/institutionAliases';
 import type { InstitutionDetail } from '@/data/degrees/types';
@@ -313,5 +314,7 @@ export function serializeProgramRow(args: {
   const curriculum = applyJamdCurriculum(
     ISSUE_370_REPAIR_IDS.has(program.id) ? repaired : applyEngineeringMathRequirements(repaired),
   );
-  return curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum;
+  return applyFineArtsCopy(
+    curriculum.institutionId === 'spieldocs' ? repairSamSpiegelUrls(curriculum) : curriculum,
+  );
 }

@@ -1,5 +1,6 @@
 import { expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
+import { fineArtsProgrammes } from '@/data/degrees/fineArtsProgrammes';
 import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
 import type {
   AdmissionsCapabilityEntry,
@@ -524,12 +525,14 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
 it('preserves the pre-college capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
   // This frozen matrix predates the 25 new college routes and Ono's
-  // behavioural-sciences route. Their no-formula behavior is checked separately.
+  // behavioural-sciences route and the three fine-arts programmes. Their
+  // no-formula behavior is checked separately, including exact programme IDs.
   const newCollegeIds = new Set([
     ...collegeProgrammes.map((program) => program.id),
+    ...fineArtsProgrammes.map((program) => program.id),
     'ono_psychology',
   ]);
-  expect(newCollegeIds.size).toBe(26);
+  expect(newCollegeIds.size).toBe(29);
   const staticPrograms = getStaticCataloguePrograms().filter(
     (program) => !newCollegeIds.has(program.id),
   );

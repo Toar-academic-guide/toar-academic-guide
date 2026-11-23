@@ -295,7 +295,10 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(450);
+    for (const id of ['haifa_fine_arts', 'shenkar_fine_arts', 'tau_multidisciplinary_arts']) {
+      expect(urls).toContain(`${SITE_URL}/programs/${id}`);
+    }
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',

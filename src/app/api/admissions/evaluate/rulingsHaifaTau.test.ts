@@ -27,6 +27,13 @@ it('A/F Haifa subject records reach programme gates without asking for an instit
   ] as const) {
     for (const program of programsFor('haifa', programs)) {
       const { result } = await gapEvaluate(program, 'haifa', gapApplicant());
+      if (program.id === 'haifa_fine_arts') {
+        expect(result).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
+        expect(result.score).toBeUndefined();
+        expect(result.threshold).toBeUndefined();
+        expect(result.requiredInputs ?? []).toEqual([]);
+        continue;
+      }
       // Approved test update: Jorje 2026-10-29, Haifa local formula; value matches Haifa's calculator output in docs/admissions-verification/evidence/2026-10-29-haifa-formula/
       const honest =
         result.kind === (program.id === 'haifa_engineering' ? 'unsupported' : 'needs_input');
@@ -587,6 +594,15 @@ it.each([
     const { saved } = haifaAverageApplicants();
     for (const program of programsFor('haifa', programs)) {
       if (['psychology', 'haifa_psychology'].includes(program.id)) continue;
+      if (program.id === 'haifa_fine_arts') {
+        const { result, fetcher } = await gapEvaluate(program, 'haifa', saved);
+        expect(result).toMatchObject({ kind: 'requirements_only', decision: 'unknown' });
+        expect(result.score).toBeUndefined();
+        expect(result.threshold).toBeUndefined();
+        expect(result.requiredInputs ?? []).toEqual([]);
+        expect(fetcher).not.toHaveBeenCalled();
+        continue;
+      }
       const baseline = mainSavedHaifaAnswers.find((row) => row.ids.includes(program.id));
       expect(baseline, program.id).toBeDefined();
       const { result } = await gapEvaluate(program, 'haifa', saved);

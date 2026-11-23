@@ -1,3 +1,4 @@
+import { isSourcedFineArtsProgrammeId } from '@/data/degrees/fineArtsProgrammes';
 import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
@@ -378,6 +379,11 @@ async function evaluateCapabilityEntries(args: {
   for (const [index, entry] of capabilityEntries.entries()) {
     const institution = institutions.find((item) => item.id === entry.institutionId);
     if (!institution) {
+      continue;
+    }
+
+    if (isSourcedFineArtsProgrammeId(program.id)) {
+      results[index] = evaluateNonExactResult({ input, program, institution, entry });
       continue;
     }
 
@@ -2232,7 +2238,9 @@ function evaluateNonExactResult(args: {
   // These route-specific records must not inherit broad institution claims about
   // grade gates or interviews when building the student-facing requirements copy.
   const evidenceRecord =
-    isSourcedCollegeProgrammeId(program.id) || ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
+    isSourcedCollegeProgrammeId(program.id) ||
+    isSourcedFineArtsProgrammeId(program.id) ||
+    ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
       ? undefined
       : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
