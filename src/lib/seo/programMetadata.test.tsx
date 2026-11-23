@@ -17,6 +17,7 @@ vi.mock('@/server/catalogue/queries', () => ({
 }));
 
 // Metadata identities and JSON-LD hashes are preserved from main (a4d84ae).
+// Provider catalogues include the three sourced art routes added in #485.
 // Unsupported calculator descriptions now state the available admissions information.
 const unchangedPrograms = [
   {
@@ -36,7 +37,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tau_cs',
-    structuredDataSha256: 'e40fc11a2728422de1c86b3e6b737e05990cd6c113ed0757bc740ff07f74e4d1',
+    structuredDataSha256: 'ea1359ab48700e089aa71b8cd241c2a128f045f4dcb7178db501acf3491f864f',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה',
     description:
@@ -51,7 +52,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: 'bb7aa5b2c50221ddcea923d52bc936018735a4a1226761b371c2159d675d4fd5',
+    structuredDataSha256: '81fa3c99257fbad167a596070874252ab854fc5cd866bd4c3c10558bf1e10992',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
