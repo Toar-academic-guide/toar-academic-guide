@@ -1,3 +1,4 @@
+import { PhysiotherapyHubLink } from './PhysiotherapyGuide';
 import Link from 'next/link';
 import {
   nursingFaq,
@@ -130,11 +131,20 @@ export function nursingFaqLd() {
   };
 }
 
-export function NursingRelatedLink() {
+export function NursingRelatedLink({
+  includePhysiotherapy = false,
+}: {
+  includePhysiotherapy?: boolean;
+}) {
   return (
     <div className="text-sm text-slate-700">
       {'תחומים קרובים: '}
       <NursingHubLink>לימודי סיעוד: איפה לומדים ותנאי קבלה</NursingHubLink>
+      {includePhysiotherapy && (
+        <span className="ms-5 inline-block">
+          <PhysiotherapyHubLink />
+        </span>
+      )}
     </div>
   );
 }
