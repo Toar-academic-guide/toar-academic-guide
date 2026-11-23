@@ -1,3 +1,10 @@
+import {
+  ArtHubLinks,
+  FineArtsIntroduction,
+  FineArtsFaq,
+  FineArtsHubLink,
+} from '@/components/seo/FineArtsGuide';
+import fineArtsGuide from '@/data/fineArtsGuide.json';
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import ProgramName from '@/components/ProgramName';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
@@ -215,8 +222,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           className="mx-auto max-w-4xl px-4 py-10 text-right sm:px-6"
         >
           <h1 className="mb-8 text-3xl font-bold">
-            <ProgramName name={subject.hub.name} />
+            <ProgramName
+              name={programId === 'fine_arts' ? fineArtsGuide.heading : subject.hub.name}
+            />
           </h1>
+          {programId === 'fine_arts' && <FineArtsIntroduction />}
+          {programId !== 'fine_arts' && <ArtHubLinks current={programId} />}
           {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
             <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
               {atudaLinksBySubject[programId] && (
@@ -251,6 +262,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               </li>
             ))}
           </ul>
+          {programId === 'fine_arts' && <FineArtsFaq />}
           {isNursingRelatedSubject && (
             <div className="mt-8">
               <NursingRelatedLink />
@@ -286,6 +298,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
     );
   const isCsHub = isGeneral && program.id === 'cs';
   const isPsychologyHub = isGeneral && program.id === 'psychology';
+  const isFineArtsProgramme = [
+    'bezalel_fine_arts',
+    'minshar_fine_arts',
+    'haifa_fine_arts',
+    'shenkar_fine_arts',
+    'tau_multidisciplinary_arts',
+  ].includes(program.id);
 
   return (
     <WayPageShell>
@@ -303,7 +322,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         dir="rtl"
         // Lets crawl tests tell subject pages from institution programme pages.
         data-page-kind={isGeneral ? 'subject' : 'programme'}
-        className="px-4 py-10 text-right text-slate-900 sm:px-6"
+        className={`px-4 py-10 text-right text-slate-900 sm:px-6 ${isFineArtsProgramme ? '[&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center' : ''}`}
       >
         <section
           className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
@@ -317,8 +336,12 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">{program.category}</p>{' '}
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">
-              <ProgramName name={program.name} />
+              <ProgramName
+                name={programId === 'fine_arts' ? fineArtsGuide.heading : program.name}
+              />
             </h1>{' '}
+            {isGeneral && programId === 'fine_arts' && <FineArtsIntroduction />}
+            {isGeneral && programId !== 'fine_arts' && <ArtHubLinks current={programId} />}
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
             <div className="mt-6 flex flex-wrap gap-3">
@@ -663,6 +686,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                   );
                 })}
               </div>
+              {isFineArtsProgramme && <FineArtsHubLink />}
               {isNursingProgramme && (
                 <div className="mt-4 text-sm">
                   <NursingHubLink>כל המוסדות ללימודי סיעוד</NursingHubLink>
@@ -703,6 +727,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
                 : related.programs
             }
           />
+          {isGeneral && programId === 'fine_arts' && <FineArtsFaq />}
           {isNursingHub && <NursingFaq />}
           {isNursingRelatedSubject && <NursingRelatedLink />}
         </section>

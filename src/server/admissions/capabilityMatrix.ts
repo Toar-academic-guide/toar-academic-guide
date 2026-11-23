@@ -1,3 +1,4 @@
+import { isSourcedFineArtsProgrammeId } from '@/data/degrees/fineArtsProgrammes';
 import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
 import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
@@ -751,6 +752,11 @@ export function buildAdmissionsCapabilityMatrix(args: {
   } = args;
 
   return program.linkedInstitutionIds.map((institutionId) => {
+    // These three sourced display records have no verified evaluator formula.
+    // Do not request another Haifa route's inputs or inherit university-wide gates.
+    if (isSourcedFineArtsProgrammeId(program.id)) {
+      return { institutionId, capability: 'requirements_only' };
+    }
     const pairId = `${program.id}__${institutionId}`;
     const formulaPairScope = formulaBackedPairScope(pairId);
     if (pairId === 'haifa_infosystems__haifa' && !input?.haifaInformationSystemsTrack)

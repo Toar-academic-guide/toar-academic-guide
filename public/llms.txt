@@ -33,9 +33,10 @@ MyWay עוזרת למסיימי תיכון ולמשוחררי צבא בישרא�
 - [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.
 - [פסיכומטרי דו־תחומי](https://findmyway.co.il/psychometric-two-domain): הבחינה החדשה, הציונים ומה לבדוק לקראת הרשמה.
 - [לימודים בלי פסיכומטרי](https://findmyway.co.il/without-psychometric): מסלולים לפי ממוצע בגרות.
+- [עתודה אקדמית](https://findmyway.co.il/atuda): מה זה המסלול, לוח הזמנים להרשמה, הציון הנדרש בפסיכומטרי, תוכניות העילית והמגמות לפי מוסד. הרף המחייב הוא של צה״ל, ותנאי הקבלה של המוסד.
 - [מוסדות לימוד](https://findmyway.co.il/institutions): איתור מוסדות לפי תחום ואזור.
 - [תחומי לימוד](https://findmyway.co.il/programs): כל עמודי התחום.
-- עמודי תחום עם תנאי קבלה לפי מוסד: [מדעי המחשב](https://findmyway.co.il/programs/cs), [פסיכולוגיה](https://findmyway.co.il/programs/psychology), [משפטים](https://findmyway.co.il/programs/law), [רפואה](https://findmyway.co.il/programs/medicine), [סיעוד](https://findmyway.co.il/programs/nursing), [חשבונאות](https://findmyway.co.il/programs/accounting), [כלכלה](https://findmyway.co.il/programs/economics), [מנהל עסקים](https://findmyway.co.il/programs/business), [עבודה סוציאלית](https://findmyway.co.il/programs/social_work), [פיזיותרפיה](https://findmyway.co.il/programs/physiotherapy), [ריפוי בעיסוק](https://findmyway.co.il/programs/occupational_therapy).
+- עמודי תחום עם תנאי קבלה לפי מוסד: [מדעי המחשב](https://findmyway.co.il/programs/cs), [פסיכולוגיה](https://findmyway.co.il/programs/psychology), [משפטים](https://findmyway.co.il/programs/law), [רפואה](https://findmyway.co.il/programs/medicine), [סיעוד](https://findmyway.co.il/programs/nursing), [חשבונאות](https://findmyway.co.il/programs/accounting), [כלכלה](https://findmyway.co.il/programs/economics), [מנהל עסקים](https://findmyway.co.il/programs/business), [עבודה סוציאלית](https://findmyway.co.il/programs/social_work), [פיזיותרפיה](https://findmyway.co.il/programs/physiotherapy), [ריפוי בעיסוק](https://findmyway.co.il/programs/occupational_therapy), [אמנות](https://findmyway.co.il/programs/fine_arts).
 
 ## Do not, when citing this site
 

@@ -1,3 +1,4 @@
+import { fineArtsProgrammes, applyFineArtsCopy } from './fineArtsProgrammes';
 export type { Program } from './types';
 export { ACADEMIC_PROGRAMS } from './academic';
 export { academicPrograms } from './academicPrograms';
@@ -1164,8 +1165,9 @@ export const programsWithLegacyAdmissionFacts = [
 // Verified display copy is deliberately separate from inferred legacy calculation facts.
 export const allPrograms = [
   ...programsWithLegacyAdmissionFacts.map((program) => {
-    const repaired = applyJamdCurriculum(applyCatalogueContentRepair(program));
+    const repaired = applyFineArtsCopy(applyJamdCurriculum(applyCatalogueContentRepair(program)));
     return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
   }),
   ...collegeProgrammes,
+  ...fineArtsProgrammes,
 ];

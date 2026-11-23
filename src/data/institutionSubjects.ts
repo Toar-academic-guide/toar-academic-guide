@@ -112,6 +112,9 @@ const SUBJECT_FIELDS: Record<string, FieldKey> = {
 
 // Keep campus and qualification in the programme title; the pill compares the subject.
 const VERIFIED_SUBJECT_NAMES: Readonly<Record<string, string>> = {
+  haifa_fine_arts: 'אמנות',
+  shenkar_fine_arts: 'אמנות',
+  tau_multidisciplinary_arts: 'אמנות',
   biu_medicine: 'רפואה',
   rubin_classical: 'מוזיקה',
   jerusalem_academy_dance: 'מחול',
