@@ -252,6 +252,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/psychometric-accommodations`,
       `${SITE_URL}/atuda`,
       `${SITE_URL}/open-days`,
+      `${SITE_URL}/bagrut-dates`,
       `${SITE_URL}/transfer`,
       `${SITE_URL}/without-psychometric`,
       `${SITE_URL}/institutions`,
@@ -295,7 +296,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(448);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',
@@ -304,6 +305,11 @@ describe('crawl policy', () => {
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
       lastModified: '2026-10-29',
+      changeFrequency: 'weekly',
+    });
+    expect(entries.find((entry) => entry.url === `${SITE_URL}/bagrut-dates`)).toMatchObject({
+      url: `${SITE_URL}/bagrut-dates`,
+      lastModified: '2026-11-08',
       changeFrequency: 'weekly',
     });
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;
@@ -1206,6 +1212,7 @@ describe('visible source labels', () => {
     '/calculator': () => import('@/app/calculator/page'),
     '/threshold-alerts': () => import('@/app/threshold-alerts/page'),
     '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
+    '/bagrut-dates': () => import('@/app/bagrut-dates/page'),
     '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
     '/amirnet': () => import('@/app/amirnet/page'),
     '/psychometric-accommodations': () => import('@/app/psychometric-accommodations/page'),

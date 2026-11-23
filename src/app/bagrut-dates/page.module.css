@@ -1,0 +1,222 @@
+.shell.shell {
+  background: transparent;
+}
+
+.shell [data-way-backdrop] {
+  display: none;
+}
+
+.main {
+  max-width: 920px;
+  margin-inline: auto;
+  padding: 40px 24px 72px;
+  color: var(--text-heading);
+  text-align: right;
+  font-family: var(--font-sans);
+}
+
+.header {
+  margin-bottom: 28px;
+}
+
+.header h1 {
+  font-size: clamp(1.9rem, 4vw, 2.6rem);
+  line-height: 1.2;
+  font-weight: 700;
+}
+
+.main a {
+  color: #49388b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.main a:focus-visible,
+.main summary:focus-visible {
+  outline: 3px solid #6554b8;
+  outline-offset: 3px;
+}
+
+.calendars {
+  display: grid;
+  gap: 20px;
+}
+
+.calendar,
+.more {
+  border: 1px solid #dce2ef;
+  border-radius: 16px;
+  background: #fff;
+  padding: 22px 24px;
+  box-shadow: var(--way-shadow);
+}
+
+.calendarHeader {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px 20px;
+}
+
+.calendar h2 {
+  font-size: 1.35rem;
+  line-height: 1.35;
+  font-weight: 650;
+}
+
+.status {
+  color: #56627b;
+  font-size: 0.9rem;
+}
+
+.months {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-top: 24px;
+}
+
+.month h3 {
+  margin-bottom: 8px;
+  color: #56627b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.dates,
+.examGroups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dates li,
+.examCard {
+  border: 1px solid #dce2ef;
+  border-radius: 12px;
+  padding: 16px 18px;
+  background: #f7f8fc;
+}
+
+.dates li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+}
+
+.dates time {
+  font-size: 1.15rem;
+  font-weight: 650;
+  font-variant-numeric: tabular-nums;
+}
+
+.weekday,
+.sitting {
+  color: #56627b;
+  font-size: 0.95rem;
+}
+
+.more {
+  margin-top: 20px;
+}
+
+.more summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 44px;
+  cursor: pointer;
+  font-size: 1.1rem;
+  font-weight: 650;
+  list-style: none;
+}
+
+.more summary::-webkit-details-marker {
+  display: none;
+}
+
+.more summary::after {
+  content: '';
+  width: 9px;
+  height: 9px;
+  border-inline-end: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  flex-shrink: 0;
+  margin-inline-end: 3px;
+}
+
+.more[open] summary::after {
+  transform: rotate(225deg);
+}
+
+.examGroups {
+  margin-top: 20px;
+  align-items: start;
+}
+
+.examCard h3 {
+  font-size: 1.05rem;
+  line-height: 1.5;
+  font-weight: 650;
+}
+
+.sitting {
+  margin-top: 4px;
+}
+
+.examCard .dates {
+  grid-template-columns: 1fr;
+  gap: 0;
+  margin-top: 12px;
+}
+
+.examCard .dates li {
+  border: 0;
+  border-top: 1px solid #dce2ef;
+  border-radius: 0;
+  padding: 12px 0;
+}
+
+.examTime {
+  margin-top: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.prepLink {
+  margin-top: 24px;
+}
+
+.prepLink a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}
+
+@media (max-width: 600px) {
+  .main {
+    padding: 28px 16px 48px;
+  }
+
+  .calendar,
+  .more {
+    padding: 18px 16px;
+  }
+
+  .months {
+    grid-template-columns: 1fr;
+    gap: 14px;
+  }
+
+  .dates,
+  .examGroups {
+    grid-template-columns: 1fr;
+  }
+}
