@@ -147,6 +147,7 @@ describe('crawl policy', () => {
       ]);
       expect(rule.disallow).not.toContain('/signup');
       expect(rule.disallow).not.toContain('/enquiry');
+      expect(rule.disallow).not.toContain('/threshold-alerts');
     }
     expect(result.sitemap).toBe(`${SITE_URL}/sitemap.xml`);
     expect(result.host).toBe(SITE_URL);
@@ -244,6 +245,7 @@ describe('crawl policy', () => {
       `${SITE_URL}/about`,
       `${SITE_URL}/sekhem-calculator`,
       `${SITE_URL}/calculator`,
+      `${SITE_URL}/threshold-alerts`,
       `${SITE_URL}/psychometric-dates`,
       `${SITE_URL}/psychometric-two-domain`,
       `${SITE_URL}/amirnet`,
@@ -293,7 +295,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(449);
+    expect(urls).toHaveLength(450);
     for (const id of ['haifa_fine_arts', 'shenkar_fine_arts', 'tau_multidisciplinary_arts']) {
       expect(urls).toContain(`${SITE_URL}/programs/${id}`);
     }
@@ -909,80 +911,79 @@ describe('structured data', () => {
   it.each(noFaqProgramIds)(
     'renders only program and breadcrumb schema without FAQ UI for %s and preserves on-page facts',
     async (id) => {
-      // Exercise Colman's reviewed tiles before their fixture's freshness window expires.
-      if (id === 'colmgmt_cs') {
-        vi.useFakeTimers({ toFake: ['Date'] });
-        vi.setSystemTime(new Date('2026-10-24T12:00:00Z'));
-      }
-      let rendered: Awaited<ReturnType<typeof renderProgramSchema>>;
+      // Number tiles expire 30 days after the 2026-10-22 check. Freeze that window
+      // so this assertion covers the tile text, not the calendar date of the run.
+      vi.useFakeTimers({ toFake: ['Date'], now: new Date('2026-11-01T12:00:00Z') });
       try {
-        rendered = await renderProgramSchema(id);
+        const { data, sources, document, graph } = await renderProgramSchema(id);
+        expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
+          'EducationalOccupationalProgram',
+          'BreadcrumbList',
+        ]);
+        expect(JSON.stringify(graph)).not.toContain('FAQPage');
+        expect(document.querySelector('[data-testid=program-faq]')).toBeNull();
+        expect(
+          Array.from(document.querySelectorAll('main h2, main h3')).map(
+            (heading) => heading.textContent,
+          ),
+        ).not.toContain('שאלות נפוצות');
+        expect(document.querySelector('main')!.textContent).not.toMatch(/עודכן לאחרונה:/);
+        expect(document.querySelector('main')!.textContent).not.toMatch(/נבדק בתאריך/);
+        if (!formerlyFaqProgramIds.includes(id)) return;
+        const visibleText =
+          id === 'colmgmt_cs'
+            ? document.querySelector('main')!.textContent!
+            : Array.from(document.querySelectorAll('main li, main p'))
+                .map((element) => element.textContent)
+                .join(' ');
+        const source = sources[data.institutions[0].id];
+        for (const requirement of source.requirements) {
+          // BGU splits its first two requirements into three near-verbatim route bullets.
+          // Colman presents the equivalent conditions in tiles and expanded details below.
+          if (
+            id !== 'colmgmt_cs' &&
+            (id !== 'bgu_psychology' || source.requirements.indexOf(requirement) >= 2)
+          ) {
+            expect(visibleText).toContain(requirement);
+          }
+        }
+        if (id === 'colmgmt_cs') {
+          // Number tiles last 30 days from 2026-10-22. After that the page keeps the source sentences.
+          const facts = [
+            ['ממוצע בגרות משוקלל 85+', '85בגרות'],
+            ['מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+', 'מתמטיקה 5 יח"ל 70 / 4 יח"ל 80'],
+            ['ומעבר מבדק פנימי', '+ מבדק פנימי'],
+            ['עמידה בציון המשוקלל של המכללה', 'המכללה מחליטה'],
+            ['פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+', 'פטור: פסיכומטרי 600 וכמותי 120'],
+            ['לא מפרסמת את הציון המשוקלל הנדרש', 'ולא מפרסמת את הציון הנדרש'],
+            ['מכינת שחקים', 'חסר רק ממוצע הבגרות: אחרי סיום מכינת שחקים בהצלחה.'],
+            [
+              'מכינת ריענון במתמטיקה',
+              'חסר רק ציון המתמטיקה: אחרי מבדק פנימי וסיום מכינת ריענון במתמטיקה בהצלחה.',
+            ],
+            ['או שתיהן, לפי מה שחסר', 'חסרים שניהם: אחרי מבדק פנימי וסיום שתי המכינות בהצלחה.'],
+          ] as const;
+          const numberSummary = visibleText.includes('מספיק אחד מאלה:');
+          for (const [sourceFact, tileFact] of facts) {
+            expect(visibleText).toContain(numberSummary ? tileFact : sourceFact);
+          }
+        }
+        if (id === 'ono_law' || id === 'colmgmt_cs') {
+          expect(source.checked?.date).toBe('23.10.2026');
+        }
+        if (id === 'haifa_psychology') {
+          expect(source.checked).toMatchObject({
+            date: '24.10.2026',
+            sourceUrl:
+              'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
+          });
+        }
+        expect(visibleText).not.toContain('מקור');
+        for (const number of source.requirements.join(' ').match(/\d+(?:\.\d+)?/g) ?? []) {
+          expect(visibleText).toContain(number);
+        }
       } finally {
-        if (id === 'colmgmt_cs') vi.useRealTimers();
-      }
-      const { data, sources, document, graph } = rendered;
-      expect(graph['@graph'].map((node: { '@type': string }) => node['@type'])).toEqual([
-        'EducationalOccupationalProgram',
-        'BreadcrumbList',
-      ]);
-      expect(JSON.stringify(graph)).not.toContain('FAQPage');
-      expect(document.querySelector('[data-testid=program-faq]')).toBeNull();
-      expect(
-        Array.from(document.querySelectorAll('main h2, main h3')).map(
-          (heading) => heading.textContent,
-        ),
-      ).not.toContain('שאלות נפוצות');
-      expect(document.querySelector('main')!.textContent).not.toMatch(/עודכן לאחרונה:/);
-      expect(document.querySelector('main')!.textContent).not.toMatch(/נבדק בתאריך/);
-      if (!formerlyFaqProgramIds.includes(id)) return;
-      const visibleText =
-        id === 'colmgmt_cs'
-          ? document.querySelector('main')!.textContent!
-          : Array.from(document.querySelectorAll('main li, main p'))
-              .map((element) => element.textContent)
-              .join(' ');
-      const source = sources[data.institutions[0].id];
-      for (const requirement of source.requirements) {
-        // BGU splits its first two requirements into three near-verbatim route bullets.
-        // Colman presents the equivalent conditions in tiles and expanded details below.
-        if (
-          id !== 'colmgmt_cs' &&
-          (id !== 'bgu_psychology' || source.requirements.indexOf(requirement) >= 2)
-        ) {
-          expect(visibleText).toContain(requirement);
-        }
-      }
-      if (id === 'colmgmt_cs') {
-        for (const [, pageFact] of [
-          ['ממוצע בגרות משוקלל 85+', '85בגרות'],
-          ['מתמטיקה 5 יח"ל 70+ או 4 יח"ל 80+', 'מתמטיקה 5 יח"ל 70 / 4 יח"ל 80'],
-          ['ומעבר מבדק פנימי', '+ מבדק פנימי'],
-          ['עמידה בציון המשוקלל של המכללה', 'המכללה מחליטה'],
-          ['פטור מהמבדק בפסיכומטרי 600+ וכמותי 120+', 'פטור: פסיכומטרי 600 וכמותי 120'],
-          ['לא מפרסמת את הציון המשוקלל הנדרש', 'ולא מפרסמת את הציון הנדרש'],
-          ['מכינת שחקים', 'חסר רק ממוצע הבגרות: אחרי סיום מכינת שחקים בהצלחה.'],
-          [
-            'מכינת ריענון במתמטיקה',
-            'חסר רק ציון המתמטיקה: אחרי מבדק פנימי וסיום מכינת ריענון במתמטיקה בהצלחה.',
-          ],
-          ['או שתיהן, לפי מה שחסר', 'חסרים שניהם: אחרי מבדק פנימי וסיום שתי המכינות בהצלחה.'],
-        ]) {
-          expect(visibleText).toContain(pageFact);
-        }
-      }
-      if (id === 'ono_law' || id === 'colmgmt_cs') {
-        expect(source.checked?.date).toBe('23.10.2026');
-      }
-      if (id === 'haifa_psychology') {
-        expect(source.checked).toMatchObject({
-          date: '24.10.2026',
-          sourceUrl:
-            'https://admissions.haifa.ac.il/social-sciences/program/3268/?utm_source=myway&utm_medium=referral',
-        });
-      }
-      expect(visibleText).not.toContain('מקור');
-      for (const number of source.requirements.join(' ').match(/\d+(?:\.\d+)?/g) ?? []) {
-        expect(visibleText).toContain(number);
+        vi.useRealTimers();
       }
     },
   );
@@ -1206,6 +1207,7 @@ describe('visible source labels', () => {
     '/about': () => import('@/app/about/page'),
     '/sekhem-calculator': () => import('@/app/sekhem-calculator/page'),
     '/calculator': () => import('@/app/calculator/page'),
+    '/threshold-alerts': () => import('@/app/threshold-alerts/page'),
     '/psychometric-dates': () => import('@/app/psychometric-dates/page'),
     '/psychometric-two-domain': () => import('@/app/psychometric-two-domain/page'),
     '/amirnet': () => import('@/app/amirnet/page'),
@@ -1247,7 +1249,7 @@ describe('visible source labels', () => {
             metadata?: unknown;
           };
           const props =
-            path === '/open-days' || path === '/sekhem-calculator'
+            path === '/open-days' || path === '/sekhem-calculator' || path === '/threshold-alerts'
               ? { searchParams: Promise.resolve({}) }
               : undefined;
           const element = await mod.default(props);

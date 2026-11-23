@@ -79,9 +79,17 @@ describe('calculator metadata', () => {
       siteName: 'MyWay',
     });
     expect(metadata.twitter).toMatchObject({
-      card: 'summary',
+      card: 'summary_large_image',
       title: `${metadata.title} | MyWay`,
       description: metadata.description,
+      images: [
+        {
+          url: '/app/calculator/opengraph-image',
+          width: 1200,
+          height: 630,
+          alt: 'מחשבון סיכויי קבלה לתואר ב-MyWay',
+        },
+      ],
     });
   });
 });

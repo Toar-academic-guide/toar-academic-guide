@@ -35,6 +35,7 @@ import HaifaInformationSystemsTrackFields from '@/components/HaifaInformationSys
 import { haifaInformationSystemsTrackSchema } from '@/lib/haifaAdmissionsInputs';
 import { useAuth } from '@/context/AuthContext';
 import { buildAdmissionAlertIntentPath, buildAdmissionAlertSignupPath } from '@/lib/routes';
+import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 import {
   AdmissionsEvaluationApiError,
   fetchAdmissionsEvaluation,
@@ -601,6 +602,9 @@ export default function CalculatorResults({
             חזרה
           </button>
           <h1 className="text-xl font-black text-slate-900">סיכויי הקבלה שלך</h1>
+        </div>
+        <div className="mx-auto mt-3 max-w-4xl">
+          <ThresholdAlertCta surface="calculator_results" />
         </div>
       </div>
 

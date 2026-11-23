@@ -54,6 +54,7 @@ import {
 import { nursingInstitutionCount, nursingInstitutions } from '@/data/nursingInstitutions';
 import PrepGuide, { prepFaqLd } from '@/components/seo/PrepGuide';
 import { prepRow } from '@/lib/prepGuide';
+import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 
 const nursingRelatedSubjects = new Set(['medicine', 'physiotherapy', 'occupational_therapy']);
 
@@ -228,6 +229,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           </h1>
           {programId === 'fine_arts' && <FineArtsIntroduction />}
           {programId !== 'fine_arts' && <ArtHubLinks current={programId} />}
+          <ThresholdAlertCta surface="program_page" programId={programId} />
           {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
             <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
               {atudaLinksBySubject[programId] && (
@@ -370,6 +372,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               >
                 מה מתאים לי?{' '}
               </Link>
+            </div>
+            <div className="mt-4">
+              <ThresholdAlertCta
+                surface="program_page"
+                programId={program.id}
+                institutionId={institutions.length === 1 ? institutions[0]?.id : undefined}
+              />
             </div>
           </div>
           {isGeneral && program.id === 'datascience' && (
