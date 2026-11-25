@@ -85,7 +85,7 @@
     "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.1.1",
     "jsdom": "^31.0.1",
-    "postgres": "^3.4.9",
+    "postgres": "^4.1.1",
     "prettier": "^3.9.10",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
