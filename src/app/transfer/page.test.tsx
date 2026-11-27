@@ -66,5 +66,5 @@ it('publishes matching absolute canonical and social metadata and a dated sitema
     (entry) => entry.url === 'https://findmyway.co.il/transfer',
   );
   expect(entries).toHaveLength(1);
-  expect(entries[0].lastModified).toBe('2026-11-08');
+  expect(entries[0].lastModified).toBe('2026-11-19');
 });

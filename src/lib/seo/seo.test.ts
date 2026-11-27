@@ -298,12 +298,12 @@ describe('crawl policy', () => {
     expect(urls).toHaveLength(447);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
-      lastModified: '2026-11-14',
+      lastModified: '2026-11-19',
       changeFrequency: 'weekly',
     });
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
-      lastModified: '2026-10-29',
+      lastModified: '2026-11-19',
       changeFrequency: 'weekly',
     });
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;

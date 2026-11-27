@@ -123,7 +123,7 @@ it('has one sitemap entry with the authored date and one llms entry', async () =
     (row) => row.url === 'https://findmyway.co.il/sekhem-calculator',
   );
   expect(entries).toHaveLength(1);
-  expect(entries[0].lastModified).toBe('2026-11-14');
+  expect(entries[0].lastModified).toBe('2026-11-19');
   expect(
     readFileSync('public/llms.txt', 'utf8')
       .split('\n')
