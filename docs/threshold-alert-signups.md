@@ -41,10 +41,14 @@ select
   utm_source,
   utm_medium,
   utm_campaign,
-  referrer
+  referrer,
+  unsubscribe_token,
+  unsubscribed_at,
+  notified_at
 from public.threshold_alert_signups
 where cycle = '2027'
   and notified_at is null
+  and unsubscribed_at is null
 order by created_at;
 ```
 
@@ -58,10 +62,14 @@ select distinct on (coalesce(email, ''), coalesce(phone, ''))
   email,
   phone,
   institutions,
-  degrees
+  degrees,
+  unsubscribe_token,
+  unsubscribed_at,
+  notified_at
 from public.threshold_alert_signups
 where cycle = '2027'
   and notified_at is null
+  and unsubscribed_at is null
 order by coalesce(email, ''), coalesce(phone, ''), created_at desc;
 ```
 
@@ -78,8 +86,11 @@ do not turn the stored phone into an enquiry or a prep-company lead.
 
 Before the first send:
 
-- Add an unsubscribe that sets a suppression flag and is linked from every
-  message. The signup does not have one yet.
+- Apply migration 0046 after 0045, then use `buildThresholdAlertMessages` for
+  both email and WhatsApp. It requires a fresh active signup, rejects suppressed
+  or already-notified rows, and includes the same one-click fragment link in
+  both formats. Re-read suppression immediately before each provider call; do
+  not send from an old export. No sender is enabled by this PR.
 - Confirm the consent sentence still matches what was stored.
 - Keep `/internal/data-health` free of email addresses and phone numbers. A
   count would need a security-definer aggregate; the dashboard role cannot read
@@ -91,3 +102,24 @@ Counts only belong in analytics. The events are `threshold_alert_cta_clicked`,
 `server_threshold_alert_signup_created`. They carry counts, channel
 (`email`, `whatsapp`, or `email_and_whatsapp`), cycle, and source path. They do
 not carry the address or the phone.
+
+## Unsubscribe and contact isolation
+
+`/threshold-alerts/unsubscribe#token=<opaque UUID>` loads a standalone, noindex,
+no-store page with no analytics. It removes the fragment and POSTs the token
+in the body. GET requests never mutate the database. Opening the link performs
+the unsubscribe without login or another confirmation click. Automated clients
+that execute JavaScript can also unsubscribe; ordinary HTTP link previews cannot.
+
+The runtime can execute only a suppression function. It cannot read contacts,
+export tokens, or reactivate a signup. The function marks the signup and existing
+rows sharing its email or phone inactive, without changing their consent record.
+Repeated requests succeed without resetting the timestamp. A new explicit signup
+can subscribe again; old rows remain suppressed. Tokens have no access to leads
+or account-based Admission Change Subscriptions. Treat exported tokens as secrets.
+
+All threshold signup contacts, including minors, remain alert-only. They must not
+enter enquiry, Monday, prep-company, institutional-lead or partner exports. No age
+collection is required because this rule applies to every signup. Deletion requests
+go to info@findmyway.co.il. Production migration and provider activation are separate
+operations, not part of this code release.

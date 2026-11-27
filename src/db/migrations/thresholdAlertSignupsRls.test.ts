@@ -24,3 +24,16 @@ describe('threshold alert signup migration', () => {
     expect(sql).toContain('ON CONFLICT (request_id) DO NOTHING');
   });
 });
+
+it('only grants runtime a token-scoped, idempotent suppression capability', () => {
+  const sql = readFileSync('src/db/migrations/0046_threshold_alert_unsubscribe.sql', 'utf8');
+  expect(sql).toContain("SECURITY DEFINER SET search_path = ''");
+  expect(sql).toContain('WHERE unsubscribe_token = token');
+  expect(sql).toContain('COALESCE(unsubscribed_at, now())');
+  expect(sql).toContain(
+    'GRANT EXECUTE ON FUNCTION public.unsubscribe_threshold_alert_signup(uuid) TO app_runtime',
+  );
+  expect(sql).toContain('FROM PUBLIC, anon, authenticated');
+  expect(sql).not.toMatch(/GRANT (SELECT|UPDATE|ALL).*app_runtime/);
+  expect(sql).not.toMatch(/enquiries|store_enquiry|monday/i);
+});

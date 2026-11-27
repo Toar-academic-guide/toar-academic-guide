@@ -323,6 +323,13 @@
       "when": 1795379080813,
       "tag": "0045_threshold_alert_signups",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1795800222787,
+      "tag": "0046_threshold_alert_unsubscribe",
+      "breakpoints": true
     }
   ]
 }

@@ -184,8 +184,13 @@ describe('compliance pages', () => {
       expect(section.querySelector('a[href^="mailto:"]')).toBeNull();
     }
     const emailLinks = container.querySelectorAll('a[href="mailto:info@findmyway.co.il"]');
-    expect(emailLinks).toHaveLength(3);
-    for (const [index, prefix] of ['ב. חשבון משתמש', '4.2 חברות הכנה', 'איך:'].entries()) {
+    expect(emailLinks).toHaveLength(4);
+    for (const [index, prefix] of [
+      'ב. חשבון משתמש',
+      'ה. עדכוני תנאי קבלה',
+      '4.2 חברות הכנה',
+      'איך:',
+    ].entries()) {
       expect(emailLinks[index].closest('p')?.textContent).toMatch(new RegExp(`^${prefix}`));
     }
   });

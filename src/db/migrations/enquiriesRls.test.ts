@@ -74,7 +74,7 @@ it('keeps main 0040 and the regenerated enquiries 0041 in one valid Drizzle line
   expect(files.filter((file) => file.startsWith('0041_'))).toEqual(['0041_enquiries.sql']);
   const journal = JSON.parse(readFileSync('src/db/migrations/meta/_journal.json', 'utf8'));
   expect(
-    journal.entries.slice(-5).map((entry: { idx: number; tag: string }) => [entry.idx, entry.tag]),
+    journal.entries.slice(-6).map((entry: { idx: number; tag: string }) => [entry.idx, entry.tag]),
   ).toEqual([
     // Approved test update, Jorje 2026-10-26: 0040 leaves the enquiries journal entries.
     [41, '0041_enquiries'],
@@ -82,6 +82,7 @@ it('keeps main 0040 and the regenerated enquiries 0041 in one valid Drizzle line
     [43, '0043_grant_admissions_automation_review_resolution'],
     [44, '0044_enquiries_prep_consent'], // Approved test update, Jorje 2026-10-26
     [45, '0045_threshold_alert_signups'],
+    [46, '0046_threshold_alert_unsubscribe'],
   ]);
   const previous = JSON.parse(readFileSync('src/db/migrations/meta/0040_snapshot.json', 'utf8'));
   const current = JSON.parse(readFileSync('src/db/migrations/meta/0041_snapshot.json', 'utf8'));
@@ -89,6 +90,11 @@ it('keeps main 0040 and the regenerated enquiries 0041 in one valid Drizzle line
   const resolution = JSON.parse(readFileSync('src/db/migrations/meta/0043_snapshot.json', 'utf8'));
   const alerts = JSON.parse(readFileSync('src/db/migrations/meta/0045_snapshot.json', 'utf8'));
   const prepConsent = JSON.parse(readFileSync('src/db/migrations/meta/0044_snapshot.json', 'utf8'));
+  const unsubscribe = JSON.parse(readFileSync('src/db/migrations/meta/0046_snapshot.json', 'utf8'));
+  expect(unsubscribe.prevId).toBe(alerts.id);
+  expect(unsubscribe.tables['public.threshold_alert_signups'].columns).toHaveProperty(
+    'unsubscribed_at',
+  );
   expect(alerts.prevId).toBe(prepConsent.id);
   expect(alerts.tables).toHaveProperty('public.threshold_alert_signups');
   expect(resolution.prevId).toBe(next.id);

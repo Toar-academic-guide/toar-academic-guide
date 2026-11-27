@@ -1,3 +1,7 @@
+const unsubscribeThreshold0046 = readFileSync(
+  'src/db/migrations/0046_threshold_alert_unsubscribe.sql',
+  'utf8',
+);
 import { createHash } from 'node:crypto';
 import { readFileSync } from 'node:fs';
 
@@ -92,6 +96,7 @@ describe('production admissions schema preflight', () => {
       '0043',
       '0044', // Approved test update, Jorje 2026-10-26
       '0045',
+      '0046',
     ]);
     for (const { repositoryPath } of GUARDED_PRODUCTION_MIGRATIONS) {
       expect(readFileSync(repositoryPath, 'utf8').trim()).not.toBe('');
@@ -1350,6 +1355,8 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         'utm_campaign',
         'referrer',
         'notified_at',
+        'unsubscribe_token',
+        'unsubscribed_at',
         'created_at',
       ],
       columnTypes: {
@@ -1367,6 +1374,8 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
         utm_campaign: 'character varying',
         referrer: 'character varying',
         notified_at: 'timestamp with time zone',
+        unsubscribe_token: 'uuid',
+        unsubscribed_at: 'timestamp with time zone',
         created_at: 'timestamp with time zone',
       },
       constraints: [
@@ -1480,6 +1489,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
     functionDefinitions: {
       'store_enquiry(jsonb)': storeEnquiry0044, // Approved test update, Jorje 2026-10-26
       'store_threshold_alert_signup(jsonb)': storeThresholdAlert0045,
+      'unsubscribe_threshold_alert_signup(uuid)': unsubscribeThreshold0046,
     },
     functionAccess: appliedIds.has('0034')
       ? Object.fromEntries([
@@ -1492,6 +1502,10 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
                 [
                   'store_threshold_alert_signup(jsonb)',
                   { securityDefiner: true, executeRoles: ['app_runtime', 'service_role'] },
+                ],
+                [
+                  'unsubscribe_threshold_alert_signup(uuid)',
+                  { securityDefiner: true, executeRoles: ['app_runtime'] },
                 ],
               ]
             : []),
@@ -1512,6 +1526,7 @@ function makeSnapshot(options: { appliedCount?: number } = {}): ProductionSchema
             ? {
                 'store_enquiry(jsonb)': ['search_path=""'],
                 'store_threshold_alert_signup(jsonb)': ['search_path=""'],
+                'unsubscribe_threshold_alert_signup(uuid)': ['search_path=""'],
               }
             : {}),
           ...(appliedIds.has('0034')

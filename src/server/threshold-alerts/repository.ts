@@ -21,3 +21,15 @@ export async function saveThresholdAlertSignup(
     );
   });
 }
+
+/** Token possession permits suppression only, never reading contacts or reactivating a signup. */
+export async function unsubscribeThresholdAlerts(token: string): Promise<boolean> {
+  return getDb().transaction(async (tx) => {
+    await tx.execute(sql`set local statement_timeout = '5s'`);
+    const rows = await tx.execute<{ removed: boolean }>(
+      sql`select public.unsubscribe_threshold_alert_signup(${token}::uuid) as removed`,
+    );
+    const result = 'rows' in rows ? rows.rows : rows;
+    return result[0]?.removed === true;
+  });
+}

@@ -387,4 +387,23 @@ export const GUARDED_PRODUCTION_MIGRATIONS = [
       ],
     },
   },
+  {
+    id: '0046',
+    repositoryPath: 'src/db/migrations/0046_threshold_alert_unsubscribe.sql',
+    columns: [
+      { table: 'threshold_alert_signups', column: 'unsubscribe_token', type: 'uuid' },
+      {
+        table: 'threshold_alert_signups',
+        column: 'unsubscribed_at',
+        type: 'timestamp with time zone',
+      },
+    ],
+    functionBodies: {
+      'unsubscribe_threshold_alert_signup(uuid)': [
+        'WHERE unsubscribe_token = token',
+        'SET unsubscribed_at = COALESCE(unsubscribed_at, now())',
+        'IF NOT FOUND THEN RETURN false',
+      ],
+    },
+  },
 ] as const;
