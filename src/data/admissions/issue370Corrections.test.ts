@@ -148,7 +148,7 @@ describe('issue 370 source corrections', () => {
           notesFor(id, institutionId),
         ),
       ).toMatchObject({
-        date: '17.11.2026',
+        date: '27.11.2026',
       });
     }
     expect(notesFor('biu_medicine', 'biu')?.[0]).toMatch(/680.*101.*120/);

@@ -50,6 +50,12 @@ import { prepRow } from '@/lib/prepGuide';
 import ThresholdAlertCta from '@/components/ThresholdAlertCta';
 
 const nursingRelatedSubjects = new Set(['medicine', 'physiotherapy', 'occupational_therapy']);
+import MedicineAdmissionsGuide, {
+  MEDICINE_ANSWER,
+  MedicineAdmissionChild,
+  medicineFaqLd,
+} from '@/components/MedicineAdmissionsGuide';
+import { medicineAdmissionForProgramId } from '@/data/admissions/medicineAdmissions';
 
 export const dynamic = 'force-dynamic';
 
@@ -132,6 +138,18 @@ export async function generateMetadata({ params }: ProgramPageProps) {
       title,
       description,
       openGraph: { ...metadata.openGraph, title, description },
+    };
+  }
+  if (programId === 'medicine') {
+    const title = 'לימודי רפואה: שלבי הקבלה, ציוני סף ומועדים בכל אוניברסיטה | MyWay';
+    const description =
+      'איך מתקבלים לרפואה? פסיכומטרי, מו״ר/מרק״ם וציון קבלה סופי בכל אוניברסיטה – ציוני הסף והשלבים לפי שנת ההרשמה. בדקו איפה אתם עומדים.';
+    return {
+      ...metadata,
+      title: { absolute: title },
+      description,
+      openGraph: { ...metadata.openGraph, title, description },
+      twitter: { ...metadata.twitter, title, description },
     };
   }
   if (programId !== 'datascience') return metadata;
@@ -270,6 +288,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   const { program, institutions, isGeneral, institutionProgramPaths } = data;
   const isNursingProgramme = nursingInstitutions.some((row) => row.programId === programId);
   const prep = prepRow(program.id);
+  const isMedicine = isGeneral && program.id === 'medicine';
+  const medicineChild = isGeneral ? undefined : medicineAdmissionForProgramId(program.id);
   const institutionRequirementSources = await getPublicProgramRequirementSources(data);
   const related = await getPublicRelatedPrograms(program.id);
   const possibleCalculatorInstitutions = institutions.filter((institution) =>
@@ -295,6 +315,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         data={[
           await programLd(data),
           programBreadcrumbLd(data),
+          ...(isMedicine ? [medicineFaqLd] : []),
           ...(isCsHub ? [csFaqLd()] : []),
           ...(isPsychologyHub ? [psychologyFaqLd()] : []),
           ...(isNursingHub ? [nursingFaqLd()] : []),
@@ -305,10 +326,10 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
         dir="rtl"
         // Lets crawl tests tell subject pages from institution programme pages.
         data-page-kind={isGeneral ? 'subject' : 'programme'}
-        className="px-4 py-10 text-right text-slate-900 sm:px-6"
+        className={`px-4 py-10 text-right text-slate-900 sm:px-6${isMedicine ? ' [&_a]:inline-flex [&_a]:min-h-11 [&_a]:items-center' : ''}`}
       >
         <section
-          className={`mx-auto flex flex-col gap-8 ${isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
+          className={`mx-auto flex flex-col gap-8 ${isMedicine || isCsHub || isPsychologyHub || isNursingHub ? 'max-w-6xl' : 'max-w-4xl'}`}
         >
           <Link
             href={ROUTES.home}
@@ -319,12 +340,27 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
             <p className="text-sm font-semibold text-cyan-700">{program.category}</p>{' '}
             <h1 className="mt-2 text-3xl font-black sm:text-4xl">
-              <ProgramName name={program.name} />
+              {isMedicine ? (
+                'לימודי רפואה שש־שנתיים: איך מתקבלים בכל אוניברסיטה'
+              ) : (
+                <ProgramName name={program.name} />
+              )}
             </h1>{' '}
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
+            {isMedicine && (
+              <p className="mt-4 max-w-3xl leading-7 text-slate-700">{MEDICINE_ANSWER}</p>
+            )}
             <div className="mt-6 flex flex-wrap gap-3">
-              {hasCalculator && !hasUnreviewedHubRoute && (
+              {isMedicine && (
+                <Link
+                  href="/calculator"
+                  className="way-button-primary px-5 py-2.5 text-sm font-semibold"
+                >
+                  בדקו את הסיכויים שלכם לרפואה
+                </Link>
+              )}
+              {hasCalculator && !hasUnreviewedHubRoute && !isMedicine && (
                 <ProgramTrackedLink
                   event="program_calculator_cta_clicked"
                   programId={program.id}
@@ -358,6 +394,8 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
               />
             </div>
           </div>
+          {isMedicine && <MedicineAdmissionsGuide />}
+          {medicineChild && <MedicineAdmissionChild row={medicineChild} />}
           {isGeneral && program.id === 'datascience' && (
             <section className="rounded-2xl border border-slate-200 bg-white p-5 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">מדעי הנתונים או מדעי המחשב — מה מתאים לכם?</h2>
@@ -507,7 +545,7 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </section>
           )}
           {isGeneral && program.id === 'law' && <LawBarOutcomesTable />}
-          {!isPsychologyHub && program.isListed !== false && (
+          {!isMedicine && !isPsychologyHub && program.isListed !== false && (
             <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm sm:p-8">
               <h2 className="text-xl font-bold">תנאי קבלה</h2>{' '}
               {!hasUnreviewedHubRoute && (

@@ -51,6 +51,8 @@ import { lawBarOutcomes } from '@/data/lawBarOutcomes';
 import { nursingInstitutions, nursingSource, nursingTrackLabels } from '@/data/nursingInstitutions';
 
 import ProgramPage, { generateMetadata } from './page';
+import { MEDICINE_ANSWER, MEDICINE_FAQS } from '@/components/MedicineAdmissionsGuide';
+import { MEDICINE_ADMISSIONS } from '@/data/admissions/medicineAdmissions';
 
 describe('ProgramPage', () => {
   it('isolates the engineering atuda year range in its inbound link', async () => {
@@ -200,6 +202,88 @@ describe('ProgramPage', () => {
         container.querySelector('script[type="application/ld+json"]')!.textContent!,
       )['@graph'];
       expect(graph.some((node: { '@type': string }) => node['@type'] === 'FAQPage')).toBe(false);
+    },
+  );
+  it('renders the sourced medicine comparison and matching FAQ schema in initial HTML', async () => {
+    const { container } = render(
+      await ProgramPage({ params: Promise.resolve({ programId: 'medicine' }) }),
+    );
+    expect(screen.getByRole('heading', { level: 1 }).textContent).toBe(
+      'לימודי רפואה שש־שנתיים: איך מתקבלים בכל אוניברסיטה',
+    );
+    expect(container.querySelector('main h1 + p')?.textContent).toBe(MEDICINE_ANSWER);
+    expect(MEDICINE_ANSWER.split(/\s+/).length).toBeGreaterThanOrEqual(40);
+    expect(MEDICINE_ANSWER.split(/\s+/).length).toBeLessThanOrEqual(60);
+    const table = container.querySelector('table#medicine-admission-table');
+    expect(table?.querySelectorAll('tbody tr')).toHaveLength(5);
+    expect(table?.textContent).toContain('25.186');
+    expect(table?.textContent).toContain('30.04.2027');
+    expect(table?.textContent).toContain('מבחן ממוחשב');
+    expect(table?.textContent).not.toMatch(/735|730|206|25\.783/);
+    expect(table?.querySelectorAll('a[href^="/programs/"]')).toHaveLength(5);
+    expect(table?.querySelectorAll('a[href^="https://"]')).toHaveLength(0);
+    expect(table?.textContent).not.toMatch(/מקור|נבדק|עודכן לאחרונה/);
+    expect(container.querySelector('main')?.textContent).not.toContain('סף זימון משוער למבחן מו״ר');
+    expect(
+      screen.getByRole('link', { name: 'בדקו את הסיכויים שלכם לרפואה' }).getAttribute('href'),
+    ).toBe('/calculator');
+    const graph = JSON.parse(
+      container.querySelector('script[type="application/ld+json"]')!.textContent!,
+    );
+    const faq = graph['@graph'].find((node: { '@type': string }) => node['@type'] === 'FAQPage');
+    expect(faq.mainEntity).toHaveLength(4);
+    const visible = [...container.querySelectorAll('details')].map((detail) => ({
+      question: detail.querySelector('summary')?.textContent?.trim(),
+      answer: detail.querySelector('p')?.textContent?.trim(),
+    }));
+    expect(visible).toEqual(MEDICINE_FAQS.map(({ question, answer }) => ({ question, answer })));
+    expect(
+      faq.mainEntity.map((item: { name: string; acceptedAnswer: { text: string } }) => ({
+        question: item.name,
+        answer: item.acceptedAnswer.text,
+      })),
+    ).toEqual(visible);
+    expect(
+      await generateMetadata({ params: Promise.resolve({ programId: 'medicine' }) }),
+    ).toMatchObject({
+      title: { absolute: 'לימודי רפואה: שלבי הקבלה, ציוני סף ומועדים בכל אוניברסיטה | MyWay' },
+      alternates: { canonical: '/programs/medicine' },
+    });
+  });
+  it.each(MEDICINE_ADMISSIONS)(
+    'shows the same medicine stage facts and hub backlink on $programId',
+    async (row) => {
+      const { container } = render(
+        await ProgramPage({ params: Promise.resolve({ programId: row.programId }) }),
+      );
+      const section = screen
+        .getByRole('heading', { level: 2, name: `שלבי הקבלה לרפואה — ${row.institution}` })
+        .closest('section')!;
+      const table = within(section).getByRole('table');
+      expect(table.querySelectorAll('tbody tr')).toHaveLength(1);
+      expect(table.textContent).toContain(row.institution);
+      for (const cell of [
+        row.minimumPsychometric,
+        row.stageOne,
+        row.screening,
+        row.screeningWeight,
+        row.lastFinal,
+        row.registrationDeadline,
+        row.lastPsychometricSitting,
+      ]) {
+        if (cell.kind === 'value') expect(table.textContent).toContain(cell.text);
+      }
+      expect(table.querySelectorAll('a[href^="https://"]')).toHaveLength(0);
+      expect(
+        within(section)
+          .getByRole('link', {
+            name: 'השוואת שלבי הקבלה לרפואה בכל האוניברסיטאות',
+          })
+          .getAttribute('href'),
+      ).toBe('/programs/medicine#medicine-admission-table');
+      expect(table.textContent).not.toMatch(/נבדק|עודכן לאחרונה/);
+      for (const note of row.childNotes)
+        expect(container.querySelector('main')?.textContent).toContain(note);
     },
   );
   it.each([

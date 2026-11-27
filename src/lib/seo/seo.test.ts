@@ -303,7 +303,7 @@ describe('crawl policy', () => {
     });
     expect(entries.find((entry) => entry.url === `${SITE_URL}/psychometric-dates`)).toMatchObject({
       url: `${SITE_URL}/psychometric-dates`,
-      lastModified: '2026-10-29',
+      lastModified: '2026-11-27',
       changeFrequency: 'weekly',
     });
     const subjectIndex = entries.find((entry) => entry.url === `${SITE_URL}/programs`)!;

@@ -1,4 +1,5 @@
 import existingRepair from './catalogueContentRepair.json';
+import { medicineAdmissionByProgramId, type MedicineAdmissionRow } from './medicineAdmissions';
 
 /** Programme-specific display corrections with first-party source checks. */
 export type Issue370Correction = {
@@ -15,7 +16,6 @@ export type Issue370Correction = {
 };
 
 const checkedLegacy = '2026-11-14';
-const checkedMedicine = '2026-11-17';
 const checkedRoutes = '2026-11-17';
 
 const row = (
@@ -37,6 +37,21 @@ const row = (
     notes,
     ...options,
   }));
+
+const medicineCorrection = (
+  programId: MedicineAdmissionRow['programId'],
+  options: Pick<Issue370Correction, 'clearAllFacts'> = {},
+): Issue370Correction[] => {
+  const facts = medicineAdmissionByProgramId[programId];
+  return row(
+    [programId],
+    facts.institutionId,
+    facts.sourceUrl,
+    facts.checkedAt,
+    [...facts.childNotes],
+    options,
+  );
+};
 
 const legacy = { clearLegacyFacts: true, replaceRequirements: true };
 const hujiBagrutUrl = 'https://info.huji.ac.il/reception-channels/KabalaYeshira_Bagrut';
@@ -346,52 +361,11 @@ export const ISSUE_370_CORRECTIONS: Issue370Correction[] = [
     ],
     { clearLegacyFacts: true },
   ),
-  ...row(['huji_medicine'], 'huji', 'https://info.huji.ac.il/bachelor/Medicine', checkedMedicine, [
-    'נדרש פסיכומטרי רב־תחומי 700 לפחות. סף המיון הקוגניטיבי לשלב א׳ בתשפ״ז היה 25.186.',
-    'למעבר משלב מרק״ם לשלב הסופי נדרש ציון 200 לפחות. הציון הסופי משקלל מרק״ם 60% ובגרות ופסיכומטרי 40%; סף הקבלה בתשפ״ז היה 25.708.',
-    'לתשפ״ח: ההרשמה עד 30.04.2027, ומועד אפריל 2027 הוא מועד הפסיכומטרי האחרון שיתקבל.',
-  ]),
-  ...row(
-    ['technion_medicine'],
-    'technion',
-    'https://admissions.technion.ac.il/2026/09/07/mor-calculation-for-2026/',
-    checkedMedicine,
-    [
-      'ציון מו״ר מתחת ל־190 אינו מאפשר קבלה. במסלול הסכם, הציון הסופי משקלל 70% מו״ר ו־30% סכם.',
-      'בתשפ״ז סף ציון הקבלה המשוקלל במו״ר הוא 205. בדקו את תנאי המחזור הבא באתר הטכניון.',
-    ],
-  ),
-  ...row(
-    ['tau_medicine'],
-    'tau',
-    'https://go.tau.ac.il/he/med/ba/med-doc?v=new-info',
-    checkedMedicine,
-    [
-      'נדרשים פסיכומטרי 700 לפחות ואנגלית 120 לפחות. יש לרשום רפואה בעדיפות ראשונה, למעט בעלי תואר ראשון שרושמים רפואה ארבע־שנתית בעדיפות ראשונה.',
-      'מועדי ההרשמה והבחינות לתשפ״ח יעודכנו באתר האוניברסיטה.',
-    ],
-  ),
-  ...row(
-    ['bgu_medicine'],
-    'bgu',
-    'https://www.bgu.ac.il/welcome/ba/catalog/categories/medical-school/',
-    checkedMedicine,
-    [
-      'לאחר עמידה בתנאי הסף מתקיימים מבחן מיון ממוחשב ושני ראיונות קבלה. יש לרשום רפואה בעדיפות ראשונה.',
-      'בדקו את ספי הציונים למחזור המבוקש במערכת המועמדים של האוניברסיטה.',
-    ],
-  ),
-  ...row(
-    ['biu_medicine'],
-    'biu',
-    'https://medicine.biu.ac.il/six_year_track_application_requirements',
-    checkedMedicine,
-    [
-      'לתוכנית השש־שנתית נדרשים פסיכומטרי 680 לפחות, ממוצע בגרות משוקלל 101 לפחות ואנגלית 120 לפחות.',
-      'נדרשות מתמטיקה 4 יחידות בציון 85 או 5 יחידות בציון 80 לפחות, ואזרחות ישראלית או תושבות קבע. ההרשמה לתשפ״ח טרם החלה.',
-    ],
-    { clearAllFacts: true },
-  ),
+  ...medicineCorrection('huji_medicine'),
+  ...medicineCorrection('technion_medicine'),
+  ...medicineCorrection('tau_medicine'),
+  ...medicineCorrection('bgu_medicine'),
+  ...medicineCorrection('biu_medicine', { clearAllFacts: true }),
 ];
 
 export const ISSUE_370_HIDDEN_PROGRAM_IDS = [
