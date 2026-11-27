@@ -1,5 +1,4 @@
 import type { MetadataRoute } from 'next';
-import { psychometricDatesCheckedOn } from '@/data/psychometricDates';
 import { indexableInstitutionIds, indexableProgramIds } from '@/lib/seo/indexability';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import {
@@ -57,7 +56,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/threshold-alerts', '2026-11-22');
   dates.set('/calculator', '2026-11-10');
   dates.set('/about', ABOUT_INDEPENDENCE_CHECKED_ON);
-  dates.set('/psychometric-dates', psychometricDatesCheckedOn);
+  dates.set('/psychometric-dates', '2026-11-27');
   dates.set('/psychometric-two-domain', '2026-11-06');
   dates.set('/amirnet', '2026-11-14');
   dates.set('/psychometric-accommodations', '2026-11-14');

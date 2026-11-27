@@ -5,6 +5,8 @@ export const semesterValiditySources = {
   technionValidity: 'https://admissions.technion.ac.il/technion_psychometri/',
   haifa: 'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
   huji: 'https://info.huji.ac.il/registration-process/calendar',
+  hujiPsychometric: 'https://info.huji.ac.il/reception-components/Psychometric',
+  tauDentistry: 'https://go.tau.ac.il/he/med/ba/dental?v=important-info',
   bgu: 'https://www.bgu.ac.il/events/registrastion-2027-2028/',
   tauSpring: 'https://go.tau.ac.il/he/reg-dates',
   bguSpring: 'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
@@ -149,6 +151,41 @@ export default function SemesterValidity() {
             <td data-label="המידע שפורסם">
               פתיחת הרשמה לשנת תשפ&quot;ח: <bdi dir="ltr">01.11.2026</bdi>.
             </td>
+          </tr>
+          <tr>
+            <th scope="row">האוניברסיטה העברית</th>
+            <td data-label="המידע שפורסם">
+              <ul>
+                <li>
+                  <strong>
+                    אפריל <bdi dir="ltr">2027</bdi>:
+                  </strong>{' '}
+                  תקף לכל תחומי הלימוד, והוא המועד האחרון לרפואה (כולל צמרת ורפואה ומחקר ביו־רפואי),
+                  לרפואת שיניים (למעט עתודאים במסלול בינה), לרפואה וטרינרית ולתכנית אמירים רוח.
+                </li>
+                <li>
+                  <strong>
+                    יולי <bdi dir="ltr">2027</bdi>:
+                  </strong>{' '}
+                  תקף רק למסיימי המכינה האוניברסיטאית של העברית (למעט רפואה), לעתודאים (למעט צמרת)
+                  ולנרשמים לשנה ב׳ ומעלה בחוגים שבהם נדרשת הבחינה.
+                </li>
+                <li>
+                  <strong>
+                    ספטמבר <bdi dir="ltr">2027</bdi>:
+                  </strong>{' '}
+                  תקף לתחומים שיישארו פתוחים להרשמה, בהתאם לתנאי הקבלה באותו מועד.
+                </li>
+              </ul>
+              <p>
+                באוניברסיטה העברית נלקח הציון הגבוה מבין הבחינות. ציון פסיכומטרי ממועד אוקטובר{' '}
+                <bdi dir="ltr">1990</bdi> ואילך תקף.
+              </p>
+            </td>
+          </tr>
+          <tr>
+            <th scope="row">אוניברסיטת תל אביב — רפואת שיניים</th>
+            <td data-label="המידע שפורסם">לא פורסם בעמוד הרשמי לתשפ״ח.</td>
           </tr>
         </tbody>
       </table>
