@@ -583,6 +583,12 @@ export function assessProductionSchema(snapshot: ProductionSchemaSnapshot): Prod
     for (const migration of GUARDED_PRODUCTION_MIGRATIONS) {
       if ('tables' in migration) assessGuardedEnquiries(snapshot, migration, issues);
       if (migration.id === '0045') assessGuardedThresholdAlertSignups(snapshot, issues);
+      if (migration.id === '0046')
+        assessGuardedThresholdAlertSignups(
+          snapshot,
+          issues,
+          'unsubscribe_threshold_alert_signup(uuid)',
+        );
       if ('functionBodies' in migration) {
         for (const [fn, requiredSql] of Object.entries(migration.functionBodies)) {
           const definition = snapshot.functionDefinitions?.[fn];
@@ -1353,10 +1359,10 @@ function assessGuardedEnquiries(
 function assessGuardedThresholdAlertSignups(
   snapshot: ProductionSchemaSnapshot,
   issues: ProductionSchemaIssue[],
+  fn = 'store_threshold_alert_signup(jsonb)',
 ) {
   const tableName = 'threshold_alert_signups';
   const table = snapshot.tables[tableName];
-  const fn = 'store_threshold_alert_signup(jsonb)';
   if (!table) {
     issues.push({
       code: 'missing_table',

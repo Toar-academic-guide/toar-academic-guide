@@ -1010,6 +1010,8 @@ export const thresholdAlertSignups = pgTable(
     utmCampaign: varchar('utm_campaign', { length: 100 }),
     referrer: varchar('referrer', { length: 256 }),
     notifiedAt: timestamp('notified_at', { withTimezone: true }),
+    unsubscribeToken: uuid('unsubscribe_token').defaultRandom().notNull().unique(),
+    unsubscribedAt: timestamp('unsubscribed_at', { withTimezone: true }),
     createdAt: timestamp('created_at', { withTimezone: true }).defaultNow().notNull(),
   },
   (table) => [

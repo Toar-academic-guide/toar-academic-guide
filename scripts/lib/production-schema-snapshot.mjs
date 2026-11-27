@@ -223,21 +223,21 @@ export async function loadProductionSchemaSnapshot(sql) {
     sql`
       select
         case
-          when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup')
+          when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup', 'unsubscribe_threshold_alert_signup')
             then p.proname||'('||oidvectortypes(p.proargtypes)||')'
           when n.nspname='public' then p.proname
           else n.nspname||'.'||p.proname
         end as function_name,
         coalesce(p.proconfig, array[]::text[]) as function_config,
-        case when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup') and p.prokind='f'
+        case when n.nspname='public' and p.proname in ('store_enquiry', 'store_threshold_alert_signup', 'unsubscribe_threshold_alert_signup') and p.prokind='f'
           then pg_get_functiondef(p.oid) end as function_definition,
         p.prosecdef as security_definer,
         array(select r.rolname from pg_roles r
           where (r.rolname = any(array['anon','authenticated','app_runtime','ops_readonly','admissions_automation'])
-            or (p.proname in ('store_enquiry', 'store_threshold_alert_signup') and n.nspname='public' and r.rolname='service_role'))
+            or (p.proname in ('store_enquiry', 'store_threshold_alert_signup', 'unsubscribe_threshold_alert_signup') and n.nspname='public' and r.rolname='service_role'))
             and has_function_privilege(r.oid, p.oid, 'EXECUTE')
           order by r.rolname)
-        || case when p.proname in ('store_enquiry', 'store_threshold_alert_signup') and n.nspname='public' and exists (
+        || case when p.proname in ('store_enquiry', 'store_threshold_alert_signup', 'unsubscribe_threshold_alert_signup') and n.nspname='public' and exists (
           select 1 from aclexplode(coalesce(p.proacl, acldefault('f', p.proowner))) acl
           where acl.grantee = 0 and acl.privilege_type = 'EXECUTE'
         ) then array['PUBLIC']::text[] else array[]::text[] end as execute_roles

@@ -2,7 +2,7 @@ import { THRESHOLD_ALERT_CONSENT } from '@/lib/thresholdAlerts';
 vi.mock('server-only', () => ({}));
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { PgDialect } from 'drizzle-orm/pg-core';
-import { saveThresholdAlertSignup } from './repository';
+import { saveThresholdAlertSignup, unsubscribeThresholdAlerts } from './repository';
 
 const { execute, transaction, getDb } = vi.hoisted(() => ({
   execute: vi.fn(),
@@ -64,3 +64,17 @@ describe('threshold alert signup storage', () => {
     expect(payload).not.toHaveProperty('prepConsent');
   });
 });
+
+// The production pg adapter returns { rows }; isolated postgres.js fixtures return an array.
+it.each([{ rows: [{ removed: true }] }, [{ removed: true }]])(
+  'reads suppression result from either supported adapter',
+  async (result) => {
+    execute.mockReset().mockResolvedValueOnce(undefined).mockResolvedValueOnce(result);
+    transaction.mockImplementation((fn) => fn({ execute }));
+    getDb.mockReturnValue({ transaction });
+    expect(await unsubscribeThresholdAlerts('2468beac-1c33-4d4f-941a-4deed2cdd47d')).toBe(true);
+    const query = new PgDialect().sqlToQuery(execute.mock.calls[1][0]);
+    expect(query.sql).toContain('unsubscribe_threshold_alert_signup');
+    expect(query.sql).not.toContain('2468beac');
+  },
+);

@@ -127,6 +127,9 @@ const targetedTests = [
   'src/components/ThresholdAlertSignup.test.tsx',
   'src/app/api/threshold-alerts/route.test.ts',
   'src/server/threshold-alerts/repository.test.ts',
+  'src/server/threshold-alerts/messages.test.ts',
+  'src/app/api/threshold-alerts/unsubscribe/route.test.ts',
+  'src/app/threshold-alerts/unsubscribe/route.test.ts',
   'src/lib/posthogPrivacy.test.ts',
   'src/lib/leadAttribution.test.ts',
   'src/lib/enquirySourcePath.test.ts',
@@ -388,7 +391,9 @@ function assertPdfLocations() {
     process.exit(1);
   }
   if (disallowedPdfPaths(tracked.split('\0').filter(Boolean)).length > 0) {
-    console.error('Pre-PR guard: PDF outside approved fixture/admissions directories. Remove it from the index.');
+    console.error(
+      'Pre-PR guard: PDF outside approved fixture/admissions directories. Remove it from the index.',
+    );
     process.exit(1);
   }
 }
