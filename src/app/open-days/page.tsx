@@ -1,14 +1,22 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import WayPageShell from '@/components/WayPageShell';
+import JsonLd from '@/components/seo/JsonLd';
 import { getJerusalemDate } from '@/lib/psychometricDates';
 import { shareCards, socialMetadata } from '@/lib/seo/shareCards';
 import { loadOpenDays, type OpenDay } from './openDays';
+import {
+  calendarFaq,
+  dateText,
+  eventSchema,
+  timeText,
+  unannouncedInstitutions,
+} from './calendarContent';
 import styles from './page.module.css';
 
-const title = 'ימים פתוחים באוניברסיטאות ובמכללות';
+const title = 'ימים פתוחים 2027 באוניברסיטאות ובמכללות';
 const description =
-  'השוו תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, מצאו את הקמפוס והירשמו באתר המוסד.';
+  'כל הימים הפתוחים לתואר ראשון 2027 במקום אחד: אוניברסיטאות ומכללות, תאריכים, קמפוס או זום — ובדיקת סיכויי קבלה לפני שמגיעים.';
 
 export const metadata: Metadata = {
   title,
@@ -17,18 +25,8 @@ export const metadata: Metadata = {
   ...socialMetadata(shareCards.openDays, title, description, '/open-days'),
 };
 
-const dateFormat = new Intl.DateTimeFormat('he-IL', {
-  day: 'numeric',
-  month: 'long',
-  year: 'numeric',
-  timeZone: 'UTC',
-});
-function dateLabel(start: string, end: string) {
-  const first = new Date(start + 'T12:00:00Z');
-  const label = end
-    ? dateFormat.formatRange(first, new Date(end + 'T12:00:00Z'))
-    : dateFormat.format(first);
-  return label.split(/(\d+[–-]\d+)/g).map((part, index) =>
+function DateCopy({ text }: { text: string }) {
+  return text.split(/(\d+(?::\d+)?[–-]\d+(?::\d+)?)/g).map((part, index) =>
     index % 2 ? (
       <bdi key={index} dir="ltr">
         {part}
@@ -40,9 +38,9 @@ function dateLabel(start: string, end: string) {
 }
 
 const filters = [
-  { value: 'universities', label: 'אוניברסיטאות', href: '/open-days' },
+  { value: 'all', label: 'הכול', href: '/open-days' },
+  { value: 'universities', label: 'אוניברסיטאות', href: '/open-days?type=universities' },
   { value: 'colleges', label: 'מכללות', href: '/open-days?type=colleges' },
-  { value: 'all', label: 'הכול', href: '/open-days?type=all' },
 ] as const;
 
 function EventDate({ event }: { event: OpenDay }) {
@@ -57,7 +55,15 @@ function EventDate({ event }: { event: OpenDay }) {
   return (
     <div className={styles.event}>
       <div>
-        <span>{dateLabel(event.date, event.endDate)}</span>
+        <span>
+          <DateCopy text={dateText(event)} />
+        </span>
+        {timeText(event) && (
+          <span className={styles.time}>
+            {' '}
+            · <bdi dir="ltr">{timeText(event)}</bdi>
+          </span>
+        )}
         {description && <small>{description}</small>}
       </div>
     </div>
@@ -72,19 +78,48 @@ export default async function OpenDaysPage({
   const type = (await searchParams).type;
   const filter = filters.find((option) => option.value === type) ?? filters[0];
   const today = getJerusalemDate(new Date());
-  const events = (await loadOpenDays())
+  const allEvents = (await loadOpenDays())
     .filter((event) => (event.endDate || event.date) >= today)
-    .filter(
-      (event) => filter.value === 'all' || event.university === (filter.value === 'universities'),
-    )
     .sort(
       (a, b) => a.date.localeCompare(b.date) || a.institution.localeCompare(b.institution, 'he'),
     );
+  const events = allEvents.filter(
+    (event) => filter.value === 'all' || event.university === (filter.value === 'universities'),
+  );
+  const pending = unannouncedInstitutions.filter(
+    (row) =>
+      (filter.value === 'all' || row.university === (filter.value === 'universities')) &&
+      !allEvents.some((event) => event.institution === row.name),
+  );
+  const faq = calendarFaq(allEvents);
   const institutions = Map.groupBy(events, (event) => event.institution);
   return (
     <WayPageShell>
       <main dir="rtl" id="main-content" className={styles.main}>
-        <h1>ימים פתוחים באוניברסיטאות ובמכללות</h1>
+        <JsonLd
+          data={[
+            ...events.map(eventSchema).filter((event) => event !== null),
+            {
+              '@type': 'FAQPage',
+              mainEntity: faq.map(({ question, answer }) => ({
+                '@type': 'Question',
+                name: question,
+                acceptedAnswer: { '@type': 'Answer', text: answer },
+              })),
+            },
+          ]}
+        />
+        <h1>{title}</h1>
+        <section className={styles.answer} aria-labelledby="open-days-answer">
+          <h2 id="open-days-answer">מתי הימים הפתוחים 2027?</h2>
+          <p>
+            <DateCopy text={faq[0].answer} />
+          </p>
+          <p>
+            בדקו לפני היום הפתוח מה הסיכויים שלכם להתקבל:{' '}
+            <Link href="/calculator">בדקו את סיכויי הקבלה שלכם</Link>
+          </p>
+        </section>
         <nav aria-label="סוג מוסד" className={styles.filters}>
           {filters.map((option) => (
             <Link
@@ -97,7 +132,7 @@ export default async function OpenDaysPage({
             </Link>
           ))}
         </nav>
-        {institutions.size === 0 ? (
+        {institutions.size === 0 && pending.length === 0 ? (
           <p>כרגע אין מועדים קרובים להצגה.</p>
         ) : (
           <table className={styles.table}>
@@ -127,9 +162,34 @@ export default async function OpenDaysPage({
                   </td>
                 </tr>
               ))}
+              {pending.map(({ name }) => (
+                <tr key={name}>
+                  <th scope="row">{name}</th>
+                  <td>טרם פורסם</td>
+                </tr>
+              ))}
             </tbody>
           </table>
         )}
+        <section className={styles.faq} aria-labelledby="open-days-faq">
+          <h2 id="open-days-faq">שאלות נפוצות</h2>
+          {faq.map(({ question, answer, link }) => (
+            <details key={question}>
+              <summary>{question}</summary>
+              <p>
+                {link ? (
+                  <>
+                    <DateCopy text={answer.slice(0, answer.lastIndexOf(link.text))} />
+                    <Link href={link.href}>{link.text}</Link>
+                    {answer.slice(answer.lastIndexOf(link.text) + link.text.length)}
+                  </>
+                ) : (
+                  <DateCopy text={answer} />
+                )}
+              </p>
+            </details>
+          ))}
+        </section>
       </main>
     </WayPageShell>
   );

@@ -106,7 +106,7 @@ describe('crawl policy', () => {
       '- [מועדי פסיכומטרי](https://findmyway.co.il/psychometric-dates): תאריכי הבחינה וסיום ההרשמה לפי לוח מאל״ו.',
     );
     expect(llms).toContain(
-      '- [ימים פתוחים](https://findmyway.co.il/open-days): תאריכים של ימים פתוחים באוניברסיטאות ובמכללות, עם קישורים למוסדות.',
+      '- [ימים פתוחים 2027](https://findmyway.co.il/open-days): תאריכי ימים פתוחים לתואר ראשון באוניברסיטאות ובמכללות (קמפוס וזום), כולל מוסדות שטרם פרסמו מועד.',
     );
     expect(llms).toContain('https://findmyway.co.il/institutions');
     expect(llms).toContain('https://findmyway.co.il/programs/<id>');
