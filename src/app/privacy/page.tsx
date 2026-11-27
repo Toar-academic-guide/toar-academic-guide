@@ -77,7 +77,7 @@ export default function PrivacyPage() {
         {
           'ה. עדכוני תנאי קבלה לשנת 2027: נשמור את כתובת הדוא״ל ומספר הוואטסאפ שמסרת ואת המוסדות והמסלולים שבחרת, רק כדי לשלוח את העדכונים שביקשת. אפשר להסיר את ההרשמה בקישור שבכל הודעה, ולבקש מחיקת פרטים ב-'
         }
-        <a href="mailto:info@findmyway.co.il">
+        <a className="inline-flex min-h-11 items-center" href="mailto:info@findmyway.co.il">
           <bdi dir="ltr">info@findmyway.co.il</bdi>
         </a>
         {
