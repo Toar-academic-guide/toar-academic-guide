@@ -51,6 +51,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ] as const,
     ),
   ]);
+  dates.set('/programs/medicine', '2026-11-27');
   dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
   // Authored with the calculator page; never replace this with the build date.
   dates.set('/sekhem-calculator', '2026-11-14');

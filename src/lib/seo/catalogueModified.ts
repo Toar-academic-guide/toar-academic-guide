@@ -1,3 +1,4 @@
+import { isDentistryProgramme } from '@/data/degrees/dentistry';
 import repair from '@/data/admissions/catalogueContentRepair.json';
 import { ACADEMIC_PROGRAMS } from '@/data/degrees/academic';
 import { academicPrograms } from '@/data/degrees/academicPrograms';
@@ -43,6 +44,7 @@ for (const row of repair.requirements) {
 }
 
 export function programModifiedAt(program: CatalogueProgram): string {
+  if (isDentistryProgramme(program.id)) return latestModified('2026-11-27', program.updatedAt);
   const sourceDate =
     programCheckedDates.get(program.id) ??
     programSourceDates.get(program.id) ??

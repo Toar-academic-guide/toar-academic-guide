@@ -1,3 +1,4 @@
+import { dentistryProgrammes } from './dentistry';
 export type { Program } from './types';
 export { ACADEMIC_PROGRAMS } from './academic';
 export { academicPrograms } from './academicPrograms';
@@ -1168,4 +1169,5 @@ export const allPrograms = [
     return repaired.institutionId === 'spieldocs' ? repairSamSpiegelUrls(repaired) : repaired;
   }),
   ...collegeProgrammes,
+  ...dentistryProgrammes,
 ];

@@ -1,3 +1,4 @@
+import { isDentistryProgramme } from '@/data/degrees/dentistry';
 import { MEDICINE_ACADEMIC_REFERENCE_CASES } from '@/data/admissions/medicineAcademicVerification';
 import { isMedicineAcademicPair, usesMedicineAcademicStage } from '@/lib/medicineAcademicInputs';
 import { isBguQuantitativeRouteProgram } from '@/lib/calculatorInputRequirements';
@@ -773,9 +774,10 @@ export function buildAdmissionsCapabilityMatrix(args: {
       : EXACT_PROGRAM_TARGETS[pairId];
     const sourceTarget =
       exactTarget?.sourceTarget ?? SOURCE_TARGETS_BY_INSTITUTION.get(institutionId);
-    const evidence = isSourcedCollegeProgrammeId(program.id)
-      ? undefined
-      : selectBestEvidence(institutionId);
+    const evidence =
+      isSourcedCollegeProgrammeId(program.id) || isDentistryProgramme(program.id)
+        ? undefined
+        : selectBestEvidence(institutionId);
     const freshnessState = exactTarget
       ? freshnessStatesBySourceId.get(exactTarget.targetId)
       : sourceTarget

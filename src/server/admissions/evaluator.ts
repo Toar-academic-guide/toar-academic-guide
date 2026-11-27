@@ -1,3 +1,4 @@
+import { isDentistryProgramme } from '@/data/degrees/dentistry';
 import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
@@ -2232,7 +2233,9 @@ function evaluateNonExactResult(args: {
   // These route-specific records must not inherit broad institution claims about
   // grade gates or interviews when building the student-facing requirements copy.
   const evidenceRecord =
-    isSourcedCollegeProgrammeId(program.id) || ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
+    isSourcedCollegeProgrammeId(program.id) ||
+    isDentistryProgramme(program.id) ||
+    ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
       ? undefined
       : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);
