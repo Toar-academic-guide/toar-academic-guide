@@ -266,7 +266,8 @@ describe('crawl policy', () => {
       ...generatedHubIds.map((id) => `${SITE_URL}/programs/${encodeURIComponent(id)}`),
     ]);
     expect(generatedHubIds).toContain('engineering');
-    expect(generatedHubIds).toHaveLength(74);
+    expect(generatedHubIds).toContain('dentistry');
+    expect(generatedHubIds).toHaveLength(75);
     expect(urls.filter((url) => url.endsWith('_subject'))).toEqual([]);
     expect(urls).toContain(`${SITE_URL}/institutions/tau`);
     expect(urls).toContain(`${SITE_URL}/programs/tau_cs`);
@@ -295,7 +296,7 @@ describe('crawl policy', () => {
     expect(urls).not.toContain(`${SITE_URL}/programs/ono_medicine`);
     expect(urls).toContain(`${SITE_URL}/programs/ono_nursing`);
     expect(urls).toContain(`${SITE_URL}/atuda`);
-    expect(urls).toHaveLength(447);
+    expect(urls).toHaveLength(450);
     expect(entries.find((entry) => entry.url === `${SITE_URL}/amirnet`)).toMatchObject({
       url: `${SITE_URL}/amirnet`,
       lastModified: '2026-11-14',

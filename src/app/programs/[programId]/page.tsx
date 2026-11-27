@@ -1,3 +1,4 @@
+import { DentistryGuide, DentistryMedicineLink } from '@/components/seo/DentistryGuide';
 import ProgramTrackedLink from '@/components/ProgramTrackedLink';
 import ProgramName from '@/components/ProgramName';
 import { RelatedPrograms } from '@/components/seo/CatalogueLinks';
@@ -198,6 +199,13 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
   if (!pageData) {
     const subject = await getPublicSubjectHub(programId);
     if (!subject) notFound();
+    if (programId === 'dentistry') {
+      return (
+        <WayPageShell>
+          <DentistryGuide />
+        </WayPageShell>
+      );
+    }
     if (programId === 'prep') {
       return (
         <WayPageShell>
@@ -219,6 +227,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             <ProgramName name={subject.hub.name} />
           </h1>
           <ThresholdAlertCta surface="program_page" programId={programId} />
+          {programId === 'medicine' && (
+            <div className="mb-6">
+              <DentistryMedicineLink />
+            </div>
+          )}
           {(atudaLinksBySubject[programId] || programId !== 'medicine') && (
             <div className="mb-6 flex flex-wrap items-center gap-x-6 gap-y-2">
               {atudaLinksBySubject[programId] && (
@@ -323,6 +336,11 @@ export default async function ProgramPage({ params }: ProgramPageProps) {
             </h1>{' '}
             {isCsHub && <p className="mt-4 max-w-3xl leading-7 text-slate-700">{csAnswer}</p>}
             {isNursingHub && <NursingAnswer />}
+            {isGeneral && program.id === 'medicine' && (
+              <div className="mt-4">
+                <DentistryMedicineLink />
+              </div>
+            )}
             <div className="mt-6 flex flex-wrap gap-3">
               {hasCalculator && !hasUnreviewedHubRoute && (
                 <ProgramTrackedLink

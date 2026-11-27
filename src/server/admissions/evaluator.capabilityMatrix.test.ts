@@ -1,3 +1,4 @@
+import { dentistryProgrammes } from '@/data/degrees/dentistry';
 import { expect, it, vi } from 'vitest';
 import { getStaticCatalogueInstitutions, getStaticCataloguePrograms } from '@/lib/catalogueStatic';
 import { collegeProgrammes } from '@/data/degrees/collegeProgrammes';
@@ -524,12 +525,13 @@ function comparePairs(a: MatrixRow, b: MatrixRow): number {
 it('preserves the pre-college capability matrix except approved medicine and duplicate-ID corrections', async () => {
   capture.rows.length = 0;
   // This frozen matrix predates the 25 new college routes and Ono's
-  // behavioural-sciences route. Their no-formula behavior is checked separately.
+  // behavioural-sciences route and two dentistry routes. Their no-formula behavior is checked separately.
   const newCollegeIds = new Set([
     ...collegeProgrammes.map((program) => program.id),
+    ...dentistryProgrammes.map((program) => program.id),
     'ono_psychology',
   ]);
-  expect(newCollegeIds.size).toBe(26);
+  expect(newCollegeIds.size).toBe(28);
   const staticPrograms = getStaticCataloguePrograms().filter(
     (program) => !newCollegeIds.has(program.id),
   );

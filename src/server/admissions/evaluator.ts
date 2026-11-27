@@ -1,3 +1,4 @@
+import { isDentistryProgramme } from '@/data/degrees/dentistry';
 import { isCalculatedAdmissionResult } from '@/lib/isCalculatedAdmissionResult';
 import { guardProxyEvaluation, usesInstitutionAverageProxy } from './proxyEvaluationGuard';
 import { normalizeEvaluationInputs } from './evaluationInputs';
@@ -2193,6 +2194,22 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  // The two sourced dentistry pages have no reviewed calculator route. Do not
+  // inherit a different programme's registry diagnostics or next action.
+  if (isDentistryProgramme(program.id)) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'unsupported',
+      kind: 'unsupported',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'תנאי קבלה ומיונים',
+      explanation: 'אין עדיין חישוב סיכויי קבלה למסלול זה. הקבלה כוללת כמה שלבי מיון.',
+      nextAction: 'בדקו את תנאי הקבלה ומועדי המיון מול האוניברסיטה.',
+    };
+  }
+
   const danonUrl = institution.id === 'danon' ? DANON_PROGRAM_URLS[program.id] : undefined;
   if (danonUrl) {
     return {
@@ -2232,7 +2249,9 @@ function evaluateNonExactResult(args: {
   // These route-specific records must not inherit broad institution claims about
   // grade gates or interviews when building the student-facing requirements copy.
   const evidenceRecord =
-    isSourcedCollegeProgrammeId(program.id) || ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
+    isSourcedCollegeProgrammeId(program.id) ||
+    isDentistryProgramme(program.id) ||
+    ISSUE_370_LINK_ONLY_PROGRAM_IDS.has(program.id)
       ? undefined
       : (entry.evidence ?? getMondayAdmissionEvidenceByCatalogueInstitutionId(institution.id)[0]);
   const dynamicRequirements = getDynamicRequirementsFromEvidence(evidenceRecord);

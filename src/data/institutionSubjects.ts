@@ -69,6 +69,7 @@ const CATEGORY_FIELDS: Record<string, FieldKey> = {
   כלכלה: 'business',
   'מדעי הבריאות': 'health',
   רפואה: 'health',
+  'רפואת שיניים': 'health',
   'ליווי לידה': 'health',
   'מדעי החיים': 'life',
   'מדעים מדויקים': 'sciences',

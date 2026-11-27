@@ -5118,7 +5118,7 @@ describe('Amit 07:33 full-bagrut assumption', () => {
         }
       }
       // The sourced college routes, complementary certificates and Hadassah add distinct pairs.
-      expect(pairs).toBe(465);
+      expect(pairs).toBe(467);
     },
   );
   it.each([
