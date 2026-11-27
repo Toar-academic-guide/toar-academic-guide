@@ -119,7 +119,11 @@ describe('dentistry public catalogue', () => {
         capability: 'unsupported',
         decision: 'unknown',
       });
-      expect(report.results[0].explanation).not.toMatch(/אין צורך בבגרות|אין צורך בפסיכומטרי/);
+      expect(report.results[0].explanation).not.toMatch(
+        /[a-z]|אין צורך בבגרות|אין צורך בפסיכומטרי/i,
+      );
+      expect(report.results[0].nextAction).toBe('בדקו את תנאי הקבלה ומועדי המיון מול האוניברסיטה.');
+      expect(report.results[0].officialUrls).toBeUndefined();
       expect(fetcher).not.toHaveBeenCalled();
     },
   );

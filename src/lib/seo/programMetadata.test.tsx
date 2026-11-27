@@ -16,7 +16,8 @@ vi.mock('@/server/catalogue/queries', () => ({
   listCatalogueInstitutions: async () => ({ data: getStaticCatalogueInstitutions(), meta: {} }),
 }));
 
-// Metadata identities and JSON-LD hashes are preserved from main (a4d84ae).
+// Metadata identities remain stable; TAU/HUJI provider catalogues now also
+// include the two sourced dentistry offerings (#506). Other hashes remain frozen.
 // Unsupported calculator descriptions now state the available admissions information.
 const unchangedPrograms = [
   {
@@ -36,7 +37,7 @@ const unchangedPrograms = [
   },
   {
     id: 'tau_cs',
-    structuredDataSha256: 'e40fc11a2728422de1c86b3e6b737e05990cd6c113ed0757bc740ff07f74e4d1',
+    structuredDataSha256: 'd929c798d29e87de084248bd3eb9b424d98139756153eadd7270845ee6e27c08',
     name: 'מדעי המחשב',
     title: 'מדעי המחשב – אוניברסיטת תל אביב: תנאי קבלה',
     description:
@@ -51,7 +52,7 @@ const unchangedPrograms = [
   },
   {
     id: 'nursing',
-    structuredDataSha256: 'bb7aa5b2c50221ddcea923d52bc936018735a4a1226761b371c2159d675d4fd5',
+    structuredDataSha256: 'b615a838a6ed3db2ae37c886183d9d43052bcb7a5867ba975eb8f3bb8b07cd7e',
     name: 'סיעוד',
     title: 'לימודי סיעוד: תנאי קבלה וסיכויי קבלה',
     description:
@@ -158,6 +159,17 @@ describe('program institution attribution', () => {
         .update(JSON.stringify({ ld, breadcrumb: programBreadcrumbLd(page) }))
         .digest('hex'),
     ).toBe(expected.structuredDataSha256);
+    if (expected.id === 'tau_cs' || expected.id === 'nursing') {
+      const tau = ld.provider.find((provider) => provider.name === 'אוניברסיטת תל אביב');
+      expect(tau?.hasOfferCatalog.itemListElement).toEqual(
+        expect.arrayContaining([
+          expect.objectContaining({
+            name: 'רפואת שיניים',
+            url: 'https://findmyway.co.il/programs/tau_dentistry',
+          }),
+        ]),
+      );
+    }
     expect(ld.name).toBe(expected.name);
     expect(ld.provider.map(({ name }) => name)).toEqual(expected.providers.map(({ name }) => name));
     expect(ld.url).toBe(`https://findmyway.co.il/programs/${expected.id}`);

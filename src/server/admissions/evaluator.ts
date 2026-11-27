@@ -2194,6 +2194,22 @@ function evaluateNonExactResult(args: {
     };
   }
 
+  // The two sourced dentistry pages have no reviewed calculator route. Do not
+  // inherit a different programme's registry diagnostics or next action.
+  if (isDentistryProgramme(program.id)) {
+    return {
+      institution: publicInstitutionShape(institution),
+      linkedInstitutionId: institution.id,
+      capability: 'unsupported',
+      kind: 'unsupported',
+      decision: 'unknown',
+      confidence: 'low',
+      sourceLabel: 'תנאי קבלה ומיונים',
+      explanation: 'אין עדיין חישוב סיכויי קבלה למסלול זה. הקבלה כוללת כמה שלבי מיון.',
+      nextAction: 'בדקו את תנאי הקבלה ומועדי המיון מול האוניברסיטה.',
+    };
+  }
+
   const danonUrl = institution.id === 'danon' ? DANON_PROGRAM_URLS[program.id] : undefined;
   if (danonUrl) {
     return {
