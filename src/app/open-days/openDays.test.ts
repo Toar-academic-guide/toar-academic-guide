@@ -22,7 +22,16 @@ it('joins confirmed events to institutions across pages and removes cancellation
       date_mm8tyvjz: '2026-11-05',
       text_mm8tyta5: 'https://example.edu/open',
       text_mm8t7kt9: '',
-    }).map(([id, text]) => ({ id, text })),
+    }).map(([id, text]) =>
+      id === 'date_mm8tddsr'
+        ? {
+            id,
+            text: '2027-01-01 10:00',
+            date: '2027-01-01',
+            value: JSON.stringify({ date: '2027-01-01', time: '15:00:00' }),
+          }
+        : { id, text },
+    ),
   });
   const page = (items: unknown[], cursor: string | null) =>
     Response.json({ data: { boards: [{ items_page: { items, cursor } }] } });
@@ -52,6 +61,8 @@ it('joins confirmed events to institutions across pages and removes cancellation
     university: true,
     source: 'https://example.edu/open',
     registration: '',
+    date: '2027-01-01',
+    startTime: '17:00',
   });
   expect(JSON.parse(request.mock.calls[1][1].body).variables.cursor).toBe('next');
 });

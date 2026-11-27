@@ -1,0 +1,30 @@
+{
+  "boardId": 18438707562,
+  "items": [
+    {
+      "groupId": "group_mm8t9en6",
+      "name": "בצלאל אקדמיה לאמנות ועיצוב — יום פתוח לתואר ראשון",
+      "columnValues": "{\"text_mm8t6bcc\": \"קמפוס מנדל, זמורה 1, ירושלים\", \"date_mm8tddsr\": {\"date\": \"2026-12-22\", \"time\": \"07:30:00\"}, \"date_mm8tyvjz\": {\"date\": \"2026-11-27\"}, \"text_mm8tyta5\": \"https://bezalel.ac.il/events/667032\", \"text_mm8te55d\": \"https://malichi-hub.monday.com/boards/18438707562/pulses/13481560640\", \"color_mm8te8s1\": {\"label\": \"Confirmed\"}, \"long_text_mm8tdmyt\": {\"text\": \"Issue #503: official source checked 27 November 2026. Date time fields stored in UTC; Israel winter time is +02:00. Recheck official source before publication.\"}}"
+    },
+    {
+      "groupId": "group_mm8t9en6",
+      "name": "המכללה למנהל — יום פתוח עיצוב",
+      "columnValues": "{\"text_mm8t6bcc\": \"קמפוס המכללה, ראשון לציון\", \"date_mm8tddsr\": {\"date\": \"2026-12-25\", \"time\": \"07:30:00\"}, \"date_mm8tyvjz\": {\"date\": \"2026-11-27\"}, \"text_mm8tyta5\": \"https://www.academy.org.il/open-day/\", \"text_mm8te55d\": \"https://malichi-hub.monday.com/boards/18438707562/pulses/13481537422\", \"color_mm8te8s1\": {\"label\": \"Confirmed\"}, \"long_text_mm8tdmyt\": {\"text\": \"Issue #503: official source checked 27 November 2026. Date time fields stored in UTC; Israel winter time is +02:00. Recheck official source before publication.\"}}"
+    },
+    {
+      "groupId": "group_mm8t9en6",
+      "name": "אוניברסיטת בן-גוריון בנגב — יום ייעוץ מקוון לתואר ראשון",
+      "columnValues": "{\"text_mm8t6bcc\": \"זום\", \"date_mm8tddsr\": {\"date\": \"2027-01-07\", \"time\": \"15:00:00\"}, \"date_mm8tyvjz\": {\"date\": \"2026-11-27\"}, \"text_mm8tyta5\": \"https://www.bgu.ac.il/events/online-open-day-ba/\", \"text_mm8te55d\": \"https://malichi-hub.monday.com/boards/18438707562/pulses/13481561727\", \"color_mm8te8s1\": {\"label\": \"Confirmed\"}, \"long_text_mm8tdmyt\": {\"text\": \"Issue #503: official source checked 27 November 2026. Date time fields stored in UTC; Israel winter time is +02:00. Recheck official source before publication.\"}, \"date_mm8tgetv\": {\"date\": \"2027-01-07\", \"time\": \"17:00:00\"}}"
+    },
+    {
+      "groupId": "group_mm8t9en6",
+      "name": "אוניברסיטת רייכמן — יום פתוח לתואר ראשון",
+      "columnValues": "{\"text_mm8t6bcc\": \"\", \"date_mm8tddsr\": {\"date\": \"2027-01-08\", \"time\": \"07:00:00\"}, \"date_mm8tyvjz\": {\"date\": \"2026-11-27\"}, \"text_mm8tyta5\": \"https://lps.runi.ac.il/\", \"text_mm8te55d\": \"https://malichi-hub.monday.com/boards/18438707562/pulses/13481560485\", \"color_mm8te8s1\": {\"label\": \"Confirmed\"}, \"long_text_mm8tdmyt\": {\"text\": \"Issue #503: official source checked 27 November 2026. Date time fields stored in UTC; Israel winter time is +02:00. Recheck official source before publication.\"}}"
+    },
+    {
+      "groupId": "group_mm8t9en6",
+      "name": "אוניברסיטת חיפה — יום פתוח כלל-אוניברסיטאי",
+      "columnValues": "{\"text_mm8t6bcc\": \"זום\", \"date_mm8tddsr\": {\"date\": \"2027-02-17\"}, \"date_mm8tyvjz\": {\"date\": \"2026-11-27\"}, \"text_mm8tyta5\": \"https://hcc.haifa.ac.il/\", \"text_mm8te55d\": \"https://malichi-hub.monday.com/boards/18438707562/pulses/13481656860\", \"color_mm8te8s1\": {\"label\": \"Confirmed\"}, \"long_text_mm8tdmyt\": {\"text\": \"Issue #503: official source checked 27 November 2026. Date time fields stored in UTC; Israel winter time is +02:00. Recheck official source before publication.\"}, \"date_mm8tgetv\": {\"date\": \"2027-02-18\"}}"
+    }
+  ]
+}

@@ -85,6 +85,48 @@
   cursor: pointer;
   padding-block: 10px;
   font-size: 0.9rem;
+  min-height: 44px;
+}
+.answer {
+  margin-block: 0 24px;
+  line-height: 1.85;
+}
+.main h2 {
+  font-size: 1.3rem;
+  font-weight: 650;
+  margin-bottom: 8px;
+}
+.answer a,
+.faq a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+  color: #49388b;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.faq {
+  margin-top: 36px;
+  line-height: 1.85;
+}
+.faq details {
+  border-bottom: 1px solid var(--border);
+}
+.faq summary {
+  cursor: pointer;
+  padding-block: 12px;
+  min-height: 44px;
+  font-weight: 600;
+}
+.faq p {
+  padding-bottom: 16px;
+}
+.main :is(a, summary):focus-visible {
+  outline: 2px solid #49388b;
+  outline-offset: 3px;
+}
+.time {
+  white-space: nowrap;
 }
 .later .event {
   padding-block: 8px;

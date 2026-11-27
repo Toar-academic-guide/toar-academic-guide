@@ -3,12 +3,21 @@ import 'server-only';
 import { unstable_cache } from 'next/cache';
 import seed from '@/data/openDays.initial.json';
 
-export type OpenDay = (typeof seed)[number];
+export type OpenDay = Omit<(typeof seed)[number], 'startTime' | 'endTime'> & {
+  startTime?: string;
+  endTime?: string;
+};
 type BoardItem = {
   id: string;
   name: string;
   group: { id: string };
-  column_values: { id: string; text: string | null; checked?: boolean }[];
+  column_values: {
+    id: string;
+    text: string | null;
+    checked?: boolean;
+    date?: string | null;
+    value?: string | null;
+  }[];
 };
 
 type BoardResponse = {
@@ -33,7 +42,7 @@ const query = `query OpenDays($cursor: String) {
   boards(ids: [18438707562]) {
     items_page(limit: 500, cursor: $cursor) {
       cursor
-      items { id name group { id } column_values(ids: ${JSON.stringify(Object.values(columns))}) { id text ... on CheckboxValue { checked } } }
+      items { id name group { id } column_values(ids: ${JSON.stringify(Object.values(columns))}) { id text ... on CheckboxValue { checked } ... on DateValue { date value } } }
     }
   }
 }`;
@@ -44,6 +53,31 @@ function officialLink(value: string) {
   return ['http:', 'https:'].includes(url.protocol) && !url.username && !url.password
     ? url.href
     : '';
+}
+
+function israelDate(column?: BoardItem['column_values'][number]) {
+  // Monday's displayed time depends on the API user's profile. Raw values are UTC.
+  const raw: { date?: string; time?: string | null } = column?.value
+    ? JSON.parse(column.value)
+    : {};
+  const date = raw.date || column?.date || column?.text || '';
+  if (!raw.time) return { date, time: undefined };
+  const instant = new Date(`${date}T${raw.time}Z`);
+  if (!Number.isFinite(instant.getTime())) throw new Error('Invalid Open Days date');
+  return {
+    date: new Intl.DateTimeFormat('en-CA', {
+      timeZone: 'Asia/Jerusalem',
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+    }).format(instant),
+    time: new Intl.DateTimeFormat('en-GB', {
+      timeZone: 'Asia/Jerusalem',
+      hour: '2-digit',
+      minute: '2-digit',
+      hourCycle: 'h23',
+    }).format(instant),
+  };
 }
 
 function publishedEvents(items: BoardItem[]): OpenDay[] {
@@ -58,9 +92,16 @@ function publishedEvents(items: BoardItem[]): OpenDay[] {
     )?.[1];
     const institution = institutionId && institutions.get(institutionId);
     const source = officialLink(values[columns.source]);
-    const endDate = values[columns.endDate];
-    if (!institution || !source || !values[columns.date] || !values[columns.checked]) continue;
-    if (endDate && endDate < values[columns.date]) continue;
+    const start = israelDate(item.column_values.find((v) => v.id === columns.date));
+    const end = israelDate(item.column_values.find((v) => v.id === columns.endDate));
+    const date = start.date;
+    const endDate = end.date;
+    if (!institution || !source || !date || !values[columns.checked]) continue;
+    if (
+      !/^\d{4}-\d{2}-\d{2}$/.test(date) ||
+      (endDate && (endDate < date || !/^\d{4}-\d{2}-\d{2}$/.test(endDate)))
+    )
+      continue;
     const name = institution.name;
     events.push({
       id: item.id,
@@ -69,8 +110,10 @@ function publishedEvents(items: BoardItem[]): OpenDay[] {
       university: institution.column_values.some(
         (v) => v.id === columns.university && v.checked === true,
       ),
-      date: values[columns.date],
+      date,
       endDate,
+      startTime: start.time,
+      endTime: end.time,
       checked: values[columns.checked],
       place: values[columns.place],
       faculty: values[columns.faculty],
@@ -106,7 +149,7 @@ const readBoard = unstable_cache(
     } while (cursor);
     return publishedEvents(items);
   },
-  ['open-days-board-v2'],
+  ['open-days-board-v3'],
   { revalidate: 900 },
 );
 
