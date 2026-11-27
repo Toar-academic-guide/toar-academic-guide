@@ -28,17 +28,28 @@ beforeEach(() => {
 });
 
 function assertLimits(metadata: Metadata, canonical: string) {
-  expect(typeof metadata.title).toBe('string');
-  expect(`${metadata.title} | MyWay`.length).toBeLessThanOrEqual(62);
+  if (canonical === '/programs/medicine' && typeof metadata.title === 'object') {
+    // Issue460 explicitly approves this complete 65-character title.
+    expect(metadata.title).toEqual({
+      absolute: 'לימודי רפואה: שלבי הקבלה, ציוני סף ומועדים בכל אוניברסיטה | MyWay',
+    });
+  } else {
+    expect(typeof metadata.title).toBe('string');
+    expect(`${metadata.title} | MyWay`.length).toBeLessThanOrEqual(62);
+  }
   expect(metadata.description).toBeTruthy();
   expect(metadata.description!.length).toBeLessThanOrEqual(160);
-  for (const text of [metadata.title, metadata.description]) {
+  const title =
+    typeof metadata.title === 'object' && metadata.title && 'absolute' in metadata.title
+      ? metadata.title.absolute
+      : metadata.title;
+  for (const text of [title, metadata.description]) {
     expect(text).not.toMatch(/סכם|מתואם|מצרף|composite/i);
     expect(text).not.toMatch(/\.\.\.|…|\s[-–:,]$/);
   }
   expect(metadata.alternates).toEqual({ canonical });
   expect(metadata.openGraph).toMatchObject({
-    title: metadata.title,
+    title,
     description: metadata.description,
     url: canonical,
   });

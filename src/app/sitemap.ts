@@ -57,7 +57,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   dates.set('/threshold-alerts', '2026-11-22');
   dates.set('/calculator', '2026-11-10');
   dates.set('/about', ABOUT_INDEPENDENCE_CHECKED_ON);
-  dates.set('/psychometric-dates', psychometricDatesCheckedOn);
+  dates.set('/psychometric-dates', latestModified(psychometricDatesCheckedOn, '2026-11-27'));
+  for (const id of [
+    'medicine',
+    'huji_medicine',
+    'technion_medicine',
+    'tau_medicine',
+    'bgu_medicine',
+    'biu_medicine',
+  ]) {
+    dates.set(`/programs/${id}`, '2026-11-27');
+  }
   dates.set('/psychometric-two-domain', '2026-11-06');
   dates.set('/amirnet', '2026-11-14');
   dates.set('/psychometric-accommodations', '2026-11-14');

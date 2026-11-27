@@ -120,13 +120,21 @@ it('renders the approved dates, derived answer, closed badge, next label and sin
   ).toEqual(['4,6.12.2026', '18–19.4.2027', '1.7.2027', '6–7.9.2027', '24,26.12.2027']);
   expect(rows[0].textContent).toContain('ההרשמה נסגרה');
   expect(rows[1].textContent).toContain('המועד הקרוב');
+  expect(
+    within(rows[1])
+      .getByRole('link', { name: 'מי צריך פסיכומטרי עד אפריל: קבלה לרפואה' })
+      .getAttribute('href'),
+  ).toBe('/programs/medicine#medicine-admission-table');
   expect(within(main).getAllByText('המועד הקרוב')).toHaveLength(1);
   // Approved copy update, Amit via Jorje 2026-10-29 (sales-copy rows 41)
   const ctas = within(main).getAllByRole('link', { name: 'יש לכם ציון? בדקו לאן אתם מתקבלים' });
   expect(ctas).toHaveLength(1);
   expect(ctas[0].getAttribute('href')).toBe('/sekhem-calculator');
   expect(within(main).queryByRole('link', { name: 'לוח הבחינות הרשמי באתר מאל״ו' })).toBeNull();
-  expect(examTable.querySelectorAll('a')).toHaveLength(0);
+  expect(examTable.querySelectorAll('a')).toHaveLength(1);
+  expect(examTable.querySelector('a')?.getAttribute('href')).toBe(
+    '/programs/medicine#medicine-admission-table',
+  );
   expect(examTable.querySelector('caption')?.textContent).toBe('מועדי פסיכומטרי');
   expect(main.textContent).not.toMatch(/נבדק בתאריך/);
   expect(main.textContent).not.toMatch(/סכם/);

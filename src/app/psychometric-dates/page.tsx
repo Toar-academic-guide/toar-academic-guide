@@ -94,6 +94,14 @@ export default async function Page() {
                   <th scope="row">
                     <bdi dir="ltr">{sitting.displayLabel}</bdi>
                     {isNextOpen && <small>המועד הקרוב</small>}
+                    {sitting.id === 'april-2027' && (
+                      <Link
+                        className={styles.medicineLink}
+                        href="/programs/medicine#medicine-admission-table"
+                      >
+                        מי צריך פסיכומטרי עד אפריל: קבלה לרפואה
+                      </Link>
+                    )}
                   </th>
                   <td>
                     <bdi dir="ltr">{formatPsychometricDate(sitting.registrationDeadline)}</bdi>
