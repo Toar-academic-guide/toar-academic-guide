@@ -74,5 +74,5 @@ it('publishes a self-canonical indexable route in the sitemap', async () => {
   expect(metadata.robots).toBeUndefined();
   const entries = (await sitemap()).filter((entry) => entry.url === metadata.alternates?.canonical);
   expect(entries).toHaveLength(1);
-  expect(entries[0].lastModified).toBe('2026-11-10');
+  expect(entries[0].lastModified).toBe('2026-11-19');
 });

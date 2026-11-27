@@ -1,17 +1,14 @@
 import type { MetadataRoute } from 'next';
-import { psychometricDatesCheckedOn } from '@/data/psychometricDates';
 import { indexableInstitutionIds, indexableProgramIds } from '@/lib/seo/indexability';
 import { loadPublicCatalogue } from '@/lib/publicCataloguePages';
 import {
   institutionModifiedAt,
   latestModified,
   programModifiedAt,
-  STATIC_PAGE_MODIFIED_AT,
 } from '@/lib/seo/catalogueModified';
 import { buildSubjectHubs } from '@/lib/publicCatalogueLinks';
 import { absoluteUrl } from '@/lib/site';
-import { lawBarOutcomes } from '@/data/lawBarOutcomes';
-import { ABOUT_INDEPENDENCE_CHECKED_ON } from '@/lib/aboutIndependence';
+import { PAGE_CONTENT_DATES } from '@/lib/seo/pageContentDates';
 
 export const dynamic = 'force-dynamic';
 
@@ -51,36 +48,43 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         ] as const,
     ),
   ]);
-  dates.set('/institutions', latestModified(STATIC_PAGE_MODIFIED_AT, ...dates.values()));
-  // Authored with the calculator page; never replace this with the build date.
-  dates.set('/sekhem-calculator', '2026-11-14');
-  dates.set('/threshold-alerts', '2026-11-22');
-  dates.set('/calculator', '2026-11-10');
-  dates.set('/about', ABOUT_INDEPENDENCE_CHECKED_ON);
-  dates.set('/psychometric-dates', psychometricDatesCheckedOn);
-  dates.set('/psychometric-two-domain', '2026-11-06');
-  dates.set('/amirnet', '2026-11-14');
-  dates.set('/psychometric-accommodations', '2026-11-14');
-  dates.set('/atuda', '2026-11-17');
-  dates.set('/open-days', '2026-11-05');
-  dates.set('/transfer', '2026-11-08');
-  dates.set('/without-psychometric', '2026-11-10');
-  for (const id of [
-    'law',
-    ...lawBarOutcomes.rows.flatMap((row) => ('programId' in row ? [row.programId] : [])),
-  ]) {
-    dates.set(`/programs/${id}`, lawBarOutcomes.pageModifiedDate);
+  // Authored content and catalogue facts have separate clocks; retain the newer one.
+  for (const [path, date] of Object.entries(PAGE_CONTENT_DATES)) {
+    dates.set(path, latestModified(date, dates.get(path)));
   }
-  // The subject index lists hubs built from the programme catalogue.
-  dates.set(
-    '/programs',
-    latestModified(
-      STATIC_PAGE_MODIFIED_AT,
-      ...[...dates.entries()]
-        .filter(([path]) => path.startsWith('/programs/'))
-        .map(([, date]) => date),
-    ),
-  );
+  for (const hub of buildSubjectHubs(catalogue).publishedHubs) {
+    const path = `/programs/${encodeURIComponent(hub.id)}`;
+    dates.set(
+      path,
+      latestModified(
+        dates.get(path),
+        ...hub.programs.map((program) => dates.get(`/programs/${encodeURIComponent(program.id)}`)),
+      ),
+    );
+  }
+  for (const institution of catalogue.institutions) {
+    const path = `/institutions/${encodeURIComponent(institution.id)}`;
+    dates.set(
+      path,
+      latestModified(
+        dates.get(path),
+        ...catalogue.programs
+          .filter((program) => program.linkedInstitutionIds.includes(institution.id))
+          .map((program) => dates.get(`/programs/${encodeURIComponent(program.id)}`)),
+      ),
+    );
+  }
+  for (const index of ['/institutions', '/programs']) {
+    dates.set(
+      index,
+      latestModified(
+        dates.get(index),
+        ...[...dates.entries()]
+          .filter(([path]) => path.startsWith(`${index}/`))
+          .map(([, date]) => date),
+      ),
+    );
+  }
   return [
     '/',
     '/about',
@@ -102,17 +106,21 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ),
     ...(await indexableProgramIds(catalogue)).map((id) => `/programs/${encodeURIComponent(id)}`),
     ...generatedHubs.map((hub) => `/programs/${encodeURIComponent(hub.id)}`),
-  ].map((path) => ({
-    url: absoluteUrl(path),
-    lastModified: dates.get(path) ?? STATIC_PAGE_MODIFIED_AT,
-    changeFrequency: path === '/about' ? 'monthly' : 'weekly',
-    priority:
-      path === '/'
-        ? 1
-        : path === '/institutions' || path === '/programs'
-          ? 0.9
-          : path === '/about'
-            ? 0.5
-            : 0.7,
-  }));
+  ].map((path) => {
+    const lastModified = dates.get(path);
+    if (!lastModified) throw new Error(`Missing sitemap content date: ${path}`);
+    return {
+      url: absoluteUrl(path),
+      lastModified,
+      changeFrequency: path === '/about' ? 'monthly' : 'weekly',
+      priority:
+        path === '/'
+          ? 1
+          : path === '/institutions' || path === '/programs'
+            ? 0.9
+            : path === '/about'
+              ? 0.5
+              : 0.7,
+    };
+  });
 }

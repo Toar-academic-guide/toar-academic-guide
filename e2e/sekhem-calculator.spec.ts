@@ -620,7 +620,7 @@ test('public metadata and crawl links use the calculator URL; homepage hero has 
   const sitemap = await request.get('/sitemap.xml');
   expect(sitemap.ok()).toBe(true);
   expect(await sitemap.text()).toMatch(
-    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-14(?:T[^<]+)?<\/lastmod>/,
+    /<url>\s*<loc>https:\/\/findmyway\.co\.il\/sekhem-calculator<\/loc>\s*<lastmod>2026-11-19(?:T[^<]+)?<\/lastmod>/,
   );
   const llms = await request.get('/llms.txt');
   expect(llms.ok()).toBe(true);
