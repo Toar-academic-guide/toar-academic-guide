@@ -49,7 +49,7 @@ it('renders sourced semester dates without filling unpublished deadlines', async
   }
   const autumn = within(section).getByRole('table', { name: 'סמסטר א\' תשפ"ח (אוקטובר 2027)' });
   const autumnRows = within(autumn).getAllByRole('row').slice(1);
-  expect(autumnRows).toHaveLength(3);
+  expect(autumnRows).toHaveLength(5);
   expect(autumnRows[0].textContent).toContain('כלל תוקף כפי שמפורסם באתר הטכניון');
   expect(
     within(autumnRows[0])
@@ -64,12 +64,33 @@ it('renders sourced semester dates without filling unpublished deadlines', async
     'פתיחת הרשמה: 31.1.2027. שנת הלימודים מתחילה באוקטובר 2027.',
   );
   expect(autumnRows[2].textContent).toContain('פתיחת הרשמה לשנת תשפ"ח: 01.11.2026.');
+  const huji = autumnRows[3];
+  expect(within(huji).getByRole('rowheader').textContent).toBe('האוניברסיטה העברית');
+  const sittings = within(huji)
+    .getAllByRole('listitem')
+    .map((item) => item.textContent);
+  expect(sittings[0]).toContain('אפריל 2027:');
+  expect(sittings[0]).toContain('כולל צמרת ורפואה ומחקר ביו־רפואי');
+  expect(sittings[0]).toContain('למעט עתודאים במסלול בינה');
+  expect(sittings[0]).toContain('לרפואה וטרינרית ולתכנית אמירים רוח');
+  expect(sittings[1]).toContain('יולי 2027:');
+  expect(sittings[1]).toContain('המכינה האוניברסיטאית של העברית (למעט רפואה)');
+  expect(sittings[1]).toContain('לעתודאים (למעט צמרת)');
+  expect(sittings[1]).toContain('ולנרשמים לשנה ב׳ ומעלה בחוגים שבהם נדרשת הבחינה');
+  expect(sittings[2]).toContain('ספטמבר 2027: תקף לתחומים שיישארו פתוחים להרשמה');
+  expect(huji.textContent).toContain('הציון הגבוה מבין הבחינות');
+  expect(huji.textContent).toContain('אוקטובר 1990 ואילך תקף');
+  expect(within(autumnRows[4]).getByRole('cell').textContent).toBe('לא פורסם בעמוד הרשמי לתשפ״ח.');
+  expect(autumnRows[4].textContent).not.toMatch(/2026|2027/);
+  expect(section.textContent).not.toMatch(/מקור|https?:|נבדק|עודכן/);
   expect(within(section).queryAllByRole('link')).toHaveLength(0);
   expect(Object.values(semesterValiditySources)).toEqual([
     'https://admissions.technion.ac.il/registeration-dates/',
     'https://admissions.technion.ac.il/technion_psychometri/',
     'https://admissions.haifa.ac.il/registration-deadlines-and-entrance-exams/',
     'https://info.huji.ac.il/registration-process/calendar',
+    'https://info.huji.ac.il/reception-components/Psychometric',
+    'https://go.tau.ac.il/he/med/ba/dental?v=important-info',
     'https://www.bgu.ac.il/events/registrastion-2027-2028/',
     'https://go.tau.ac.il/he/reg-dates',
     'https://www.bgu.ac.il/welcome/contents/spring-semester/ba-spring-semester/',
